@@ -1,0 +1,130 @@
+#!/usr/bin/perl -T -w
+
+$OpenSSL = "/usr/bin/openssl";
+
+$ENV{PATH} = "/bin";
+
+$KeyFile = "/usr/local/SP-Service/keyfile";
+
+######################################################################
+
+sub errorExit($)
+{
+  my $error_string = shift;
+
+  use CGI;
+
+  $cgi = new CGI;
+
+  print $cgi->header("text/plain");
+
+  print "ERROR: " . $error_string . "\n";
+
+  exit(1);
+}
+
+
+
+######################################################################
+
+sub encryptString($)
+{
+    use IPC::Open2;
+
+    my $string = shift;
+
+    if (! -r $KeyFile )
+    {
+      errorExit("Key file \"$KeyFile\" not readable.");
+    }
+
+    my $pid = open2(\*FROM_OPENSSL, \*TO_OPENSSL, "$OpenSSL des3 -e -kfile $KeyFile -a");
+
+    print TO_OPENSSL $string;
+    close(TO_OPENSSL);
+
+    my $encString = <FROM_OPENSSL>;
+    close(FROM_OPENSSL);
+
+    if (!defined($encString) or ($encString eq ""))
+    {
+      errorExit("Could not compose token.");
+    }
+
+    chomp($encString);
+
+    return $encString;
+}
+
+######################################################################
+#
+# Main code
+#
+
+use CGI;
+
+$cgi = new CGI;
+
+my $url = $cgi->url();
+my $url_base = $cgi->url(-base=>1);
+
+
+
+######################################################################
+#
+# Create token for passing to generator function
+#
+
+$time = time();
+
+# We don't use this at this time due to length issues with the URL
+#$nonce = rand(2**16);
+
+#$remoteUser = $cgi->param("REMOTE_USER");
+$remoteUser = $ENV{"REMOTE_USER"};
+
+if (!defined($remoteUser) or ($remoteUser eq ""))
+{
+	errorExit("REMOTE_USER not set.");
+}
+
+$token = sprintf("%d-%s", $time, $remoteUser);
+
+
+$encToken = encryptString($token);
+
+use URI::Escape;
+
+$encToken = uri_escape($encToken);
+
+######################################################################
+#
+# Create returned text
+#
+
+my $code_base = $url_base . "/gridshib-ca";
+
+# JWS can't load jar files from HTTPS with untrusted CA certificates
+$code_base =~ s/https:/http:/;
+
+my $JNLPtemplate = "/var/www/html/gridshib-ca/CredentialRetriever.jnlp";
+
+my $genCredURL = $url_base . "/cgi-bin/SP-CA/generateCred.cgi";
+
+$genCredURL =~ s/https:/http:/;
+
+open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
+
+print $cgi->header("Application/X-Java-Jnlp-File");
+
+# For debugging
+#print $cgi->header("text/plain");
+
+while (<INPUT>) {
+    s/\$\$token/$encToken/;
+    s/\$\$code_base/$code_base/;
+    s/\$\$genCredURL/$genCredURL/;
+    print;
+}
+close(INPUT);
+
