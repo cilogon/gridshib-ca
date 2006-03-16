@@ -5,17 +5,18 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.net.URLDecoder;
 import org.globus.util.ConfigUtil;
 import org.globus.util.Util;
 
 public class CredentialRetriever implements ActionListener {
 	final JLabel label = new JLabel("");
 	final JButton button = new JButton("OK");
-	final JFrame frame = new JFrame("Grid Proxy Retriever");
+	final JFrame frame = new JFrame("GridShib CA Credential Retriever");
+	final JTextArea textArea = new JTextArea(20,40);
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
 		app.doit(args);
@@ -25,11 +26,33 @@ public class CredentialRetriever implements ActionListener {
 		displayGUI();
 
 		try {
-			URL proxyURL = new URL(args[0]);
-			InputStream proxyStream = proxyURL.openStream();
+			URL credURL = new URL(args[0]);
+			String token = args[1];
+	
+			setupTrustedCAs();
+			
+			// URL must be https
+			String protocol = credURL.getProtocol();
+			if (!protocol.equals("https"))
+			{
+				throw new Exception("Credential URL is not secure (is '" + protocol + "' rather than 'https'). Service is misconfigured.");
+			}
 
+			displayMessage("Connecting to " + credURL.toString());
+			
+			URLConnection conn = credURL.openConnection();
+	        conn.setDoOutput(true);
+			OutputStreamWriter postWriter = new OutputStreamWriter(conn.getOutputStream());
+			String postData = URLEncoder.encode("token", "UTF-8") +
+				"=" + URLEncoder.encode(token, "UTF-8");
+			
+			postWriter.write(postData);
+			postWriter.flush();
+
+			BufferedReader credStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	
 			String targetFile = getDefaultProxyLocation();
-			displayMessage("Writing proxy to " + targetFile);
+			displayMessage("Writing credential to " + targetFile);
 
 			File outFile = new File(targetFile);
 
@@ -41,25 +64,28 @@ public class CredentialRetriever implements ActionListener {
 
 			FileWriter out = new FileWriter(outFile);
 
-			int c;
-			while ((c = proxyStream.read()) != -1) {
-				out.write(c);
+			String line;
+			while ((line = credStream.readLine()) != null) {
+				out.write(line + "\n");
 			}
 			out.close();
-			proxyStream.close();
-			displayMessage("Proxy written to " + targetFile);
+			credStream.close();
+			displayMessage("Credential written to " + targetFile);
+			displayMessage("Success.");
 		} catch (java.net.MalformedURLException e) {
 			error("Malformed URL: " + args[0]);
 		} catch (java.io.IOException e) {
 			error("IO Error: " + e.getMessage());
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
-			error("Missing URL argument");
+			error("Missing argument");
+		} catch (Exception e) {
+			error(e.getMessage());
 		}
 
 		enableButton();
 	}
 
-	private String getDefaultProxyLocation() {
+	private String getDefaultProxyLocation() throws Exception {
 		String os = System.getProperty("os.name");
 		String sep = System.getProperty("file.separator");
 		String path = "";
@@ -74,7 +100,7 @@ public class CredentialRetriever implements ActionListener {
 				String uid = ConfigUtil.getUID();
 				path = "/tmp/x509up_u" + uid;
 			} catch (Exception e) {
-				error("Could not get uid: " + e.getMessage());
+				throw new Exception("Could not get uid: " + e.getMessage());
 			}
 		}
 
@@ -89,9 +115,14 @@ public class CredentialRetriever implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(500, 200);
 
-		JPanel pane = new JPanel(new GridLayout(0, 1));
-		label.setText("Grid Proxy Retriever running...");
-		pane.add(label);
+		JPanel pane = new JPanel();
+
+		textArea.setEditable(false);
+	    JScrollPane scrollPane =
+			new JScrollPane(textArea,
+							JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+							JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		pane.add(scrollPane);
 
 		pane.add(button);
 		button.addActionListener(this);
@@ -120,19 +151,22 @@ public class CredentialRetriever implements ActionListener {
 		// Display the window.
 		frame.pack();
 		frame.setVisible(true);
+	    displayMessage("Grid Proxy Retriever running...");
 	}
 
 	public void displayMessage(String s) {
-		label.setText(s);
-		frame.pack();
+		//label.setText(s);
+		//frame.pack();
+		textArea.append(s + "\n");
 	}
 
 	public void error(String s) {
-		JOptionPane.showMessageDialog(frame, s, "Proxy Retriever Error",
-				JOptionPane.ERROR_MESSAGE);
-		System.exit(1);
+		displayMessage("Fatal Error: " + s);
 	}
 
+	public void warning(String s) {
+		displayMessage("Warning:" + s);
+	}
 	public void enableButton() {
 		button.setEnabled(true);
 	}
@@ -142,9 +176,60 @@ public class CredentialRetriever implements ActionListener {
 	}
 
 	// Button presses
-public void actionPerformed(ActionEvent arg0)
+	public void actionPerformed(ActionEvent arg0)
 	{
-		// TODO Auto-generated method stub
 		System.exit(0);
+	}
+
+	public void setupTrustedCAs()
+	{
+		try
+		{
+			ClassLoader cl = this.getClass().getClassLoader();
+			URL url = cl.getResource("resources/trustStore");
+			if (url == null)
+			{
+				warning("Could not find trusted CAs");
+				return;
+ 			}
+			String path = url.toString();
+			// If file is in a jar, we need to write it into a temporary
+			// file, as we need a real file for the trustStore
+			if (path.startsWith("jar:"))
+			{
+				displayMessage("Copying trusted CA certificates from jar.");
+				File tempFile = File.createTempFile("CredentialRetriever",
+													".trustStore");
+				InputStream in = cl.getResourceAsStream("resources/trustStore");
+				FileOutputStream out = new FileOutputStream(tempFile);
+				copyStream(in, out);
+				in.close();
+				out.close();
+				path = tempFile.getAbsolutePath();
+				tempFile.deleteOnExit();
+			}
+			// Remove "file:" prefix from path if it exists as the security
+			// runtime can't deal with it.
+			if (path.startsWith("file:"))
+			{
+				path = path.substring(5);
+			}
+			displayMessage("Setting trusted CAs to " + path);
+			System.setProperty("javax.net.ssl.trustStore", path);
+		} catch (Exception e ) {
+			warning("Failed to initiate trusted CAs: " + e.getMessage());
+		}
+	}
+
+	public void copyStream(InputStream in, OutputStream out)
+		throws IOException
+	{
+		byte[] buffer = new byte[1024];	// Arbitrary size
+		int read;
+
+		while((read = in.read(buffer)) != -1)
+		{
+			out.write(buffer, 0, read);
+		}
 	}
 }

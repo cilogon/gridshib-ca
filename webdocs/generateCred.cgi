@@ -45,7 +45,7 @@ sub decryptString($)
 
     if (!defined($string) || ($string eq ""))
     {
-        errorExit("Could not generate token.");
+        errorExit("Could not decrypt token.");
     }
     chomp($string);
 
@@ -54,12 +54,16 @@ sub decryptString($)
 
 sub parseToken($)
 {
+    use URI::Escape;
+
     my $encToken = shift;
 
     if (!defined($encToken) or ($encToken eq ""))
     {
 	errorExit("No token argument provided");
     }
+
+    $encToken = uri_unescape($encToken);
 
     my $token = decryptString($encToken);
 

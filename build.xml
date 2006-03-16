@@ -1,20 +1,25 @@
-<project name="CredentialRetriever" default="jar" basedir=".">
+<project name="CredentialRetriever" default="build" basedir=".">
 <target name="build">
-		<javac srcdir="." destdir="." />
+  <javac srcdir="." destdir="." />
 </target>
-	<target name="jar" depends="jar-sign"/>
+<target name="jar" depends="jar-sign"/>
 <target name="jar-file" depends="build">
-	<jar jarfile="CredentialRetriever.jar"
-		basedir="./"
-		excludes="*.jar *.java webdocs/ build.xml .classpath .project" />
+  <jar jarfile="CredentialRetriever.jar"
+       basedir="./"
+       excludes="*.jar *.java webdocs/ build.xml .classpath .project" />
 </target>
 <target name="jar-sign" depends="jar-file">
-	<input
-	     message="Signing passphrase:"
-	     addproperty="pass"/>
-	<signjar jar="CredentialRetriever.jar"
-	     alias="default"
-	     storetype="pkcs12"
-	     storepass="${pass}"/>
+  <input
+     message="Signing passphrase:"
+     addproperty="pass"/>
+  <signjar jar="CredentialRetriever.jar"
+	   alias="default"
+	   storetype="pkcs12"
+	   storepass="${pass}"/>
+</target>
+<target name="trustStore">
+  <exec executable="createTrustStore.sh">
+    <arg value="resources/trustStore"/>
+  </exec>
 </target>
 </project>
