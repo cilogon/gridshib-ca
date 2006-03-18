@@ -1,0 +1,119 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+
+######################################################################
+
+# Trusted CA certificates to include in Jar trustStore
+CA_CERTS = certificates/*.[0-9]
+
+# Path to jar trustStore
+TRUST_STORE = resources/trustStore
+
+# Project java sources
+JAVA_SRCS = edu/ncsa/gridshib/gridshibca/*.java
+JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
+
+# Password to pass into keytool. Not actually used for anything, just keeps
+# keytool for prompting for one.
+TRUST_STORE_PASSWD=abcdef
+
+# Target jar file
+JARFILE=CredentialRetriever.jar
+
+# Unsigned jar file created during build
+UNSIGNED_JARFILE=CredentialRetriever-unsigned.jar
+
+# Other files to include in jar
+JAR_INCS=$(TRUST_STORE)
+
+# Directory to build distribution in
+DIST_DIR=gridshib-ca
+
+# Other files to include in distribution
+DIST_FILES=$(JARFILE) \
+	configure Makefile.in INSTALL.config \
+	webdocs/CredentialRetriever.jnlp \
+	webdocs/Shibboleth-logo_RGB.jpg \
+	webdocs/generateCred.cgi \
+	webdocs/globustoolkit.gif \
+	webdocs/index.html \
+	webdocs/login \
+	webdocs/openidp-logo-small.png \
+	webdocs/sysinfo.pl \
+	webdocs/test.pl
+
+# Distribution file
+DIST_FILE=$(DIST_DIR).tar.gz
+
+######################################################################
+#
+# Binaries and commands
+#
+
+INSTALL = @INSTALL@
+
+MKDIR = mkdir
+
+CP = cp
+
+# Tools needed for building and distribution
+
+JAR = @JAR@
+KEYTOOL = @KEYTOOL@
+JARSIGNER = @JARSIGNER@
+TAR = @TAR@
+RM = rm
+DIR_EXISTS = test -d
+
+######################################################################
+
+default: build
+
+build:	$(JAVA_CLASSES)
+
+jar: $(JARFILE)
+
+$(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
+# Need to include the org.globus stuff here because one of the
+# class files has a "$" in it and I haven't figured out any other
+# way to do this and avoid getting it expanded.
+	$(JAR) cf $@ $^ org/globus/util/*.class
+
+$(JARFILE): $(UNSIGNED_JARFILE)
+	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
+
+trustStore:	$(TRUST_STORE)
+
+$(TRUST_STORE): ${CA_CERTS}
+	@$(RM) -f $@
+	@for cert in $^; do \
+		echo Adding $${cert} to trustStore ;\
+		${KEYTOOL} -import -keystore $@ -noprompt -alias $${cert} -storepass ${TRUST_STORE_PASSWD} -file $${cert} ;\
+	done
+
+dist:	$(DIST_FILE)
+
+$(DIST_FILE): $(DIST_FILES)
+	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
+	for file in $^; do \
+		$(CP) $${file} $(DIST_DIR); \
+	done
+	$(TAR) cfz $@ $(DIST_DIR)/*
+	$(RM) -rf $(DIST_DIR)
+
+install:
+	echo install
+# webdocs/CredentialRetriever.jnlp -> @GRIDSHIB_CA_CONF_DIR@
+
+
+$(srcdir)/configure: configure.ac
+	cd $(srcdir) && autoconf
+
+Makefile: Makefile.in config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+

@@ -1,0 +1,13 @@
+GridShib-CA Todo List:
+
+* jnlp file is world-readable file in /tmp
+The browser needs umask set correctly. Nothing I can do otherwise. I
+need to check and make sure umask is set correctly.
+
+* Write mapping to DB
+
+* Email subjectAltName
+
+* Truncating username "madhatter@openidp.org" -> "madhatter@ope"
+
+* Add acknowledgments

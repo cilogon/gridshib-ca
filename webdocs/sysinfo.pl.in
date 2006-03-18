@@ -1,0 +1,44 @@
+#!@PERL@ -T -w
+
+print "Content-type: text/html\n\n";
+print "<html>\n";
+print "<head>";
+print "  <title>Shibboleth Attributes</title>\n";
+print "  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">\n";
+print "  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">\n";
+print "</head>";
+print "\n\n<body>\n";
+
+print "<b>-shib-</b><br/>";
+print "<table>";
+foreach $var (sort(keys(%ENV))) {
+    if ($var =~ m/SHIB/ || $var =~ m/REMOTE_USER/ || $var =~ m/HTTP_REMOTE_USER/) {
+    	$val = $ENV{$var};
+    	$val =~ s|\n|\\n|g;
+    	$val =~ s|"|\\"|g;
+    	print "<tr>";
+    	print "<td>${var}</td><td>${val}</td>";
+    	print "</tr>";
+    }
+}
+print "<table>";
+
+print "<hr/>\n";
+
+print "<b>-env-</b><br/>";
+print "<pre>";
+foreach $var (sort(keys(%ENV))) {
+    $val = $ENV{$var};
+    $val =~ s|\n|\\n|g;
+    $val =~ s|"|\\"|g;
+    print "${var}=\"${val}\"\n";
+}
+
+print "</pre>\n";
+
+print "<hr/><b>-end-</b><br/>\n";
+
+print "</body>\n\n";
+print "</html>\n";
+
+

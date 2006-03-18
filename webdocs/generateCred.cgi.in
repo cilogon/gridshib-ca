@@ -1,15 +1,22 @@
-#!/usr/bin/perl
+#!@PERL@ -T -w
 
-$KeyFile = "/usr/local/SP-Service/keyfile";
+# Key used to encrypt the token
+$KeyFile = "@GRIDSHIB_CA_DIR@/keyfile";
 
-$OpenSSL = "/usr/bin/openssl";
+$OpenSSL = "@OPENSSL@";
+
+$MyProxyLogon = "@MYPROXY_LOGON@";
+
+$Cat = "";
 
 $ENV{PATH} = "/bin";
 
 $MaxTimeDiff = 300; # 5 minutes
 
-$X509_USER_CERT = "/usr/local/SP-Service/cert.pem";
-$X509_USER_KEY = "/usr/local/SP-Service/key.pem";
+# Key and certificate used to authenticate to MyProxy
+$X509_USER_CERT = "@GRIDSHIB_CA_DIR@/cert.pem";
+
+$X509_USER_KEY = "@GRIDSHIB_CA_DIR@/key.pem";
 
 ######################################################################
 
@@ -121,16 +128,16 @@ chomp($temp_cred_file);
 
 my $temp_err_file=$temp_cred_file . ".err";
 
-my $status = system("/usr/local/myproxy/bin/myproxy-logon -s localhost -l $user -n -o $temp_cred_file > /dev/null 2> $temp_err_file");
+my $status = system("$MyProxyLogon -s localhost -l $user -n -o $temp_cred_file > /dev/null 2> $temp_err_file");
 
 if ($status == 0)
 {
-	system("cat $temp_cred_file");
+	system("$Cat $temp_cred_file");
 }
 else
 {
 	print "ERROR ";
-	system("cat $temp_err_file");
+	system("$Cat $temp_err_file");
 }
 
 unlink($temp_cred_file);

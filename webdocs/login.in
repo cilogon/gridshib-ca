@@ -1,10 +1,12 @@
-#!/usr/bin/perl -T -w
+#!@PERL@ -T -w
 
-$OpenSSL = "/usr/bin/openssl";
+$OpenSSL = "@OPENSSL@";
 
 $ENV{PATH} = "/bin";
 
-$KeyFile = "/usr/local/SP-Service/keyfile";
+$KeyFile = "@GRIDSHIB_CA_DIR@/keyfile";
+
+my $JNLPtemplate = "@GRIDSHIB_CA_DIR@/CredentialRetriever.jnlp";
 
 ######################################################################
 
@@ -107,9 +109,7 @@ my $code_base = $url_base . "/gridshib-ca";
 # JWS can't load jar files from HTTPS with untrusted CA certificates
 $code_base =~ s/https:/http:/;
 
-my $JNLPtemplate = "/var/www/html/gridshib-ca/CredentialRetriever.jnlp";
-
-my $genCredURL = $url_base . "/cgi-bin/SP-CA/generateCred.cgi";
+my $genCredURL = $url_base . "@CGI_BIN_URL@/generateCred.cgi";
 
 open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
 
