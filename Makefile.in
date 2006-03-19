@@ -94,10 +94,10 @@ DIR_EXISTS = test -d
 
 default: build-$(MODE)
 
-build-dist:
+build-dist:	configure-generated-scripts
 	@echo "Run 'make install' to install."
 
-build-build:	build-mode $(JAVA_CLASSES)
+build-build:	build-mode $(JAVA_CLASSES) configure-generated-scripts
 
 build-mode:
 	@if test $(MODE) != "build" ; then \
@@ -143,12 +143,12 @@ install:
 	$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 	@for file in $(CONF_FILES) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 	@for file in $(HTML_FILES) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
 	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
 	@for file in $(CGI_BIN_FILES) ; do \
@@ -204,6 +204,30 @@ config.status: configure
 $(srcdir)/configure: @CONFIGURE_DEP@
 	cd $(srcdir) && autoconf
 
+######################################################################
+#
+# configure-generated stuff
+#
+
+configure-generated-scripts: @CONF_GENERATED_SCRIPTS@
+
+webdocs/generateCred.cgi: webdocs/generateCred.cgi.in config.status
+	./config.status
+
+webdocs/login: webdocs/login.in config.status
+	./config.status
+
+webdocs/index.html: webdocs/index.html.in config.status
+	./config.status
+
+webdocs/sysinfo.pl: webdocs/sysinfo.pl.in config.status
+	./config.status
+
+webdocs/test.pl: webdocs/test.pl.in config.status
+	./config.status
+
+webdocs/welcome.pl: webdocs/welcome.pl.in config.status
+	./config.status
 
 ######################################################################
 #

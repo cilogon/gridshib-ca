@@ -111,7 +111,16 @@ AC_ARG_WITH(www-user,
 	[WWW_USER=apache])
 AC_SUBST(WWW_USER)
 
+CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
+	webdocs/login \
+	webdocs/index.html \
+	webdocs/sysinfo.pl \
+	webdocs/test.pl \
+	webdocs/welcome.pl"
+AC_SUBST(CONF_GENERATED_SCRIPTS)
+AC_CONFIG_FILES([${CONF_GENERATED_SCRIPTS}])
+
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([webdocs/generateCred.cgi webdocs/login webdocs/index.html webdocs/sysinfo.pl webdocs/test.pl webdocs/welcome.pl])
+
 
 AC_OUTPUT()
