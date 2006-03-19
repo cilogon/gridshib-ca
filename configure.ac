@@ -27,10 +27,7 @@ AC_ARG_ENABLE(build,
 AC_SUBST(MODE)
 
 if test ${MODE} = "build" ; then
-   TIMESTAMP=`date`
-   AC_SUBST(TIMESTAMP)
-
-   AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version.java])
+   AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version])
 
    # These tools are only needed for building distributions
    AC_PATH_PROG(KEYTOOL, keytool)

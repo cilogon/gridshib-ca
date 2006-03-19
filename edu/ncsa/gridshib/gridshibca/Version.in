@@ -1,0 +1,11 @@
+package edu.ncsa.gridshib.gridshibca;
+// $Id$
+
+public class Version {
+    final String version = "@PACKAGE_VERSION@";
+
+    public String getVersion()
+    {
+	return version;
+    }
+}

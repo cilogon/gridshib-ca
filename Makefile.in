@@ -22,7 +22,8 @@ CA_CERTS = certificates/*.[0-9]
 TRUST_STORE = resources/trustStore
 
 # Project java sources
-JAVA_SRCS = edu/ncsa/gridshib/gridshibca/*.java
+JAVA_SRCS = edu/ncsa/gridshib/gridshibca/*.java \
+	edu/ncsa/gridshib/gridshibca/Version.java
 JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
 
 # Password to pass into keytool. Not actually used for anything, just keeps
@@ -95,6 +96,7 @@ INSTALL = @INSTALL@
 MKDIR = mkdir
 RMDIR = rmdir
 CP = cp
+TOUCH = touch
 
 # Tools needed for building and distribution
 
@@ -258,8 +260,24 @@ webdocs/test.pl: webdocs/test.pl.in config.status
 webdocs/welcome.pl: webdocs/welcome.pl.in config.status
 	./config.status
 
-edu/ncsa/gridshib/gridshibca/Version.java.in: edu/ncsa/gridshib/gridshibca/Version.java config.status
+######################################################################
+
+edu/ncsa/gridshib/gridshibca/Version: edu/ncsa/gridshib/gridshibca/Version.in config.status
 	./config.status
+
+edu/ncsa/gridshib/gridshibca/Version.java: edu/ncsa/gridshib/gridshibca/Version
+	@if test -e $@ ; then \
+	  if diff $@ $^ > /dev/null ; then \
+	    : ;\
+	  else \
+	    echo "Updating Version.java" ;\
+	    $(CP) $^ $@ ;\
+	  fi ;\
+	else \
+	  echo "Creating Version.java" ;\
+	  $(CP) $^ $@ ;\
+	fi
+
 ######################################################################
 #
 # Allow me to rsync from development host to test host. No one else

@@ -26,8 +26,7 @@ public class CredentialRetriever implements ActionListener {
 	public void doit(String[] args) {
 		displayGUI();
 		Version version = new Version();
-		displayMessage("GridShib CA Credential Retriever version " + version.getVersion() +
-					   " (" + version.getBuildDate() + ")");
+		displayMessage("GridShib CA Credential Retriever version " + version.getVersion());
 
 		try {
 			URL credURL = new URL(args[0]);
