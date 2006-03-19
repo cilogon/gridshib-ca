@@ -1,4 +1,4 @@
-AC_INIT(gridshib-ca, 0.1)
+AC_INIT(gridshib-ca, 0.1.0)
 AC_REVISION($Id$)
 
 AC_PROG_INSTALL
@@ -27,6 +27,11 @@ AC_ARG_ENABLE(build,
 AC_SUBST(MODE)
 
 if test ${MODE} = "build" ; then
+   TIMESTAMP=`date`
+   AC_SUBST(TIMESTAMP)
+
+   AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version.java])
+
    # These tools are only needed for building distributions
    AC_PATH_PROG(KEYTOOL, keytool)
    AC_PATH_PROG(JAVAC, javac)
@@ -80,7 +85,7 @@ AC_ARG_WITH(shib-protected-cgi-bin-url,
 	AC_HELP_STRING([--with-shib-protected-cgi-bin-url],
 		[Specify the Shibboleth-protected cgi-bin url]),
 	[SHIB_PROTECTED_CGI_BIN_URL=$withval],
-	[SHIB_PROTECTED_CGI_BIN_URL=${CGI_BIN_URL}-protected])
+	[SHIB_PROTECTED_CGI_BIN_URL=/cgi-bin/shib-protected/${GRIDSHIB_CA_DIR_NAME}])
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_URL)
 
 AC_ARG_WITH(shib-protected-cgi-bin-dir,

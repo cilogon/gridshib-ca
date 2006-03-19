@@ -1,4 +1,5 @@
 package edu.ncsa.gridshib.gridshibca;
+// $Id$
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,6 +25,9 @@ public class CredentialRetriever implements ActionListener {
 
 	public void doit(String[] args) {
 		displayGUI();
+		Version version = new Version();
+		displayMessage("GridShib CA Credential Retriever version " + version.getVersion() +
+					   " (" + version.getBuildDate() + ")");
 
 		try {
 			URL credURL = new URL(args[0]);
@@ -165,7 +169,6 @@ public class CredentialRetriever implements ActionListener {
 		// Display the window.
 		frame.pack();
 		frame.setVisible(true);
-	    displayMessage("Grid Proxy Retriever running...");
 	}
 
 	public void displayMessage(String s) {

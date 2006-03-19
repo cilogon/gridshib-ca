@@ -1,6 +1,16 @@
 #!@PERL@ -T -w
+######################################################################
+#
+# $Id$
+#
+# This script is invoked by the Java Web Start CredentialRetriever
+# application. It comsumes the token created by the "login" script,
+# contacts MyProxy to generate a X509 credential and returns that
+# credential to CredentialRetriever.
+#
+######################################################################
 
-# Key used to encrypt the token
+# Key used to decrypt the token
 $KeyFile = "@GRIDSHIB_CA_CONF_DIR@/keyfile";
 
 $OpenSSL = "@OPENSSL@";

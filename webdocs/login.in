@@ -1,4 +1,13 @@
 #!@PERL@ -T -w
+######################################################################
+#
+# $Id$
+#
+# This script is to be invoked protected by Shibboleth. It generates
+# an token from REMOTE_USER and genertes a jnlp file to invole the
+# CredentialRetriever Java Web Start application.
+#
+######################################################################
 
 $OpenSSL = "@OPENSSL@";
 

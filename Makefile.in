@@ -1,3 +1,10 @@
+######################################################################
+#
+# Makefile for GridShib CA
+#
+# $Id$
+#
+######################################################################
 
 srcdir = @srcdir@
 VPATH = @srcdir@
@@ -32,7 +39,7 @@ UNSIGNED_JARFILE=CredentialRetriever-unsigned.jar
 JAR_INCS=$(TRUST_STORE)
 
 # Directory to build distribution in
-DIST_DIR=gridshib-ca
+DIST_DIR=@PACKAGE_NAME@-@PACKAGE_VERSION@
 
 # Other files to include in distribution
 DIST_FILES=$(JARFILE) \
@@ -97,7 +104,7 @@ default: build-$(MODE)
 build-dist:	configure-generated-scripts
 	@echo "Run 'make install' to install."
 
-build-build:	build-mode $(JAVA_CLASSES) configure-generated-scripts
+build-build:	build-mode $(JAVA_SRCS) $(JAVA_CLASSES) configure-generated-scripts
 
 build-mode:
 	@if test $(MODE) != "build" ; then \
@@ -229,6 +236,8 @@ webdocs/test.pl: webdocs/test.pl.in config.status
 webdocs/welcome.pl: webdocs/welcome.pl.in config.status
 	./config.status
 
+edu/ncsa/gridshib/gridshibca/Version.java.in: edu/ncsa/gridshib/gridshibca/Version.java config.status
+	./config.status
 ######################################################################
 #
 # Allow me to rsync from development host to test host. No one else

@@ -1,5 +1,6 @@
 <html>
 <head>
+<!-- $Id$ -->
 <title>GridShib CA</title>
 </head>
 <body>
@@ -12,10 +13,11 @@
 <tr><td><p><p><p></td></tr>
 <tr>
 <td colspan=3>
-This is a prototype GridShib-CA that will authenticate a user using
-Shibboleth, and then create and install a short-lived
-Grid credential based on that authentication on the user's local system.
-This credential is suitable for use with Grid Tools such as GT4.
+This is a prototype GridShib-CA (version @PACKAGE_VERSION@) that will
+authenticate a user using Shibboleth, and then create and install a
+short-lived Grid credential based on that authentication on the user's
+local system.  This credential is suitable for use with Grid Tools
+such as GT4.
 </td>
 </tr>
 <tr><td><p><p><p></td></tr>

@@ -1,4 +1,13 @@
 #!@PERL@ -T -w
+######################################################################
+#
+# $Id$
+#
+# This script serves as a welcome mat for users. It should be Shibboleth
+# protected and it makes sure that REMOTE_USER is available before
+# providing a link to invoke the "login" script.
+#
+######################################################################
 
 print "Content-type: text/html\n\n";
 print "<html>\n";
