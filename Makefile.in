@@ -38,6 +38,10 @@ UNSIGNED_JARFILE=CredentialRetriever-unsigned.jar
 # Other files to include in jar
 JAR_INCS=$(TRUST_STORE)
 
+#
+# Distribution configuration
+#
+
 # Directory to build distribution in
 DIST_DIR=@PACKAGE_NAME@-@PACKAGE_VERSION@
 
@@ -58,6 +62,10 @@ DIST_FILES=$(JARFILE) \
 # Distribution file
 DIST_FILE=$(DIST_DIR).tar.gz
 
+#
+# Installation configuration
+#
+
 # Installation directories - see INSTALL.config
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 CONF_FILES=webdocs/CredentialRetriever.jnlp
@@ -72,7 +80,8 @@ GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
 HTML_FILES=webdocs/Shibboleth-logo_RGB.jpg \
 	webdocs/globustoolkit.gif \
 	webdocs/openidp-logo-small.png \
-	webdocs/index.html
+	webdocs/index.html \
+	$(JARFILE)
 
 # User that httpd runs under
 WWW_USER=@WWW_USER@
@@ -127,6 +136,11 @@ $(JARFILE): $(UNSIGNED_JARFILE)
 %.class : %.java
 	$(JAVAC) $^
 
+######################################################################
+#
+# Distribution building
+#
+
 trustStore:	build-mode $(TRUST_STORE)
 
 $(TRUST_STORE): ${CA_CERTS}
@@ -140,11 +154,19 @@ dist:	build-mode $(DIST_FILE)
 
 $(DIST_FILE): $(DIST_FILES)
 	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
+	$(DIR_EXISTS) $(DIST_DIR)/webdocs || $(MKDIR) $(DIST_DIR)/webdocs
 	for file in $^; do \
-		$(CP) $${file} $(DIST_DIR); \
+		dir=`dirname $${file}` ;\
+		$(CP) $${file} $(DIST_DIR)/$${dir} ;\
 	done
 	$(TAR) cfz $@ $(DIST_DIR)/*
 	$(RM) -rf $(DIST_DIR)
+	ls -l $(DIST_FILE)
+
+######################################################################
+#
+# Installation
+#
 
 install:
 	$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
