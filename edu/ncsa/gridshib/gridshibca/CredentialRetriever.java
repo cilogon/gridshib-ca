@@ -65,8 +65,22 @@ public class CredentialRetriever implements ActionListener {
 			FileWriter out = new FileWriter(outFile);
 
 			String line;
-			while ((line = credStream.readLine()) != null) {
+			// Check first line for error string
+			line = credStream.readLine();
+			if (line != null)
+			{
+				if (line.startsWith("ERROR:"))
+				{
+					throw new Exception("Got error from GridShib CA server." + line);
+				}
 				out.write(line + "\n");
+				while ((line = credStream.readLine()) != null) {
+					out.write(line + "\n");
+				}
+			}
+			else
+			{
+				throw new Exception("Got no data from server trying to read Credential.");
 			}
 			out.close();
 			credStream.close();

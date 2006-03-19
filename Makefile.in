@@ -3,6 +3,9 @@ srcdir = @srcdir@
 VPATH = @srcdir@
 prefix = @prefix@
 
+# Mode: "build" if build is enabled; "dist" otherwise
+MODE=@MODE@
+
 ######################################################################
 
 # Trusted CA certificates to include in Jar trustStore
@@ -33,19 +36,39 @@ DIST_DIR=gridshib-ca
 
 # Other files to include in distribution
 DIST_FILES=$(JARFILE) \
-	configure Makefile.in INSTALL.config \
+	configure Makefile.in install-sh \
 	webdocs/CredentialRetriever.jnlp \
 	webdocs/Shibboleth-logo_RGB.jpg \
-	webdocs/generateCred.cgi \
+	webdocs/generateCred.cgi.in \
 	webdocs/globustoolkit.gif \
-	webdocs/index.html \
-	webdocs/login \
+	webdocs/index.html.in \
+	webdocs/login.in \
 	webdocs/openidp-logo-small.png \
-	webdocs/sysinfo.pl \
-	webdocs/test.pl
+	webdocs/sysinfo.pl.in \
+	webdocs/test.pl.in \
+	webdocs/welcome.pl.in
 
 # Distribution file
 DIST_FILE=$(DIST_DIR).tar.gz
+
+# Installation directories - see INSTALL.config
+GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
+CONF_FILES=webdocs/CredentialRetriever.jnlp
+CGI_BIN_DIR=@CGI_BIN_DIR@
+CGI_BIN_FILES=webdocs/generateCred.cgi \
+	webdocs/test.pl
+SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
+PROTECTED_CGI_BIN_FILES=webdocs/login \
+	webdocs/sysinfo.pl \
+	webdocs/welcome.pl
+GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
+HTML_FILES=webdocs/Shibboleth-logo_RGB.jpg \
+	webdocs/globustoolkit.gif \
+	webdocs/openidp-logo-small.png \
+	webdocs/index.html
+
+# User that httpd runs under
+WWW_USER=@WWW_USER@
 
 ######################################################################
 #
@@ -53,13 +76,13 @@ DIST_FILE=$(DIST_DIR).tar.gz
 #
 
 INSTALL = @INSTALL@
-
 MKDIR = mkdir
-
+RMDIR = rmdir
 CP = cp
 
 # Tools needed for building and distribution
 
+JAVAC = @JAVAC@
 JAR = @JAR@
 KEYTOOL = @KEYTOOL@
 JARSIGNER = @JARSIGNER@
@@ -69,11 +92,21 @@ DIR_EXISTS = test -d
 
 ######################################################################
 
-default: build
+default: build-$(MODE)
 
-build:	$(JAVA_CLASSES)
+build-dist:
+	@echo "Run 'make install' to install."
 
-jar: $(JARFILE)
+build-build:	build-mode $(JAVA_CLASSES)
+
+build-mode:
+	@if test $(MODE) != "build" ; then \
+		echo "Not configured for building." ; \
+		echo "Rerun configure with --enable-build to enable building." ;\
+		exit 1 ;\
+	fi
+
+jar: build-mode $(JARFILE)
 
 $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 # Need to include the org.globus stuff here because one of the
@@ -84,7 +117,10 @@ $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 $(JARFILE): $(UNSIGNED_JARFILE)
 	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
 
-trustStore:	$(TRUST_STORE)
+%.class : %.java
+	$(JAVAC) $^
+
+trustStore:	build-mode $(TRUST_STORE)
 
 $(TRUST_STORE): ${CA_CERTS}
 	@$(RM) -f $@
@@ -93,7 +129,7 @@ $(TRUST_STORE): ${CA_CERTS}
 		${KEYTOOL} -import -keystore $@ -noprompt -alias $${cert} -storepass ${TRUST_STORE_PASSWD} -file $${cert} ;\
 	done
 
-dist:	$(DIST_FILE)
+dist:	build-mode $(DIST_FILE)
 
 $(DIST_FILE): $(DIST_FILES)
 	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
@@ -104,12 +140,60 @@ $(DIST_FILE): $(DIST_FILES)
 	$(RM) -rf $(DIST_DIR)
 
 install:
-	echo install
-# webdocs/CredentialRetriever.jnlp -> @GRIDSHIB_CA_CONF_DIR@
+	$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
+	@for file in $(CONF_FILES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+	done
+	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
+	@for file in $(HTML_FILES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
+	done
+	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
+	@for file in $(CGI_BIN_FILES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
+	done
+	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
+	@for file in $(PROTECTED_CGI_BIN_FILES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
+	done
+	@echo "Installation done."
+# XXX install DES key in ${GRIDSHIB_CA_CONF_DIR}
 
+uninstall:
+	@for file in $(CONF_FILES) ; do \
+		f=`basename $${file}` ;\
+		echo "Uninstalling $${f}" ;\
+		rm -f $(GRIDSHIB_CA_CONF_DIR)/$${f} ;\
+	done
+	@if $(DIR_EXISTS) $(GRIDSHIB_CA_CONF_DIR) ; then $(RMDIR) $(GRIDSHIB_CA_CONF_DIR) ; fi
+	@for file in $(HTML_FILES) ; do \
+		f=`basename $${file}` ;\
+		echo "Uninstalling $${f}" ;\
+		rm -f $(GRIDSHIB_CA_HTML_DIR)/$${f} ;\
+	done
+	@if $(DIR_EXISTS) $(GRIDSHIB_CA_HTML_DIR) ; then $(RMDIR) $(GRIDSHIB_CA_HTML_DIR) ; fi
+	@for file in $(CGI_BIN_FILES) ; do \
+		f=`basename $${file}` ;\
+		echo "Uninstalling $${f}" ;\
+		rm -f $(CGI_BIN_DIR)/$${f} ;\
+	done
+	@if $(DIR_EXISTS) $(CGI_BIN_DIR) ; then $(RMDIR) $(CGI_BIN_DIR) ; fi
+	@for file in $(PROTECTED_CGI_BIN_FILES) ; do \
+		f=`basename $${file}` ;\
+		echo "Uninstalling $${f}" ;\
+		rm -f $(PROTECTED_CGI_BIN_DIR)/$${f} ;\
+	done
+	@if $(DIR_EXISTS) $(SHIB_PROECTED_CGI_BIN_DIR) ; then $(RMDIR) $(SHIB_PROTECTED_CGI_BIN_DIR) ; fi
+	@echo "Uninstall done."
 
-$(srcdir)/configure: configure.ac
-	cd $(srcdir) && autoconf
+######################################################################
+#
+# Allow for automatic regeneration of configure and Makefile
+#
 
 Makefile: Makefile.in config.status
 	./config.status
@@ -117,3 +201,21 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck
 
+$(srcdir)/configure: @CONFIGURE_DEP@
+	cd $(srcdir) && autoconf
+
+
+######################################################################
+#
+# Allow me to rsync from development host to test host. No one else
+# needs to worry about this section. - Von
+
+# -a Archive mode
+# -u Update mode: newer files only
+# -v Verbose
+# -R use relative path names
+
+RSYNC=rsync -auvR 
+
+rsync: jar
+	$(RSYNC) $(DIST_FILES) computer.ncsa.uiuc.edu:~/gridshib-ca

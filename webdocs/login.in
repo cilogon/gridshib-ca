@@ -4,9 +4,9 @@ $OpenSSL = "@OPENSSL@";
 
 $ENV{PATH} = "/bin";
 
-$KeyFile = "@GRIDSHIB_CA_DIR@/keyfile";
+$KeyFile = "@GRIDSHIB_CA_CONF_DIR@/keyfile";
 
-my $JNLPtemplate = "@GRIDSHIB_CA_DIR@/CredentialRetriever.jnlp";
+my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 
 ######################################################################
 

@@ -1,22 +1,22 @@
 #!@PERL@ -T -w
 
 # Key used to encrypt the token
-$KeyFile = "@GRIDSHIB_CA_DIR@/keyfile";
+$KeyFile = "@GRIDSHIB_CA_CONF_DIR@/keyfile";
 
 $OpenSSL = "@OPENSSL@";
 
 $MyProxyLogon = "@MYPROXY_LOGON@";
 
-$Cat = "";
+$Cat = "@CAT@";
 
 $ENV{PATH} = "/bin";
 
 $MaxTimeDiff = 300; # 5 minutes
 
 # Key and certificate used to authenticate to MyProxy
-$X509_USER_CERT = "@GRIDSHIB_CA_DIR@/cert.pem";
+$X509_USER_CERT = "@GRIDSHIB_CA_CONF_DIR@/cert.pem";
 
-$X509_USER_KEY = "@GRIDSHIB_CA_DIR@/key.pem";
+$X509_USER_KEY = "@GRIDSHIB_CA_CONF_DIR@/key.pem";
 
 ######################################################################
 
@@ -107,6 +107,16 @@ $token = $cgi->param("token");
 
 $user = parseToken($token);
 
+# Clean user name (from perlsec manual)
+if ($user =~ /^([-\@\w.]+)$/)
+{
+    $user = $1;                     # $data now untainted
+}
+else
+{
+    errorExit("Username contains bad characters: $user");
+}
+
 # XXX Log credential creation
 
 ######################################################################
@@ -123,8 +133,11 @@ if (! -r $X509_USER_KEY)
 }
 $ENV{"X509_USER_KEY"}=$X509_USER_KEY;
 
-my $temp_cred_file=`mktemp`;
-chomp($temp_cred_file);
+######################################################################
+
+use File::Temp qw(tempfile);
+
+my ($temp_handle, $temp_cred_file) = tempfile();
 
 my $temp_err_file=$temp_cred_file . ".err";
 
