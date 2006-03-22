@@ -1,4 +1,4 @@
-AC_INIT(gridshib-ca, 0.1.2-internal)
+AC_INIT(gridshib-ca, 0.1.2)
 AC_REVISION($Id$)
 
 AC_PROG_INSTALL
