@@ -22,12 +22,8 @@ such as GT4.
 </tr>
 <tr><td><p><p><p></td></tr>
 <tr><td colspan=3>
-Please note that the GridShib-CA is not a well known CA, so you will
-need to install the GridShib-CA certificate to actually use generated
-credentials. You can find the GridShib-CA certificate (along with the signing
-policy file) here: <a href="gridshib-ca.tar">gridshib-ca.tar</a>. Please note
-the GridShib-CA is not production, use of it's credentials for production
-purposes is not recommended and is at your own risk.
+For further documentation and the latest release please see 
+<a href="http://gridshib.globus.org">http://gridshib.globus.org</a>.
 </td></tr>
 <tr><td><p><p><p></td></tr>
 <tr>

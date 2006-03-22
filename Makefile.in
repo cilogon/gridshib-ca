@@ -46,19 +46,17 @@ JAR_INCS=$(TRUST_STORE)
 # Directory to build distribution in
 DIST_DIR=@PACKAGE_NAME@-@PACKAGE_VERSION@
 
-# Other files to include in distribution
+# Files to include in distribution
 DIST_FILES=$(JARFILE) \
-	configure Makefile.in install-sh \
-	webdocs/CredentialRetriever.jnlp \
+	configure \
+	configure.ac \
+	Makefile.in \
+	install-sh \
+	webdocs/*.in \
 	webdocs/Shibboleth-logo_RGB.jpg \
-	webdocs/generateCred.cgi.in \
 	webdocs/globustoolkit.gif \
-	webdocs/index.html.in \
-	webdocs/login.in \
 	webdocs/openidp-logo-small.png \
-	webdocs/sysinfo.pl.in \
-	webdocs/test.pl.in \
-	webdocs/welcome.pl.in
+	edu/ncsa/gridshib/gridshibca/*.java
 
 # Distribution file
 DIST_FILE=$(DIST_DIR).tar.gz
@@ -156,9 +154,9 @@ dist:	build-mode $(DIST_FILE)
 
 $(DIST_FILE): $(DIST_FILES)
 	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
-	$(DIR_EXISTS) $(DIST_DIR)/webdocs || $(MKDIR) $(DIST_DIR)/webdocs
 	for file in $^; do \
 		dir=`dirname $${file}` ;\
+		$(DIR_EXISTS) $(DIST_DIR)/$${dir} || $(MKDIR) -p $(DIST_DIR)/$${dir} ;\
 		$(CP) $${file} $(DIST_DIR)/$${dir} ;\
 	done
 	$(TAR) cfz $@ $(DIST_DIR)/*
@@ -171,22 +169,26 @@ $(DIST_FILE): $(DIST_FILES)
 #
 
 install:
-	$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
+	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 	@for file in $(CONF_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
-	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
+	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 	@for file in $(HTML_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
-	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
+	@echo "Creating $(CGI_BIN_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
 	@for file in $(CGI_BIN_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
 	done
-	$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
+	@echo "Creating $(SHIB_PROTECTED_CGI_BIN_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
 	@for file in $(PROTECTED_CGI_BIN_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
@@ -258,6 +260,9 @@ webdocs/test.pl: webdocs/test.pl.in config.status
 	./config.status
 
 webdocs/welcome.pl: webdocs/welcome.pl.in config.status
+	./config.status
+
+webdocs/CredentialRetriever.jnlp: webdocs/CredentialRetriever.jnlp.in config.status
 	./config.status
 
 ######################################################################

@@ -1,4 +1,4 @@
-AC_INIT(gridshib-ca, 0.1.0)
+AC_INIT(gridshib-ca, 0.1.1)
 AC_REVISION($Id$)
 
 AC_PROG_INSTALL
@@ -45,9 +45,9 @@ fi
 
 AC_ARG_WITH(gridshib-ca-dir-name,
 	AC_HELP_STRING([--with-grishib-ca-dir-name],
-		[Specifiy the name to use instead of "gridshib-ca" for install directories]),
+		[Specifiy the name to use instead of "gridshib-ca-<version>" for install directories]),
 	[GRIDSHIB_CA_DIR_NAME=$withval],
-	[GRIDSHIB_CA_DIR_NAME=gridshib-ca])
+	[GRIDSHIB_CA_DIR_NAME=gridshib-ca-${PACKAGE_VERSION}])
 AC_SUBST(GRIDSHIB_CA_DIR_NAME)
 
 AC_ARG_WITH(gridshib-ca-conf-dir,
@@ -118,7 +118,8 @@ CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/index.html \
 	webdocs/sysinfo.pl \
 	webdocs/test.pl \
-	webdocs/welcome.pl"
+	webdocs/welcome.pl \
+	webdocs/CredentialRetriever.jnlp"
 AC_SUBST(CONF_GENERATED_SCRIPTS)
 AC_CONFIG_FILES([${CONF_GENERATED_SCRIPTS}])
 
