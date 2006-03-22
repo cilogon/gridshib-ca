@@ -10,18 +10,12 @@
 #
 ######################################################################
 
-# Key used to decrypt the token
-$KeyFile = "@GRIDSHIB_CA_CONF_DIR@/keyfile";
-
-$OpenSSL = "@OPENSSL@";
-
 $MyProxyLogon = "@MYPROXY_LOGON@";
 
 $Cat = "@CAT@";
 
+# To be safe
 $ENV{PATH} = "/bin";
-
-$MaxTimeDiff = 300; # 5 minutes
 
 # Key and certificate used to authenticate to MyProxy
 $X509_USER_CERT = "@GRIDSHIB_CA_CONF_DIR@/cert.pem";
@@ -41,81 +35,18 @@ sub errorExit($)
 
 ######################################################################
 
-sub decryptString($)
-{
-    use IPC::Open2;
-
-    my $encString = shift;
-
-    if (! -r $KeyFile )
-    {
-      errorExit("Key file \"$KeyFile\" not readable.");
-    }
-
-    my $pid = open2(\*FROM_OPENSSL, \*TO_OPENSSL, "$OpenSSL des3 -d -kfile $KeyFile -a");
-
-    print TO_OPENSSL $encString . "\n";
-    close(TO_OPENSSL);
-
-    my $string = <FROM_OPENSSL>;
-    close(FROM_OPENSSL);
-
-    if (!defined($string) || ($string eq ""))
-    {
-        errorExit("Could not decrypt token.");
-    }
-    chomp($string);
-
-    return $string;
-}
-
-sub parseToken($)
-{
-    use URI::Escape;
-
-    my $encToken = shift;
-
-    if (!defined($encToken) or ($encToken eq ""))
-    {
-	errorExit("No token argument provided");
-    }
-
-    $encToken = uri_unescape($encToken);
-
-    my $token = decryptString($encToken);
-
-    my ($time, $user) = split(/-/, $token);
-
-    if (!defined($time) or ($time eq "") or
-	!defined($user) or ($user eq ""))
-    {
-	errorExit("Malformed token: $token");
-    }
-
-    my $now = time();
-
-    if ($now - $time > $MaxTimeDiff)
-    {
-	errorExit("Token too old: $time (currently $now)");
-    }
-
-    # XXX check for replay
-
-    return $user;
-}
-
-
-######################################################################
-
 use CGI;
 
 $cgi = new CGI;
 
 print $cgi->header("text/plain");
 
-$token = $cgi->param("token");
+$user = $ENV{"REMOTE_USER"};
 
-$user = parseToken($token);
+if (!defined($user))
+{
+    errorExit("REMOTE_USER not defined.");
+}
 
 # Clean user name (from perlsec manual)
 if ($user =~ /^([-\@\w.]+)$/)

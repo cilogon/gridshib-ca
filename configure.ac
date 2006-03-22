@@ -1,8 +1,7 @@
-AC_INIT(gridshib-ca, 0.1.1)
+AC_INIT(gridshib-ca, 0.1.2-internal)
 AC_REVISION($Id$)
 
 AC_PROG_INSTALL
-AC_PATH_PROG(OPENSSL, openssl)
 AC_PATH_PROG(PERL, perl)
 AC_PATH_PROG(CAT, cat)
 
@@ -64,20 +63,6 @@ AC_ARG_WITH(www-dir,
 	[WWW_DIR=/var/www/])
 AC_SUBST(WWW_DIR)
 
-AC_ARG_WITH(cgi-bin-url,
-	AC_HELP_STRING([--with-cgi-bin-url],
-		[Specify the relative unprotected cgi-bin url]),
-	[CGI_BIN_URL=$withval],
-	[CGI_BIN_URL=/cgi-bin/${GRIDSHIB_CA_DIR_NAME}])
-AC_SUBST(CGI_BIN_URL)
-
-AC_ARG_WITH(cgi-bin-dir,
-	AC_HELP_STRING([--with-cgi-bin-dir],
-		[Specify the gridshib-ca cgi-bin directory]),
-	[CGI_BIN_URL=$withval],
-	[CGI_BIN_DIR=${WWW_DIR}/${CGI_BIN_URL}])
-AC_SUBST(CGI_BIN_DIR)
-
 AC_ARG_WITH(shib-protected-cgi-bin-url,
 	AC_HELP_STRING([--with-shib-protected-cgi-bin-url],
 		[Specify the Shibboleth-protected cgi-bin url]),
@@ -117,7 +102,6 @@ CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/login \
 	webdocs/index.html \
 	webdocs/sysinfo.pl \
-	webdocs/test.pl \
 	webdocs/welcome.pl \
 	webdocs/CredentialRetriever.jnlp"
 AC_SUBST(CONF_GENERATED_SCRIPTS)

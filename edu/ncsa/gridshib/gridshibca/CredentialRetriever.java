@@ -45,13 +45,8 @@ public class CredentialRetriever implements ActionListener {
 			
 			URLConnection conn = credURL.openConnection();
 	        conn.setDoOutput(true);
-			OutputStreamWriter postWriter = new OutputStreamWriter(conn.getOutputStream());
-			String postData = URLEncoder.encode("token", "UTF-8") +
-				"=" + URLEncoder.encode(token, "UTF-8");
+			conn.setRequestProperty("Cookie", token);
 			
-			postWriter.write(postData);
-			postWriter.flush();
-
 			BufferedReader credStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 	
 			String targetFile = getDefaultProxyLocation();
@@ -72,9 +67,15 @@ public class CredentialRetriever implements ActionListener {
 			line = credStream.readLine();
 			if (line != null)
 			{
-				if (line.startsWith("ERROR:"))
+				if (line.startsWith("ERROR"))
 				{
-					throw new Exception("Got error from GridShib CA server." + line);
+					String error = line;
+					while ((line = credStream.readLine()) != null)
+					{
+						error += "\n" + line;
+					}	
+					throw new Exception("Got error from GridShib CA server.\n"
+										+ error);
 				}
 				out.write(line + "\n");
 				while ((line = credStream.readLine()) != null) {

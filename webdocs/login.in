@@ -13,12 +13,6 @@
 #
 ######################################################################
 
-$OpenSSL = "@OPENSSL@";
-
-$ENV{PATH} = "/bin";
-
-$KeyFile = "@GRIDSHIB_CA_CONF_DIR@/keyfile";
-
 my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 
 ######################################################################
@@ -38,45 +32,13 @@ sub errorExit($)
   exit(1);
 }
 
-
-
-######################################################################
-
-sub encryptString($)
-{
-    use IPC::Open2;
-
-    my $string = shift;
-
-    if (! -r $KeyFile )
-    {
-      errorExit("Key file \"$KeyFile\" not readable.");
-    }
-
-    my $pid = open2(\*FROM_OPENSSL, \*TO_OPENSSL, "$OpenSSL des3 -e -kfile $KeyFile -a");
-
-    print TO_OPENSSL $string;
-    close(TO_OPENSSL);
-
-    my $encString = <FROM_OPENSSL>;
-    close(FROM_OPENSSL);
-
-    if (!defined($encString) or ($encString eq ""))
-    {
-      errorExit("Could not compose token.");
-    }
-
-    chomp($encString);
-
-    return $encString;
-}
-
 ######################################################################
 #
 # Main code
 #
 
 use CGI;
+use CGI::Cookie;
 
 $cgi = new CGI;
 
@@ -84,45 +46,39 @@ my $url = $cgi->url();
 my $url_base = $cgi->url(-base=>1);
 
 
-
 ######################################################################
 #
-# Create token for passing to generator function
+# Get the Shib SessionId
 #
 
-$time = time();
-
-# We don't use this at this time due to length issues with the URL
-#$nonce = rand(2**16);
-
-#$remoteUser = $cgi->param("REMOTE_USER");
-$remoteUser = $ENV{"REMOTE_USER"};
-
-if (!defined($remoteUser) or ($remoteUser eq ""))
+my %cookies = fetch CGI::Cookie;
+my $shibsession = undef;
+foreach my $key (keys %cookies)
 {
-	errorExit("REMOTE_USER not set.");
+    if ($key =~ /_shibsession_/)
+    {
+	$shibsession = $key . "=" . $cookies{$key}->value;
+	last;
+    }
 }
 
-$token = sprintf("%d-%s", $time, $remoteUser);
-
-
-$encToken = encryptString($token);
-
-use URI::Escape;
-
-$encToken = uri_escape($encToken);
+if (!defined($shibsession))
+{
+    errorExit("Could not find Shibboleth session Id.");
+}
 
 ######################################################################
 #
 # Create returned text
 #
 
-my $code_base = $url_base . "/gridshib-ca";
+my $code_base = $url_base . "@GRIDSHIB_URL@";
 
 # JWS can't load jar files from HTTPS with untrusted CA certificates
+# Since JAR file is signed, this is a reasonable work around.
 $code_base =~ s/https:/http:/;
 
-my $genCredURL = $url_base . "@CGI_BIN_URL@/generateCred.cgi";
+my $genCredURL = $url_base . "@SHIB_PROTECTED_CGI_BIN_URL@/generateCred.cgi";
 
 open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
 
@@ -132,7 +88,7 @@ print $cgi->header("Application/X-Java-Jnlp-File");
 #print $cgi->header("text/plain");
 
 while (<INPUT>) {
-    s/\$\$token/$encToken/;
+    s/\$\$token/$shibsession/;
     s/\$\$code_base/$code_base/;
     s/\$\$genCredURL/$genCredURL/;
     print;
