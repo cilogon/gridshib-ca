@@ -7,6 +7,10 @@
 # an token from REMOTE_USER and genertes a jnlp file to invole the
 # CredentialRetriever Java Web Start application.
 #
+# This file does not have a ".pl" suffix as that seems to confuse
+# some browsers and prevent them from parsing its output as a type
+# JNLP.
+#
 ######################################################################
 
 $OpenSSL = "@OPENSSL@";
@@ -135,3 +139,6 @@ while (<INPUT>) {
 }
 close(INPUT);
 
+### Local Variables: ***
+### mode:perl ***
+### End: ***
