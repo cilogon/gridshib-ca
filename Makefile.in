@@ -280,35 +280,10 @@ HTML_DEPS = $(HTML_INCS:.html=.html.in)
 
 configure-generated-scripts: @CONF_GENERATED_SCRIPTS@
 
-webdocs/generateCred.cgi: webdocs/generateCred.cgi.in config.status
+%.html: %.html.in config.status $(HTML_DEPS)
 	./config.status
 
-webdocs/login: webdocs/login.in config.status
-	./config.status
-
-webdocs/index.html: webdocs/index.html.in config.status $(HTML_DEPS)
-	./config.status
-
-webdocs/faq.html: webdocs/faq.html.in config.status $(HTML_DEPS)
-	./config.status
-
-doc/license.html: doc/license.html.in config.status \
-		$(HTML_DEPS) LICENSE
-	./config.status
-
-webdocs/login.html: webdocs/login.html.in config.status $(HTML_DEPS)
-	./config.status
-
-webdocs/sysinfo.pl: webdocs/sysinfo.pl.in config.status
-	./config.status
-
-webdocs/test.pl: webdocs/test.pl.in config.status
-	./config.status
-
-webdocs/welcome.pl: webdocs/welcome.pl.in config.status $(HTML_DEPS)
-	./config.status
-
-webdocs/CredentialRetriever.jnlp: webdocs/CredentialRetriever.jnlp.in config.status
+% :: %.in config.status
 	./config.status
 
 ######################################################################
