@@ -121,7 +121,7 @@ HTML_FILES=webdocs/Shibboleth-logo_RGB.jpg \
 	webdocs/globustoolkit.gif \
 	webdocs/openidp-logo-small.png \
 	webdocs/index.html \
-	webdocs/generateCred.html \
+	webdocs/login.html \
 	$(JARFILE)
 
 # User that httpd runs under
@@ -296,8 +296,7 @@ doc/license.html: doc/license.html.in config.status \
 		$(HTML_DEPS) LICENSE
 	./config.status
 
-webdocs/generateCred.html: webdocs/generateCred.html.in \
-				config.status $(HTML_DEPS)
+webdocs/login.html: webdocs/login.html.in config.status $(HTML_DEPS)
 	./config.status
 
 webdocs/sysinfo.pl: webdocs/sysinfo.pl.in config.status

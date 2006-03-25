@@ -119,7 +119,7 @@ Welcome $user.
 <p>
 Your GridShib-CA identity will be $DN
 <p>
-<form action=\"login\">
+<form action=\"@GRIDSHIB_CA_URL@/login.html\">
   <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
 </form>
 </center>

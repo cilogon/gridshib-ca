@@ -133,7 +133,7 @@ AC_CONFIG_FILES([${HTML_INCS}])
 CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/login \
 	webdocs/index.html \
-	webdocs/generateCred.html \
+	webdocs/login.html \
 	webdocs/sysinfo.pl \
 	webdocs/welcome.pl \
 	webdocs/faq.html \

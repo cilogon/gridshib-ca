@@ -1,0 +1,35 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA</title>
+</head>
+@HTML_HEADER@
+
+<center>
+Launching Java Web Start credential retriever application to download
+your credetnial. This will take a minute.
+<p>
+If the Credential Retriever application doesn't launch after a minute,
+click on the following button:
+<form action="@SHIB_PROTECTED_CGI_BIN_URL@/login">
+<input type="submit" value="Launch Credential Retriever">
+</form>
+<p>
+When the Credential Retriever application completes, you make click on
+the following button to return to the main GridShib CA page or simply
+close this browser window.
+<form action="@SHIB_PROTECTED_CGI_BIN_URL@">
+<input type="submit" value="Return to GridShib CA main page">
+</form>
+</center>
+
+<!-- Redirect to CGI script. We have a short delay here so that the --
+	-- rest of the html after the script displays.
+  -->
+<script type="text/javascript">
+		setTimeout('window.location.replace("@SHIB_PROTECTED_CGI_BIN_URL@/login")', 100);
+</script>
+
+
+@HTML_FOOTER@
+</html>
