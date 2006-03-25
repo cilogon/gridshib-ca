@@ -1,5 +1,19 @@
-AC_INIT(gridshib-ca, 0.1.2)
+dnl $Id$
+dnl See Copyright statement below.
+dnl See file 'LICENSE' for license.
+
+AC_INIT(gridshib-ca, 0.1.3-internal)
+
+COPYRIGHT="Copyright 2006 The Board of Trustees of the University of Illinois."
+
+
 AC_REVISION($Id$)
+
+AC_SUBST(COPYRIGHT)
+AC_COPYRIGHT(${COPYRIGHT})
+
+LICENSE="LICENSE"
+AC_SUBST_FILE(LICENSE)
 
 AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
@@ -80,30 +94,52 @@ AC_SUBST(SHIB_PROTECTED_CGI_BIN_DIR)
 AC_ARG_WITH(gridshib-ca-url,
 	AC_HELP_STRING([--with-gridshib-ca-url],
 		[Specify the URL for the gridshib-ca]),
-	[GRIDSHIB_URL=$withval],
-	[GRIDSHIB_URL=/${GRIDSHIB_CA_DIR_NAME}/])
-AC_SUBST(GRIDSHIB_URL)
+	[GRIDSHIB_CA_URL=$withval],
+	[GRIDSHIB_CA_URL=/${GRIDSHIB_CA_DIR_NAME}/])
+AC_SUBST(GRIDSHIB_CA_URL)
 
 AC_ARG_WITH(gridshib-ca-html-dir,
 	AC_HELP_STRING([--with-gridshib-ca-html_dir],
 		[Specify the direcotry for the gridshib-ca HTML]),
 	[GRIDSHIB_HTML_DIR=$withval],
-	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_URL}])
+	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_URL}])
 AC_SUBST(GRIDSHIB_CA_HTML_DIR)
 
 AC_ARG_WITH(www-user,
-	AC_HELP_STRING([--www-user],
+	AC_HELP_STRING([--with-www-user],
 		[Specify the username that the httpd runs under]),
 	[WWW_USER=$withval],
 	[WWW_USER=apache])
 AC_SUBST(WWW_USER)
 
+AC_ARG_WITH(relative-dn,
+	AC_HELP_STRING([--with-relative-dn],
+		[Provide the relative DN for generated certificates]),
+	[RELATIVE_DN=$withval],
+	[RELATIVE_DN="/C=US/O=TEST ORG/OU=TEST OU"])
+AC_SUBST(RELATIVE_DN)
+
+# We generate header.html and footer.html and then include those in 
+# other html files we generate. So they must be listed first before
+# other html files.
+HTML_HEADER=$srcdir/webdocs/header.html
+AC_SUBST_FILE(HTML_HEADER)
+HTML_FOOTER=$srcdir/webdocs/footer.html
+AC_SUBST_FILE(HTML_FOOTER)
+HTML_INCS="${HTML_HEADER} ${HTML_FOOTER}"
+AC_SUBST(HTML_INCS)
+AC_CONFIG_FILES([${HTML_INCS}])
+
 CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/login \
 	webdocs/index.html \
+	webdocs/generateCred.html \
 	webdocs/sysinfo.pl \
 	webdocs/welcome.pl \
-	webdocs/CredentialRetriever.jnlp"
+	webdocs/faq.html \
+	webdocs/CredentialRetriever.jnlp \
+	doc/license.html \
+	utils/mapper.sh"
 AC_SUBST(CONF_GENERATED_SCRIPTS)
 AC_CONFIG_FILES([${CONF_GENERATED_SCRIPTS}])
 

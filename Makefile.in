@@ -5,6 +5,44 @@
 # $Id$
 #
 ######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
 
 srcdir = @srcdir@
 VPATH = @srcdir@
@@ -56,7 +94,11 @@ DIST_FILES=$(JARFILE) \
 	webdocs/Shibboleth-logo_RGB.jpg \
 	webdocs/globustoolkit.gif \
 	webdocs/openidp-logo-small.png \
-	edu/ncsa/gridshib/gridshibca/*.java
+	edu/ncsa/gridshib/gridshibca/*.java \
+	utils/*.in \
+	doc/*.in \
+	certificates/*.[0-9] \
+	LICENSE
 
 # Distribution file
 DIST_FILE=$(DIST_DIR).tar.gz
@@ -68,6 +110,7 @@ DIST_FILE=$(DIST_DIR).tar.gz
 # Installation directories - see INSTALL.config
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 CONF_FILES=webdocs/CredentialRetriever.jnlp
+UTILS=utils/mapper.sh
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 PROTECTED_CGI_BIN_FILES=webdocs/login \
 	webdocs/sysinfo.pl \
@@ -78,6 +121,7 @@ HTML_FILES=webdocs/Shibboleth-logo_RGB.jpg \
 	webdocs/globustoolkit.gif \
 	webdocs/openidp-logo-small.png \
 	webdocs/index.html \
+	webdocs/generateCred.html \
 	$(JARFILE)
 
 # User that httpd runs under
@@ -173,6 +217,10 @@ install:
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
+	@for file in $(UTILS) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+	done
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 	@for file in $(HTML_FILES) ; do \
@@ -227,6 +275,9 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 # configure-generated stuff
 #
 
+HTML_INCS = @HTML_INCS@
+HTML_DEPS = $(HTML_INCS:.html=.html.in)
+
 configure-generated-scripts: @CONF_GENERATED_SCRIPTS@
 
 webdocs/generateCred.cgi: webdocs/generateCred.cgi.in config.status
@@ -235,7 +286,18 @@ webdocs/generateCred.cgi: webdocs/generateCred.cgi.in config.status
 webdocs/login: webdocs/login.in config.status
 	./config.status
 
-webdocs/index.html: webdocs/index.html.in config.status
+webdocs/index.html: webdocs/index.html.in config.status $(HTML_DEPS)
+	./config.status
+
+webdocs/faq.html: webdocs/faq.html.in config.status $(HTML_DEPS)
+	./config.status
+
+doc/license.html: doc/license.html.in config.status \
+		$(HTML_DEPS) LICENSE
+	./config.status
+
+webdocs/generateCred.html: webdocs/generateCred.html.in \
+				config.status $(HTML_DEPS)
 	./config.status
 
 webdocs/sysinfo.pl: webdocs/sysinfo.pl.in config.status
@@ -244,7 +306,7 @@ webdocs/sysinfo.pl: webdocs/sysinfo.pl.in config.status
 webdocs/test.pl: webdocs/test.pl.in config.status
 	./config.status
 
-webdocs/welcome.pl: webdocs/welcome.pl.in config.status
+webdocs/welcome.pl: webdocs/welcome.pl.in config.status $(HTML_DEPS)
 	./config.status
 
 webdocs/CredentialRetriever.jnlp: webdocs/CredentialRetriever.jnlp.in config.status

@@ -1,0 +1,20 @@
+#!/bin/sh
+######################################################################
+#
+# $Id$
+#
+# Given a username on the commandline, print the DN that the user
+# should receive. This script is for use by the welcome.pl script
+# as well as by the MyProxy online CA.
+#
+# Returns 1 on error, 0 otherwise.
+#
+######################################################################
+
+username=$1
+if [ X"$username" = X ]; then
+	# No username given
+	exit 1
+fi
+echo "@RELATIVE_DN@/CN=${username}"
+exit 0

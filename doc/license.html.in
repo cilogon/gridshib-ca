@@ -1,0 +1,11 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA: LICENSE</title>
+</head>
+@HTML_HEADER@
+<pre>
+@LICENSE@
+</pre>
+@HTML_FOOTER@
+</html>
