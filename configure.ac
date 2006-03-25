@@ -2,7 +2,7 @@ dnl $Id$
 dnl See Copyright statement below.
 dnl See file 'LICENSE' for license.
 
-AC_INIT(gridshib-ca, 0.1.3-internal)
+AC_INIT(gridshib-ca, 0.1.3)
 
 COPYRIGHT="Copyright 2006 The Board of Trustees of the University of Illinois."
 
@@ -19,14 +19,21 @@ AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
 AC_PATH_PROG(CAT, cat)
 
+# Extra places to look for MyProxy client binaries
+MYPROXY_PATH="/usr/local/myproxy/bin"
+if test -n "$GLOBUS_LOCATION" ; then
+   MYPROXY_PATH=${MYPROXY_PATH}:${GLOBUS_LOCATION}"/bin"
+fi
+
 AC_ARG_WITH(myproxy,
 	AC_HELP_STRING([--with-myproxy],
 		[Specify myproxy binary directory]),
-	PATH=${PATH}:${withval})
+	MYPROXY_PATH=${withval})
 
 AC_PATH_PROG(MYPROXY_LOGON,
 	 myproxy-logon,
-	 [FAILED])
+	 [FAILED],
+	 [$MYPROXY_PATH:$PATH])
 
 if test ${MYPROXY_LOGON} = "FAILED" ; then
    AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
