@@ -146,11 +146,15 @@ CONF_GENERATED_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/faq.html \
 	webdocs/CredentialRetriever.jnlp \
 	doc/license.html \
-	utils/mapper.sh"
+	utils/mapper.sh \
+	utils/tag-version.pl"
 AC_SUBST(CONF_GENERATED_SCRIPTS)
 AC_CONFIG_FILES([${CONF_GENERATED_SCRIPTS}])
 
 AC_CONFIG_FILES([Makefile])
 
+# Make utils/tag-version.pl executable so I can call it
+AC_CONFIG_COMMANDS([chmod-utils-tag-version],
+	[chmod +x utils/tag-version.pl])
 
 AC_OUTPUT()
