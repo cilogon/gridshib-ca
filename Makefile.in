@@ -77,6 +77,10 @@ UNSIGNED_JARFILE=CredentialRetriever-unsigned.jar
 # Other files to include in jar
 JAR_INCS=$(TRUST_STORE)
 
+IMAGES=images/*.jpg \
+	images/*.gif \
+	images/*.png
+
 #
 # Distribution configuration
 #
@@ -91,9 +95,7 @@ DIST_FILES=$(JARFILE) \
 	Makefile.in \
 	install-sh \
 	webdocs/*.in \
-	webdocs/Shibboleth-logo_RGB.jpg \
-	webdocs/globustoolkit.gif \
-	webdocs/openidp-logo-small.png \
+	$(IMAGES) \
 	edu/ncsa/gridshib/gridshibca/*.java \
 	utils/*.in \
 	doc/*.in \
@@ -117,9 +119,7 @@ PROTECTED_CGI_BIN_FILES=webdocs/login \
 	webdocs/welcome.pl \
 	webdocs/generateCred.cgi
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
-HTML_FILES=webdocs/Shibboleth-logo_RGB.jpg \
-	webdocs/globustoolkit.gif \
-	webdocs/openidp-logo-small.png \
+HTML_FILES=$(IMAGES) \
 	webdocs/index.html \
 	webdocs/login.html \
 	$(JARFILE)
