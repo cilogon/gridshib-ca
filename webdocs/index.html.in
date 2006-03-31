@@ -26,34 +26,12 @@ For further documentation and the latest release please see
 </tr>
 <tr><td><p><p><p></td></tr>
 <tr>
-<td rowspan=3 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
+<td bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
 <td colspan=2>
-To download the credential to your desktop requires that you have
-<a href="http://java.sun.com/products/javawebstart/download.jsp">
-Java Web Start</a> installed on your system.
-</td>
-</tr>
-<tr>
-<td>
-The GridShib-CA will work for for any IdP in InQueue that will release
-an identity to the the GridShib-CA. If your institution doesn't have a
-IdP in InQueue (or it doesn't release your identity to us), we suggest
-you register with <a href="http://www.openidp.org">OpenIdp</a>, which is
-easy and known to work with the GridShib-CA.
-</td>
-<td>
-<a href="http://www.openidp.org">
-<img src="openidp-logo-small.png" Align="middle"></a>
-</td>
-</tr>
-<tr>
-<td colspan=2>On Unix variant systems, your umask must be set to 077 (or more
-restrictive). This prevents your web browser from creating
-world-readable files that would cause the GridShib CA to be insecure
-on multi-user systems. <a href="faq.html#umask">More information about
-		the GridShib CA and umasks.</a>
-</td>
-</tr>
+Prior to using the GridShib CA on a new system,
+please <a href="checkPrerequisites.html">make sure you have the
+system properly configured</a>. Failing to do so may cause you
+headaches as well as being insecure.
 <tr><td><p><p><p></td></tr>
 <tr>
 <td bgcolor="#0303C0" align=center><b>Go</b></td>

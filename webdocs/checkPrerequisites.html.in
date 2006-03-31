@@ -1,0 +1,106 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA: Rerequisite Check</title>
+</head>
+@HTML_HEADER@
+<!---------------------------------------------------------------------->
+<!-- Scripts to detect if Java Web Start is installed -->
+<!-- Taken from http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/launch.html#intro -->
+<!-- Netscape vesion -->
+<SCRIPT LANGUAGE="JavaScript"> 
+var javawsInstalled = 0;  
+var javaws142Installed=0;
+var javaws150Installed=0;
+isIE = "false"; 
+if (navigator.mimeTypes && navigator.mimeTypes.length) { 
+   x = navigator.mimeTypes['application/x-java-jnlp-file']; 
+   if (x) { 
+      javawsInstalled = 1; 
+      javaws142Installed=1;
+      javaws150Installed=1;
+   } 
+} 
+else { 
+   isIE = "true"; 
+} 
+</SCRIPT>
+<!-- IE Version -->
+<SCRIPT LANGUAGE="VBScript">
+on error resume next
+If isIE = "true" Then
+  If Not(IsObject(CreateObject("JavaWebStart.isInstalled"))) Then
+     javawsInstalled = 0
+  Else
+     javawsInstalled = 1
+  End If
+  If Not(IsObject(CreateObject("JavaWebStart.isInstalled.1.4.2.0"))) Then
+     javaws142Installed = 0
+  Else
+     javaws142Installed = 1
+  End If 
+  If Not(IsObject(CreateObject("JavaWebStart.isInstalled.1.5.0.0"))) Then
+     javaws150Installed = 0
+  Else
+     javaws150Installed = 1
+  End If  
+End If
+</SCRIPT>
+<!---------------------------------------------------------------------->
+
+<table width=100% cellpadding=5>
+<tr><td><p><p><p></td></tr>
+<tr>
+<td rowspan=3 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
+<td colspan=2>
+To download the credential to your desktop requires that you have
+<a href="http://java.sun.com/products/javawebstart/download.jsp">
+Java Web Start</a> installed on your system.
+
+
+<script language="JavaScript">
+if (javawsInstalled)
+{
+    document.write("<br>(You appear to have Java Web Start installed on	your system.)")
+}
+else
+{
+    document.write("<br>You do not appear to have Java Web Start	installed on your system. Please use the preceding link to install Java Web Start.");
+}
+</SCRIPT>
+</td>
+</tr>
+<tr>
+<td>
+The GridShib-CA will work for for any IdP in InQueue that will release
+an identity to the the GridShib-CA. If your institution doesn't have a
+IdP in InQueue (or it doesn't release your identity to us), we suggest
+you register with <a href="http://www.openidp.org">OpenIdp</a>, which is
+easy and known to work with the GridShib-CA.
+</td>
+<td>
+<a href="http://www.openidp.org">
+<img src="openidp-logo-small.png" Align="middle"></a>
+</td>
+</tr>
+<tr>
+<td colspan=2>On Unix variant systems, your umask must be set to 077 (or more
+restrictive). This prevents your web browser from creating
+world-readable files that would cause the GridShib CA to be insecure
+on multi-user systems. <a href="faq.html#umask">More information about
+		the GridShib CA and umasks.</a>
+</td>
+</tr>
+<tr><td><p><p><p></td></tr>
+<tr>
+<td bgcolor="#0303C0" align=center><b>Check Prerequisites</b></td>
+<td colspan=2 align=center>
+<form action="GridShibCATester.jnlp">
+<input type="submit" value="Check Prerequisites">
+</form>
+If clicking on the button fails to launch the GridShib CA Testing
+application then you do not have Java Web Start correctly installed.
+</td></tr>
+</table>
+@HTML_FOOTER@
+</html>

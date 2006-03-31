@@ -50,7 +50,7 @@ import org.globus.util.ConfigUtil;
 import org.globus.util.Util;
 
 public class CredentialRetriever {
-    GUI gui = new GUI();
+    GUI gui = new GUI("GridShib CA Credential Retriever");
 
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();

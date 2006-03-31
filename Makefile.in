@@ -60,7 +60,7 @@ CA_CERTS = certificates/*.[0-9]
 TRUST_STORE = resources/trustStore
 
 # Project java sources
-JAVA_SRCS = edu/ncsa/gridshib/gridshibca/*.java
+JAVA_SRCS = @JAVA_SRCS@
 JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
 
 # Password to pass into keytool. Not actually used for anything, just keeps
@@ -68,10 +68,10 @@ JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
 TRUST_STORE_PASSWD=abcdef
 
 # Target jar file
-JARFILE=CredentialRetriever.jar
+JARFILE=@JAR_FILE@
 
 # Unsigned jar file created during build
-UNSIGNED_JARFILE=CredentialRetriever-unsigned.jar
+UNSIGNED_JARFILE=$(JARFILE:.jar=.unsigned.jar)
 
 # Other files to include in jar
 JAR_INCS=$(TRUST_STORE)
@@ -160,6 +160,8 @@ build-mode:
 	fi
 
 jar: build-mode $(JARFILE)
+
+class-files: $(JAVA_CLASSES)
 
 $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 # Need to include the org.globus stuff here because one of the
@@ -278,6 +280,9 @@ configure-generated-scripts: @CONF_GENERATED_SCRIPTS@
 %.html: %.html.in config.status $(HTML_DEPS)
 	./config.status
 
+# If we have a target and that target exists with a ".in" suffix, then
+# assume that is a prerequisite along with config.status and use
+# config.status to regenerate it if needed.
 % :: %.in config.status
 	./config.status
 

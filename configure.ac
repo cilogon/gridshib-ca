@@ -112,11 +112,22 @@ AC_ARG_WITH(gridshib-ca-html-dir,
 	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_URL}])
 AC_SUBST(GRIDSHIB_CA_HTML_DIR)
 
+AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
+AC_ARG_WITH(www-hostname,
+	AC_HELP_STRING([--with-www-hostname],
+		[Specify the hostname used in the GridShib CA URL]),
+	[WWW_HOSTNAME=$withval],
+	[WWW_HOSTNAME=`uname -n`])
+AC_MSG_RESULT(${WWW_HOSTNAME})
+AC_SUBST(WWW_HOSTNAME)
+
+AC_MSG_CHECKING([for owner of www files])
 AC_ARG_WITH(www-user,
 	AC_HELP_STRING([--with-www-user],
 		[Specify the username that the httpd runs under]),
 	[WWW_USER=$withval],
 	[WWW_USER=apache])
+AC_MSG_RESULT(${WWW_USER})
 AC_SUBST(WWW_USER)
 
 AC_ARG_WITH(relative-dn,
@@ -146,7 +157,9 @@ AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
 
 HTML_FILES="webdocs/index.html \
 	webdocs/login.html \
-	webdocs/faq.html"
+	webdocs/faq.html \
+	webdocs/checkPrerequisites.html \
+	webdocs/GridShibCATester.jnlp"
 AC_SUBST(HTML_FILES)
 AC_CONFIG_FILES([$HTML_FILES])
 
@@ -161,6 +174,13 @@ AC_CONFIG_FILES([$UTILS])
 DOC_FILES="doc/license.html"
 AC_SUBST(DOC_FILES)
 AC_CONFIG_FILES([$DOC_FILES])
+
+dnl Java files for jar
+JAVA_SRCS="`echo edu/ncsa/gridshib/gridshibca/*.java`"
+AC_SUBST(JAVA_SRCS)
+
+JAR_FILE="GridShibCA.jar"
+AC_SUBST(JAR_FILE)
 
 MISC_FILES=""
 

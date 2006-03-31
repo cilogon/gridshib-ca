@@ -51,10 +51,10 @@ public class GUI implements ActionListener {
 	JTextArea textArea;
     int width=40;
 
-	public GUI()
+	public GUI(String title)
     {
         button = new JButton("OK");
-        frame = new JFrame("GridShib CA Credential Retriever");
+        frame = new JFrame(title);
         textArea = new JTextArea(20,width);
 
 		// Make sure we have nice window decorations.
@@ -80,8 +80,7 @@ public class GUI implements ActionListener {
         JTextArea header = new JTextArea(2,width);
         header.setEditable(false);
 		Version version = new Version();
-        header.append("GridShib CA Credential Retriever version " +
-                      version.getVersion() + "\n");
+        header.append(title + " version " + version.getVersion() + "\n");
         header.append(version.getCopyright());
 		pane.add(header, BorderLayout.PAGE_START);
 
