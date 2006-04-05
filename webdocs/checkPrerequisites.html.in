@@ -74,9 +74,12 @@ else
 <td>
 The GridShib-CA will work for for any IdP in InQueue that will release
 an identity to the the GridShib-CA. If your institution doesn't have a
-IdP in InQueue (or it doesn't release your identity to us), we suggest
-you register with <a href="http://www.openidp.org">OpenIdp</a>, which is
-easy and known to work with the GridShib-CA.
+IdP in InQueue (<a href="http://inqueue.internet2.edu/who/">list of
+		inqueue participants</a>) (or it doesn't release your identity to
+us),
+we suggest you register
+with <a href="http://www.openidp.org">OpenIdp</a>,
+ which is easy and known to work with the GridShib-CA.
 </td>
 <td>
 <a href="http://www.openidp.org">
@@ -100,6 +103,12 @@ on multi-user systems. <a href="faq.html#umask">More information about
 </form>
 If clicking on the button fails to launch the GridShib CA Testing
 application then you do not have Java Web Start correctly installed.
+</td></tr>
+<tr><td><p><p><p></td></tr>
+<tr>
+<td bgcolor="#30A030" align=center><b>Back to GridShib CA</b></td>
+<td colspan=2 align=center>
+<a href="index.html">Return to GridShib CA</a>
 </td></tr>
 </table>
 @HTML_FOOTER@

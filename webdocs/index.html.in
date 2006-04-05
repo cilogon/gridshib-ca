@@ -39,6 +39,9 @@ headaches as well as being insecure.
 <form action="@SHIB_PROTECTED_CGI_BIN_URL@/welcome.pl">
 <input type="submit" value="Shibboleth logon to generate Grid credentials">
 </form>
+After clicking on this button you will be asked to select your home
+institution (or OpenIdp), you will then be redirected back to that
+site to authenticate and then you will be returned to the GridShib CA.
 </td></tr>
 </table>
 @HTML_FOOTER@
