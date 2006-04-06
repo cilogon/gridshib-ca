@@ -50,8 +50,6 @@
 
 $MyProxyLogon = "@MYPROXY_LOGON@";
 
-$Cat = "@CAT@";
-
 # For safe mode
 $ENV{PATH} = "/bin";
 
@@ -59,6 +57,11 @@ $ENV{PATH} = "/bin";
 $X509_USER_CERT = "@GRIDSHIB_CA_CONF_DIR@/cert.pem";
 
 $X509_USER_KEY = "@GRIDSHIB_CA_CONF_DIR@/key.pem";
+
+# Syslog parameters
+$SYSLOG_ID = "@SYSLOG_ID@";
+$SYSLOG_OPTS = "pid";
+$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
 ######################################################################
 
@@ -68,8 +71,18 @@ sub errorExit($)
 
     print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
+    syslog("error", "ERROR: %s", $string);
     exit(0);
 }
+
+######################################################################
+#
+# Initialize Logging
+#
+
+use Sys::Syslog;
+
+openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 
 ######################################################################
 
@@ -96,7 +109,15 @@ else
     errorExit("Username contains bad characters: $user");
 }
 
-# XXX Log credential creation
+
+my $remoteAddr = $ENV{"REMOTE_ADDR"};
+
+if (!defined($remoteAddr))
+{
+    errorExit("REMOTE_ADDR not defined.");
+}
+
+syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
 
 ######################################################################
 
@@ -122,18 +143,48 @@ my $temp_err_file=$temp_cred_file . ".err";
 
 my $status = system("$MyProxyLogon -s localhost -l $user -n -o $temp_cred_file > /dev/null 2> $temp_err_file");
 
-if ($status == 0)
+
+if ($status != 0)
 {
-	system("$Cat $temp_cred_file");
+    if (!open(errorFile, "<$temp_err_file"))
+    { 
+	errorExit("Unknown error running myproxy-logon");
+    }
+
+    my $error = "";
+    while (<errorFile>)
+    {
+	$error .= $_;
+    }
+    close(errorFile);
+    errorExit("Error running myproxy-logon: $error");
 }
-else
+
+if (!open(credFile, "<$temp_cred_file"))
 {
-	print "ERROR ";
-	system("$Cat $temp_err_file");
+    errorExit("Could not open credential file created mymyproxy-logon: $!");
 }
+while (<credFile>)
+{
+    print;
+}
+close(credFile);
 
 unlink($temp_cred_file);
 unlink($temp_err_file);
 
+# Get DN and log it
+my $mapper = "@GRIDSHIB_CA_CONF_DIR@/mapper.sh";
+open(Mapper, "$mapper $user|") ||
+    errorExit("Could not execute $mapper: $!");
+
+$DN = <Mapper>;
+close(Mapper);
+
+syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
+
 exit(0);
 
+### Local Variables: ***
+### mode:perl ***
+### End: ***

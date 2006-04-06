@@ -17,7 +17,6 @@ AC_SUBST_FILE(LICENSE)
 
 AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
-AC_PATH_PROG(CAT, cat)
 
 # Extra places to look for MyProxy client binaries
 MYPROXY_PATH="/usr/local/myproxy/bin"
@@ -170,6 +169,12 @@ AC_CONFIG_FILES([$CONF_FILES])
 UTILS="utils/mapper.sh"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
+
+dnl syslog parameters
+SYSLOG_ID="GridShib-CA"
+AC_SUBST(SYSLOG_ID)
+SYSLOG_FACILITY="local0"
+AC_SUBST(SYSLOG_FACILITY)
 
 DOC_FILES="doc/license.html"
 AC_SUBST(DOC_FILES)
