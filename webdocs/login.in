@@ -4,8 +4,8 @@
 # $Id$
 #
 # This script is to be invoked protected by Shibboleth. It generates
-# an token from REMOTE_USER and genertes a jnlp file to invole the
-# CredentialRetriever Java Web Start application.
+# Java Web Start JNLP file containing the Shib Session ID so that it
+# can piggyback on the browser's Shibboleth session.
 #
 # This file does not have a ".pl" suffix as that seems to confuse
 # some browsers and prevent them from parsing its output as a type
@@ -53,6 +53,11 @@
 
 my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 
+# Syslog parameters
+$SYSLOG_ID = "@SYSLOG_ID@";
+$SYSLOG_OPTS = "pid";
+$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+
 ######################################################################
 
 sub errorExit($)
@@ -66,9 +71,20 @@ sub errorExit($)
   print $cgi->header("text/plain");
 
   print "ERROR: " . $error_string . "\n";
+  
+  syslog("error", "ERROR: %s", $error_string);
 
   exit(1);
 }
+
+######################################################################
+#
+# Initialize Logging
+#
+
+use Sys::Syslog;
+
+openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 
 ######################################################################
 #
@@ -82,7 +98,6 @@ $cgi = new CGI;
 
 my $url = $cgi->url();
 my $url_base = $cgi->url(-base=>1);
-
 
 ######################################################################
 #
@@ -107,6 +122,16 @@ if (!defined($shibsession))
 
 ######################################################################
 #
+# Log this
+#
+
+my $remoteUser = $ENV{"REMOTE_USER"} || "unknown";
+my $remoteAddr = $ENV{"REMOTE_ADDR"} || "unknown";
+
+syslog("info", "JWSLAUNCH:%s:%s", $remoteUser, $remoteAddr);
+
+######################################################################
+#
 # Create returned text
 #
 
@@ -121,9 +146,6 @@ my $genCredURL = $url_base . "@SHIB_PROTECTED_CGI_BIN_URL@/generateCred.cgi";
 open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
 
 print $cgi->header("Application/X-Java-Jnlp-File");
-
-# For debugging
-#print $cgi->header("text/plain");
 
 while (<INPUT>) {
     s/\$\$token/$shibsession/;
