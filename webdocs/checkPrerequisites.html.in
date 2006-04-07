@@ -51,7 +51,7 @@ End If
 <table width=100% cellpadding=5>
 <tr><td><p><p><p></td></tr>
 <tr>
-<td rowspan=3 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
+<td rowspan=2 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
 <td colspan=2>
 To download the credential to your desktop requires that you have
 <a href="http://java.sun.com/products/javawebstart/download.jsp">
@@ -71,22 +71,6 @@ else
 </td>
 </tr>
 <tr>
-<td>
-The GridShib-CA will work for for any IdP in InQueue that will release
-an identity to the the GridShib-CA. If your institution doesn't have a
-IdP in InQueue (<a href="http://inqueue.internet2.edu/who/">list of
-		inqueue participants</a>) (or it doesn't release your identity to
-us),
-we suggest you register
-with <a href="http://www.openidp.org">OpenIdp</a>,
- which is easy and known to work with the GridShib-CA.
-</td>
-<td>
-<a href="http://www.openidp.org">
-<img src="openidp-logo-small.png" Align="middle"></a>
-</td>
-</tr>
-<tr>
 <td colspan=2>On Unix variant systems, your umask must be set to 077 (or more
 restrictive). This prevents your web browser from creating
 world-readable files that would cause the GridShib CA to be insecure
@@ -102,7 +86,8 @@ on multi-user systems. <a href="faq.html#umask">More information about
 <input type="submit" value="Check Prerequisites">
 </form>
 If clicking on the button fails to launch the GridShib CA Testing
-application then you do not have Java Web Start correctly installed.
+application after a minute then you do not have Java Web Start
+correctly installed.
 </td></tr>
 <tr><td><p><p><p></td></tr>
 <tr>

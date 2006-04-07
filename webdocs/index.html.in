@@ -26,12 +26,28 @@ For further documentation and the latest release please see
 </tr>
 <tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
+<td rowspan=2 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
 <td colspan=2>
 Prior to using the GridShib CA on a new system,
 please <a href="checkPrerequisites.html">make sure you have the
 system properly configured</a>. Failing to do so may cause you
 headaches as well as being insecure.
+<tr>
+<td>
+The GridShib-CA will work for for any Institution with a Shibboleth
+server in InQueue that will release an identity to the
+GridShib-CA. You can find the list of institutions that are part of 
+InQueue <a href="http://inqueue.internet2.edu/who/">here</a>. If your
+institution doesn't have a Shibboleth Identity server in InQueue (or
+it doesn't release your identity to us), we suggest you register
+with <a href="http://www.openidp.org">OpenIdp</a>, which is easy and
+known to work with the GridShib-CA.
+</td>
+<td>
+<a href="http://www.openidp.org">
+<img src="openidp-logo-small.png" Align="middle"></a>
+</td>
+</tr>
 <tr><td><p><p><p></td></tr>
 <tr>
 <td bgcolor="#0303C0" align=center><b>Go</b></td>
