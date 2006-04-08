@@ -2,7 +2,7 @@ dnl $Id$
 dnl See Copyright statement below.
 dnl See file 'LICENSE' for license.
 
-AC_INIT(gridshib-ca, 0.1.4)
+AC_INIT(gridshib-ca, 0.1.5-test)
 
 COPYRIGHT="Copyright 2006 The Board of Trustees of the University of Illinois."
 
