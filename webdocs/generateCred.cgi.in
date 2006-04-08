@@ -71,7 +71,7 @@ sub errorExit($)
 
     print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
-    syslog("error", "ERROR: %s", $string);
+    syslog("err", "ERROR: %s", $string);
     exit(0);
 }
 

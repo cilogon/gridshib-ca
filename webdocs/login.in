@@ -72,7 +72,7 @@ sub errorExit($)
 
   print "ERROR: " . $error_string . "\n";
   
-  syslog("error", "ERROR: %s", $error_string);
+  syslog("err", "ERROR: %s", $error_string);
 
   exit(1);
 }
