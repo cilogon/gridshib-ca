@@ -148,7 +148,7 @@ if ($status != 0)
 {
     if (!open(errorFile, "<$temp_err_file"))
     { 
-	errorExit("Unknown error running myproxy-logon");
+	errorExit("Could not open myproxy-logon error file \"$temp_err_file\": $!");
     }
 
     my $error = "";
@@ -162,7 +162,7 @@ if ($status != 0)
 
 if (!open(credFile, "<$temp_cred_file"))
 {
-    errorExit("Could not open credential file created mymyproxy-logon: $!");
+    errorExit("Could not open credential file created by myproxy-logon: $!");
 }
 while (<credFile>)
 {
