@@ -50,84 +50,84 @@ public class UMask
 
     public void checkForSecureUMask() throws Exception
     {
-	String umask = getUMask();
+        String umask = getUMask();
 
-	if ((otherMask(umask) != 7) ||
-	    (groupMask(umask) != 7))
-	{
-	    throw new Exception("UMask (" + umask + ") is not secure.");
-	}
+        if ((otherMask(umask) != 7) ||
+            (groupMask(umask) != 7))
+        {
+            throw new Exception("UMask (" + umask + ") is not secure.");
+        }
     }
 
     public int otherMask(String umask)
     {
-	if (umask.length() < 1)
-	{
-	    return 0;
-	}
-	String mask = umask.substring(umask.length() - 1);
-	return Integer.valueOf(mask).intValue();
+        if (umask.length() < 1)
+        {
+            return 0;
+        }
+        String mask = umask.substring(umask.length() - 1);
+        return Integer.valueOf(mask).intValue();
     }
 	
     public int groupMask(String umask)
     {
-	if (umask.length() < 2)
-	{
-	    return 0;
-	}
-	String mask = umask.substring(umask.length() - 2, umask.length() - 1);
-	return Integer.valueOf(mask).intValue();
+        if (umask.length() < 2)
+        {
+            return 0;
+        }
+        String mask = umask.substring(umask.length() - 2, umask.length() - 1);
+        return Integer.valueOf(mask).intValue();
     }
 
     public int selfMask(String umask)
     {
-	if (umask.length() < 3)
-	{
-	    return 0;
-	}
-	String mask = umask.substring(umask.length() - 3, umask.length() - 2);
-	return Integer.valueOf(mask).intValue();
+        if (umask.length() < 3)
+        {
+            return 0;
+        }
+        String mask = umask.substring(umask.length() - 3, umask.length() - 2);
+        return Integer.valueOf(mask).intValue();
     }
 
     public String getUMask() throws IOException
     {
-	Runtime runTime = Runtime.getRuntime();
-	Process process = null;
-	BufferedReader fromUMask = null;
-	StringBuffer output = new StringBuffer();
+        Runtime runTime = Runtime.getRuntime();
+        Process process = null;
+        BufferedReader fromUMask = null;
+        StringBuffer output = new StringBuffer();
 
-	if (ConfigUtil.getOS() == ConfigUtil.WINDOWS_OS)
-	{
-	    return "777";
-	}
+        if (ConfigUtil.getOS() == ConfigUtil.WINDOWS_OS)
+        {
+            return "777";
+        }
 
-	try {
-	    String input;
+        try {
+            String input;
 
-	    process = runTime.exec("umask");
-	    fromUMask = new BufferedReader
-		( new InputStreamReader(process.getInputStream()) ); 
+            process = runTime.exec("umask");
+            fromUMask = new BufferedReader
+                ( new InputStreamReader(process.getInputStream()) ); 
             while ((input = fromUMask.readLine()) != null) {
                 output.append(input);
             }
 
-	    int exitStatus = process.waitFor();
+            int exitStatus = process.waitFor();
             if (exitStatus != 0)
-	    {
-		throw new IOException("Unable to execute 'umask' (status = " +
-				      Integer.toString(exitStatus) + ")");
-	    }
+            {
+                throw new IOException("Unable to execute 'umask' (status = " +
+                                      Integer.toString(exitStatus) + ")");
+            }
         } catch (Exception e) {
             throw new IOException("Unable to execute 'umask'");
         } finally {
             if (fromUMask != null)
-	    {
+            {
                 try { 
                     fromUMask.close();
                 } catch (IOException e) {}
             }
             if (process != null)
-	    {
+            {
                 try { 
                     process.getErrorStream().close(); 
                 } catch (IOException e) {}
@@ -136,6 +136,6 @@ public class UMask
                 } catch (IOException e) {}
             }
         }
-	return output.toString().trim();
+        return output.toString().trim();
     }
 }
