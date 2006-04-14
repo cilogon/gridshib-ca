@@ -46,7 +46,8 @@ import org.globus.util.ConfigUtil;
 
 public class UMask
 {
-    String os = System.getProperty("os.name");
+    // Execute with shell as not all systems have umask binary
+    final String umaskCommand = "/bin/sh -c umask";
 
     public void checkForSecureUMask() throws Exception
     {
@@ -55,7 +56,7 @@ public class UMask
         if ((otherMask(umask) != 7) ||
             (groupMask(umask) != 7))
         {
-            throw new Exception("UMask (" + umask + ") is not secure.");
+            throw new UMaskException("UMask (" + umask + ") is not secure.");
         }
     }
 
@@ -89,7 +90,8 @@ public class UMask
         return Integer.valueOf(mask).intValue();
     }
 
-    public String getUMask() throws IOException
+    public String getUMask()
+        throws IOException, InterruptedException, UMaskException
     {
         Runtime runTime = Runtime.getRuntime();
         Process process = null;
@@ -104,7 +106,7 @@ public class UMask
         try {
             String input;
 
-            process = runTime.exec("umask");
+            process = runTime.exec(umaskCommand);
             fromUMask = new BufferedReader
                 ( new InputStreamReader(process.getInputStream()) ); 
             while ((input = fromUMask.readLine()) != null) {
@@ -114,11 +116,14 @@ public class UMask
             int exitStatus = process.waitFor();
             if (exitStatus != 0)
             {
-                throw new IOException("Unable to execute 'umask' (status = " +
+                throw new IOException("Unable to execute '" + umaskCommand
+                                      + "' (status = " +
                                       Integer.toString(exitStatus) + ")");
             }
-        } catch (Exception e) {
-            throw new IOException("Unable to execute 'umask'");
+        } catch (IOException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            throw e;
         } finally {
             if (fromUMask != null)
             {

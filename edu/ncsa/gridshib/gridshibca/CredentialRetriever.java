@@ -71,9 +71,13 @@ public class CredentialRetriever {
             {
                 umask.checkForSecureUMask();
             }
+            catch (UMaskException e)
+            {
+                throw new UMaskException(e.getMessage() + "\nYour UMASK is set to a insecure value. This can cause some web browsers to write files that are world-readable which can cause the GridShib CA to be insecure on multi-users systems. Please set your UMASK to 077.");
+            }
             catch (Exception e)
             {
-                throw new Exception(e.getMessage() + "\nYour UMASK is set to a insecure value. This can cause some web browsers to write files that are world-readable which can cause the GridShib CA to be insecure on multi-users systems. Please set your UMASK to 077.");
+                throw new Exception("Error checking umask: " + e.getMessage());
             }
 
 			setupTrustedCAs();

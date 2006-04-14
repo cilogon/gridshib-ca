@@ -65,10 +65,11 @@ public class GridShibCATester {
             {
                 umask.checkForSecureUMask();
             }
-            catch (Exception e)
+            catch (UMaskException e)
             {
-                throw new Exception(e.getMessage() + "\nYour UMASK is set to a insecure value. This can cause some web browsers to write files that are world-readable which can cause the GridShib CA to be insecure on multi-users systems. Please set your UMASK to 077.");
+                throw new UMaskException(e.getMessage() + "\nYour UMASK is set to a insecure value. This can cause some web browsers to write files that are world-readable which can cause the GridShib CA to be insecure on multi-users systems. Please set your UMASK to 077.");
             }
+
             gui.displayMessage("Success.");
 
 			String proxyLocation = ConfigUtil.discoverProxyLocation();
