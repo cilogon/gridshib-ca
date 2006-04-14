@@ -69,12 +69,14 @@ AC_ARG_WITH(gridshib-ca-dir-name,
 	[GRIDSHIB_CA_DIR_NAME=gridshib-ca-${PACKAGE_VERSION}])
 AC_SUBST(GRIDSHIB_CA_DIR_NAME)
 
+AC_MSG_CHECKING([for path to GridShib CA configuration directory])
 AC_ARG_WITH(gridshib-ca-conf-dir,
 	AC_HELP_STRING([--with-grishib-ca-conf-dir],
 		[Specify the gridshib-ca configuration directory]),
 	[GRIDSHIB_CA_CONF_DIR=$withval],
 	[GRIDSHIB_CA_CONF_DIR=/usr/local/${GRIDSHIB_CA_DIR_NAME}])
 AC_SUBST(GRIDSHIB_CA_CONF_DIR)
+AC_MSG_RESULT(${GRIDSHIB_CA_CONF_DIR})
 
 AC_ARG_WITH(www-dir,
 	AC_HELP_STRING([--with-www-dir],
@@ -83,33 +85,41 @@ AC_ARG_WITH(www-dir,
 	[WWW_DIR=/var/www/])
 AC_SUBST(WWW_DIR)
 
+AC_MSG_CHECKING([for URL for Shibboleth-protected CGI-BIN directory])
 AC_ARG_WITH(shib-protected-cgi-bin-url,
 	AC_HELP_STRING([--with-shib-protected-cgi-bin-url],
 		[Specify the Shibboleth-protected cgi-bin url]),
 	[SHIB_PROTECTED_CGI_BIN_URL=$withval],
 	[SHIB_PROTECTED_CGI_BIN_URL=/cgi-bin/shib-protected/${GRIDSHIB_CA_DIR_NAME}])
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_URL)
+AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_URL})
 
+AC_MSG_CHECKING([for path to Shibboleth-protected CGI-BIN directory])
 AC_ARG_WITH(shib-protected-cgi-bin-dir,
 	AC_HELP_STRING([--with-shib-protected-cgi-bin-dir],
 		[Specify the Shibboleth-protected cgi-bin directory]),
 	[SHIB_PROTECTED_CGI_BIN_DIR=$withval],
 	[SHIB_PROTECTED_CGI_BIN_DIR=${WWW_DIR}/${SHIB_PROTECTED_CGI_BIN_URL}])
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_DIR)
+AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_DIR})
 
+AC_MSG_CHECKING([for URL to GridSHIB-CA])
 AC_ARG_WITH(gridshib-ca-url,
 	AC_HELP_STRING([--with-gridshib-ca-url],
 		[Specify the URL for the gridshib-ca]),
 	[GRIDSHIB_CA_URL=$withval],
 	[GRIDSHIB_CA_URL=/${GRIDSHIB_CA_DIR_NAME}/])
 AC_SUBST(GRIDSHIB_CA_URL)
+AC_MSG_RESULT(${GRIDSHIB_CA_URL})
 
+AC_MSG_CHECKING([for path to GridShib CA HTML directory])
 AC_ARG_WITH(gridshib-ca-html-dir,
 	AC_HELP_STRING([--with-gridshib-ca-html_dir],
 		[Specify the direcotry for the gridshib-ca HTML]),
-	[GRIDSHIB_HTML_DIR=$withval],
+	[GRIDSHIB_CA_HTML_DIR=$withval],
 	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_URL}])
 AC_SUBST(GRIDSHIB_CA_HTML_DIR)
+AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
 
 AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
 AC_ARG_WITH(www-hostname,
@@ -129,12 +139,14 @@ AC_ARG_WITH(www-user,
 AC_MSG_RESULT(${WWW_USER})
 AC_SUBST(WWW_USER)
 
+AC_MSG_CHECKING([for relative DN of generated certificates])
 AC_ARG_WITH(relative-dn,
 	AC_HELP_STRING([--with-relative-dn],
 		[Provide the relative DN for generated certificates]),
 	[RELATIVE_DN=$withval],
 	[RELATIVE_DN="/C=US/O=TEST ORG/OU=TEST OU"])
 AC_SUBST(RELATIVE_DN)
+AC_MSG_RESULT(${RELATIVE_DN})
 
 # We generate header.html and footer.html and then include those in 
 # other html files we generate. So they must be listed first before
