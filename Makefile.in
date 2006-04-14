@@ -317,6 +317,10 @@ edu/ncsa/gridshib/gridshibca/Version.java: edu/ncsa/gridshib/gridshibca/Version
 # -R use relative path names
 
 RSYNC=rsync -auvR 
+TEST_HOST=computer.ncsa.uiuc.edu
 
 rsync: jar
-	$(RSYNC) $(DIST_FILES) computer.ncsa.uiuc.edu:~/gridshib-ca
+	$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca
+
+rsync-myvocs: jar
+	$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/myvocs-gridshib-ca
