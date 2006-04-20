@@ -42,6 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 */
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -51,6 +52,7 @@ import org.globus.util.Util;
 
 public class CredentialRetriever {
     GUI gui = new GUI("GridShib CA Credential Retriever");
+    Boolean debug = false;
 
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
@@ -90,11 +92,27 @@ public class CredentialRetriever {
 			}
 
 			gui.displayMessage("Connecting to " + credURL.toString());
-			
+
+            // In 1.5 Java web start sets up a CookieHandler
+            // that screws us up, so if this class exists, then
+            // disable the default CookieHander
+            ClassLoader cl = this.getClass().getClassLoader().getSystemClassLoader();
+            try
+            { 
+                Class cookieHandler = cl.loadClass("java.net.CookieHandler");
+                Class[] params = { cookieHandler };
+                Method setDefaultCookieHandler
+                    = cookieHandler.getMethod("setDefault", params);
+                Object[] argArray = { null };
+                setDefaultCookieHandler.invoke(cookieHandler, argArray); 
+            } catch (ClassNotFoundException e) {
+                // Class doesn't exist, don't need to do anything
+            }
+        
 			URLConnection conn = credURL.openConnection();
 	        conn.setDoOutput(true);
-			conn.setRequestProperty("Cookie", token);
-			
+            conn.setRequestProperty("Cookie", token);
+
 			BufferedReader credStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 	
 			String targetFile = ConfigUtil.discoverProxyLocation();
@@ -111,7 +129,7 @@ public class CredentialRetriever {
 			FileWriter out = new FileWriter(outFile);
 
 			String line;
-			// Check first line for error string
+			// Check first line for error or success indicator
 			line = credStream.readLine();
 			if (line != null)
 			{
@@ -125,18 +143,20 @@ public class CredentialRetriever {
 					throw new Exception("Got error from GridShib CA server.\n"
 										+ error);
 				}
-				out.write(line + "\n");
-				while ((line = credStream.readLine()) != null) {
-					out.write(line + "\n");
-				}
+                if (!line.startsWith("GRIDSHIB-CA-SUCCESS"))
+                {
+                    throw new Exception("Cannot parse response from GridShib CA server: " + line);
+                }
 			}
 			else
 			{
 				throw new Exception("Got no data from server trying to read Credential.");
 			}
+            while ((line = credStream.readLine()) != null) {
+                out.write(line + "\n");
+            }
 			out.close();
 			credStream.close();
-			gui.displayMessage("Credential written to " + targetFile);
 			gui.displayMessage("Success.");
 		} catch (java.net.MalformedURLException e) {
 			gui.error("Malformed URL: " + args[0]);
@@ -168,7 +188,8 @@ public class CredentialRetriever {
 			// file, as we need a real file for the trustStore
 			if (path.startsWith("jar:"))
 			{
-				gui.displayMessage("Copying trusted CA certificates from jar.");
+                debug("Copying trusted CA certificates from jar.");
+
 				File tempFile = File.createTempFile("CredentialRetriever",
 													".trustStore");
 				InputStream in = cl.getResourceAsStream("resources/trustStore");
@@ -185,7 +206,7 @@ public class CredentialRetriever {
 			{
 				path = path.substring(5);
 			}
-			gui.displayMessage("Setting trusted CAs to " + path);
+            debug("Setting trusted CAs to " + path);
 			System.setProperty("javax.net.ssl.trustStore", path);
 		} catch (Exception e ) {
 			gui.warning("Failed to initiate trusted CAs: " + e.getMessage());
@@ -203,4 +224,12 @@ public class CredentialRetriever {
 			out.write(buffer, 0, read);
 		}
 	}
+
+    private void debug(String msg)
+    {
+        if (debug)
+        {
+             gui.displayMessage(msg);  
+        }
+    }
 }

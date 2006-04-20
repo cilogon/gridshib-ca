@@ -160,6 +160,8 @@ if ($status != 0)
     errorExit("Error running myproxy-logon: $error");
 }
 
+print "GRIDSHIB-CA-SUCCESS\n";
+
 if (!open(credFile, "<$temp_cred_file"))
 {
     errorExit("Could not open credential file created by myproxy-logon: $!");
@@ -182,6 +184,22 @@ $DN = <Mapper>;
 close(Mapper);
 
 syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
+
+# Do we have an external logging program?
+my $logger = "@GRIDSHIB_CA_CONF_DIR@/logger";
+if (-x $logger)
+{
+    # DEBUG
+    syslog("info", "Invoking %s", $logger);
+
+    my @args = ($logger, $user);
+    my $status = system(@args);
+
+    if ($status != 0)
+    {
+	syslog("err", "ERROR: $logger returned %d: $!", $logger, $status);
+    }
+}
 
 exit(0);
 
