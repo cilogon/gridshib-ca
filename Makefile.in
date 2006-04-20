@@ -80,6 +80,8 @@ IMAGES=images/*.jpg \
 	images/*.gif \
 	images/*.png
 
+CONFIGURE_GENERATED_SCRIPTS=@CONF_GENERATED_SCRIPTS@
+
 #
 # Distribution configuration
 #
@@ -136,6 +138,7 @@ TOUCH = touch
 # Tools needed for building and distribution
 
 JAVAC = @JAVAC@
+JAVAC_OPTS= #-source 1.4 -target 1.4
 JAR = @JAR@
 KEYTOOL = @KEYTOOL@
 JARSIGNER = @JARSIGNER@
@@ -146,6 +149,14 @@ DIR_EXISTS = test -d
 ######################################################################
 
 default: build-$(MODE)
+
+clean:
+	rm -f $(JAVA_CLASSES)
+
+realclean: clean
+	rm -f $(CONFIGURE_GENERATED_SCRIPTS)
+	rm -f $(TRUST_STORE)
+	rm -f $(DIST_FILE)
 
 build-dist:	configure-generated-scripts
 	@echo "Run 'make install' to install."
@@ -173,7 +184,7 @@ $(JARFILE): $(UNSIGNED_JARFILE)
 	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
 
 %.class : %.java
-	$(JAVAC) $^
+	$(JAVAC) $(JAVAC_OPTS) $^
 
 ######################################################################
 #
@@ -275,7 +286,7 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 HTML_INCS = @HTML_INCS@
 HTML_DEPS = $(HTML_INCS:.html=.html.in)
 
-configure-generated-scripts: @CONF_GENERATED_SCRIPTS@
+configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 
 %.html: %.html.in config.status $(HTML_DEPS)
 	./config.status
