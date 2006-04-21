@@ -93,9 +93,9 @@ public class CredentialRetriever {
 
 			gui.displayMessage("Connecting to " + credURL.toString());
 
-            // In 1.5 Java web start sets up a CookieHandler
-            // that screws us up, so if this class exists, then
-            // disable the default CookieHander
+            // It appears that Java Web Start for Java 1.5 under MacOS 10.4 (at
+            // least) sets up a CookieHandler that screws us up, so if this
+            // class exists, then disable the default CookieHandler
             ClassLoader cl = this.getClass().getClassLoader().getSystemClassLoader();
             try
             { 
