@@ -2,7 +2,7 @@ dnl $Id$
 dnl See Copyright statement below.
 dnl See file 'LICENSE' for license.
 
-AC_INIT(gridshib-ca, 0.1.5)
+AC_INIT(gridshib-ca, 0.1.6-test)
 
 COPYRIGHT="Copyright 2006 The Board of Trustees of the University of Illinois."
 
@@ -18,25 +18,53 @@ AC_SUBST_FILE(LICENSE)
 AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
 
-# Extra places to look for MyProxy client binaries
-MYPROXY_PATH="/usr/local/myproxy/bin"
-if test -n "$GLOBUS_LOCATION" ; then
-   MYPROXY_PATH=${MYPROXY_PATH}:${GLOBUS_LOCATION}"/bin"
-fi
+AC_ARG_ENABLE(myproxy,
+	AC_HELP_STRING([--enable-myproxy],
+		[Use MyProxy for CA]),
+	[ENABLE_MYPROXY="TRUE"],
+	[ENABLE_MYPROXY="FALSE"])
+AC_SUBST(ENABLE_MYPROXY)
 
-AC_ARG_WITH(myproxy,
-	AC_HELP_STRING([--with-myproxy],
+if test "$ENABLE_MYPROXY" = "TRUE"; then
+
+   # Extra places to look for MyProxy client binaries
+   MYPROXY_PATH="/usr/local/myproxy/bin"
+   if test -n "$GLOBUS_LOCATION" ; then
+      MYPROXY_PATH=${MYPROXY_PATH}:${GLOBUS_LOCATION}"/bin"
+   fi
+
+   AC_ARG_WITH(myproxy-path,
+	AC_HELP_STRING([--with-myproxy-path],
 		[Specify myproxy binary directory]),
-	MYPROXY_PATH=${withval})
+	[MYPROXY_PATH=${withval}])
 
-AC_PATH_PROG(MYPROXY_LOGON,
+   AC_PATH_PROG(MYPROXY_LOGON,
 	 myproxy-logon,
 	 [FAILED],
 	 [$MYPROXY_PATH:$PATH])
 
-if test ${MYPROXY_LOGON} = "FAILED" ; then
-   AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
-fi
+   if test ${MYPROXY_LOGON} = "FAILED" ; then
+      AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
+   fi
+
+else # Not MyProxy
+
+  AC_PATH_PROG(OPENSSL, openssl, [FAILED])
+
+  if test ${OPENSSL} = "FAILED"; then
+      AC_MSG_ERROR([Could not find openssl binary in path.])
+  fi
+
+  AC_MSG_CHECKING([for DN of CA])
+  AC_ARG_WITH(ca-dn,
+	AC_HELP_STRING([--with-ca-dn],
+		[Provide the DN for GridShib CA]),
+	[CA_DN=$withval],
+	[CA_DN="/C=US/O=TEST ORG/OU=TEST OU/CN=Test CA"])
+  AC_SUBST(CA_DN)
+  AC_MSG_RESULT(${CA_DN})
+
+fi # Not MyProxy
 
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
@@ -148,6 +176,24 @@ AC_ARG_WITH(relative-dn,
 AC_SUBST(RELATIVE_DN)
 AC_MSG_RESULT(${RELATIVE_DN})
 
+AC_MSG_CHECKING([for path to GridShib CA certificate])
+AC_ARG_WITH(cert-path,
+	AC_HELP_STRING([--with-cert-path],
+		[Path to certificate file]),
+	[GRIDSHIB_CA_CERT_PATH=$withval],
+	[GRIDSHIB_CA_CERT_PATH="${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-cert.pem"])
+AC_SUBST(GRIDSHIB_CA_CERT_PATH)
+AC_MSG_RESULT(${GRIDSHIB_CA_CERT_PATH})
+
+AC_MSG_CHECKING([for path to GridShib CA key])
+AC_ARG_WITH(key-path,
+	AC_HELP_STRING([--with-key-path],
+		[Path to key file]),
+	[GRIDSHIB_CA_KEY_PATH=$withval],
+	[GRIDSHIB_CA_KEY_PATH="${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-key.pem"])
+AC_SUBST(GRIDSHIB_CA_KEY_PATH)
+AC_MSG_RESULT(${GRIDSHIB_CA_KEY_PATH})
+
 # We generate header.html and footer.html and then include those in 
 # other html files we generate. So they must be listed first before
 # other html files.
@@ -178,7 +224,8 @@ CONF_FILES="webdocs/CredentialRetriever.jnlp"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
-UTILS="utils/mapper.sh"
+UTILS="utils/mapper.sh \
+	utils/create-ca.pl"	       
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
@@ -202,11 +249,11 @@ AC_SUBST(JAR_FILE)
 MISC_FILES=""
 
 if test ${MODE} = "build" ; then
-   dnl Make utils/tag-version.pl executable so I can call it
    MISC_FILES="${MISC_FILES} utils/tag-version.pl"
    AC_CONFIG_FILES([utils/tag-version.pl])
-   AC_CONFIG_COMMANDS([chmod-utils-tag-version],
-		[chmod +x utils/tag-version.pl])
+   dnl Make utils/*.pl executable so I can call it while developing
+   AC_CONFIG_COMMANDS([chmod-utils],
+		[chmod +x utils/*.pl])
 		
 fi
 

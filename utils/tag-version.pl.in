@@ -47,13 +47,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-my $version = shift;
-
-if (!defined($version))
-{
-  print "Version argument missing.\n";
-  exit(1);
-}
+my $version = "@PACKAGE_VERSION@";
 
 if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
 {

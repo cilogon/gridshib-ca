@@ -48,20 +48,26 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-$MyProxyLogon = "@MYPROXY_LOGON@";
-
 # For safe mode
 $ENV{PATH} = "/bin";
 
 # Key and certificate used to authenticate to MyProxy
-$X509_USER_CERT = "@GRIDSHIB_CA_CONF_DIR@/cert.pem";
+$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
 
-$X509_USER_KEY = "@GRIDSHIB_CA_CONF_DIR@/key.pem";
+$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
+
+$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
 
 # Syslog parameters
 $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+
+# Credential parameters
+$KEY_LENGTH= 1024;
+$LIFETIME = 1;   # in days
+
+$OPENSSL = "@OPENSSL@";
 
 ######################################################################
 
@@ -75,6 +81,36 @@ sub errorExit($)
     exit(0);
 }
 
+sub execCmd($)
+{
+    use File::Temp qw(tempfile);
+
+    my $cmd = shift;
+
+    my ($err_handle, $err_file) = tempfile();
+
+    $cmd .= " > $err_file 2>&1";
+
+    if (system($cmd) != 0)
+    {
+	my $error_msg = "Failed to execute command \"$cmd\": $?";
+
+	if (open(errorFile, "<$err_file"))
+	{
+	    while (<errorFile>)
+	    {
+		$error_msg .= $_;
+	    }
+	}
+	close(errorFile);
+	unlink($err_file);
+
+	errorExit($error_msg);
+    }
+
+    unlink($err_file);
+}
+    
 ######################################################################
 #
 # Initialize Logging
@@ -83,6 +119,13 @@ sub errorExit($)
 use Sys::Syslog;
 
 openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+
+######################################################################
+#
+# Make files we create readable only by current user
+#
+
+umask(0077);
 
 ######################################################################
 
@@ -120,68 +163,114 @@ if (!defined($remoteAddr))
 syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
 
 ######################################################################
+#
+# Make sure CA credentials exist
+#
 
-if (! -r $X509_USER_CERT)
+if (! -r $CA_CERT)
 {
-  errorExit("Could not read certificate: $X509_USER_CERT");
+  errorExit("Could not read certificate: $CA_CERT");
 }
-$ENV{"X509_USER_CERT"}=$X509_USER_CERT;
 
-if (! -r $X509_USER_KEY)
+if (! -r $CA_KEY)
 {
-   errorExit("Could not read private key: $X509_USER_KEY");
+   errorExit("Could not read private key: $CA_KEY");
 }
-$ENV{"X509_USER_KEY"}=$X509_USER_KEY;
 
 ######################################################################
+#
+# Get DN
+#
 
-use File::Temp qw(tempfile);
-
-my ($temp_handle, $temp_cred_file) = tempfile();
-
-my $temp_err_file=$temp_cred_file . ".err";
-
-my $status = system("$MyProxyLogon -s localhost -l $user -n -o $temp_cred_file > /dev/null 2> $temp_err_file");
-
-
-if ($status != 0)
-{
-    if (!open(errorFile, "<$temp_err_file"))
-    { 
-	errorExit("Could not open myproxy-logon error file \"$temp_err_file\": $!");
-    }
-
-    my $error = "";
-    while (<errorFile>)
-    {
-	$error .= $_;
-    }
-    close(errorFile);
-    errorExit("Error running myproxy-logon: $error");
-}
-
-print "GRIDSHIB-CA-SUCCESS\n";
-
-if (!open(credFile, "<$temp_cred_file"))
-{
-    errorExit("Could not open credential file created by myproxy-logon: $!");
-}
-while (<credFile>)
-{
-    print;
-}
-close(credFile);
-
-unlink($temp_cred_file);
-unlink($temp_err_file);
-
-# Get DN and log it
 my $mapper = "@GRIDSHIB_CA_CONF_DIR@/mapper.sh";
 open(Mapper, "$mapper $user|") ||
     errorExit("Could not execute $mapper: $!");
 
 $DN = <Mapper>;
+chomp($DN);
 close(Mapper);
+
+# Clean DN to satisfy perl taint checking.
+if ($DN =~ /^([^;]*)$/)
+{
+    $DN = $1;
+}
+else
+{
+    # Should never get here
+    errorExit("Invalid characters in DN: $DN");
+}
+
+# Remove any double slashes in DN as this confuses openssl
+$DN =~ s/\/\//\//g;
+
+######################################################################
+
+use File::Temp qw(tempfile);
+
+my ($temp_handle, $cred_file) = tempfile();
+my $req_file = $cred_file . ".req";
+my $key_file = $cred_file . ".key";
+
+my $status;
+my @args;
+
+# Create certificate request
+@args = ( $OPENSSL );
+push(@args, "req");
+push(@args, "-newkey", "rsa:${KEY_LENGTH}");
+push(@args, "-out", $req_file);
+push(@args, "-keyout", $key_file);
+push(@args, "-days", $LIFETIME);
+push(@args, "-nodes");
+push(@args, "-subj", $DN);
+
+execCmd(join(' ', @args));
+
+# Sign certificate request
+@args = ( $OPENSSL );
+push(@args, "x509");
+push(@args, "-req");
+push(@args, "-in", $req_file);
+push(@args, "-out", $cred_file);
+push(@args, "-days", "1");
+push(@args, "-CA", $CA_CERT);
+push(@args, "-CAkey", $CA_KEY);
+push(@args, "-CAserial", $CA_SERIAL);
+push(@args, "-CAcreateserial");
+
+execCmd(join(' ', @args));
+
+if (!open(credFile, "<$cred_file"))
+{
+    errorExit("Could not open credential file: $!");
+}
+if (!open(keyFile, "<$key_file"))
+{
+    errorExit("Could not open key file: $!");
+}
+
+print "GRIDSHIB-CA-SUCCESS\n";
+
+while (<credFile>)
+{
+    print;
+}
+close(credFile);
+while (<keyFile>)
+{
+    print;
+}
+close(keyFile);
+
+unlink($cred_file);
+unlink($req_file);
+unlink($key_file);
+
+######################################################################
+#
+# Log it
+#
 
 syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
@@ -189,9 +278,6 @@ syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 my $logger = "@GRIDSHIB_CA_CONF_DIR@/logger";
 if (-x $logger)
 {
-    # DEBUG
-    syslog("info", "Invoking %s", $logger);
-
     my @args = ($logger, $user);
     my $status = system(@args);
 
