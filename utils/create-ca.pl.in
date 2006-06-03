@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!@PERL@
 ######################################################################
 #
 # $Id$
@@ -45,19 +45,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-my $openssl = "/sw/bin/openssl";
-my $certFile = "/tmp/gridshib-ca/gridshib-ca-cert.pem";
-my $keyFile = "/tmp/gridshib-ca/gridshib-ca-key.pem";
-my $confPath = "/tmp/gridshib-ca";
+my $openssl = "@OPENSSL@";
+my $certFile = "@GRIDSHIB_CA_CERT_PATH@";
+my $keyFile = "@GRIDSHIB_CA_KEY_PATH@";
+my $confPath = "@GRIDSHIB_CA_CONF_DIR@";
 
 # Default CA lifetime is 10 years
 my $lifetime = sprintf("%d", 10 * 365);
 
 # CA subject
-my $subject = "/C=US/O=TEST ORG/OU=TEST OU/CN=Test CA";
+my $subject = "@CA_DN@";
 
 # Key length in bits
 my $keyLength = 2048;
+
+umask(0077);
 
 ######################################################################
 
@@ -120,6 +122,10 @@ if (copy($certFile, $hashFile) == 0)
 ######################################################################
 
 my $policyFile = "${confPath}/${hash}.signing_policy";
+my $signingSpace = "@RELATIVE_DN@/*";
+
+# Remove duplicate /'s
+$signingSpace =~ s/\/\//\//g;
 
 print "Creating $policyFile\n";
 
@@ -134,7 +140,7 @@ access_id_CA      X509         '$subject'
 
 pos_rights        globus        CA:sign
 
-cond_subjects     globus     '"/C=US/O=TEST ORG/OU=TEST OU/*"'
+cond_subjects     globus     '"$signingSpace"'
 END
 
 print FH $policy;
@@ -162,7 +168,7 @@ close(FH);
 
 print "Setting ownership of created files.\n";
 @args=("chown");
-push(@args, "www");
+push(@args, "@WWW_USER@");
 push(@args, $certFile, $keyFile, $hashFile, $policyFile, $serialFile);
 
 

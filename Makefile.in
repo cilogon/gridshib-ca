@@ -99,7 +99,6 @@ DIST_FILES=$(JARFILE) \
 	$(IMAGES) \
 	$(JAVA_SRCS) \
 	utils/*.in \
-	doc/*.in \
 	$(CA_CERTS) \
 	LICENSE
 
@@ -117,6 +116,8 @@ UTILS=@UTILS@
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 PROTECTED_CGI_BIN_FILES=@CGI_BIN_SCRIPTS@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
+GRIDSHIB_CA_DOC_DIR=@GRIDSHIB_CA_DOC_DIR@
+DOC_FILES=@DOC_FILES@
 HTML_FILES=$(IMAGES) \
 	@HTML_FILES@ \
 	$(JARFILE)
@@ -204,7 +205,8 @@ dist:	build-mode $(DIST_FILE)
 
 $(DIST_FILE): $(DIST_FILES)
 	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
-	for file in $^; do \
+	@echo Copying files into $(DIST_DIR)
+	@for file in $^; do \
 		dir=`dirname $${file}` ;\
 		$(DIR_EXISTS) $(DIST_DIR)/$${dir} || $(MKDIR) -p $(DIST_DIR)/$${dir} ;\
 		$(CP) $${file} $(DIST_DIR)/$${dir} ;\
@@ -263,6 +265,17 @@ uninstall:
 	done
 	@if $(DIR_EXISTS) $(SHIB_PROECTED_CGI_BIN_DIR) ; then $(RMDIR) $(SHIB_PROTECTED_CGI_BIN_DIR) ; fi
 	@echo "Uninstall done."
+
+# This command is for installation of the GridShib-CA documentation
+# Ordinary deployers do not need to use it.
+install-docs: dist configure-generated-scripts
+	@echo "Creating $(GRIDSHIB_CA_DOC_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_DOC_DIR)
+	@for file in $(DOC_FILES) $(IMAGES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_DOC_DIR) ;\
+	done
+	@$(INSTALL) -o $(WWW_USER) -m 0644 $(DIST_FILE) $(GRIDSHIB_CA_DOC_DIR)
 
 ######################################################################
 #

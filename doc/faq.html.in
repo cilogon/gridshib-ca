@@ -3,7 +3,7 @@
 <!-- $Id$ -->
 <title>GridShib CA: FAQ</title>
 </head>
-@HTML_HEADER@
+@DOC_HEADER@
 <h1>GridShib CA FAQ</h1>
 GridShib CA Version @PACKAGE_VERSION@
 <br>
@@ -89,5 +89,5 @@ Windows systems are typically single-user sytems and have more
 complicated file permission settings. At this time there doesn't
 appear to be any concerns under windows.
 <p>
-@HTML_FOOTER@
+@DOC_FOOTER@
 </html>
