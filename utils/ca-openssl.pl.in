@@ -3,10 +3,8 @@
 #
 # $Id$
 #
-# This script is invoked by the Java Web Start CredentialRetriever
-# application. It comsumes the token created by the "login" script,
-# contacts MyProxy to generate a X509 credential and returns that
-# credential to CredentialRetriever.
+# Use OpenSSL to act as a CA and create certificates for the
+# GridShib-CA.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -51,13 +49,24 @@
 # For safe mode
 $ENV{PATH} = "/bin";
 
+# CA Key and certificate
+$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
+
+$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
+
+$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
+
 # Syslog parameters
 $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
-$CA_PROG = "@GRIDSHIB_CA_PROG@";
-$LOGGER_PRG = "@GRIDSHIB_LOGGER_PROG@";
+# Credential parameters
+$KEY_LENGTH= 1024;
+$LIFETIME = 1;   # in days
+$RELATIVE_DN = "@RELATIVE_DN@";
+
+$OPENSSL = "@OPENSSL@";
 
 ######################################################################
 
@@ -68,7 +77,7 @@ sub errorExit($)
     print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
     syslog("err", "ERROR: %s", $string);
-    exit(0);
+    exit(1);
 }
 
 sub execCmd($)
@@ -79,11 +88,11 @@ sub execCmd($)
 
     my ($err_handle, $err_file) = tempfile();
 
-    $cmd .= " 2> $err_file";
+    $cmd .= " > $err_file 2>&1";
 
     if (system($cmd) != 0)
     {
-	my $error_msg = "Failed to execute command \"$cmd\": $?";
+	my $error_msg = "Failed to execute command \"$cmd\": $?\n";
 
 	if (open(errorFile, "<$err_file"))
 	{
@@ -100,7 +109,19 @@ sub execCmd($)
 
     unlink($err_file);
 }
-    
+
+sub getDN($)
+{
+    my $user = shift;
+
+    my $DN = $RELATIVE_DN . "/CN=" . $user;
+
+    # Remove any double slashes in DN as this confuses openssl
+    $DN =~ s/\/\//\//g;
+
+    return $DN;
+}
+
 ######################################################################
 #
 # Initialize Logging
@@ -111,18 +132,24 @@ use Sys::Syslog;
 openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 
 ######################################################################
+#
+# Make files we create readable only by current user
+#
 
-use CGI;
+umask(0077);
 
-$cgi = new CGI;
+######################################################################
 
-print $cgi->header("text/plain");
+use Getopt::Std;
 
-$user = $ENV{"REMOTE_USER"};
+my %opts;
+getopts('n', \%opts);
+
+my $user = shift;
 
 if (!defined($user))
 {
-    errorExit("REMOTE_USER not defined.");
+    errorExit("Missing username argument.");
 }
 
 # Clean user name (from perlsec manual)
@@ -135,75 +162,117 @@ else
     errorExit("Username contains bad characters: $user");
 }
 
-
-my $remoteAddr = $ENV{"REMOTE_ADDR"};
-
-if (!defined($remoteAddr))
-{
-    errorExit("REMOTE_ADDR not defined.");
-}
-
-syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
-
 ######################################################################
 #
-# Get DN for logging
+# Parse command-line options
 #
 
-open(Mapper, "$CA_PROG -n \"$user\"|") ||
-    errorExit("Could not execute $CA_PROG: $!");
-
-$DN = <Mapper>;
-chomp($DN);
-if (!close(Mapper))
+if ($opts{"n"})
 {
-    # DN carried error message in this case
-    errorExit("$CA_PROG returned non-zero($?): $DN");
-}
-
-# Clean DN to satisfy perl taint checking.
-if ($DN =~ /^([^;]*)$/)
-{
-    $DN = $1;
-}
-else
-{
-    errorExit("Invalid characters in DN: $DN");
+    print getDN($user);
+    exit(0);
 }
 
 ######################################################################
 #
-# Log it
+# Make sure CA credentials exist
 #
 
-syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
-
-# Do we have an external logging program?
-if (-x $LOGGER_PROG)
+if (! -r $CA_CERT)
 {
-    my @args = ($LOGGER_PROG, $user);
-    my $status = system(@args);
+  errorExit("Could not read certificate: $CA_CERT");
+}
 
-    if ($status != 0)
-    {
-	syslog("err", "ERROR: %s returned %d: $!", $LOGGER_PRG, $status);
-    }
+if (! -r $CA_KEY)
+{
+   errorExit("Could not read private key: $CA_KEY");
 }
 
 ######################################################################
 #
-# And generate the credentials, which will be written to stdout.
+# Get DN
 #
 
-execCmd("$CA_PROG \"$user\"");
+my $DN = getDN($user);
+
+######################################################################
+
+syslog("info", "CERT-SIGN:%s:%s", $user, $DN);
+
+use File::Temp qw(tempfile);
+
+my ($temp_handle, $cred_file) = tempfile();
+my $req_file = $cred_file . ".req";
+my $key_file = $cred_file . ".key";
+
+my $status;
+my @args;
+
+# Create certificate request
+@args = ( $OPENSSL );
+push(@args, "req");
+push(@args, "-newkey", "rsa:${KEY_LENGTH}");
+push(@args, "-out", $req_file);
+push(@args, "-keyout", $key_file);
+push(@args, "-days", $LIFETIME);
+push(@args, "-nodes");
+push(@args, "-subj", $DN);
+
+execCmd(join(' ', @args));
+
+# Sign certificate request
+@args = ( $OPENSSL );
+push(@args, "x509");
+push(@args, "-req");
+push(@args, "-in", $req_file);
+push(@args, "-out", $cred_file);
+push(@args, "-days", "1");
+push(@args, "-CA", $CA_CERT);
+push(@args, "-CAkey", $CA_KEY);
+push(@args, "-CAserial", $CA_SERIAL);
+push(@args, "-CAcreateserial");
+
+execCmd(join(' ', @args));
 
 ######################################################################
 #
-# And we're done
+# Credentials create, output to stdout.
 #
+
+if (!open(credFile, "<$cred_file"))
+{
+    errorExit("Could not open credential file: $!");
+}
+if (!open(keyFile, "<$key_file"))
+{
+    errorExit("Could not open key file: $!");
+}
+
+print "GRIDSHIB-CA-SUCCESS\n";
+
+while (<credFile>)
+{
+    print;
+}
+close(credFile);
+while (<keyFile>)
+{
+    print;
+}
+close(keyFile);
+
+######################################################################
+#
+# Success. Clean up and exit.
+#
+
+unlink($cred_file);
+unlink($req_file);
+unlink($key_file);
 
 exit(0);
 
+######################################################################
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***

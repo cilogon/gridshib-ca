@@ -88,12 +88,12 @@ do this unless you have a good reason.
 <h2><a name="ca-conf">CA Configuration</a></h2>
 The next configuration step depends on which CA you are using, OpenSSL
 (the default) or MyProxy.
-<h2><a name="openssl">OpenSSL CA Configuration</a></h2>
- If you are using the OpenSSL CA (which is the default), you need to
+<h2><a name="openssl">OpenSSL CA Configuration</a></h2> 
+If you are using the OpenSSL CA (which is the default), you need to
 Install the CA certificate and private key for the GridShib
-CA. Running the script "utils/create-ca.pl" will generate these
-automatically for you, creating a CA based on some defaults or the
-options you provided to configure.
+CA. Running the script "utils/create-openssl-ca.pl" will generate
+these automatically for you, creating a CA based on some defaults or
+the options you provided to configure.
 <p>
  If you already have a CA certificate and key you want to use, you
 need to install them as

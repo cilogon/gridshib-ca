@@ -19,7 +19,6 @@ AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
 
 CA_TYPE="openssl"
-
 AC_ARG_ENABLE(ca-type,
 	AC_HELP_STRING([--ca-type],
 		[Specify CA Type. Options are: openssl, myproxy (Default: openssl)]),
@@ -72,9 +71,13 @@ elif test "$CA_TYPE" = "openssl"; then
   AC_SUBST(CA_DN)
   AC_MSG_RESULT(${CA_DN})
 
+  GRIDSHIB_CA_SCRIPT="utils/ca-openssl.pl"
+
 else # CA_TYPE = openssl
      AC_MSG_ERROR([Unknown CA Type specified.])
 fi 
+
+AC_SUBST(GRIDSHIB_CA_SCRIPT)
 
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
@@ -157,6 +160,15 @@ AC_ARG_WITH(gridshib-ca-url,
 	[GRIDSHIB_CA_URL=$default])
 AC_SUBST(GRIDSHIB_CA_URL)
 AC_MSG_RESULT(${GRIDSHIB_CA_URL})
+
+AC_MSG_CHECKING([for path to GridShib CA html directory])
+AC_ARG_WITH(gridshib-ca-html-dir,
+	AC_HELP_STRING([--with-gridshib-ca-html_dir],
+		[Specify the direcotry for the gridshib-ca HTML corresponding to the gridshib-ca-url. Default: <www-dir>/html/<gridshib-ca-dir-name>/]),
+	[GRIDSHIB_CA_HTML_DIR=$withval],
+	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_DIR_NAME}/])
+AC_SUBST(GRIDSHIB_CA_HTML_DIR)
+AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
 
 AC_MSG_CHECKING([for path to GridShib CA documentation directory])
 AC_ARG_WITH(gridshib-ca-doc-dir,
@@ -247,7 +259,8 @@ AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
 UTILS="utils/mapper.sh \
-	utils/create-ca.pl"	       
+        utils/ca-openssl.pl \
+	utils/create-openssl-ca.pl"	       
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
@@ -277,6 +290,12 @@ if test ${MODE} = "build" ; then
    AC_SUBST(DOC_FILES)
    AC_CONFIG_FILES([$DOC_FILES])
 fi
+
+GRIDSHIB_CA_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-prog
+AC_SUBST(GRIDSHIB_CA_PROG)
+
+GRIDSHIB_LOGGER_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-logger-prog
+AC_SUBST(GRIDSHIB_LOGGER_PROG)
 
 dnl Make utils/*.pl executable
 AC_CONFIG_COMMANDS([chmod-utils], [chmod +x utils/*.pl])

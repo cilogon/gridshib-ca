@@ -125,6 +125,15 @@ HTML_FILES=$(IMAGES) \
 # User that httpd runs under
 WWW_USER=@WWW_USER@
 
+# Type of CA to install
+CA_TYPE=@CA_TYPE@
+
+# CA Program
+GRIDSHIB_CA_PROG=@GRIDSHIB_CA_PROG@
+
+# CA script to install
+GRIDSHIB_CA_SCRIPT=@GRIDSHIB_CA_SCRIPT@
+
 ######################################################################
 #
 # Binaries and commands
@@ -220,7 +229,7 @@ $(DIST_FILE): $(DIST_FILES)
 # Installation
 #
 
-install:
+install: configure-generated-scripts
 	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 	@for file in $(CONF_FILES) ; do \
@@ -231,6 +240,10 @@ install:
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
+	@if test -n "$(GRIDSHIB_CA_SCRIPT)" ; then \
+		echo "Installing $(CA_TYPE) CA" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_SCRIPT) $(GRIDSHIB_CA_PROG) ;\
+	fi
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 	@for file in $(HTML_FILES) ; do \
