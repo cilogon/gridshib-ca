@@ -355,5 +355,5 @@ rsync-myvocs: jar
 	$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/myvocs-gridshib-ca
 
 install-docs: dist configure-generated-scripts
-	rsync -auv $(DIST_FILE) $(DOC_FILES) $(IMAGES) welch@terra.mcs.anl.gov:gridshib.globus.org/gridshib-ca/
+	rsync -auv $(DIST_FILE) $(DOC_FILES) doc/gridshib-ca-cert.tar $(IMAGES) welch@terra.mcs.anl.gov:gridshib.globus.org/gridshib-ca/
 
