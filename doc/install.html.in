@@ -12,7 +12,7 @@
 <h1>GridShib-CA Installation Directions</h1>
 <h2>Table of Contents</h2>
 <ul>
-<li><a href="#prerequisties">Prereqisites</a>
+<li><a href="#prerequisties">Prerequisites</a>
 <li><a href="#shib-conf">Shibboleth Configuration</a>
 <li><a href="#download">Download GridShib-CA</a>
 <li><a href="#install">Installing the Software</a>
