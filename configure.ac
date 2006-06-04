@@ -245,6 +245,9 @@ AC_SUBST_FILE(DOC_HEADER)
 DOC_FOOTER=$srcdir/doc/footer.html
 AC_SUBST_FILE(DOC_FOOTER)
 
+HTML_DEPS="${DOC_HEADER} ${DOC_FOOTER}"
+AC_SUBST(HTML_DEPS)
+
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/login \
 	webdocs/sysinfo.pl \

@@ -279,17 +279,6 @@ uninstall:
 	@if $(DIR_EXISTS) $(SHIB_PROECTED_CGI_BIN_DIR) ; then $(RMDIR) $(SHIB_PROTECTED_CGI_BIN_DIR) ; fi
 	@echo "Uninstall done."
 
-# This command is for installation of the GridShib-CA documentation
-# Ordinary deployers do not need to use it.
-install-docs: dist configure-generated-scripts
-	@echo "Creating $(GRIDSHIB_CA_DOC_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_DOC_DIR)
-	@for file in $(DOC_FILES) $(IMAGES) ; do \
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_DOC_DIR) ;\
-	done
-	@$(INSTALL) -o $(WWW_USER) -m 0644 $(DIST_FILE) $(GRIDSHIB_CA_DOC_DIR)
-
 ######################################################################
 #
 # Allow for automatic regeneration of configure and Makefile
@@ -310,7 +299,7 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 #
 
 HTML_INCS = @HTML_INCS@
-HTML_DEPS = $(HTML_INCS:.html=.html.in)
+HTML_DEPS = $(HTML_INCS:.html=.html.in) @HTML_DEPS@
 
 configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 
@@ -345,8 +334,8 @@ edu/ncsa/gridshib/gridshibca/Version.java: edu/ncsa/gridshib/gridshibca/Version
 
 ######################################################################
 #
-# Allow me to rsync from development host to test host. No one else
-# needs to worry about this section. - Von
+# Allow me to rsync from development host to test host and gridshib
+#web site. No one else needs to worry about this section. - Von
 
 # -a Archive mode
 # -u Update mode: newer files only
@@ -364,3 +353,7 @@ rsync-myproxy: jar
 
 rsync-myvocs: jar
 	$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/myvocs-gridshib-ca
+
+install-docs: dist configure-generated-scripts
+	rsync -auv $(DIST_FILE) $(DOC_FILES) $(IMAGES) welch@terra.mcs.anl.gov:gridshib.globus.org/gridshib-ca/
+

@@ -2,6 +2,11 @@
 <head>
 <!-- $Id$ -->
 <title>GridShib CA: Installation</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
 </head>
 @DOC_HEADER@
 <h1>GridShib-CA Installation Directions</h1>
@@ -9,6 +14,7 @@
 <ul>
 <li><a href="#prerequisties">Prereqisites</a>
 <li><a href="#shib-conf">Shibboleth Configuration</a>
+<li><a href="#download">Download GridShib-CA</a>
 <li><a href="#install">Installing the Software</a>
 <li><a href="#ca-conf">CA Configuration</a>
 <li><a href="#openssl">OpenSSL CA Configuration</a>
@@ -50,6 +56,9 @@ installing and configuring Shibboleth on the
 For the purposes of these installation directions it is
 assumed that the URL for the Shibboleth-protected cgi-bin directory is
 /cgi-bin/shib-protected/, if not adjust accordingly.
+<h2><a name="downlaod">Download GridShib-CA</a></h2>
+The source code for the GridShib
+	CA: <a href="gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
 <h2><a name="install">Installing the Software</a></h2>
 These directions assume you are installing GridShib-CA with version
 @PACKAGE_VERSION@. If not replace all instances of @PACKAGE_VERSION@
@@ -261,6 +270,7 @@ path     : /tmp/x509up_u501
 timeleft : 11:58:12
 </pre>
 <li>If you got this far you are good to go.
+</ol>
 <h2><a name="troubleshooting">Troubleshooting</a></h2>
 Problems with the GridShib-CA can be tricky to diagnosis because they
 could be Apache, Shibboleth or GridShib-CA problems. The first step is

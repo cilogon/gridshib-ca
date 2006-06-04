@@ -2,10 +2,15 @@
 <head>
 <!-- $Id$ -->
 <title>GridShib CA: LICENSE</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
 </head>
-@HTML_HEADER@
+@DOC_HEADER@
 <pre>
 @LICENSE@
 </pre>
-@HTML_FOOTER@
+@DOC_FOOTER@
 </html>

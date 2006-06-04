@@ -2,6 +2,10 @@
 <head>
 <!-- $Id$ -->
 <title>GridShib CA: FAQ</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
 </head>
 @DOC_HEADER@
 <h1>GridShib CA FAQ</h1>
@@ -20,7 +24,6 @@ FAQ version $Revision$
 <li><a href="#win">What about umask under Windows?</a>
 </ul>
 <p>
-><a href="index.html">Return to GridShib CA login page</a>
 <hr>
 <h2>Setting your Umask</h2>
 <a name="whatis"><b>What is this umask thing?</b></a>
