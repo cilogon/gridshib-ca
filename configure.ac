@@ -19,10 +19,13 @@ AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
 
 CA_TYPE="openssl"
-AC_ARG_ENABLE(ca-type,
+AC_MSG_CHECKING([for CA type])
+AC_ARG_WITH(ca-type,
 	AC_HELP_STRING([--ca-type],
 		[Specify CA Type. Options are: openssl, myproxy (Default: openssl)]),
 	[CA_TYPE=$withval])
+AC_SUBST(CA_TYPE)
+AC_MSG_RESULT(${CA_TYPE})
 
 if test "$CA_TYPE" = "myproxy"; then
 
@@ -45,6 +48,8 @@ if test "$CA_TYPE" = "myproxy"; then
    if test ${MYPROXY_LOGON} = "FAILED" ; then
       AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
    fi
+
+  GRIDSHIB_CA_SCRIPT="utils/ca-myproxy.pl"
 
 # CA_TYPE = myproxy
 elif test "$CA_TYPE" = "openssl"; then
@@ -260,7 +265,8 @@ AC_CONFIG_FILES([$CONF_FILES])
 
 UTILS="utils/mapper.sh \
         utils/ca-openssl.pl \
-	utils/create-openssl-ca.pl"	       
+	utils/create-openssl-ca.pl \
+	utils/ca-myproxy.pl"	       
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
@@ -308,7 +314,6 @@ CONF_GENERATED_SCRIPTS="${CGI_BIN_SCRIPTS} \
 	${DOC_FILES} \
 	${MISC_FILES}"
 AC_SUBST(CONF_GENERATED_SCRIPTS)
-AC_SUBST(CA_TYPE)
 
 AC_CONFIG_FILES([Makefile])
 

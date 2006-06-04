@@ -48,8 +48,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-# For safe mode
+# Run safely
 $ENV{PATH} = "/bin";
+umask (0077);
 
 # Syslog parameters
 $SYSLOG_ID = "@SYSLOG_ID@";
@@ -57,7 +58,7 @@ $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
 $CA_PROG = "@GRIDSHIB_CA_PROG@";
-$LOGGER_PRG = "@GRIDSHIB_LOGGER_PROG@";
+$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
 
 ######################################################################
 
@@ -71,36 +72,6 @@ sub errorExit($)
     exit(0);
 }
 
-sub execCmd($)
-{
-    use File::Temp qw(tempfile);
-
-    my $cmd = shift;
-
-    my ($err_handle, $err_file) = tempfile();
-
-    $cmd .= " 2> $err_file";
-
-    if (system($cmd) != 0)
-    {
-	my $error_msg = "Failed to execute command \"$cmd\": $?";
-
-	if (open(errorFile, "<$err_file"))
-	{
-	    while (<errorFile>)
-	    {
-		$error_msg .= $_;
-	    }
-	}
-	close(errorFile);
-	unlink($err_file);
-
-	errorExit($error_msg);
-    }
-
-    unlink($err_file);
-}
-    
 ######################################################################
 #
 # Initialize Logging
@@ -158,7 +129,7 @@ chomp($DN);
 if (!close(Mapper))
 {
     # DN carried error message in this case
-    errorExit("$CA_PROG returned non-zero($?): $DN");
+    errorExit("$CA_PROG returned non-zero(" . ($?<< 8) . ": $DN");
 }
 
 # Clean DN to satisfy perl taint checking.
@@ -186,7 +157,14 @@ if (-x $LOGGER_PROG)
 
     if ($status != 0)
     {
-	syslog("err", "ERROR: %s returned %d: $!", $LOGGER_PRG, $status);
+	if ($? == -1)
+	{
+	    syslog("err", "ERROR: %s failed: $!", $LOGGER_PROG);
+	}
+	else
+	{
+	    syslog("err", "ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
+	}
     }
 }
 
@@ -195,7 +173,62 @@ if (-x $LOGGER_PROG)
 # And generate the credentials, which will be written to stdout.
 #
 
-execCmd("$CA_PROG \"$user\"");
+use File::Temp qw(tempfile);
+
+my ($err_handle, $err_file) = tempfile();
+my ($cred_handle, $cred_file) = tempfile();
+
+my $cmd = "$CA_PROG \"$user\" > $cred_file 2> $err_file";
+
+my $status = system($cmd);
+
+if ($status != 0)
+{
+    my $error_msg = "Failed to execute command \"$cmd\"";
+
+    if ($? == -1)
+    {
+	$error_msg .= ": $!";
+    }
+    else
+    {
+	$error_msg .= " (exited with status " . ($? >> 8) . ")";
+    }
+    $error_msg .= "\n";
+    
+    if (open(errorFile, "<$err_file"))
+    {
+	while (<errorFile>)
+	{
+	    $error_msg .= $_;
+	}
+    }
+    close(errorFile);
+    unlink($err_file);
+    unlink($cred_file);
+
+    errorExit($error_msg);
+}
+
+if (!open(credFile, "<$cred_file"))
+{
+    unlink($err_file);
+    unlink($cred_file);
+    errorExit("Failed to open temporary credential file \"$cred_file\": $!");
+}
+
+# This line tells the Java Web Start application that credential generation
+# succeeded and credentials will follow.
+print "GRIDSHIB-CA-SUCCESS\n";
+
+while (<credFile>)
+{
+    print;
+}
+close(credFile);
+
+unlink($err_file);
+unlink($cred_file);
 
 ######################################################################
 #

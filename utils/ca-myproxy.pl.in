@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# Use OpenSSL to act as a CA and create certificates for the
+# Interface to MyProxy to act as a CA and create certificates for the
 # GridShib-CA.
 #
 ######################################################################
@@ -46,27 +46,33 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+$MYPROXY_HOST = "localhost";
+
+# Set if using something other than the default (7512)
+$MYPROXY_PORT = undef;
+#e.g. $MYPROXY_PORT = "7512";
+
+# Set if MyProxy server has DN other than expected
+$MYPROXY_SERVER_DN=undef;
+#e.g. $MYPROXY_SERVER_DN="/C=US/O=Test/CN=MyProxy Server"
+
+######################################################################
+
 # For safe mode
 $ENV{PATH} = "/bin";
 
-# CA Key and certificate
-$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
-
-$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
-
-$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
+# Key and certificate to use when contacting myproxy
+$MYPROXY_CLIENT_CERT = "@GRIDSHIB_CA_CONF_DIR@/myproxy-client-cert.pem";
+$MYPROXY_CLIENT_KEY = "@GRIDSHIB_CA_CONF_DIR@/myproxy-client-key.pem";
 
 # Syslog parameters
 $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
-# Credential parameters
-$KEY_LENGTH= 1024;
-$LIFETIME = 1;   # in days
 $RELATIVE_DN = "@RELATIVE_DN@";
 
-$OPENSSL = "@OPENSSL@";
+$MYPROXY_LOGON = "@MYPROXY_LOGON@";
 
 ######################################################################
 
@@ -122,6 +128,9 @@ sub execCmd($)
     unlink($err_file);
 }
 
+# This is really a hack as we can only assume MyProxy will return DNs
+# as we've configued in mapper.sh. Ideally we could ask MyProxy what DN
+# it will return given a particular request.
 sub getDN($)
 {
     my $user = shift;
@@ -187,18 +196,26 @@ if ($opts{"n"})
 
 ######################################################################
 #
-# Make sure CA credentials exist
+# Make sure credentials exist
 #
 
-if (! -r $CA_CERT)
+if (! -r $MYPROXY_CLIENT_CERT)
 {
-  errorExit("Could not read certificate: $CA_CERT");
+  errorExit("Could not read certificate: $MYPROXY_CLIENT_CERT");
 }
 
-if (! -r $CA_KEY)
+if (! -r $MYPROXY_CLIENT_KEY)
 {
-   errorExit("Could not read private key: $CA_KEY");
+   errorExit("Could not read private key: $MYPROXY_CLIENT_KEY");
 }
+
+######################################################################
+#
+# Set up environ so that myproxy-logon uses client credentials
+#
+
+$ENV{"X509_USER_CERT"} = $MYPROXY_CLIENT_CERT;
+$ENV{"X509_USER_KEY"} = $MYPROXY_CLIENT_KEY;
 
 ######################################################################
 #
@@ -213,38 +230,21 @@ syslog("info", "CERT-SIGN:%s:%s", $user, $DN);
 
 use File::Temp qw(tempfile);
 
-my ($temp_handle, $cred_file) = tempfile();
-my $req_file = $cred_file . ".req";
-my $key_file = $cred_file . ".key";
+my ($cred_handle, $cred_file) = tempfile();
 
-my $status;
-my @args;
+my $cmd = "$MYPROXY_LOGON -s $MYPROXY_HOST -l \"$user\" -n -o $cred_file";
 
-# Create certificate request
-@args = ( $OPENSSL );
-push(@args, "req");
-push(@args, "-newkey", "rsa:${KEY_LENGTH}");
-push(@args, "-out", $req_file);
-push(@args, "-keyout", $key_file);
-push(@args, "-days", $LIFETIME);
-push(@args, "-nodes");
-push(@args, "-subj", $DN);
+if (defined($MYPROXY_PORT))
+{
+    $cmd .= " -p $MYPROXY_PORT";
+}
 
-execCmd(join(' ', @args));
+if (defined($MYPROXY_SERVER_DN))
+{
+    $ENV{"MYPROXY_SERVER_DN"} = $MYPROXY_SERVER_DN;
+}
 
-# Sign certificate request
-@args = ( $OPENSSL );
-push(@args, "x509");
-push(@args, "-req");
-push(@args, "-in", $req_file);
-push(@args, "-out", $cred_file);
-push(@args, "-days", "1");
-push(@args, "-CA", $CA_CERT);
-push(@args, "-CAkey", $CA_KEY);
-push(@args, "-CAserial", $CA_SERIAL);
-push(@args, "-CAcreateserial");
-
-execCmd(join(' ', @args));
+execCmd($cmd);
 
 ######################################################################
 #
@@ -255,21 +255,14 @@ if (!open(credFile, "<$cred_file"))
 {
     errorExit("Could not open credential file: $!");
 }
-if (!open(keyFile, "<$key_file"))
-{
-    errorExit("Could not open key file: $!");
-}
 
 while (<credFile>)
 {
     print;
 }
+
 close(credFile);
-while (<keyFile>)
-{
-    print;
-}
-close(keyFile);
+
 
 ######################################################################
 #
@@ -277,8 +270,6 @@ close(keyFile);
 #
 
 unlink($cred_file);
-unlink($req_file);
-unlink($key_file);
 
 exit(0);
 

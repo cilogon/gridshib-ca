@@ -14,6 +14,7 @@
 <li><a href="#openssl">OpenSSL CA Configuration</a>
 <li><a href="#myproxy">MyProxy CA Configuration</a>
 <li><a href="#test">Testing</a>
+<li><a href="#troubleshooting">Troubleshooting</a>
 </ul>
 <p>
 <h2><a name="prerequisites">Prerequisites</a></h2>
@@ -86,8 +87,30 @@ do this unless you have a good reason.
 <li>As root, run "make install"
 </ol>
 <h2><a name="ca-conf">CA Configuration</a></h2>
-The next configuration step depends on which CA you are using, OpenSSL
-(the default) or MyProxy.
+The next configuration step depends on which CA you selected with the
+--with-ca-type argument to configure: OpenSSL (the default) or
+MyProxy.
+<p>
+Regardless of which CA you selected, at the end of configuration the
+script /usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca-prog
+should work. (Note that if you are using MyProxy you will need to
+invoke it as the Apache user so you own the client credentials.)
+<p>Here is an example of gridshib-ca-prog running successfully:
+<pre>
+# /usr/local/gridshib-ca-test/gridshib-ca-prog vwelch@uiuc.edu
+GRIDSHIB-CA-SUCCESS
+-----BEGIN CERTIFICATE-----
+MIICiTCCAXECAQcwDQYJKoZIhvcNAQEEBQAwTzELMAkGA1UEBhMCVVMxEjAQBgNV
+BAoTCU5DU0EtVEVTVDERMA8GA1UECxMIR3JpZFNoaWIxGTAXBgNVBAMTEEdyaWRT
+...snip...
+2+rVxoisc1fAPCvbYv8fZEW4e3bvFb8CXyoVRoQ=
+-----END CERTIFICATE-----
+-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQDCPA7I14kS/F/aAiSxlccBHYEFo8pl5j4wwcBpOZa6nJqlA9EA
+...snip...
+3xOzxXjsehDhB73UvoO8/3/P9VVDxNR6qZZuzxnyfrg=
+-----END RSA PRIVATE KEY-----
+</pre>
 <h2><a name="openssl">OpenSSL CA Configuration</a></h2> 
 If you are using the OpenSSL CA (which is the default), you need to
 Install the CA certificate and private key for the GridShib
@@ -137,6 +160,15 @@ httpd runs. Permissions should be as shown here:
 -rw-------  1 apache root 1387 Jun  2 16:24 myproxy-client-cert.pem
 -rw-------  1 apache root 1679 Jun  2 16:24 myproxy-client-key.pem
 </pre>
+<li>If your myproxy server is not running on the local host and
+	default port (7512), then you need to edit
+	/usr/local/gridshib-ca-@PACKAGE_VERSION@ and set $MYPROXY_HOST and
+	$MYPROXY_PORT appropriately.
+<li>If your myproxy server is used a certificate with a distinguished
+	name that is not the default (i.e. has a commonName other than
+	"host/hostname"), then you need to edit 
+	/usr/local/gridshib-ca-@PACKAGE_VERSION@ and set $MYPROXY_SERVER_DN
+	to the distinguished name it is using.
 </ol>
 On the MyProxy server system, do the following. These steps give the
 GridShib-CA to request and receive any certificate from the MyProxy CA
@@ -229,6 +261,29 @@ path     : /tmp/x509up_u501
 timeleft : 11:58:12
 </pre>
 <li>If you got this far you are good to go.
-
+<h2><a name="troubleshooting">Troubleshooting</a></h2>
+Problems with the GridShib-CA can be tricky to diagnosis because they
+could be Apache, Shibboleth or GridShib-CA problems. The first step is
+to figure out with which of these components the problem
+lies. Checking the following logs is a good way to do that:
+<ol>
+<li>Check your system logs (e.g. /var/log/messages) for messages. The
+	GridShib-CA scripts will log errors here.
+<li>If you are using MyProxy, it will also log to the local system
+	logs on the system on which it is installed.
+<li>Check your apache ssl_error_logs
+	(e.g. /var/log/http/ssl_error_logs) for messages. Errors encountered
+	by Apache will be logged here.
+<li>Check your Shibboleth logs. Check
+	log4j.appender.shibd_log.fileName in /etc/shibboleth/shid.logger for
+	the location of this log.
+</ol>
+Some common errors and their causes:
+<ol>
+<li><b>Fatal Error: Got no data from server trying to read
+		Credential.</b> from Credential Retriever Java Web Start
+	application usually indicates Apache got an error running the
+	GridShib-CA, check the Apache ssl_error_logs for messages.
+</ol>
 @DOC_FOOTER@
 </html>
