@@ -72,6 +72,8 @@ EOF
 # For safe mode
 $ENV{PATH} = "/bin";
 
+$CA_PROG = "@GRIDSHIB_CA_PROG@";
+
 ######################################################################
 
 my $user = $ENV{"REMOTE_USER"};
@@ -90,8 +92,8 @@ if (defined($user))
     }
 
     my $mapper = "@GRIDSHIB_CA_CONF_DIR@/mapper.sh";
-    open(Mapper, "$mapper $user|") ||
-	errorExit("Could not execute $mapper: $!");
+    open(Mapper, "$CA_PROG -n \"$user\"|") ||
+	errorExit("Could not execute $CA_PROG: $!");
 
     $DN = <Mapper>;
     close(Mapper);
