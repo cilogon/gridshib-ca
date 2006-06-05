@@ -196,17 +196,30 @@ if ($opts{"n"})
 
 ######################################################################
 #
-# Make sure credentials exist
+# Make sure credentials exist and key is owned by me and as acceptable
+# permissions. We try to catch this now to prevent hard to understand
+# errors later.
 #
 
 if (! -r $MYPROXY_CLIENT_CERT)
 {
-  errorExit("Could not read certificate: $MYPROXY_CLIENT_CERT");
+    errorExit("Configuration error. Could not read certificate: $MYPROXY_CLIENT_CERT");
 }
 
 if (! -r $MYPROXY_CLIENT_KEY)
 {
-   errorExit("Could not read private key: $MYPROXY_CLIENT_KEY");
+    errorExit("Configuration error. Could not read private key: $MYPROXY_CLIENT_KEY");
+}
+
+if (! -o $MYPROXY_CLIENT_KEY)
+{
+    errorExit("Configuration error. Private key is not owned by me: $MYPROXY_CLIENT_KEY");
+}
+
+my $mode = (stat($MYPROXY_CLIENT_KEY))[2];
+if ($mode & 077)
+{
+    errorExit("Configuration error. Private key has unacceptable permissions (group or world readable): $MYPROXY_CLIENT_KEY");
 }
 
 ######################################################################
