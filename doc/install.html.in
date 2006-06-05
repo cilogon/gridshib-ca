@@ -143,7 +143,7 @@ If you elect to use a MyProxy CA instead of the default OpenSSL CA, it
 is assumed you have some experience with Grid certificate
 management and have access to a PKI infrastructure and know how to get
 certificates. So these directions, out of necessity, skip over these
-details which are specific to your local environ.
+details which are specific to your local environment.
 <p>
 Note that you probably don't want to use the same MyProxy server for
 GridShib-CA and anything else.  These directions assume a MyProxy
@@ -215,7 +215,8 @@ certificate_mapapp        "/usr/local/bin/mapper.sh"
 </pre>
 <li>If the MyProxy server is already running, restart the myproxy
 server by killing it and restarting it in order to reload the
-configuration. (Running /etc
+configuration. (Running "/etc/init.d/myproxy stop; /etc/init.d/myproxy
+	start" should do it.)
 <li>Proceed to <a href="#test">Testing</a>
 </ol>
 <h2><a name="test">Testing</a></h2>
