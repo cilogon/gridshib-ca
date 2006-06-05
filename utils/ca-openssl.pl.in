@@ -232,6 +232,8 @@ push(@args, "-subj", $DN);
 
 execCmd(join(' ', @args));
 
+# XXX Need to have locking here to serialize access to the serial file
+
 # Sign certificate request
 @args = ( $OPENSSL );
 push(@args, "x509");
