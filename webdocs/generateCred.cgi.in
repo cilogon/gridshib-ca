@@ -59,6 +59,7 @@ $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
 $CA_PROG = "@GRIDSHIB_CA_PROG@";
 $LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
+$AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
 
 ######################################################################
 
@@ -144,34 +145,38 @@ else
 
 ######################################################################
 #
-# Log it
+# Callout to external authz program if it exists
 #
 
-syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
-# Do we have an external logging program?
-if (-x $LOGGER_PROG)
+if (-x $AUTHZ_PROG)
 {
-    my @args = ($LOGGER_PROG, $user);
+    my @args = ($AUTHZ_PROG, $user);
     my $status = system(@args);
 
     if ($status != 0)
     {
 	if ($? == -1)
 	{
-	    syslog("err", "ERROR: %s failed: $!", $LOGGER_PROG);
+	    syslog("err", "ERROR: %s failed: $!", $AUTHZ_PROG);
+	    errorExit("Authorization callout to $AUTHZ_PROG failed: $!");
 	}
 	else
 	{
-	    syslog("err", "ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
+	    syslog("err", "ERROR: %s returned %d", $AUTHZ_PROG, ($? >> 8));
+	    errorExit("Authorization for $user denied.");
 	}
+
     }
 }
+
 
 ######################################################################
 #
 # And generate the credentials, which will be written to stdout.
 #
+
+syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
 use File::Temp qw(tempfile);
 
@@ -226,6 +231,35 @@ while (<credFile>)
     print;
 }
 close(credFile);
+
+
+######################################################################
+#
+# Call external logging program if it exists
+#
+
+if (-x $LOGGER_PROG)
+{
+    my @args = ($LOGGER_PROG, $user, $DN, $cred_file);
+    my $status = system(@args);
+
+    if ($status != 0)
+    {
+	if ($? == -1)
+	{
+	    syslog("err", "ERROR: %s failed: $!", $LOGGER_PROG);
+	}
+	else
+	{
+	    syslog("err", "ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
+	}
+    }
+}
+
+######################################################################
+#
+# Clean up
+#
 
 unlink($err_file);
 unlink($cred_file);

@@ -306,6 +306,9 @@ AC_SUBST(GRIDSHIB_CA_PROG)
 GRIDSHIB_LOGGER_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-logger-prog
 AC_SUBST(GRIDSHIB_LOGGER_PROG)
 
+GRIDSHIB_AUTHZ_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-authz-prog
+AC_SUBST(GRIDSHIB_AUTHZ_PROG)
+
 dnl Make utils/*.pl executable
 AC_CONFIG_COMMANDS([chmod-utils], [chmod +x utils/*.pl])
 
