@@ -10,7 +10,7 @@
 <td bgcolor="#30A030" align=center><b>About</b></td>
 <td colspan=2>
 This is the GridShib-CA (version @PACKAGE_VERSION@). This software
-allows you to acquire a short-lived (8 hour) Grid Credential through
+allows you to acquire a short-lived (<1 day) Grid Credential through
 your web browser and Shibboleth. After successfully authenticating, a
 credential will be installed and is suitable for use with Grid Tools
 such as GT4.
