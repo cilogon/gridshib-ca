@@ -59,8 +59,11 @@ CA_CERTS = certificates/*.[0-9]
 # Path to jar trustStore
 TRUST_STORE = resources/trustStore
 
+# Java Version file
+VERSION_JAVA = edu/ncsa/gridshib/gridshibca/Version.java
+
 # Project java sources
-JAVA_SRCS = @JAVA_SRCS@
+JAVA_SRCS = @JAVA_SRCS@ $(VERSION_JAVA)
 JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
 
 # Password to pass into keytool. Not actually used for anything, just keeps
@@ -319,7 +322,7 @@ edu/ncsa/gridshib/gridshibca/Version: edu/ncsa/gridshib/gridshibca/Version.in co
 
 # Only copy Version to Version.java when it has actually changed
 # in order to prevent unnecessary rebuilds of jar file
-edu/ncsa/gridshib/gridshibca/Version.java: edu/ncsa/gridshib/gridshibca/Version
+$(VERSION_JAVA): edu/ncsa/gridshib/gridshibca/Version
 	@if test -e $@ ; then \
 	  if diff $@ $^ > /dev/null ; then \
 	    : ;\
