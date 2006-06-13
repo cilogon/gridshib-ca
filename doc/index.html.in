@@ -24,7 +24,7 @@ Java Web Start</a> installed on your system.
 Please note that the GridShib-CA is not a well known CA, so you will
 need to install the GridShib-CA certificate to actually use generated
 credentials. You can find the GridShib-CA certificate (along with the signing
-policy file) here: <a href="gridshib-ca-cert.tar">gridshib-ca-cert.tar</a>. Please note
+policy file) here: <a href="/downloads/gridshib-ca-cert.tar">gridshib-ca-cert.tar</a>. Please note
 the GridShib-CA is not production, use of it's credentials for production
 purposes is not recommended and is at your own risk.
 <p>
@@ -40,7 +40,7 @@ Other versions of the GridShib-CA:
 <ul>
 <li>The source code for the GridShib
 	CA: <a
-				 href="gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
+				 href="/downloads/gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
 <p>
 <li><a href="install.html">Installation directions</a>
 </ul>

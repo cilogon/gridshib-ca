@@ -58,7 +58,7 @@ assumed that the URL for the Shibboleth-protected cgi-bin directory is
 /cgi-bin/shib-protected/, if not adjust accordingly.
 <h2><a name="downlaod">Download GridShib-CA</a></h2>
 The source code for the GridShib
-	CA: <a href="gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
+	CA: <a href="/downloads/gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
 <h2><a name="install">Installing the Software</a></h2>
 These directions assume you are installing GridShib-CA with version
 @PACKAGE_VERSION@. If not replace all instances of @PACKAGE_VERSION@
