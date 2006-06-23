@@ -19,6 +19,7 @@
 <li><a href="#ca-conf">CA Configuration</a>
 <li><a href="#openssl">OpenSSL CA Configuration</a>
 <li><a href="#myproxy">MyProxy CA Configuration</a>
+<li><a href="#other-conf">Other Configuration Options</a>
 <li><a href="#test">Testing</a>
 <li><a href="#troubleshooting">Troubleshooting</a>
 </ul>
@@ -219,6 +220,9 @@ configuration. (Running "/etc/init.d/myproxy stop; /etc/init.d/myproxy
 	start" should do it.)
 <li>Proceed to <a href="#test">Testing</a>
 </ol>
+<h2><a name="other-conf">Other Configuration Options</a></h2>
+The GridShib-CA has a number of <a href="callouts.html">configurable
+	callouts</a> which may optionally be used to tailor a deployment.
 <h2><a name="test">Testing</a></h2>
 Here are some steps to test your GridShib-CA installation. Note that
 it's normal to get some browser warnings/questions about trusting

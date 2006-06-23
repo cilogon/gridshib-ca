@@ -1,0 +1,113 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA Callouts</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
+</head>
+@DOC_HEADER@
+The GridShib CA uses a number of callouts in the process of generating
+certificates. Some of these callouts have default implementations,
+other are unused by default. Deployers may replace these defaults with
+local or alternate implementations.
+<p>
+The available callouts are:
+<ul>
+<li><a href="#ca">CA callout</a>: A program that provides CA
+	functionality.
+<li><a href="#authz">Authorization callout</a>: A program that
+	authorizes requests.
+<li><a href="#logger">Logger callout</a>: A program that allows for
+	richer logging of issued certificates.
+</ul>
+Note that in addition to their command-line arguments, all callout may
+use various <a href="#env">environment variables</a> as set by Apache
+and Shibboleth.
+<a name="ca"><h2>CA Callout</h2></a>
+
+Availability: Since version 0.2.0<br>
+Program location:
+/usr/local/gridshib-ca-<i>version</i>/gridshib-ca-prog<br>
+Arguments: [-n] username<br>
+<ul>
+<li>-n: If present this indicates the program should just return the
+	distinguished name that the user would receive in their credential
+	and not the credential itself.
+<li>username: The authenticated REMOTE_USER name of the user.
+</ul>
+Returns: zero on success, non-zero otherwise<br>
+Default implementation: Wrapper around OpenSSL<br>
+Other available implementations:
+A <a href="install.html#myproxy">wrapper around MyProxy</a> is also
+available.<br>
+Comments: This program provides the CA functionality and actually
+generated the user's certificate and private key. In normal usage,
+these should be output by the program to its standard out in PEM
+format. If any error occurs, the program should return non-zero and
+print an error to standard error.
+
+<a name="authz"><h2>Authz Callout</h2></a>
+
+Availability: Since version 0.2.1<br>
+Program location:
+/usr/local/gridshib-ca-<i>version</i>/gridshib-authz-prog<br>
+Arguments: username<br>
+<ul>
+<li>username: The authenticated REMOTE_USER name of the user.
+</ul>
+Returns: zero on success, non-zero otherwise<br>
+Default implementation: None<br>
+Other available implementations: None<br>
+Comments: This program provides a hook to allow for authorization of
+credential issuance by the GridShib-CA. If this program is present it
+is called with the username of the requesting user. The program should
+return zero if the user is authorized, non-zero otherwise. Any output
+from the program is ignored.
+
+<a name="logger"><h2>Logger Callout</h2></a>
+
+Availability: Since version 0.2.1<br>
+Program location:
+/usr/local/gridshib-ca-<i>version</i>/gridshib-logger-prog<br>
+Arguments: username DN credential-path<br>
+<ul>
+<li>username: The authenticated REMOTE_USER name of the user.
+<li>DN: The distinguished name of the certificate issued to the user.
+<li>credential-path: The path to the credential to be issued to the
+	user.
+</ul>
+Returns: zero on success, non-zero otherwise<br>
+Default implementation: None<br>
+Other available implementations: None<br>
+Comments: This program allows for richer logging of issued certificate
+information or archiving of issued certificates. One of its arguments
+is the path to a file containing the credentials to be issued to the
+user. This file will contain the PEM-encoded certificates and private
+keys to be returned to the user. This file will be deleted after the
+logger program is run. If the logger program returns non-zero this is
+logged by the GridShib-CA, but does not effect its operation.
+
+<a name="env"><h2>Environment Variables</h2></a>
+
+In addition to their command-line arguments, all callouts have
+available to them various environment variables as set by Apache and
+Shibboleth. These variables are subject to change based on different
+versions of these software products, but are expected to remain
+static.
+<p>
+<table border=1>
+<tr><th>Environment Variable</th><th>Value</th></tr>
+<tr><td>REMOTE_ADDR</td><td>The IP address of the requestor as set by
+		Apache</td></tr>
+<tr><td>HTTP_SHIB_AUTHENTICATION_METHOD</td><td>URN of authentication
+		method as reported by Shibboleth</td></tr>
+<tr><td>HTTP_SHIB_IDENTITY_PROVIDER</td><td>URN of IdP as report by Shibboleth</td</tr>
+<tr><td>HTTP_SHIB_ATTRIBUTES</td><td>Base64 encoded SAML assertion
+		with attributes</td></tr>
+</table>
+
+@DOC_FOOTER@
+</html>

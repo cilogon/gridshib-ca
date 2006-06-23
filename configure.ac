@@ -15,6 +15,13 @@ AC_COPYRIGHT(${COPYRIGHT})
 LICENSE="LICENSE"
 AC_SUBST_FILE(LICENSE)
 
+PACKAGE_VERSION_MOD=`echo ${PACKAGE_VERSION} | sed -e "s/\./_/g"`
+DIST_FILE_BASE=${PACKAGE_NAME}-${PACKAGE_VERSION_MOD}
+AC_SUBST(DIST_FILE_BASE)
+
+DIST_DIR=${PACKAGE_NAME}-${PACKAGE_VERSION}
+AC_SUBST(DIST_DIR)
+
 AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
 
@@ -295,7 +302,8 @@ if test ${MODE} = "build" ; then
    DOC_FILES="doc/index.html \
         doc/faq.html \
 	doc/license.html \
-        doc/install.html"
+        doc/install.html \
+	doc/callouts.html"
    AC_SUBST(DOC_FILES)
    AC_CONFIG_FILES([$DOC_FILES])
 fi
