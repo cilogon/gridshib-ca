@@ -300,7 +300,6 @@ if test ${MODE} = "build" ; then
    AC_CONFIG_FILES([utils/tag-version.pl])
 
    DOC_FILES="doc/index.html \
-        doc/faq.html \
 	doc/license.html \
         doc/install.html \
 	doc/callouts.html"
