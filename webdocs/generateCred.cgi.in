@@ -62,10 +62,26 @@ $LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
 $AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
 
 ######################################################################
+#
+# HTTP Status codes returned in case of error
+#
 
-sub errorExit($)
+my $HTTP_BAD_REQUEST = 400;
+my $HTTP_UNAUTHORIZED = 401;
+my $HTTP_INTERNAL_ERROR = 500;
+
+######################################################################
+
+sub errorExit($$)
 {
+    # HTTP status code
+    my $status = shift;
+    # Error message
     my $string = shift;
+
+    print $cgi->header(
+	-status=>sprintf("%d %s", $status, $string),
+	-type=>"text/plain");
 
     print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
@@ -88,13 +104,11 @@ use CGI;
 
 $cgi = new CGI;
 
-print $cgi->header("text/plain");
-
 $user = $ENV{"REMOTE_USER"};
 
 if (!defined($user))
 {
-    errorExit("REMOTE_USER not defined.");
+    errorExit($HTTP_UNAUTHORIZED, "REMOTE_USER not defined.");
 }
 
 # Clean user name (from perlsec manual)
@@ -104,7 +118,7 @@ if ($user =~ /^([-\@\w.]+)$/)
 }
 else
 {
-    errorExit("Username contains bad characters: $user");
+    errorExit($HTTP_BAD_REQUEST, "Username contains bad characters: $user");
 }
 
 
@@ -112,7 +126,7 @@ my $remoteAddr = $ENV{"REMOTE_ADDR"};
 
 if (!defined($remoteAddr))
 {
-    errorExit("REMOTE_ADDR not defined.");
+    errorExit($HTTP_INTERNAL_ERROR, "REMOTE_ADDR not defined.");
 }
 
 syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
@@ -123,14 +137,15 @@ syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
 #
 
 open(Mapper, "$CA_PROG -n \"$user\"|") ||
-    errorExit("Could not execute $CA_PROG: $!");
+    errorExit($HTTP_INTERNAL_ERROR, "Could not execute $CA_PROG: $!");
 
 $DN = <Mapper>;
 chomp($DN);
 if (!close(Mapper))
 {
     # DN carried error message in this case
-    errorExit("$CA_PROG returned non-zero(" . ($?<< 8) . ": $DN");
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "$CA_PROG returned non-zero(" . ($?<< 8) . ": $DN");
 }
 
 # Clean DN to satisfy perl taint checking.
@@ -140,7 +155,7 @@ if ($DN =~ /^([^;]*)$/)
 }
 else
 {
-    errorExit("Invalid characters in DN: $DN");
+    errorExit($HTTP_BAD_REQUEST, "Invalid characters in DN: $DN");
 }
 
 ######################################################################
@@ -159,12 +174,13 @@ if (-x $AUTHZ_PROG)
 	if ($? == -1)
 	{
 	    syslog("err", "ERROR: %s failed: $!", $AUTHZ_PROG);
-	    errorExit("Authorization callout to $AUTHZ_PROG failed: $!");
+	    errorExit($HTTP_INTERNAL_ERROR,
+		      "Authorization callout to $AUTHZ_PROG failed: $!");
 	}
 	else
 	{
 	    syslog("err", "ERROR: %s returned %d", $AUTHZ_PROG, ($? >> 8));
-	    errorExit("Authorization for $user denied.");
+	    errorExit($HTTP_UNAUTHORIZED, "Authorization for $user denied.");
 	}
 
     }
@@ -212,19 +228,18 @@ if ($status != 0)
     unlink($err_file);
     unlink($cred_file);
 
-    errorExit($error_msg);
+    errorExit($HTTP_INTERNAL_ERROR, $error_msg);
 }
 
 if (!open(credFile, "<$cred_file"))
 {
     unlink($err_file);
     unlink($cred_file);
-    errorExit("Failed to open temporary credential file \"$cred_file\": $!");
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Failed to open temporary credential file \"$cred_file\": $!");
 }
 
-# This line tells the Java Web Start application that credential generation
-# succeeded and credentials will follow.
-print "GRIDSHIB-CA-SUCCESS\n";
+print $cgi->header("text/plain");
 
 while (<credFile>)
 {

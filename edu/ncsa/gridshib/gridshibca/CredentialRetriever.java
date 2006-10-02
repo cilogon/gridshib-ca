@@ -45,6 +45,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import javax.net.ssl.HttpsURLConnection;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
 import org.globus.util.ConfigUtil;
@@ -81,7 +82,7 @@ public class CredentialRetriever {
             {
                 throw new Exception("Error checking umask: " + e.getMessage());
             }
-
+            
 			setupTrustedCAs();
 			
 			// URL must be https
@@ -108,13 +109,42 @@ public class CredentialRetriever {
             } catch (ClassNotFoundException e) {
                 // Class doesn't exist, don't need to do anything
             }
-        
-			URLConnection conn = credURL.openConnection();
+
+            HttpsURLConnection conn =
+                (HttpsURLConnection) credURL.openConnection();
 	        conn.setDoOutput(true);
             conn.setRequestProperty("Cookie", token);
+            
+            BufferedReader credStream;
 
-			BufferedReader credStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-	
+            try {
+                credStream = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            } catch (java.io.IOException e) {
+                int statusCode = conn.getResponseCode();
+                String responseMessage = conn.getResponseMessage();
+                if (statusCode == conn.HTTP_UNAUTHORIZED)
+                {
+                    throw new Exception("Authentication failed: " +
+                                        responseMessage);
+                }
+                else if (statusCode == conn.HTTP_BAD_REQUEST)
+                {
+                    throw new Exception("Request malformed: " +
+                                        responseMessage);
+                }
+                else if (statusCode == conn.HTTP_INTERNAL_ERROR)
+                {
+                    throw new Exception("Internal server error: " +
+                                        responseMessage);
+                }
+                else
+                {
+                    throw new Exception("Server returned error status " +
+                                        statusCode + ":" +
+                                        responseMessage);
+                }
+            }
+
 			String targetFile = ConfigUtil.discoverProxyLocation();
 			gui.displayMessage("Writing credential to " + targetFile);
 
@@ -129,34 +159,18 @@ public class CredentialRetriever {
 			FileWriter out = new FileWriter(outFile);
 
 			String line;
-			// Check first line for error or success indicator
-			line = credStream.readLine();
-			if (line != null)
-			{
-				if (line.startsWith("ERROR"))
-				{
-					String error = line;
-					while ((line = credStream.readLine()) != null)
-					{
-						error += "\n" + line;
-					}	
-					throw new Exception("Got error from GridShib CA server.\n"
-										+ error);
-				}
-                if (!line.startsWith("GRIDSHIB-CA-SUCCESS"))
-                {
-                    throw new Exception("Cannot parse response from GridShib CA server: " + line);
-                }
-			}
-			else
-			{
-				throw new Exception("Got no data from server trying to read Credential.");
-			}
+            int lineCount = 0;
             while ((line = credStream.readLine()) != null) {
                 out.write(line + "\n");
+                lineCount++;
             }
 			out.close();
 			credStream.close();
+            // Make sure we actually read some data
+            if (lineCount == 0)
+			{
+				throw new Exception("Got no data from server trying to read Credential.");
+			}
 			gui.displayMessage("Success.");
 		} catch (java.net.MalformedURLException e) {
 			gui.error("Malformed URL: " + args[0]);
