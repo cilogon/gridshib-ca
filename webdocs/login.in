@@ -155,6 +155,7 @@ while (<INPUT>) {
 }
 close(INPUT);
 
+# The following triggers PERL mode in emaces.
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
