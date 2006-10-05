@@ -11,7 +11,12 @@ your credential. This will take a minute.
 <p>
 If the Credential Retriever application doesn't launch after a minute,
 click on the following button:
-<form action="@SHIB_PROTECTED_CGI_BIN_URL@/login">
+<!-- This form reloads the current page instead of the login CGI --
+	-- script in case the Shibboleth session has timed out, in which --
+	-- case we'll be left looking at some Shibboleth page. This assures --
+	-- that we'll leave the user looking at this page.
+	-->
+<form action="@GRIDSHIB_CA_URL@/login.html">
 <input type="submit" value="Launch Credential Retriever">
 </form>
 <p>
