@@ -1,0 +1,183 @@
+######################################################################
+#
+# $Id$
+#
+# Utility functions to be included in all GridShib-CA perl scripts
+# by configure.
+#
+# Note that this file is not preprocessed by autoconf.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+#
+# Command class
+#
+# Interface to executing command, controling its STDIN and getting
+# its STDOUT and STDERR.
+#
+
+package Command;
+use IPC::Open3;
+
+# new()
+# Create a new Command object.
+# Arguments:
+#  $executable - name of executable
+#  @arguments - array of arguments to pass
+# Returns: Command instance
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{command} = shift;
+    $self->{args} = \@_;
+    $self->{useSTDIN} = 0;
+    $self->{input} = undef;
+    bless($self, $class);
+    return $self;
+}
+
+# useSTDIN()
+# Have executed command use STDIN of calling program.
+# Arguments: None
+# Returns: Nothing
+
+sub useSTDIN
+{
+    my $self = shift;
+    $self->{useSTDIN} = 1;
+    $self->{input} = undef;
+}
+
+# setInput()
+# Cause the given string to be passed to command as input.
+# Arguments:
+#  $string - string to pass into program
+# Returns: Nothing
+
+sub setInput
+{
+    my $self = shift;
+    $self->{input} = shift;
+    $self->{useSTDIN} = 0;
+}
+
+# exec()
+# Execute the command.
+# Arguments: None
+# Returns: 1 on success, 0 otherwise
+
+sub exec
+{
+    my $self = shift;
+    local(*cmdIn, *cmdOut, *cmdErr);
+    my ($pid);
+
+    my $inFD = \*cmdIn;
+    if ($self->{useSTDIN} == 1)
+    {
+	# Redirect our STDIN to process
+	$inFD = "<&STDIN";
+    }
+
+    my (@cmdArgs) = ( $self->{command}, @{$self->{args}} );
+    
+    # XXX Error handling
+    $pid = IPC::Open3::open3($inFD, \*cmdOut, \*cmdErr, @cmdArgs);
+
+    if (defined($self->{input}))
+    {
+	print cmdIn $self->{input};
+    }
+    close(cmdIn);
+
+    waitpid($pid, 0);
+
+    $self->{status} = $?;
+
+    # Read STDOUT and STDERR from command
+    $self->{stdout} = "";
+    $self->{stderr} = "";
+
+    while (<cmdErr>)
+    {
+	$self->{stderr} .= $_;
+    }
+    close(cmdErr);
+
+    while (<cmdOut>)
+    {
+	$self->{stdout} .= $_;
+    }
+    close(cmdOut);
+
+    return ($self->{status} == 0);
+}
+
+# getSTDOUT()
+# Return the output from the command
+# Arguments: None
+# Returns: String containing output from command
+sub getSTDOUT
+{
+    my $self = shift;
+    return $self->{stdout};
+}
+
+# getSTDERR()
+# Return STDERR from the command
+# Arguments: None
+# Returns: String containing STDERR from command
+sub getSTDERR
+{
+    my $self = shift;
+    return $self->{stderr};
+}
+
+# Return true for import/use
+1;
+
+#
+# End include.pl
+#
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

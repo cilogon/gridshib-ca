@@ -1,4 +1,4 @@
-#!@PERL@ -T -w
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
@@ -48,6 +48,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+use Command;
+
 # Run safely
 $ENV{PATH} = "/bin";
 umask (0077);
@@ -60,6 +62,8 @@ $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 $CA_PROG = "@GRIDSHIB_CA_PROG@";
 $LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
 $AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
+
+$OPENSSL = "@OPENSSL@";
 
 ######################################################################
 #
@@ -133,9 +137,26 @@ syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
 
 ######################################################################
 #
+# Get POST data
+#
+
+my $certificateRequest = $cgi->param('certificateRequest');
+
+if (!defined($certificateRequest))
+{
+    errorExit($HTTP_BAD_REQUEST, "Certificate request missing");
+}
+if ($certificateRequest eq "")
+{
+    errorExit($HTTP_BAD_REQUEST, "Certificate request empty");
+}
+
+######################################################################
+#
 # Get DN for logging
 #
 
+# XXX Use array for here for arguments
 open(Mapper, "$CA_PROG -n \"$user\"|") ||
     errorExit($HTTP_INTERNAL_ERROR, "Could not execute $CA_PROG: $!");
 
@@ -156,6 +177,35 @@ if ($DN =~ /^([^;]*)$/)
 else
 {
     errorExit($HTTP_BAD_REQUEST, "Invalid characters in DN: $DN");
+}
+
+######################################################################
+#
+# Check DN in certificate request and make sure it is correct
+#
+
+my @cmdArgs = ("req", "-text");
+
+my $reqCmd = Command->new($OPENSSL, @cmdArgs);
+$reqCmd->setInput($certificateRequest);
+$reqCmd->exec() ||
+    errorExit($HTTP_INTERNAL_ERROR, $reqCmd->getSTDERR());
+my $reqText = $reqCmd->getSTDOUT();
+
+$reqText =~ /Subject: (.*)$/;
+
+my $reqDN = $1;
+
+if (!defined($reqDN))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not get DN from certificate request");
+}
+
+if ($reqDN != $DN)
+{
+    errorExit($HTTP_BAD_REQUEST,
+	      "DN in request ($reqDN) not valid. Valid DN is: $DN");
 }
 
 ######################################################################
@@ -194,68 +244,28 @@ if (-x $AUTHZ_PROG)
 
 syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
-use File::Temp qw(tempfile);
-
-my ($err_handle, $err_file) = tempfile();
-my ($cred_handle, $cred_file) = tempfile();
-
-my $cmd = "$CA_PROG \"$user\" > $cred_file 2> $err_file";
-
-my $status = system($cmd);
-
-if ($status != 0)
+my $cmd = Command->new($CA_PROG, $user);
+$cmd->setInput($certificateRequest);
+if (!$cmd->exec())
 {
-    my $error_msg = "Failed to execute command \"$cmd\"";
-
-    if ($? == -1)
-    {
-	$error_msg .= ": $!";
-    }
-    else
-    {
-	$error_msg .= " (exited with status " . ($? >> 8) . ")";
-    }
-    $error_msg .= "\n";
-    
-    if (open(errorFile, "<$err_file"))
-    {
-	while (<errorFile>)
-	{
-	    $error_msg .= $_;
-	}
-    }
-    close(errorFile);
-    unlink($err_file);
-    unlink($cred_file);
-
-    errorExit($HTTP_INTERNAL_ERROR, $error_msg);
-}
-
-if (!open(credFile, "<$cred_file"))
-{
-    unlink($err_file);
-    unlink($cred_file);
     errorExit($HTTP_INTERNAL_ERROR,
-	      "Failed to open temporary credential file \"$cred_file\": $!");
+	      $cmd->getSTDERR());
 }
+my $certificate = $cmd->getSTDOUT();
 
+# Success, print credential to STDOUT to be returned to client
 print $cgi->header("text/plain");
-
-while (<credFile>)
-{
-    print;
-}
-close(credFile);
-
+print $certificate;
 
 ######################################################################
 #
 # Call external logging program if it exists
 #
+# XXX Needs to be revamped to parse X509 cert
 
 if (-x $LOGGER_PROG)
 {
-    my @args = ($LOGGER_PROG, $user, $DN, $cred_file);
+    my @args = ($LOGGER_PROG, $user, $DN);
     my $status = system(@args);
 
     if ($status != 0)
@@ -270,14 +280,6 @@ if (-x $LOGGER_PROG)
 	}
     }
 }
-
-######################################################################
-#
-# Clean up
-#
-
-unlink($err_file);
-unlink($cred_file);
 
 ######################################################################
 #

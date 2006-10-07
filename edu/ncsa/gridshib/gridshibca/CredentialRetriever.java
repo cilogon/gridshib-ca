@@ -42,18 +42,30 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 */
 
 import java.io.*;
+import java.lang.String;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.net.ssl.HttpsURLConnection;
 import java.net.URLEncoder;
-import java.net.URLDecoder;
+import java.security.KeyPairGenerator;
+import java.security.KeyPair;
+import java.security.Key;
+import java.security.PublicKey;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import org.globus.util.ConfigUtil;
 import org.globus.util.Util;
 
 public class CredentialRetriever {
     GUI gui = new GUI("GridShib CA Credential Retriever");
     Boolean debug = false;
+
+    // Size of private key to generate
+    int keySize = 1024;
+
+    // Key algorithm to use
+    String keyAlg = "RSA";
 
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
@@ -65,8 +77,10 @@ public class CredentialRetriever {
         gui.displayMessage("Running...");
 
 		try {
-			URL credURL = new URL(args[0]);
-			String token = args[1];
+            int argIndex = 0;
+			URL credURL = new URL(args[argIndex++]);
+			String token = args[argIndex++];
+            String DN = args[argIndex++];
 
             UMask umask = new UMask();
 
@@ -92,6 +106,21 @@ public class CredentialRetriever {
 				throw new Exception("Credential URL is not secure (is '" + protocol + "' rather than 'https'). Service is misconfigured.");
 			}
 
+            // Generate our keys
+            gui.displayMessage("Generating keys...");
+            KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(keyAlg);
+            keyGenerator.initialize(keySize);
+
+            KeyPair keypair = keyGenerator.genKeyPair();
+
+			gui.displayMessage("Generating certificate request...");
+            gui.displayMessage("Grid identity is: " + DN);
+
+            PKCS10CertificateRequest pkcs10 =
+                new PKCS10CertificateRequest(keypair, DN);
+
+            String requestPEM = pkcs10.toPEM();
+
 			gui.displayMessage("Connecting to " + credURL.toString());
 
             // It appears that Java Web Start for Java 1.5 under MacOS 10.4 (at
@@ -114,6 +143,15 @@ public class CredentialRetriever {
                 (HttpsURLConnection) credURL.openConnection();
 	        conn.setDoOutput(true);
             conn.setRequestProperty("Cookie", token);
+
+            // Write our POST data
+            OutputStreamWriter postWriter =
+                new OutputStreamWriter(conn.getOutputStream());
+            String postData =
+                "certificateRequest=" +
+                URLEncoder.encode(requestPEM, "UTF-8");
+            postWriter.write(postData);
+            postWriter.flush();
             
             BufferedReader credStream;
 
@@ -164,13 +202,20 @@ public class CredentialRetriever {
                 out.write(line + "\n");
                 lineCount++;
             }
-			out.close();
 			credStream.close();
             // Make sure we actually read some data
             if (lineCount == 0)
 			{
 				throw new Exception("Got no data from server trying to read Credential.");
 			}
+
+            // Now output private key
+            RSAPrivateKey privateKey= (RSAPrivateKey) keypair.getPrivate();
+            String privateKeyPEM =
+                PEM.encodeRSAPrivateKey(privateKey);
+            out.write(privateKeyPEM);
+			out.close();
+            
 			gui.displayMessage("Success.");
 		} catch (java.net.MalformedURLException e) {
 			gui.error("Malformed URL: " + args[0]);
@@ -178,6 +223,9 @@ public class CredentialRetriever {
 			gui.error("IO Error: " + e.getMessage());
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
 			gui.error("Missing argument");
+        } catch (java.security.NoSuchAlgorithmException e) {
+            gui.error("Could not load " + keyAlg + " key generator algorithm:"
+                      + e.getMessage());
 		} catch (Exception e) {
 			gui.error(e.getMessage());
 		}

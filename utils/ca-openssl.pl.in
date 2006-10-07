@@ -1,4 +1,4 @@
-#!@PERL@ -T -w
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
@@ -46,6 +46,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+use Command;
+
 # For safe mode
 $ENV{PATH} = "/bin";
 
@@ -62,7 +64,6 @@ $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
 # Credential parameters
-$KEY_LENGTH= 1024;
 $LIFETIME = 1;   # in days
 $RELATIVE_DN = "@RELATIVE_DN@";
 
@@ -74,59 +75,16 @@ sub errorExit($)
 {
     my $string = shift;
 
-    print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
     syslog("err", "ERROR: %s", $string);
     exit(1);
-}
-
-sub execCmd($)
-{
-    use File::Temp qw(tempfile);
-
-    my $cmd = shift;
-
-    my ($err_handle, $err_file) = tempfile();
-
-    $cmd .= " > $err_file 2>&1";
-
-    my $status = system($cmd);
-
-    if ($status != 0)
-    {
-	my $error_msg = "Failed to execute command \"$cmd\"";
-
-	if ($? == -1)
-	{
-	    $error_msg .= ": $!";
-	}
-	else
-	{
-	    $error_msg .= " (exited with status " . ($? >> 8) . ")";
-	}
-	$error_msg .= "\n";
-
-	if (open(errorFile, "<$err_file"))
-	{
-	    while (<errorFile>)
-	    {
-		$error_msg .= $_;
-	    }
-	}
-	close(errorFile);
-	unlink($err_file);
-
-	errorExit($error_msg);
-    }
-
-    unlink($err_file);
 }
 
 sub getDN($)
 {
     my $user = shift;
 
-    my $DN = $RELATIVE_DN . "/CN=" . $user;
+    my $DN = "CN=$user, " . $RELATIVE_DN;
 
     # Remove any double slashes in DN as this confuses openssl
     $DN =~ s/\/\//\//g;
@@ -151,6 +109,9 @@ openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 umask(0077);
 
 ######################################################################
+#
+# Parse command-line options
+#
 
 use Getopt::Std;
 
@@ -174,10 +135,6 @@ else
     errorExit("Username contains bad characters: $user");
 }
 
-######################################################################
-#
-# Parse command-line options
-#
 
 if ($opts{"n"})
 {
@@ -211,76 +168,29 @@ my $DN = getDN($user);
 
 syslog("info", "CERT-SIGN:%s:%s", $user, $DN);
 
-use File::Temp qw(tempfile);
-
-my ($temp_handle, $cred_file) = tempfile();
-my $req_file = $cred_file . ".req";
-my $key_file = $cred_file . ".key";
-
 my $status;
-my @args;
-
-# Create certificate request
-@args = ( $OPENSSL );
-push(@args, "req");
-push(@args, "-newkey", "rsa:${KEY_LENGTH}");
-push(@args, "-out", $req_file);
-push(@args, "-keyout", $key_file);
-push(@args, "-days", $LIFETIME);
-push(@args, "-nodes");
-push(@args, "-subj", $DN);
-
-execCmd(join(' ', @args));
+my @args = ();
 
 # XXX Need to have locking here to serialize access to the serial file
 
 # Sign certificate request
-@args = ( $OPENSSL );
+# Request is read from stdin and certificate output to stdout
 push(@args, "x509");
 push(@args, "-req");
-push(@args, "-in", $req_file);
-push(@args, "-out", $cred_file);
-push(@args, "-days", "1");
+push(@args, "-days", $LIFETIME);
 push(@args, "-CA", $CA_CERT);
 push(@args, "-CAkey", $CA_KEY);
 push(@args, "-CAserial", $CA_SERIAL);
 push(@args, "-CAcreateserial");
 
-execCmd(join(' ', @args));
+my $cmd = Command->new($OPENSSL, @args);
+$cmd->useSTDIN();
+$cmd->exec() ||
+    errorExit($cmd->getSTDERR());
+my $certificate = $cmd->getSTDOUT();
 
-######################################################################
-#
-# Credentials created, output to stdout.
-#
-
-if (!open(credFile, "<$cred_file"))
-{
-    errorExit("Could not open credential file: $!");
-}
-if (!open(keyFile, "<$key_file"))
-{
-    errorExit("Could not open key file: $!");
-}
-
-while (<credFile>)
-{
-    print;
-}
-close(credFile);
-while (<keyFile>)
-{
-    print;
-}
-close(keyFile);
-
-######################################################################
-#
-# Success. Clean up and exit.
-#
-
-unlink($cred_file);
-unlink($req_file);
-unlink($key_file);
+# Success. Print Certificate to STDOUT.
+print $certificate;
 
 exit(0);
 

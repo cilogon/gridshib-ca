@@ -73,6 +73,8 @@ elif test "$CA_TYPE" = "openssl"; then
       AC_MSG_ERROR([Could not find openssl binary in path.])
   fi
 
+  # XXX It would be nice to make this RFC 2253 format, but it gets fed
+  # to openssl req -subj, which requires /C=X/O=XX/...
   AC_MSG_CHECKING([for DN of CA])
   default="/C=US/O=TEST ORG/OU=TEST OU/CN=Test CA"
   AC_ARG_WITH(ca-dn,
@@ -212,9 +214,9 @@ AC_SUBST(WWW_USER)
 AC_MSG_CHECKING([for relative DN of generated certificates])
 AC_ARG_WITH(relative-dn,
 	AC_HELP_STRING([--with-relative-dn],
-		[Provide the relative DN for generated certificates. (Default: /C=US/O=TEST ORG/OU=TEST OU)]),
+		[Provide the relative DN for generated certificates. (Default: OU=TEST OU, O=TEST ORG, C=US)]),
 	[RELATIVE_DN=$withval],
-	[RELATIVE_DN="/C=US/O=TEST ORG/OU=TEST OU"])
+	[RELATIVE_DN="OU=TEST OU, O=TEST ORG, C=US"])
 AC_SUBST(RELATIVE_DN)
 AC_MSG_RESULT(${RELATIVE_DN})
 
@@ -276,7 +278,9 @@ AC_CONFIG_FILES([$CONF_FILES])
 UTILS="utils/mapper.sh \
         utils/ca-openssl.pl \
 	utils/create-openssl-ca.pl \
-	utils/ca-myproxy.pl"	       
+	utils/ca-myproxy.pl \
+	utils/GridShibCAUtils.pm \
+	utils/Command.pm"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
@@ -315,6 +319,11 @@ AC_SUBST(GRIDSHIB_LOGGER_PROG)
 
 GRIDSHIB_AUTHZ_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-authz-prog
 AC_SUBST(GRIDSHIB_AUTHZ_PROG)
+
+# I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
+# they get carried over into @INC and screw up Perl.
+PERL_ARGS="-t -w -I ${GRIDSHIB_CA_CONF_DIR}"
+AC_SUBST(PERL_ARGS)
 
 dnl Make utils/*.pl executable
 AC_CONFIG_COMMANDS([chmod-utils], [chmod +x utils/*.pl])

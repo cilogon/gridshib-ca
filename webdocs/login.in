@@ -1,4 +1,4 @@
-#!@PERL@ -T -w
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
@@ -51,12 +51,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+use Command;
+
+# Allowing for safe program execution in taint mode
+$ENV{PATH} = "/bin";
+# Be sure all of our created files are readable by user only
+umask(0077);
+
 my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 
 # Syslog parameters
 $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+
+$CA_PROG = "@GRIDSHIB_CA_PROG@";
 
 ######################################################################
 
@@ -122,13 +131,45 @@ if (!defined($shibsession))
 
 ######################################################################
 #
+# Get username
+#
+
+my $user = $ENV{"REMOTE_USER"};
+
+if (!defined($user))
+{
+    errorExit("REMOTE_USER not defined.");
+}
+
+# Clean user name (from perlsec manual)
+if ($user =~ /^([-\@\w.]+)$/)
+{
+    $user = $1;                     # $data now untainted
+}
+else
+{
+    errorExit("Username contains bad characters: $user");
+}
+
+######################################################################
+#
+# Get the user's DN to pass to JWS application
+#
+
+my $DNCmd = Command->new($CA_PROG, "-n", $user);
+$DNCmd->exec() ||
+    errorExit("Could not execute $CA_PROG:" . $DNCmd->getSTDERR());
+my $DN = $DNCmd->getSTDOUT();
+
+######################################################################
+#
 # Log this
 #
 
-my $remoteUser = $ENV{"REMOTE_USER"} || "unknown";
 my $remoteAddr = $ENV{"REMOTE_ADDR"} || "unknown";
 
-syslog("info", "JWSLAUNCH:%s:%s", $remoteUser, $remoteAddr);
+
+syslog("info", "JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
 
 ######################################################################
 #
@@ -151,6 +192,7 @@ while (<INPUT>) {
     s/\$\$token/$shibsession/;
     s/\$\$code_base/$code_base/;
     s/\$\$genCredURL/$genCredURL/;
+    s/\$\$DN/$DN/;
     print;
 }
 close(INPUT);

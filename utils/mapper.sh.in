@@ -16,5 +16,5 @@ if [ X"$username" = X ]; then
 	# No username given
 	exit 1
 fi
-echo "@RELATIVE_DN@/CN=${username}"
+echo "CN=${username}, @RELATIVE_DN@"
 exit 0
