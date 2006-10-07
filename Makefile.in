@@ -85,6 +85,9 @@ IMAGES=images/*.jpg \
 
 CONFIGURE_GENERATED_SCRIPTS=@CONF_GENERATED_SCRIPTS@
 
+HTML_INCS = @HTML_INCS@
+HTML_DEPS = $(HTML_INCS:.html=.html.in) @HTML_DEPS@
+
 #
 # Distribution configuration
 #
@@ -159,6 +162,7 @@ JARSIGNER = @JARSIGNER@
 TAR = @TAR@
 RM = rm
 DIR_EXISTS = test -d
+PERL = @PERL@
 
 ######################################################################
 
@@ -200,6 +204,11 @@ $(JARFILE): $(UNSIGNED_JARFILE)
 %.class : %.java
 	$(JAVAC) $(JAVAC_OPTS) $^
 
+check-perl: configure-generated-scripts
+	for script in webdocs/*.pl webdocs/*.cgi utils/*.pl ; do \
+		$(PERL) -c -T -I./utils $${script} ; \
+	done
+
 ######################################################################
 #
 # Distribution building
@@ -216,7 +225,7 @@ $(TRUST_STORE): ${CA_CERTS}
 
 dist:	build-mode $(DIST_FILE)
 
-$(DIST_FILE): $(DIST_FILES)
+$(DIST_FILE): $(DIST_FILES) check-perl
 	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
 	@echo Copying files into $(DIST_DIR)
 	@for file in $^; do \
@@ -301,9 +310,6 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 #
 # configure-generated stuff
 #
-
-HTML_INCS = @HTML_INCS@
-HTML_DEPS = $(HTML_INCS:.html=.html.in) @HTML_DEPS@
 
 configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 
