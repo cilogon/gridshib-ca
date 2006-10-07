@@ -1,0 +1,27 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA: ChangeLog</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
+</head>
+@DOC_HEADER@
+
+<b>Version @PACKAGE_VERSION@:</b>
+<ul>
+<li>CredentialRetriever now using HTTP status code instead of own
+	internal status header.
+<li>login now passes expected DN to CredentialRetreiver (via jnlp)
+<li>CredentialRetriever now generating key pair and sending
+	certificate request to generateCred.pl
+<li>Added Command.pm to handle executing programs.
+<li>Starting to use RFC 2253 style DNs internally.
+</ul>
+
+<b>Version 0.2.0:</b> Changelog started Oct 7, 2006
+
+@DOC_FOOTER@
+</html>

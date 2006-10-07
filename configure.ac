@@ -306,6 +306,7 @@ if test ${MODE} = "build" ; then
    DOC_FILES="doc/index.html \
 	doc/license.html \
         doc/install.html \
+	doc/changelog.html \
 	doc/callouts.html"
    AC_SUBST(DOC_FILES)
    AC_CONFIG_FILES([$DOC_FILES])

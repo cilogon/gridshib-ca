@@ -42,6 +42,8 @@ Other versions of the GridShib-CA:
 	CA: <a
 				 href="/downloads/gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
 <p>
+<li><a href="changelog.html">ChangeLog</a>
+<p>
 <li><a href="install.html">Installation directions</a>
 </ul>
 </h2>
