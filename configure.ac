@@ -282,7 +282,8 @@ UTILS="utils/mapper.sh \
 	utils/ca-myproxy.pl \
 	utils/CGIinterface.pm \
 	utils/GridShibCAUtils.pm \
-	utils/Command.pm"
+	utils/Command.pm \
+	utils/Logger.pm"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 

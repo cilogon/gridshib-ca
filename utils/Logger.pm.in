@@ -1,11 +1,8 @@
-#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# This script serves as a welcome mat for users. It should be Shibboleth
-# protected and it makes sure that REMOTE_USER is available before
-# providing a link to invoke the "login" script.
+# Logging functions.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -46,107 +43,83 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
+#
+# Logger class
+#
+# Interface to logging.
+#
 
-use @GRIDSHIB_CA_MODULE@;
-use CGIinterface;
-use Logger;
+package Logger;
 
-sub errorExit($)
+use Sys::Syslog;
+use File::Basename;
+
+# Syslog parameters
+$SYSLOG_ID = "@SYSLOG_ID@";
+$SYSLOG_OPTS = "pid";
+$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+
+$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
+
+# new()
+# Create a new Logger object.
+# Arguments: None
+# Returns: Logger instance
+sub new
 {
-    my $string = shift;
-
-    $logger->err($string);
-
-    print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-<title>GridShib CA Error</title>
-</head>
-<body>
-$string
-</body>
-</html>
-EOF
-;
-    exit(1);
+    my $class = shift;
+    my $self = {};
+    my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
+    openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+    bless($self, $class);
+    return $self;
 }
 
-######################################################################
-
-# For safe mode
-$ENV{PATH} = "/bin";
-
-$logger = Logger->new();
-
-######################################################################
-
-my $cgi = new CGIinterface;
-
-my $user = $cgi->getUserId();
-my $idp = $cgi->getIdP();
-my $DN = undef;
-
-if (defined($user))
+# log()
+# Log a message.
+# Arguments:
+#  $level - one of "info", "warn", "err"
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub log
 {
-    my $ca = @GRIDSHIB_CA_MODULE@->new($user, $idp);
-    $DN = $ca->getDN();
-    if (!defined($DN))
-    {
-	errorExit("Could not get DN for user: " . $ca->getError());
-    }
+    my $self = shift;
+    my $level = shift;
+    my $format = shift;
+    my @args = @_;
+    syslog($level, $format, @args);
 }
 
-######################################################################
-
-print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-  <title>GridShib CA Welcome</title>
-  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
-  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-</head>
-@HTML_HEADER@
-EOF
-
-if (defined($user))
+# info()
+# Log an informative message
+# Arguments:
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub info
 {
-    print <<"EOF";
-<center>
-Welcome $user.
-<p>
-Your GridShib-CA identity will be $DN
-<p>
-<form action=\"@GRIDSHIB_CA_URL@/login.html\">
-  <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
-</form>
-</center>
-EOF
-}
-elsif (defined($idp))
-{
-    print <<"EOF";
-We're sorry. Your origin site ($idp) 
-is not releasing your identity to us, so we cannot proceed.
-EOF
-}
-else
-{
- print <<"EOF";
-Cannot determine Shibboleth identity or origin site.
-It appears this script is not Shibboleth protected.
-Please check configuration.
-EOF
+    my $self = shift;
+    $self->log("info", @_);
 }
 
-print <<"EOF";
-@HTML_FOOTER@
-</html>
-EOF
 
+# err()
+# Log an error message
+# Arguments:
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub err
+{
+    my $self = shift;
+    $self->log("err", @_);
+}
+
+# Return true for import/use
+1;
+
+#
+# End include.pl
+#
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
+######################################################################

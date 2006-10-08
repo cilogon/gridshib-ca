@@ -50,17 +50,12 @@
 
 use @GRIDSHIB_CA_MODULE@;
 use CGIinterface;
+use Logger;
 
 # Run safely
 $ENV{PATH} = "/bin";
 umask (0077);
 
-# Syslog parameters
-$SYSLOG_ID = "@SYSLOG_ID@";
-$SYSLOG_OPTS = "pid";
-$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
-
-$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
 $AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
 
 ######################################################################
@@ -87,7 +82,9 @@ sub errorExit($$)
 
     print "ERROR: $string\n";
     print STDERR "ERROR: $string\n";
-    syslog("err", "ERROR: %s", $string);
+
+    $logger->err("ERROR: %s", $string);
+
     exit(0);
 }
 
@@ -96,9 +93,7 @@ sub errorExit($$)
 # Initialize Logging
 #
 
-use Sys::Syslog;
-
-openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+$logger = Logger->new();
 
 ######################################################################
 
@@ -118,7 +113,15 @@ if (!defined($remoteAddr))
     errorExit($HTTP_INTERNAL_ERROR, "REMOTE_ADDR not defined.");
 }
 
-syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
+my $idp = $cgi->getIdP();
+
+if (!defined($idp))
+{
+    errorExit($HTTP_INTERNAL_ERROR, 
+	      "Could not determine Shibboleth identity provider for user");
+}
+
+$logger->info("CONNECTION:%s:%s:%s", $user, $remoteAddr, $idp);
 
 ######################################################################
 #
@@ -164,14 +167,14 @@ if (-x $AUTHZ_PROG)
 	my $error = $authzCmd->getError();
 	if ($status == 255)
 	{
-	    syslog("err", "ERROR: %s failed: %s", $AUTHZ_PROG, $error);
+	    $logger->err("ERROR: %s failed: %s", $AUTHZ_PROG, $error);
 	    errorExit($HTTP_INTERNAL_ERROR,
 		      "Authorization callout to $AUTHZ_PROG failed: $error");
 	}
 	else
 	{
-	    syslog("err", "ERROR: %s returned %d: %s",
-		   $AUTHZ_PROG, $status, $error);
+	    $logger->err("ERROR: %s returned %d: %s",
+			 $AUTHZ_PROG, $status, $error);
 	    errorExit($HTTP_UNAUTHORIZED, "Authorization for $user denied.");
 	}
     }
@@ -192,7 +195,7 @@ if (!defined($certificate))
 }
 
 # XXX Add serial number to logging
-syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
+$logger->info("ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
 # Success, print credential to STDOUT to be returned to client
 print $cgi->header("text/plain");
@@ -213,11 +216,11 @@ if (-x $LOGGER_PROG)
     {
 	if ($? == -1)
 	{
-	    syslog("err", "ERROR: %s failed: $!", $LOGGER_PROG);
+	    $logger->err("ERROR: %s failed: $!", $LOGGER_PROG);
 	}
 	else
 	{
-	    syslog("err", "ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
+	    $logger->err("ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
 	}
     }
 }

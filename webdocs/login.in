@@ -53,6 +53,7 @@
 
 use @GRIDSHIB_CA_MODULE@;
 use CGIinterface;
+use Logger;
 
 # Allowing for safe program execution in taint mode
 $ENV{PATH} = "/bin";
@@ -60,11 +61,6 @@ $ENV{PATH} = "/bin";
 umask(0077);
 
 my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
-
-# Syslog parameters
-$SYSLOG_ID = "@SYSLOG_ID@";
-$SYSLOG_OPTS = "pid";
-$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
 ######################################################################
 
@@ -80,7 +76,7 @@ sub errorExit($)
 
   print "ERROR: " . $error_string . "\n";
   
-  syslog("err", "ERROR: %s", $error_string);
+  $logger->err("ERROR: %s", $error_string);
 
   exit(1);
 }
@@ -90,9 +86,7 @@ sub errorExit($)
 # Initialize Logging
 #
 
-use Sys::Syslog;
-
-openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+my $logger = Logger->new();
 
 ######################################################################
 #
@@ -138,7 +132,7 @@ if (!defined($DN))
 
 my $remoteAddr = $cgi->remote_host() || "unknown";
 
-syslog("info", "JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
+$logger->info("JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
 
 ######################################################################
 #
