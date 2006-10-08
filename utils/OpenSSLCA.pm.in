@@ -1,0 +1,184 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# Use OpenSSL to act as a CA and create certificates for the
+# GridShib-CA.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+package OpenSSLCA;
+
+# Inherit CA class
+use CA;
+@ISA = ("CA");
+
+use Command;
+
+# For safe mode
+$ENV{PATH} = "/bin";
+
+# CA Key and certificate
+$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
+
+$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
+
+$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
+
+$OPENSSL = "@OPENSSL@";
+
+# new()
+# Create a new interface to the CA.
+# Arguments:
+#  $username - name of user as string
+#  $idp - idp of user as string
+# Returns: CA instance
+sub new
+{
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->{cert} = $CA_CERT;
+    $self->{key} = $CA_KEY;
+    $self->{serialFile} = $CA_SERIAL;
+    bless($self, $class);
+    return $self;
+}
+
+# signRequest
+# Given a certificate request return a certificate
+# Arguments: None
+# Returns: Certificate as string, or undef on error
+#  Username
+sub signRequest
+{
+    my $self = shift;
+    my $certificateRequest = shift;
+
+    # Check for our key and certificate
+    if (! -e $OPENSSL)
+    {
+	$self->_error("Could not find openssl executable: $OPENSSL");
+	return undef;
+    }
+
+    if (! -r $self->{cert})
+    {
+	$self->_error("Could not read certificate: " . $self->{cert});
+	return undef;
+    }
+
+    if (! -r $self->{key})
+    {
+	$self->_error("Could not read private key: " . $self->{key});
+	return undef;
+    }
+
+    my @args;
+
+    # OpenSSL has no way from the commandline to say what DN should
+    # go into a signed certificate. We also cannot change the request
+    # because openssl insists that it be signed. So the only thing we
+    # can do is check and make sure the DN in the request is what we
+    # expect.
+    @args = ("req", "-text");
+
+    my $reqCmd = Command->new($OPENSSL, @args);
+    $reqCmd->setInput($certificateRequest);
+    if (!$reqCmd->exec())
+    {
+	$self->_error("Could not parse certificate request: " .
+		      $reqCmd->getError());
+	return undef;
+    }
+    my $reqText = $reqCmd->getOutput();
+
+    $reqText =~ /Subject: (.*)$/;
+
+    my $reqDN = $1;
+
+    if (!defined($reqDN))
+    {
+	$self->_error("Unable to extract DN from certificate request.");
+	return undef;
+    }
+
+    my $DN = $self->getDN();
+
+    if ($reqDN != $DN)
+    {
+	$self->_error("DN in request ($reqDN) does not match valid DN ($DN)");
+	return undef;
+    }
+
+    # Everything checks out. Go ahead and sign certificate request.
+
+    # XXX Need to have locking here to serialize access to the serial file
+    my $status;
+    @args = ();
+
+    # Sign certificate request
+    # Request is read from stdin and certificate output to stdout
+    push(@args, "x509");
+    push(@args, "-req");
+    push(@args, "-days", $self->{lifetime});
+    push(@args, "-CA", $self->{cert});
+    push(@args, "-CAkey", $self->{key});
+    push(@args, "-CAserial", $self->{serialFile});
+    push(@args, "-CAcreateserial");
+
+    my $cmd = Command->new($OPENSSL, @args);
+    $cmd->setInput($certificateRequest);
+    if (!$cmd->exec())
+    {
+	$self->_error("Error executing $OPENSSL: " . $cmd->getError());
+	return undef;
+    }
+    return $cmd->getOutput();
+}
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

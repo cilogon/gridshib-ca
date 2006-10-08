@@ -51,7 +51,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use Command;
+use @GRIDSHIB_CA_MODULE@;
 
 # Allowing for safe program execution in taint mode
 $ENV{PATH} = "/bin";
@@ -156,10 +156,13 @@ else
 # Get the user's DN to pass to JWS application
 #
 
-my $DNCmd = Command->new($CA_PROG, "-n", $user);
-$DNCmd->exec() ||
-    errorExit("Could not execute $CA_PROG:" . $DNCmd->getSTDERR());
-my $DN = $DNCmd->getSTDOUT();
+my $ca = @GRIDSHIB_CA_MODULE@->new($user,
+				   $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"});
+my $DN = $ca->getDN();
+if (!defined($DN))
+{
+    errorExit("Couldn't determine DN for user: " . $ca->getError());
+}
 
 ######################################################################
 #

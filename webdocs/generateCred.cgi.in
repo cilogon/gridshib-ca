@@ -48,7 +48,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use Command;
+use @GRIDSHIB_CA_MODULE@;
 
 # Run safely
 $ENV{PATH} = "/bin";
@@ -59,11 +59,8 @@ $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
 
-$CA_PROG = "@GRIDSHIB_CA_PROG@";
 $LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
 $AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
-
-$OPENSSL = "@OPENSSL@";
 
 ######################################################################
 #
@@ -156,56 +153,13 @@ if ($certificateRequest eq "")
 # Get DN for logging
 #
 
-# XXX Use array for here for arguments
-open(Mapper, "$CA_PROG -n \"$user\"|") ||
-    errorExit($HTTP_INTERNAL_ERROR, "Could not execute $CA_PROG: $!");
-
-$DN = <Mapper>;
-chomp($DN);
-if (!close(Mapper))
-{
-    # DN carried error message in this case
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "$CA_PROG returned non-zero(" . ($?<< 8) . ": $DN");
-}
-
-# Clean DN to satisfy perl taint checking.
-if ($DN =~ /^([^;]*)$/)
-{
-    $DN = $1;
-}
-else
-{
-    errorExit($HTTP_BAD_REQUEST, "Invalid characters in DN: $DN");
-}
-
-######################################################################
-#
-# Check DN in certificate request and make sure it is correct
-#
-
-my @cmdArgs = ("req", "-text");
-
-my $reqCmd = Command->new($OPENSSL, @cmdArgs);
-$reqCmd->setInput($certificateRequest);
-$reqCmd->exec() ||
-    errorExit($HTTP_INTERNAL_ERROR, $reqCmd->getSTDERR());
-my $reqText = $reqCmd->getSTDOUT();
-
-$reqText =~ /Subject: (.*)$/;
-
-my $reqDN = $1;
-
-if (!defined($reqDN))
+my $ca = @GRIDSHIB_CA_MODULE@->new($user,
+				   $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"});
+my $DN = $ca->getDN();
+if (!defined($DN))
 {
     errorExit($HTTP_INTERNAL_ERROR,
-	      "Could not get DN from certificate request");
-}
-
-if ($reqDN != $DN)
-{
-    errorExit($HTTP_BAD_REQUEST,
-	      "DN in request ($reqDN) not valid. Valid DN is: $DN");
+	      "Couldn't determine DN for user: " . $ca->getError());
 }
 
 ######################################################################
@@ -242,16 +196,16 @@ if (-x $AUTHZ_PROG)
 # And generate the credentials, which will be written to stdout.
 #
 
-syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
+my $certificate = $ca->signRequest($certificateRequest);
 
-my $cmd = Command->new($CA_PROG, $user);
-$cmd->setInput($certificateRequest);
-if (!$cmd->exec())
+if (!defined($certificate))
 {
     errorExit($HTTP_INTERNAL_ERROR,
-	      $cmd->getSTDERR());
+	      "Error signing certificate request: " . $ca->getError());
 }
-my $certificate = $cmd->getSTDOUT();
+
+# XXX Add serial number to logging
+syslog("info", "ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
 # Success, print credential to STDOUT to be returned to client
 print $cgi->header("text/plain");

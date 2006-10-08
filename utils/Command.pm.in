@@ -151,21 +151,22 @@ sub exec
     return ($self->{status} == 0);
 }
 
-# getSTDOUT()
+# getOutput()
 # Return the output from the command
 # Arguments: None
 # Returns: String containing output from command
-sub getSTDOUT
+sub getOutput
 {
     my $self = shift;
     return $self->{stdout};
 }
 
-# getSTDERR()
-# Return STDERR from the command
+# getError()
+# Return Error message from the command
 # Arguments: None
-# Returns: String containing STDERR from command
-sub getSTDERR
+# Returns: String containing Error Message from command. Maybe be undef
+# if no error has occurred.
+sub getError
 {
     my $self = shift;
     return $self->{stderr};

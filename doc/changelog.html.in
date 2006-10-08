@@ -18,6 +18,8 @@
 <li>CredentialRetriever now generating key pair and sending
 	certificate request to generateCred.pl
 <li>Added Command.pm to handle executing programs.
+<li>Added CA.pm as base interface for CA interactions with
+	OpenSSLCA.pm as an instantiation for local OpenSSL-based CA
 <li>Starting to use RFC 2253 style DNs internally.
 </ul>
 

@@ -56,7 +56,7 @@ if test "$CA_TYPE" = "myproxy"; then
       AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
    fi
 
-  GRIDSHIB_CA_SCRIPT="utils/ca-myproxy.pl"
+  GRIDSHIB_CA_MODULE="MyProxyCA"
 
 # CA_TYPE = myproxy
 elif test "$CA_TYPE" = "openssl"; then
@@ -85,13 +85,13 @@ elif test "$CA_TYPE" = "openssl"; then
   AC_SUBST(CA_DN)
   AC_MSG_RESULT(${CA_DN})
 
-  GRIDSHIB_CA_SCRIPT="utils/ca-openssl.pl"
+  GRIDSHIB_CA_MODULE="OpenSSLCA"
 
 else # CA_TYPE = openssl
      AC_MSG_ERROR([Unknown CA Type specified.])
 fi 
 
-AC_SUBST(GRIDSHIB_CA_SCRIPT)
+AC_SUBST(GRIDSHIB_CA_MODULE)
 
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
@@ -276,7 +276,8 @@ AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
 UTILS="utils/mapper.sh \
-        utils/ca-openssl.pl \
+        utils/CA.pm \
+        utils/OpenSSLCA.pm \
 	utils/create-openssl-ca.pl \
 	utils/ca-myproxy.pl \
 	utils/GridShibCAUtils.pm \
@@ -311,9 +312,6 @@ if test ${MODE} = "build" ; then
    AC_SUBST(DOC_FILES)
    AC_CONFIG_FILES([$DOC_FILES])
 fi
-
-GRIDSHIB_CA_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-prog
-AC_SUBST(GRIDSHIB_CA_PROG)
 
 GRIDSHIB_LOGGER_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-logger-prog
 AC_SUBST(GRIDSHIB_LOGGER_PROG)

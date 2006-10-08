@@ -3,9 +3,7 @@
 #
 # $Id$
 #
-# This script serves as a welcome mat for users. It should be Shibboleth
-# protected and it makes sure that REMOTE_USER is available before
-# providing a link to invoke the "login" script.
+# Base class for CA interface for GridShib CA.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -47,109 +45,73 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use @GRIDSHIB_CA_MODULE@;
+package CA;
 
-sub errorExit($)
+# Credential parameters
+$LIFETIME = 1;   # in days
+$RELATIVE_DN = "@RELATIVE_DN@";
+
+# new()
+# Create a new interface to the CA.
+# Arguments:
+#  $username - name of user as string
+#  $idp - idp of user as string
+# Returns: CA instance
+sub new
 {
-    my $string = shift;
-
-    print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-<title>GridShib CA Error</title>
-</head>
-<body>
-$string
-</body>
-</html>
-EOF
-;
-    exit(1);
+    my $class = shift;
+    my $self = {};
+    $self->{username} = shift;
+    $self->{idp} = shift;
+    $self->{lifetime} = $LIFETIME;
+    $self->{relativeDN} = $RELATIVE_DN;
+    $self->{error} = undef;
+    bless($self, $class);
+    return $self;
 }
+
+# getDN
+# Given a username, return the DN for the user
+# Arguments: None
+# Returns: DN as string, or undef on error
+
+sub getDN
+{
+    my $self = shift;
+
+    my $DN = "CN=" . $self->{username} . ", " . $self->{relativeDN};
+
+    return $DN;
+}
+
+# signRequest
+# Given a certificate request return a certificate
+# Arguments: None
+# Returns: Certificate as string, or undef on error
+#  Username
+sub signRequest
+{
+    $self->_error("signRequest() unimplemented");
+    return undef;
+}
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
+}
+
+# Return true for import/use
+1;
 
 ######################################################################
-
-# For safe mode
-$ENV{PATH} = "/bin";
-
-######################################################################
-
-my $user = $ENV{"REMOTE_USER"};
-my $DN = undef;
-
-if (defined($user))
-{
-    # Clean user name (from perlsec manual)
-    if ($user =~ /^([-\@\w.]+)$/)
-    {
-	$user = $1;                     # $data now untainted
-    }
-    else
-    {
-	errorExit("Username contains bad characters: $user");
-    }
-
-    my $ca = @GRIDSHIB_CA_MODULE@->new($user,
-				       $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"});
-    $DN = $ca->getDN();
-    if (!defined($DN))
-    {
-	errorExit("Could not get DN for user: " . $ca->getError());
-    }
-}
-
-######################################################################
-
-print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-  <title>GridShib CA Welcome</title>
-  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
-  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-</head>
-@HTML_HEADER@
-EOF
-
-if (defined($user))
-{
-    print <<"EOF";
-<center>
-Welcome $user.
-<p>
-Your GridShib-CA identity will be $DN
-<p>
-<form action=\"@GRIDSHIB_CA_URL@/login.html\">
-  <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
-</form>
-</center>
-EOF
-}
-elsif (defined($ENV{"HTTP_SHIB_IDENTITY_PROVIDER"}))
-{
-    my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
-    print <<"EOF";
-We're sorry. Your origin site ($idp) 
-is not releasing your identity to us, so we cannot proceed.
-EOF
-}
-else
-{
- print <<"EOF";
-Cannot determine Shibboleth identity or origin site.
-It appears this script is not Shibboleth protected.
-Please check configuration.
-EOF
-}
-
-print <<"EOF";
-@HTML_FOOTER@
-</html>
-EOF
-
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
