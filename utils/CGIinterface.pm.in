@@ -47,6 +47,7 @@
 ######################################################################
 
 package CGIinterface;
+use Logger;
 
 # Inherit CGI class
 use CGI;
@@ -79,7 +80,8 @@ sub getUserId
     }
     else
     {
-	#XXX Log it
+	my $logger = Logger->new();
+	$logger->err("Illegal characters detected in REMOTE_USER ($remote_user)");
     }
     return $userId;
 }
