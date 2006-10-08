@@ -280,6 +280,7 @@ UTILS="utils/mapper.sh \
         utils/OpenSSLCA.pm \
 	utils/create-openssl-ca.pl \
 	utils/ca-myproxy.pl \
+	utils/CGIinterface.pm \
 	utils/GridShibCAUtils.pm \
 	utils/Command.pm"
 AC_SUBST(UTILS)
@@ -321,7 +322,7 @@ AC_SUBST(GRIDSHIB_AUTHZ_PROG)
 
 # I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
 # they get carried over into @INC and screw up Perl.
-PERL_ARGS="-t -w -I ${GRIDSHIB_CA_CONF_DIR}"
+PERL_ARGS="-T -w -I ${GRIDSHIB_CA_CONF_DIR}"
 AC_SUBST(PERL_ARGS)
 
 dnl Make utils/*.pl executable

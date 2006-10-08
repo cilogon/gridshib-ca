@@ -49,6 +49,7 @@
 ######################################################################
 
 use @GRIDSHIB_CA_MODULE@;
+use CGIinterface;
 
 # Run safely
 $ENV{PATH} = "/bin";
@@ -101,29 +102,16 @@ openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 
 ######################################################################
 
-use CGI;
+$cgi = new CGIinterface;
 
-$cgi = new CGI;
-
-$user = $ENV{"REMOTE_USER"};
+$user = $cgi->getUserId();
 
 if (!defined($user))
 {
     errorExit($HTTP_UNAUTHORIZED, "REMOTE_USER not defined.");
 }
 
-# Clean user name (from perlsec manual)
-if ($user =~ /^([-\@\w.]+)$/)
-{
-    $user = $1;                     # $data now untainted
-}
-else
-{
-    errorExit($HTTP_BAD_REQUEST, "Username contains bad characters: $user");
-}
-
-
-my $remoteAddr = $ENV{"REMOTE_ADDR"};
+my $remoteAddr = $cgi->remote_host();
 
 if (!defined($remoteAddr))
 {
@@ -137,7 +125,7 @@ syslog("info", "CONNECTION:%s:%s", $user, $remoteAddr);
 # Get POST data
 #
 
-my $certificateRequest = $cgi->param('certificateRequest');
+my $certificateRequest = $cgi->getCertificateRequest();
 
 if (!defined($certificateRequest))
 {
@@ -153,8 +141,7 @@ if ($certificateRequest eq "")
 # Get DN for logging
 #
 
-my $ca = @GRIDSHIB_CA_MODULE@->new($user,
-				   $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"});
+my $ca = @GRIDSHIB_CA_MODULE@->new($user, $cgi->getIdP());
 my $DN = $ca->getDN();
 if (!defined($DN))
 {
@@ -170,23 +157,23 @@ if (!defined($DN))
 
 if (-x $AUTHZ_PROG)
 {
-    my @args = ($AUTHZ_PROG, $user);
-    my $status = system(@args);
-
-    if ($status != 0)
+    my $authzCmd = Command->new($AUTHZ_PROG, $user);
+    if (!$authzCmd->exec())
     {
-	if ($? == -1)
+	my $status = $authzCmd->getStatus() >> 8;
+	my $error = $authzCmd->getError();
+	if ($status == 255)
 	{
-	    syslog("err", "ERROR: %s failed: $!", $AUTHZ_PROG);
+	    syslog("err", "ERROR: %s failed: %s", $AUTHZ_PROG, $error);
 	    errorExit($HTTP_INTERNAL_ERROR,
-		      "Authorization callout to $AUTHZ_PROG failed: $!");
+		      "Authorization callout to $AUTHZ_PROG failed: $error");
 	}
 	else
 	{
-	    syslog("err", "ERROR: %s returned %d", $AUTHZ_PROG, ($? >> 8));
+	    syslog("err", "ERROR: %s returned %d: %s",
+		   $AUTHZ_PROG, $status, $error);
 	    errorExit($HTTP_UNAUTHORIZED, "Authorization for $user denied.");
 	}
-
     }
 }
 

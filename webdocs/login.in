@@ -52,6 +52,7 @@
 ######################################################################
 
 use @GRIDSHIB_CA_MODULE@;
+use CGIinterface;
 
 # Allowing for safe program execution in taint mode
 $ENV{PATH} = "/bin";
@@ -64,8 +65,6 @@ my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 $SYSLOG_ID = "@SYSLOG_ID@";
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
-
-$CA_PROG = "@GRIDSHIB_CA_PROG@";
 
 ######################################################################
 
@@ -100,55 +99,24 @@ openlog($SYSLOG_ID, $SYSLOG_OPTS, $SYSLOG_FACILITY);
 # Main code
 #
 
-use CGI;
-use CGI::Cookie;
+use CGIinterface;
 
-$cgi = new CGI;
+$cgi = new CGIinterface;
 
 my $url = $cgi->url();
 my $url_base = $cgi->url(-base=>1);
-
-######################################################################
-#
-# Get the Shib SessionId
-#
-
-my %cookies = fetch CGI::Cookie;
-my $shibsession = undef;
-foreach my $key (keys %cookies)
-{
-    if ($key =~ /_shibsession_/)
-    {
-	$shibsession = $key . "=" . $cookies{$key}->value;
-	last;
-    }
-}
+my $shibsession = $cgi->getShibSession();
 
 if (!defined($shibsession))
 {
-    errorExit("Could not find Shibboleth session Id.");
+    errorExit("Could not determine Shibboleth session Id.");
 }
 
-######################################################################
-#
-# Get username
-#
-
-my $user = $ENV{"REMOTE_USER"};
+my $user = $cgi->getUserId();
 
 if (!defined($user))
 {
     errorExit("REMOTE_USER not defined.");
-}
-
-# Clean user name (from perlsec manual)
-if ($user =~ /^([-\@\w.]+)$/)
-{
-    $user = $1;                     # $data now untainted
-}
-else
-{
-    errorExit("Username contains bad characters: $user");
 }
 
 ######################################################################
@@ -156,8 +124,7 @@ else
 # Get the user's DN to pass to JWS application
 #
 
-my $ca = @GRIDSHIB_CA_MODULE@->new($user,
-				   $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"});
+my $ca = @GRIDSHIB_CA_MODULE@->new($user, $cgi->getIdP());
 my $DN = $ca->getDN();
 if (!defined($DN))
 {
@@ -169,8 +136,7 @@ if (!defined($DN))
 # Log this
 #
 
-my $remoteAddr = $ENV{"REMOTE_ADDR"} || "unknown";
-
+my $remoteAddr = $cgi->remote_host() || "unknown";
 
 syslog("info", "JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
 
