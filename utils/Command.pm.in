@@ -5,8 +5,6 @@
 # Utility functions to be included in all GridShib-CA perl scripts
 # by configure.
 #
-# Note that this file is not preprocessed by autoconf.
-#
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
 # All rights reserved.
