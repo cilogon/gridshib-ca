@@ -130,20 +130,32 @@ sub signRequest
 	return undef;
     }
     my $reqText = $reqCmd->getOutput();
+    my $reqDN = undef;
 
-    $reqText =~ /Subject: (.*)$/;
-
-    my $reqDN = $1;
+    # m == multiline string comparison
+    if ($reqText =~ /Subject: (.*)$/m)
+    {
+	$reqDN = $1;
+    }
 
     if (!defined($reqDN))
     {
-	$self->_error("Unable to extract DN from certificate request.");
+	# DEBUG
+	open(DBG, ">/tmp/gridshib-ca-debug");
+	print DBG $reqText;
+	close(DBG);
+
+	$self->_error("Unable to extract DN from certificate request");
 	return undef;
     }
 
+    # OpenSSL have given us a DN, but it is in reverse order, so we
+    # need to reverse the components
+    $reqDN = join(", ", reverse(split(/, /, $reqDN)));
+
     my $DN = $self->getDN();
 
-    if ($reqDN != $DN)
+    if ($reqDN ne $DN)
     {
 	$self->_error("DN in request ($reqDN) does not match valid DN ($DN)");
 	return undef;
