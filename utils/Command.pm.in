@@ -172,6 +172,16 @@ sub getError
     return $self->{stderr};
 }
 
+# getStatus()
+# Return status code from the command
+# Arguments: None
+# Returns: Status code ($?)
+sub getStatus
+{
+    my $self = shift;
+    return $self->{status};
+}
+
 # Return true for import/use
 1;
 
