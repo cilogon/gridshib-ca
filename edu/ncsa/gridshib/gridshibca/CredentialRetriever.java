@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import java.net.URLEncoder;
 import java.security.KeyPairGenerator;
 import java.security.KeyPair;
@@ -77,11 +78,17 @@ public class CredentialRetriever {
         gui.displayMessage("Running...");
 
 		try {
+            // Create my SSLSocketFactory beforce JWS has a change to
+            // initialize things and install its own.
+            SSLSocketFactory mySSLSocketFactory = 
+                getMySSLSocketFactory();
+
             int argIndex = 0;
 			URL credURL = new URL(args[argIndex++]);
 			String token = args[argIndex++];
             String DN = args[argIndex++];
 
+            
             UMask umask = new UMask();
 
             try
@@ -97,8 +104,6 @@ public class CredentialRetriever {
                 throw new Exception("Error checking umask: " + e.getMessage());
             }
             
-			setupTrustedCAs();
-			
 			// URL must be https
 			String protocol = credURL.getProtocol();
 			if (!protocol.equals("https"))
@@ -141,9 +146,10 @@ public class CredentialRetriever {
 
             HttpsURLConnection conn =
                 (HttpsURLConnection) credURL.openConnection();
+            conn.setSSLSocketFactory(mySSLSocketFactory);
 	        conn.setDoOutput(true);
             conn.setRequestProperty("Cookie", token);
-
+            
             // Write our POST data
             OutputStreamWriter postWriter =
                 new OutputStreamWriter(conn.getOutputStream());
@@ -234,16 +240,26 @@ public class CredentialRetriever {
         gui.waitForOK();
 	}
 
-	public void setupTrustedCAs()
-	{
+    private SSLSocketFactory getMySSLSocketFactory()
+    {
+        /*
+         * Get a socket factory for our use that trusts all the CAs we want it
+         * to trust.This function has to be called before Java Web Start has
+         * a change to initialize its own SSLSocketFactory.
+         */
+
 		try
 		{
+            /*
+             * First we create our list of trusted CAs and put them into java
+             * properties so that they are read when the default
+             * SSLSocketFactory is created.
+             */
 			ClassLoader cl = this.getClass().getClassLoader();
 			URL url = cl.getResource("resources/trustStore");
 			if (url == null)
 			{
-				gui.warning("Could not find trusted CAs");
-				return;
+                throw new Exception("Could not find trusted CAs in JAR file.");
  			}
 			String path = url.toString();
 			// If file is in a jar, we need to write it into a temporary
@@ -273,7 +289,17 @@ public class CredentialRetriever {
 		} catch (Exception e ) {
 			gui.warning("Failed to initiate trusted CAs: " + e.getMessage());
 		}
-	}
+ 
+        /*
+         * Now we get the current default SSLSocketFactory. Doing this will
+         * initialize the factory, causing the trusted CAs created above to
+         * be read.
+         */
+        SSLSocketFactory defaultSSLSocketFactory = 
+            (SSLSocketFactory) SSLSocketFactory.getDefault();
+
+        return defaultSSLSocketFactory;
+    }
 
 	public void copyStream(InputStream in, OutputStream out)
 		throws IOException
