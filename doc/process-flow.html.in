@@ -1,0 +1,53 @@
+<html>
+<head>
+<!-- $Id$ -->
+<title>GridShib CA: Development Notes</title>
+<!-- global style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/global.css" />
+
+<!-- local style sheet -->
+<link rel="stylesheet" type="text/css" href="/styles/local.css" />
+</head>
+@DOC_HEADER@
+
+<center><h1>GridShib CA Process Flow</h1></center>
+
+<img src="gridshib-ca-process-flow.jpg" width=100%>
+<ol>
+<li>User visits index.html with browser. Is directed to logon by
+	clicking on form submit button.
+<li>By clicking on logon button, use is sent to welcome.pl. This will
+	cause Shibboleth authentication. The main job of welcome.pl is to
+	ensure that the user's shibboleth identity is accessible and
+	valid. User is directed to click a submit button to retrieve their
+	credentials.
+<li>Clicking submit sends the user to login.html. This page serves as
+	something for the user to look at while the java web start
+	application runs. It uses javascript to redirect the user to the
+	login cgi script.
+<li>The login cgi script creates the JNLP file to launch the Java Web
+	Start application. It pulls the user's Shibboleth Session cookie
+	and places that in the JNLP file along with the user's DN and the
+	URL for the generateCred.pl script.
+<li>The web browser saves the jnlp file to disk and launches Java Web
+	Start, passing it the jnlp file.
+<li>Java Web Start downloads the GridShib.jar file as directed by the
+	JNLP file, and launches the CredentialRetriever class from the jar,
+	passing it the Shibboleth Session, DN and URL from the JNLP file as
+	arguments.
+<li>CredentialRetriever runs, creates a key pair and certificate
+	request, and sends the certificate request to
+	generateCred.pl. CredentialRetriever uses the Shibboleth Session
+	received via the JNLP file to authenticate to generateCred.pl as if
+	it were the user's web browser.
+<li>generateCred.pl validates the certificate request and hands it off
+	to a CA (either a local OpenSSL-based CA or a MyProxy-based CA) for
+	signing, receiving the signed certificate in return.
+<li>generateCred.pl returns the certificate to Credential Retriever.
+<li>CredentialRetriever writes the certificate and private key to
+	local disk in the location expected by Globus Toolkit and compatible
+	software.
+</ol>
+
+@DOC_FOOTER@
+</html>

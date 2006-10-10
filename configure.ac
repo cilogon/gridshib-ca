@@ -310,7 +310,8 @@ if test ${MODE} = "build" ; then
 	doc/license.html \
         doc/install.html \
 	doc/changelog.html \
-	doc/callouts.html"
+	doc/callouts.html \
+	doc/process-flow.html"
    AC_SUBST(DOC_FILES)
    AC_CONFIG_FILES([$DOC_FILES])
 fi
