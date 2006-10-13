@@ -2,6 +2,8 @@
 <center>
 <hr>
 @COPYRIGHT@
+<p>
+This product includes cryptographic software written by Eric Young (eay@cryptsoft.com)
 </center>
 </body>
 <!-- End footer.html -->
