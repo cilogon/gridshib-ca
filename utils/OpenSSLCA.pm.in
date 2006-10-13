@@ -66,6 +66,8 @@ $CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
 
 $OPENSSL = "@OPENSSL@";
 
+$OPENSSL_CA = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
+
 # new()
 # Create a new interface to the CA.
 # Arguments:
@@ -114,52 +116,12 @@ sub signRequest
 
     my @args;
 
-    # OpenSSL has no way from the commandline to say what DN should
-    # go into a signed certificate. We also cannot change the request
-    # because openssl insists that it be signed. So the only thing we
-    # can do is check and make sure the DN in the request is what we
-    # expect.
-    @args = ("req", "-text");
-
-    my $reqCmd = Command->new($OPENSSL, @args);
-    $reqCmd->setInput($certificateRequest);
-    if (!$reqCmd->exec())
-    {
-	$self->_error("Could not parse certificate request: " .
-		      $reqCmd->getError());
-	return undef;
-    }
-    my $reqText = $reqCmd->getOutput();
-    my $reqDN = undef;
-
-    # m == multiline string comparison
-    if ($reqText =~ /Subject: (.*)$/m)
-    {
-	$reqDN = $1;
-    }
-
-    if (!defined($reqDN))
-    {
-	# DEBUG
-	open(DBG, ">/tmp/gridshib-ca-debug");
-	print DBG $reqText;
-	close(DBG);
-
-	$self->_error("Unable to extract DN from certificate request");
-	return undef;
-    }
-
-    # OpenSSL have given us a DN, but it is in reverse order, so we
-    # need to reverse the components
-    $reqDN = join(", ", reverse(split(/, /, $reqDN)));
-
     my $DN = $self->getDN();
 
-    if ($reqDN ne $DN)
-    {
-	$self->_error("DN in request ($reqDN) does not match valid DN ($DN)");
-	return undef;
-    }
+    # We need a DN in openssl format - e.g. /C=US/O=Foo/OU=Bar/CN=John Smith
+    # Split RFC 2253 style DN on comma, reverse and join with slashes
+    # Need to prepend a slash, as join doesn't do that for us.
+    my $opensslFormatDN = "/" . join("/", reverse(split(/, /, $DN)));
 
     # Everything checks out. Go ahead and sign certificate request.
 
@@ -169,19 +131,18 @@ sub signRequest
 
     # Sign certificate request
     # Request is read from stdin and certificate output to stdout
-    push(@args, "x509");
-    push(@args, "-req");
+    push(@args, "-subj", $opensslFormatDN);
     push(@args, "-days", $self->{lifetime});
     push(@args, "-CA", $self->{cert});
     push(@args, "-CAkey", $self->{key});
     push(@args, "-CAserial", $self->{serialFile});
     push(@args, "-CAcreateserial");
 
-    my $cmd = Command->new($OPENSSL, @args);
+    my $cmd = Command->new($OPENSSL_CA, @args);
     $cmd->setInput($certificateRequest);
     if (!$cmd->exec())
     {
-	$self->_error("Error executing $OPENSSL: " . $cmd->getError());
+	$self->_error("Error executing $OPENSSL_CA: " . $cmd->getError());
 	return undef;
     }
     return $cmd->getOutput();

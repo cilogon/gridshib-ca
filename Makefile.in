@@ -51,6 +51,8 @@ prefix = @prefix@
 # Mode: "build" if build is enabled; "dist" otherwise
 MODE=@MODE@
 
+SUBDIRS=@SUBDIRS@
+
 ######################################################################
 
 # Trusted CA certificates to include in Jar trustStore
@@ -107,7 +109,9 @@ DIST_FILES=$(JARFILE) \
 	$(JAVA_SRCS) \
 	utils/*.in \
 	$(CA_CERTS) \
-	LICENSE
+	LICENSE \
+	openssl-ca/Makefile.in \
+	openssl-ca/*.[ch]
 
 # Distribution file
 DIST_FILE=@DIST_FILE_BASE@.tar.gz
@@ -120,6 +124,7 @@ DIST_FILE=@DIST_FILE_BASE@.tar.gz
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 CONF_FILES=@CONF_FILES@
 UTILS=@UTILS@
+BINARIES=@BINARIES@
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 PROTECTED_CGI_BIN_FILES=@CGI_BIN_SCRIPTS@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
@@ -162,7 +167,9 @@ PERL = @PERL@
 
 default: build-$(MODE)
 
-clean:
+all: configure-generated-scripts subdirs $(JARFILE)
+
+clean: subdirs-clean
 	rm -f $(JAVA_CLASSES)
 
 realclean: clean
@@ -170,8 +177,20 @@ realclean: clean
 	rm -f $(TRUST_STORE)
 	rm -f $(DIST_FILE)
 
-build-dist:	configure-generated-scripts
+build-dist:	configure-generated-scripts subdirs
 	@echo "Run 'make install' to install."
+
+subdirs:
+	@for subdir in $(SUBDIRS) ; do \
+		echo "Running make in $${subdir}:" ; \
+		(cd $${subdir}; make) ; \
+	done
+
+subdirs-clean:
+	for subdir in $(SUBDIRS) ; do \
+		echo "Running 'make clean' in $${subdir}:" ; \
+		(cd $${subdir}; make clean) ; \
+	done
 
 build-build:	build-mode $(JAVA_SRCS) $(JAVA_CLASSES) configure-generated-scripts
 
@@ -243,7 +262,7 @@ install: configure-generated-scripts
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
-	@for file in $(UTILS) ; do \
+	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
@@ -288,6 +307,9 @@ uninstall:
 #
 
 Makefile: Makefile.in config.status
+	./config.status
+
+openssl-ca/Makefile: openssl-ca/Makefile.in config.status
 	./config.status
 
 config.status: configure

@@ -155,7 +155,6 @@ while (<INPUT>) {
     s/\$\$token/$shibsession/;
     s/\$\$code_base/$code_base/;
     s/\$\$genCredURL/$genCredURL/;
-    s/\$\$DN/$DN/;
     print;
 }
 close(INPUT);

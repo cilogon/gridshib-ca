@@ -86,8 +86,10 @@ public class CredentialRetriever {
             int argIndex = 0;
 			URL credURL = new URL(args[argIndex++]);
 			String token = args[argIndex++];
-            String DN = args[argIndex++];
 
+            // A bogus DN to put in the certificate request. It will
+            // be overwritten by the GridShib-CA with the real user DN
+            String DN = "CN=Credential Retriever, O=GridShib-CA, C=US";
             
             UMask umask = new UMask();
 
@@ -119,7 +121,6 @@ public class CredentialRetriever {
             KeyPair keypair = keyGenerator.genKeyPair();
 
 			gui.displayMessage("Generating certificate request...");
-            gui.displayMessage("Grid identity is: " + DN);
 
             PKCS10CertificateRequest pkcs10 =
                 new PKCS10CertificateRequest(keypair, DN);

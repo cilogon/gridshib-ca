@@ -1,0 +1,16 @@
+This directory contains a simplified version of the openssl 'x509'
+command for signing certificate requests, enhanced with the ability to
+set the DN on the signed certificates.
+
+The files in this directory fall under the OpenSSL license. The the
+file LICENSE for details.
+
+These files are from the openssl-0.9.8d distribution. The files
+app_rand.c, apps.c apps.h, and e_os.h are all taken from the
+distribution with the only changes being to #ifdef out unneeded code
+that cause problems with prior versions of openssl.
+
+The file openssl-ca.c is a stripped down version of x509.c from the
+openssl distribution, streamlined to just sign certificate requests
+and with enhancements to allow the setting of the subject by the
+caller.

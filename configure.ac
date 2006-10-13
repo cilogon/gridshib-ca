@@ -15,6 +15,9 @@ AC_COPYRIGHT(${COPYRIGHT})
 LICENSE="LICENSE"
 AC_SUBST_FILE(LICENSE)
 
+SUBDIRS=""
+BINARIES=""
+
 PACKAGE_VERSION_MOD=`echo ${PACKAGE_VERSION} | sed -e "s/\./_/g"`
 DIST_FILE_BASE=${PACKAGE_NAME}-${PACKAGE_VERSION_MOD}
 AC_SUBST(DIST_FILE_BASE)
@@ -61,6 +64,9 @@ if test "$CA_TYPE" = "myproxy"; then
 # CA_TYPE = myproxy
 elif test "$CA_TYPE" = "openssl"; then
 
+   AC_PROG_CC
+   AC_CHECK_LIB(crypto, CRYPTO_malloc)
+
    AC_ARG_WITH(openssl-path,
 	AC_HELP_STRING([--with-openssl-path],
 		[Specify path to openssl binary (Default: None)]),
@@ -86,6 +92,8 @@ elif test "$CA_TYPE" = "openssl"; then
   AC_MSG_RESULT(${CA_DN})
 
   GRIDSHIB_CA_MODULE="OpenSSLCA"
+  BINARIES="${BINARIES} openssl-ca/openssl-ca"
+  SUBDIRS="${SUBDIRS} openssl-ca"
 
 else # CA_TYPE = openssl
      AC_MSG_ERROR([Unknown CA Type specified.])
@@ -287,6 +295,8 @@ UTILS="utils/mapper.sh \
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
+AC_SUBST(BINARIES)
+
 dnl syslog parameters
 SYSLOG_ID="GridShib-CA"
 AC_SUBST(SYSLOG_ID)
@@ -344,7 +354,15 @@ CONF_GENERATED_SCRIPTS="${CGI_BIN_SCRIPTS} \
 	${CONF_FILES} \
 	${UTILS} \
 	${GENERATED_DOC_FILES} \
-	${MISC_FILES}"
+	${MISC_FILES} \
+	Makefile"
+
+for subdir in ${SUBDIRS} ; do
+    CONF_GENERATED_SCRIPTS="${CONF_GENERATED_SCRIPTS} ${subdir}/Makefile"
+    AC_CONFIG_FILES([${subdir}/Makefile])
+done
+AC_SUBST(SUBDIRS)
+
 AC_SUBST(CONF_GENERATED_SCRIPTS)
 
 AC_CONFIG_FILES([Makefile])

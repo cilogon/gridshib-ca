@@ -1,3 +1,13 @@
+With the following exceptions, this package is licensed under the
+following license.
+
+Exceptions:
+
+* The openssl-ca code in openssl-ca/ is under the OpenSSL license. See
+  openssl-ca/LICENSE.
+
+----
+
 Copyright 2006 The Board of Trustees of the University of Illinois.
 All rights reserved.
 
