@@ -49,8 +49,8 @@
 ######################################################################
 
 use @GRIDSHIB_CA_MODULE@;
-use CGIinterface;
-use Logger;
+use GridShibCA::CGIinterface;
+use GridShibCA::Logger;
 
 # Run safely
 $ENV{PATH} = "/bin";
@@ -93,11 +93,11 @@ sub errorExit($$)
 # Initialize Logging
 #
 
-$logger = Logger->new();
+$logger = GridShibCA::Logger->new();
 
 ######################################################################
 
-$cgi = new CGIinterface;
+$cgi = new GridShibCA::CGIinterface;
 
 $user = $cgi->getUserId();
 
@@ -160,7 +160,7 @@ if (!defined($DN))
 
 if (-x $AUTHZ_PROG)
 {
-    my $authzCmd = Command->new($AUTHZ_PROG, $user);
+    my $authzCmd = GridShibCA::Command->new($AUTHZ_PROG, $user);
     if (!$authzCmd->exec())
     {
 	my $status = $authzCmd->getStatus() >> 8;

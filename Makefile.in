@@ -90,6 +90,10 @@ CONFIGURE_GENERATED_SCRIPTS=@CONF_GENERATED_SCRIPTS@
 HTML_INCS = @HTML_INCS@
 HTML_DEPS = $(HTML_INCS:.html=.html.in) @HTML_DEPS@
 
+# Perl module sources
+PERL_MODULE_SRCS = perl/GridShibCA/*.pm.in
+PERL_MODULES = @PERL_MODULES@
+
 #
 # Distribution configuration
 #
@@ -111,7 +115,8 @@ DIST_FILES=$(JARFILE) \
 	$(CA_CERTS) \
 	LICENSE \
 	openssl-ca/Makefile.in \
-	openssl-ca/*.[ch]
+	openssl-ca/*.[ch] \
+	$(PERL_MODULE_SRCS)
 
 # Distribution file
 DIST_FILE=@DIST_FILE_BASE@.tar.gz
@@ -125,6 +130,7 @@ GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 CONF_FILES=@CONF_FILES@
 UTILS=@UTILS@
 BINARIES=@BINARIES@
+PERL_MODULE_DIR=$(GRIDSHIB_CA_CONF_DIR)/GridShibCA/
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 PROTECTED_CGI_BIN_FILES=@CGI_BIN_SCRIPTS@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
@@ -219,7 +225,7 @@ $(JARFILE): $(UNSIGNED_JARFILE)
 
 check-perl: configure-generated-scripts
 	for script in webdocs/*.pl webdocs/*.cgi utils/*.pl ; do \
-		$(PERL) -c -T -I./utils $${script} ; \
+		$(PERL) -c -T -I./perl/ $${script} ; \
 	done
 
 ######################################################################
@@ -265,6 +271,12 @@ install: configure-generated-scripts
 	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+	done
+	@echo "Creating $(PERL_MODULE_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(PERL_MODULE_DIR)
+	@for file in $(PERL_MODULES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(PERL_MODULE_DIR) ;\
 	done
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
@@ -332,6 +344,10 @@ configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 # assume that is a prerequisite along with config.status and use
 # config.status to regenerate it if needed.
 % :: %.in config.status
+	./config.status
+
+# welcome.pl also depends on HTML header and footer
+welcome.pl: welcome.pl.in config.status $(HTML_INCS)
 	./config.status
 
 ######################################################################

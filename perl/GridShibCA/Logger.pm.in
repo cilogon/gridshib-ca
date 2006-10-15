@@ -1,10 +1,8 @@
-#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# GridShib CA interface for CGI. This is mostly a wrapper around
-# the Perl CGI module.
+# Logging functions.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,87 +43,83 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
+#
+# Logger class
+#
+# Interface to logging.
+#
 
-package CGIinterface;
-use Logger;
+package GridShibCA::Logger;
 
-# Inherit CGI class
-use CGI;
-@ISA = ("CGI");
+use Sys::Syslog;
+use File::Basename;
 
-# getCertificateRequest
-# Returns the certificate request from POST.
+# Syslog parameters
+$SYSLOG_ID = "@SYSLOG_ID@";
+$SYSLOG_OPTS = "pid";
+$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+
+$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
+
+# new()
+# Create a new Logger object.
 # Arguments: None
-# Returns: Certificate request, or undef if not present
-sub getCertificateRequest
+# Returns: Logger instance
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
+    openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+    bless($self, $class);
+    return $self;
+}
+
+# log()
+# Log a message.
+# Arguments:
+#  $level - one of "info", "warn", "err"
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub log
 {
     my $self = shift;
-    return $self->param('certificateRequest');
+    my $level = shift;
+    my $format = shift;
+    my @args = @_;
+    syslog($level, $format, @args);
 }
 
-# getUserId
-# Return the user id as reported by Shibboleth through REMOTE_USER.
-# Clean the user id so it can pass taint checking.
-# Arguments: None
-# Returns: User id as string, or under if unknown
-sub getUserId
+# info()
+# Log an informative message
+# Arguments:
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub info
 {
     my $self = shift;
-    my $remote_user = $self->remote_user();
-    my $userId = undef;
-    # Clean user anme (from perlsec manual)
-    if ($remote_user =~ /^([-\@\w.]+)$/)
-    {
-	$userId = $1;
-    }
-    else
-    {
-	my $logger = Logger->new();
-	$logger->err("Illegal characters detected in REMOTE_USER ($remote_user)");
-    }
-    return $userId;
+    $self->log("info", @_);
 }
 
-# getIdP
-# Returns the Shibboleth identity provider
-# Arguments: None
-# Returns: IdP as string, or undef if unknown
-sub getIdP
+
+# err()
+# Log an error message
+# Arguments:
+#  $format, @args - as would be presented to sprintf()
+# Returns: Nothing
+sub err
 {
-    my $idp = undef;
-    if (defined($ENV{"HTTP_SHIB_IDENTITY_PROVIDER"}))
-    {
-	$idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
-    }
-    return $idp;
+    my $self = shift;
+    $self->log("err", @_);
 }
 
-# getShibSession
-# Returns the Shibboleth session cookie as a "variable=value" string.
-# Arguments: None
-# Returns: Shibboleth session or undef if cannout be found
-sub getShibSession
-{
-    use CGI::Cookie;
-
-    my %cookies = fetch CGI::Cookie;
-    my $shibsession = undef;
-    foreach my $key (keys %cookies)
-    {
-	if ($key =~ /_shibsession_/)
-	{
-	    $shibsession = $key . "=" . $cookies{$key}->value;
-	    last;
-	}
-    }
-    return $shibsession;
-}
-
-    
 # Return true for import/use
 1;
 
-######################################################################
+#
+# End include.pl
+#
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
+######################################################################

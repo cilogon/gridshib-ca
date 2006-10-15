@@ -52,8 +52,8 @@
 ######################################################################
 
 use @GRIDSHIB_CA_MODULE@;
-use CGIinterface;
-use Logger;
+use GridShibCA::CGIinterface;
+use GridShibCA::Logger;
 
 # Allowing for safe program execution in taint mode
 $ENV{PATH} = "/bin";
@@ -67,10 +67,6 @@ my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
 sub errorExit($)
 {
   my $error_string = shift;
-
-  use CGI;
-
-  $cgi = new CGI;
 
   print $cgi->header("text/plain");
 
@@ -86,16 +82,14 @@ sub errorExit($)
 # Initialize Logging
 #
 
-my $logger = Logger->new();
+$logger = GridShibCA::Logger->new();
 
 ######################################################################
 #
 # Main code
 #
 
-use CGIinterface;
-
-$cgi = new CGIinterface;
+$cgi = new GridShibCA::CGIinterface;
 
 my $url = $cgi->url();
 my $url_base = $cgi->url(-base=>1);

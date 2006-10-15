@@ -3,9 +3,8 @@
 #
 # $Id$
 #
-# This script serves as a welcome mat for users. It should be Shibboleth
-# protected and it makes sure that REMOTE_USER is available before
-# providing a link to invoke the "login" script.
+# GridShib CA interface for CGI. This is mostly a wrapper around
+# the Perl CGI module.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -47,106 +46,86 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use @GRIDSHIB_CA_MODULE@;
-use GridShibCA::CGIinterface;
+package GridShibCA::CGIinterface;
 use GridShibCA::Logger;
 
-sub errorExit($)
+# Inherit CGI class
+use CGI;
+@ISA = ("CGI");
+
+# getCertificateRequest
+# Returns the certificate request from POST.
+# Arguments: None
+# Returns: Certificate request, or undef if not present
+sub getCertificateRequest
 {
-    my $string = shift;
-
-    $logger->err($string);
-
-    print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-<title>GridShib CA Error</title>
-</head>
-<body>
-$string
-</body>
-</html>
-EOF
-;
-    exit(1);
+    my $self = shift;
+    return $self->param('certificateRequest');
 }
 
-######################################################################
-
-# For safe mode
-$ENV{PATH} = "/bin";
-
-$logger = GridShibCA::Logger->new();
-
-######################################################################
-
-my $cgi = new GridShibCA::CGIinterface;
-
-my $user = $cgi->getUserId();
-my $idp = $cgi->getIdP();
-my $DN = undef;
-
-if (defined($user))
+# getUserId
+# Return the user id as reported by Shibboleth through REMOTE_USER.
+# Clean the user id so it can pass taint checking.
+# Arguments: None
+# Returns: User id as string, or under if unknown
+sub getUserId
 {
-    my $ca = @GRIDSHIB_CA_MODULE@->new($user, $idp);
-    $DN = $ca->getDN();
-    if (!defined($DN))
+    my $self = shift;
+    my $remote_user = $self->remote_user();
+    my $userId = undef;
+    # Clean user anme (from perlsec manual)
+    if ($remote_user =~ /^([-\@\w.]+)$/)
     {
-	errorExit("Could not get DN for user: " . $ca->getError());
+	$userId = $1;
     }
+    else
+    {
+	my $logger = Logger->new();
+	$logger->err("Illegal characters detected in REMOTE_USER ($remote_user)");
+    }
+    return $userId;
 }
+
+# getIdP
+# Returns the Shibboleth identity provider
+# Arguments: None
+# Returns: IdP as string, or undef if unknown
+sub getIdP
+{
+    my $idp = undef;
+    if (defined($ENV{"HTTP_SHIB_IDENTITY_PROVIDER"}))
+    {
+	$idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+    }
+    return $idp;
+}
+
+# getShibSession
+# Returns the Shibboleth session cookie as a "variable=value" string.
+# Arguments: None
+# Returns: Shibboleth session or undef if cannout be found
+sub getShibSession
+{
+    use CGI::Cookie;
+
+    my %cookies = fetch CGI::Cookie;
+    my $shibsession = undef;
+    foreach my $key (keys %cookies)
+    {
+	if ($key =~ /_shibsession_/)
+	{
+	    $shibsession = $key . "=" . $cookies{$key}->value;
+	    last;
+	}
+    }
+    return $shibsession;
+}
+
+    
+# Return true for import/use
+1;
 
 ######################################################################
-
-print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-  <title>GridShib CA Welcome</title>
-  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
-  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-</head>
-@HTML_HEADER@
-EOF
-
-if (defined($user))
-{
-    print <<"EOF";
-<center>
-Welcome $user.
-<p>
-Your GridShib-CA identity will be $DN
-<p>
-<form action=\"@GRIDSHIB_CA_URL@/login.html\">
-  <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
-</form>
-</center>
-EOF
-}
-elsif (defined($idp))
-{
-    print <<"EOF";
-We're sorry. Your origin site ($idp) 
-is not releasing your identity to us, so we cannot proceed.
-EOF
-}
-else
-{
- print <<"EOF";
-Cannot determine Shibboleth identity or origin site.
-It appears this script is not Shibboleth protected.
-Please check configuration.
-EOF
-}
-
-print <<"EOF";
-@HTML_FOOTER@
-</html>
-EOF
-
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***

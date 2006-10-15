@@ -3,8 +3,7 @@
 #
 # $Id$
 #
-# Use OpenSSL to act as a CA and create certificates for the
-# GridShib-CA.
+# Base class for CA interface for GridShib CA.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -46,27 +45,11 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-package OpenSSLCA;
+package GridShibCA::CA;
 
-# Inherit CA class
-use CA;
-@ISA = ("CA");
-
-use Command;
-
-# For safe mode
-$ENV{PATH} = "/bin";
-
-# CA Key and certificate
-$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
-
-$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
-
-$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
-
-$OPENSSL = "@OPENSSL@";
-
-$OPENSSL_CA = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
+# Credential parameters
+$LIFETIME = 1;   # in days
+$RELATIVE_DN = "@RELATIVE_DN@";
 
 # new()
 # Create a new interface to the CA.
@@ -77,12 +60,28 @@ $OPENSSL_CA = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
 sub new
 {
     my $class = shift;
-    my $self = $class->SUPER::new(@_);
-    $self->{cert} = $CA_CERT;
-    $self->{key} = $CA_KEY;
-    $self->{serialFile} = $CA_SERIAL;
+    my $self = {};
+    $self->{username} = shift;
+    $self->{idp} = shift;
+    $self->{lifetime} = $LIFETIME;
+    $self->{relativeDN} = $RELATIVE_DN;
+    $self->{error} = undef;
     bless($self, $class);
     return $self;
+}
+
+# getDN
+# Given a username, return the DN for the user
+# Arguments: None
+# Returns: DN as string, or undef on error
+
+sub getDN
+{
+    my $self = shift;
+
+    my $DN = "CN=" . $self->{username} . ", " . $self->{relativeDN};
+
+    return $DN;
 }
 
 # signRequest
@@ -92,60 +91,21 @@ sub new
 #  Username
 sub signRequest
 {
+    $self->_error("signRequest() unimplemented");
+    return undef;
+}
+
+sub _error
+{
     my $self = shift;
-    my $certificateRequest = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
 
-    # Check for our key and certificate
-    if (! -e $OPENSSL)
-    {
-	$self->_error("Could not find openssl executable: $OPENSSL");
-	return undef;
-    }
-
-    if (! -r $self->{cert})
-    {
-	$self->_error("Could not read certificate: " . $self->{cert});
-	return undef;
-    }
-
-    if (! -r $self->{key})
-    {
-	$self->_error("Could not read private key: " . $self->{key});
-	return undef;
-    }
-
-    my @args;
-
-    my $DN = $self->getDN();
-
-    # We need a DN in openssl format - e.g. /C=US/O=Foo/OU=Bar/CN=John Smith
-    # Split RFC 2253 style DN on comma, reverse and join with slashes
-    # Need to prepend a slash, as join doesn't do that for us.
-    my $opensslFormatDN = "/" . join("/", reverse(split(/, /, $DN)));
-
-    # Everything checks out. Go ahead and sign certificate request.
-
-    # XXX Need to have locking here to serialize access to the serial file
-    my $status;
-    @args = ();
-
-    # Sign certificate request
-    # Request is read from stdin and certificate output to stdout
-    push(@args, "-subj", $opensslFormatDN);
-    push(@args, "-days", $self->{lifetime});
-    push(@args, "-CA", $self->{cert});
-    push(@args, "-CAkey", $self->{key});
-    push(@args, "-CAserial", $self->{serialFile});
-    push(@args, "-CAcreateserial");
-
-    my $cmd = Command->new($OPENSSL_CA, @args);
-    $cmd->setInput($certificateRequest);
-    if (!$cmd->exec())
-    {
-	$self->_error("Error executing $OPENSSL_CA: " . $cmd->getError());
-	return undef;
-    }
-    return $cmd->getOutput();
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
 }
 
 # Return true for import/use

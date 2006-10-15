@@ -59,7 +59,7 @@ if test "$CA_TYPE" = "myproxy"; then
       AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
    fi
 
-  GRIDSHIB_CA_MODULE="MyProxyCA"
+  GRIDSHIB_CA_MODULE="GridShibCA::MyProxyCA"
 
 # CA_TYPE = myproxy
 elif test "$CA_TYPE" = "openssl"; then
@@ -91,7 +91,7 @@ elif test "$CA_TYPE" = "openssl"; then
   AC_SUBST(CA_DN)
   AC_MSG_RESULT(${CA_DN})
 
-  GRIDSHIB_CA_MODULE="OpenSSLCA"
+  GRIDSHIB_CA_MODULE="GridShibCA::OpenSSLCA"
   BINARIES="${BINARIES} openssl-ca/openssl-ca"
   SUBDIRS="${SUBDIRS} openssl-ca"
 
@@ -284,14 +284,8 @@ AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
 UTILS="utils/mapper.sh \
-        utils/CA.pm \
-        utils/OpenSSLCA.pm \
 	utils/create-openssl-ca.pl \
-	utils/ca-myproxy.pl \
-	utils/CGIinterface.pm \
-	utils/GridShibCAUtils.pm \
-	utils/Command.pm \
-	utils/Logger.pm"
+	utils/ca-myproxy.pl"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 
@@ -309,6 +303,16 @@ AC_SUBST(JAVA_SRCS)
 
 JAR_FILE="GridShibCA.jar"
 AC_SUBST(JAR_FILE)
+
+dnl PERL modules
+PERL_MODULES="\
+	perl/GridShibCA/CA.pm \
+	perl/GridShibCA/CGIinterface.pm \
+	perl/GridShibCA/Command.pm \
+	perl/GridShibCA/Logger.pm \
+	perl/GridShibCA/OpenSSLCA.pm"
+AC_SUBST(PERL_MODULES)
+AC_CONFIG_FILES([$PERL_MODULES])
 
 MISC_FILES=""
 
@@ -355,6 +359,7 @@ CONF_GENERATED_SCRIPTS="${CGI_BIN_SCRIPTS} \
 	${UTILS} \
 	${GENERATED_DOC_FILES} \
 	${MISC_FILES} \
+	${PERL_MODULES} \
 	Makefile"
 
 for subdir in ${SUBDIRS} ; do

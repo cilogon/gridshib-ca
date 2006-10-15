@@ -2,7 +2,8 @@
 #
 # $Id$
 #
-# Logging functions.
+# Utility functions to be included in all GridShib-CA perl scripts
+# by configure.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -44,73 +45,139 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 #
-# Logger class
+# Command class
 #
-# Interface to logging.
+# Interface to executing command, controling its STDIN and getting
+# its STDOUT and STDERR.
 #
 
-package Logger;
-
-use Sys::Syslog;
-use File::Basename;
-
-# Syslog parameters
-$SYSLOG_ID = "@SYSLOG_ID@";
-$SYSLOG_OPTS = "pid";
-$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
-
-$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
+package GridShibCA::Command;
+use IPC::Open3;
 
 # new()
-# Create a new Logger object.
-# Arguments: None
-# Returns: Logger instance
+# Create a new Command object.
+# Arguments:
+#  $executable - name of executable
+#  @arguments - array of arguments to pass
+# Returns: Command instance
 sub new
 {
     my $class = shift;
     my $self = {};
-    my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
-    openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+    $self->{command} = shift;
+    $self->{args} = \@_;
+    $self->{useSTDIN} = 0;
+    $self->{input} = undef;
     bless($self, $class);
     return $self;
 }
 
-# log()
-# Log a message.
-# Arguments:
-#  $level - one of "info", "warn", "err"
-#  $format, @args - as would be presented to sprintf()
+# useSTDIN()
+# Have executed command use STDIN of calling program.
+# Arguments: None
 # Returns: Nothing
-sub log
+
+sub useSTDIN
 {
     my $self = shift;
-    my $level = shift;
-    my $format = shift;
-    my @args = @_;
-    syslog($level, $format, @args);
+    $self->{useSTDIN} = 1;
+    $self->{input} = undef;
 }
 
-# info()
-# Log an informative message
+# setInput()
+# Cause the given string to be passed to command as input.
 # Arguments:
-#  $format, @args - as would be presented to sprintf()
+#  $string - string to pass into program
 # Returns: Nothing
-sub info
+
+sub setInput
 {
     my $self = shift;
-    $self->log("info", @_);
+    $self->{input} = shift;
+    $self->{useSTDIN} = 0;
 }
 
+# exec()
+# Execute the command.
+# Arguments: None
+# Returns: 1 on success, 0 otherwise
 
-# err()
-# Log an error message
-# Arguments:
-#  $format, @args - as would be presented to sprintf()
-# Returns: Nothing
-sub err
+sub exec
 {
     my $self = shift;
-    $self->log("err", @_);
+    local(*cmdIn, *cmdOut, *cmdErr);
+    my ($pid);
+
+    my $inFD = \*cmdIn;
+    if ($self->{useSTDIN} == 1)
+    {
+	# Redirect our STDIN to process
+	$inFD = "<&STDIN";
+    }
+
+    my (@cmdArgs) = ( $self->{command}, @{$self->{args}} );
+    
+    # XXX Error handling
+    $pid = IPC::Open3::open3($inFD, \*cmdOut, \*cmdErr, @cmdArgs);
+
+    if (defined($self->{input}))
+    {
+	print cmdIn $self->{input};
+    }
+    close(cmdIn);
+
+    waitpid($pid, 0);
+
+    $self->{status} = $?;
+
+    # Read STDOUT and STDERR from command
+    $self->{stdout} = "";
+    $self->{stderr} = "";
+
+    while (<cmdErr>)
+    {
+	$self->{stderr} .= $_;
+    }
+    close(cmdErr);
+
+    while (<cmdOut>)
+    {
+	$self->{stdout} .= $_;
+    }
+    close(cmdOut);
+
+    return ($self->{status} == 0);
+}
+
+# getOutput()
+# Return the output from the command
+# Arguments: None
+# Returns: String containing output from command
+sub getOutput
+{
+    my $self = shift;
+    return $self->{stdout};
+}
+
+# getError()
+# Return Error message from the command
+# Arguments: None
+# Returns: String containing Error Message from command. Maybe be undef
+# if no error has occurred.
+sub getError
+{
+    my $self = shift;
+    return $self->{stderr};
+}
+
+# getStatus()
+# Return status code from the command
+# Arguments: None
+# Returns: Status code ($?)
+sub getStatus
+{
+    my $self = shift;
+    return $self->{status};
 }
 
 # Return true for import/use
