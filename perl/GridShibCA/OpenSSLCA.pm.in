@@ -54,20 +54,6 @@ use GridShibCA::CA;
 
 use GridShibCA::Command;
 
-# For safe mode
-$ENV{PATH} = "/bin";
-
-# CA Key and certificate
-$CA_CERT = "@GRIDSHIB_CA_CERT_PATH@";
-
-$CA_KEY = "@GRIDSHIB_CA_KEY_PATH@";
-
-$CA_SERIAL = "@GRIDSHIB_CA_CONF_DIR@/serial";
-
-$OPENSSL = "@OPENSSL@";
-
-$OPENSSL_CA = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
-
 # new()
 # Create a new interface to the CA.
 # Arguments:
@@ -78,9 +64,10 @@ sub new
 {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
-    $self->{cert} = $CA_CERT;
-    $self->{key} = $CA_KEY;
-    $self->{serialFile} = $CA_SERIAL;
+    $self->{caProg} = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
+    $self->{cert} = "@GRIDSHIB_CA_CERT_PATH@";
+    $self->{key} = "@GRIDSHIB_CA_KEY_PATH@";
+    $self->{serialFile} = "@GRIDSHIB_CA_CONF_DIR@/serial";
     bless($self, $class);
     return $self;
 }
@@ -96,9 +83,10 @@ sub signRequest
     my $certificateRequest = shift;
 
     # Check for our key and certificate
-    if (! -e $OPENSSL)
+    if (! -e $self->{caProg})
     {
-	$self->_error("Could not find openssl executable: $OPENSSL");
+	$self->_error("Could not find openssl CA executable: %s ",
+		      $self->{ca_Prog});
 	return undef;
     }
 
@@ -138,11 +126,12 @@ sub signRequest
     push(@args, "-CAserial", $self->{serialFile});
     push(@args, "-CAcreateserial");
 
-    my $cmd = GridShibCA::Command->new($OPENSSL_CA, @args);
+    my $cmd = GridShibCA::Command->new($self->{caProg}, @args);
     $cmd->setInput($certificateRequest);
     if (!$cmd->exec())
     {
-	$self->_error("Error executing $OPENSSL_CA: " . $cmd->getError());
+	$self->_error("Error executing %s: %s",
+		      $self->{caProg}, $cmd->getError());
 	return undef;
     }
     return $cmd->getOutput();
