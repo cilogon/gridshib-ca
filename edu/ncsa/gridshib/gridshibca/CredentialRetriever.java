@@ -85,7 +85,8 @@ public class CredentialRetriever {
 
             int argIndex = 0;
 			URL credURL = new URL(args[argIndex++]);
-			String token = args[argIndex++];
+			String shibSession = args[argIndex++];
+            String token = args[argIndex++];
 
             // A bogus DN to put in the certificate request. It will
             // be overwritten by the GridShib-CA with the real user DN
@@ -149,14 +150,17 @@ public class CredentialRetriever {
                 (HttpsURLConnection) credURL.openConnection();
             conn.setSSLSocketFactory(mySSLSocketFactory);
 	        conn.setDoOutput(true);
-            conn.setRequestProperty("Cookie", token);
+            conn.setRequestProperty("Cookie", shibSession);
             
             // Write our POST data
             OutputStreamWriter postWriter =
                 new OutputStreamWriter(conn.getOutputStream());
             String postData =
                 "certificateRequest=" +
-                URLEncoder.encode(requestPEM, "UTF-8");
+                URLEncoder.encode(requestPEM, "UTF-8")
+                + "&" +
+                "token=" +
+                URLEncoder.encode(token, "UTF-8");
             postWriter.write(postData);
             postWriter.flush();
             

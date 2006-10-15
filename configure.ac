@@ -310,7 +310,8 @@ PERL_MODULES="\
 	perl/GridShibCA/CGIinterface.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Logger.pm \
-	perl/GridShibCA/OpenSSLCA.pm"
+	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/TokenGenerator.pm"
 AC_SUBST(PERL_MODULES)
 AC_CONFIG_FILES([$PERL_MODULES])
 
@@ -343,6 +344,9 @@ AC_SUBST(GRIDSHIB_LOGGER_PROG)
 
 GRIDSHIB_AUTHZ_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-authz-prog
 AC_SUBST(GRIDSHIB_AUTHZ_PROG)
+
+GRIDSHIB_CA_TOKEN_KEY=${GRIDSHIB_CA_CONF_DIR}/token-key
+AC_SUBST(GRIDSHIB_CA_TOKEN_KEY)
 
 # I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
 # they get carried over into @INC and screw up Perl.

@@ -1,0 +1,188 @@
+######################################################################
+#
+# $Id$
+#
+# Utility functions to be included in all GridShib-CA perl scripts
+# by configure.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+#
+# TokenGenerator class
+#
+# This class creates and validates tokens that allow the GridShibCA
+# to verify the user is intending to use the GridShibCA and not being
+# redirected here by, e.g., malicous JavaScript
+#
+
+package GridShibCA::TokenGenerator;
+use GridShibCA::Command;
+
+# new()
+# Create a new Token object. Note this is not a token itself, just an
+# instantiation of a Token object which can be used to create a token
+# via the generate() method.
+# Arguments:
+#  $userId - Id of user
+#  $remoteHost - host from which user is connecting
+# Returns: Token instance
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{key} = "@GRIDSHIB_CA_TOKEN_KEY@";
+    $self->{userId} = shift;
+    $self->{remoteHost} = shift;
+    $self->{openssl} = "@OPENSSL@";
+    $self->{cipher} = "aes-128-cbc";
+    $self->{magic} = "GRIDSHIB-CA";
+    # Maximum time skew of token in seconds
+    $self->{maxTimeSkew} = 5 * 60; # 5 minutes
+    bless($self, $class);
+    return $self;
+}
+
+# generate()
+# Create a token
+# Arguments: None
+# Returns: Token as string, undef on error
+sub generate
+{
+    my $self = shift;
+    my $tokenString = sprintf("%s:%s:%s:%d",
+			      $self->{magic},
+			      $self->{userId},
+			      $self->{remoteHost},
+			      time());
+
+    my @args = ($self->{cipher}, "-e", "-a", "-A",
+		"-pass", "file:" . $self->{key});
+    my $cmd = GridShibCA::Command->new($self->{openssl}, @args);
+    $cmd->setInput($tokenString);
+    if (!$cmd->exec())
+    {
+	$self->_error("Error encrypting token. Execution of %s failed: %s",
+		      $self->{openssl}, $cmd->getError());
+	return undef;
+    }
+    return $cmd->getOutput();
+}
+
+# verify()
+# Verify and validate a token
+# Arguments:
+#  $encTokenString - token as string
+#  Returns: 1 on success, 0 otherwise
+sub verify()
+{
+    my $self = shift;
+    my $encTokenString = shift;
+
+    my @args = ($self->{cipher}, "-d", "-a", "-A",
+		"-pass", "file:" . $self->{key});
+    my $cmd = GridShibCA::Command->new($self->{openssl}, @args);
+    $cmd->setInput($encTokenString);
+    if (!$cmd->exec())
+    {
+	$self->_error("Error decrypting token. Execution of %s failed: %s",
+		      $self->{openssl}, $cmd->getError());
+	return undef;
+    }
+    my $tokenString = $cmd->getOutput();
+    my ($magic, $userId, $remoteHost, $time) =
+	split(/:/, $tokenString);
+    if ($magic ne $self->{magic})
+    {
+	$self->_error("Bad magic: %s != %s",
+		      $magic, $self->{magic});
+	return 0;
+    }
+    if ($userId ne $self->{userId})
+    {
+	$self->_error("Bad userId: %s != %s",
+		      $userId, $self->{magic});
+	return 0;
+    }
+    if ($remoteHost ne $self->{remoteHost})
+    {
+	$self->_error("Bad remoteHost: %s != %s",
+		      $remoteHost, $self->{remoteHost});
+	return 0;
+    }
+    my $timeDiff = time() - $time;
+    if (abs($timeDiff) > $self->{maxTimeSkew})
+    {
+	$self->_error("Time skew too great: %d", $timeDiff);
+	return 0;
+    }
+    # Success
+    return 1;
+}
+
+
+# getError()
+# Return Error message from the command
+# Arguments: None
+# Returns: String containing Error Message from command. Maybe be undef
+# if no error has occurred.
+sub getError
+{
+    my $self = shift;
+    return $self->{error};
+}
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+
+# Return true for import/use
+1;
+
+#
+# End include.pl
+#
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

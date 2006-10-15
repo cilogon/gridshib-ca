@@ -54,6 +54,7 @@
 use @GRIDSHIB_CA_MODULE@;
 use GridShibCA::CGIinterface;
 use GridShibCA::Logger;
+use GridShibCA::TokenGenerator;
 
 # Allowing for safe program execution in taint mode
 $ENV{PATH} = "/bin";
@@ -107,6 +108,8 @@ if (!defined($user))
     errorExit("REMOTE_USER not defined.");
 }
 
+my $remoteAddr = $cgi->remote_host();
+
 ######################################################################
 #
 # Get the user's DN to pass to JWS application
@@ -121,10 +124,22 @@ if (!defined($DN))
 
 ######################################################################
 #
+# Generate token
+#
+
+my $tokenGenerator = GridShibCA::TokenGenerator->new($user, $remoteAddr);
+my $tokenString = $tokenGenerator->generate();
+
+if (!defined($tokenString))
+{
+    errorExit("Could not generate token: " . $tokenGenerator->getError());
+}
+
+######################################################################
+#
 # Log this
 #
 
-my $remoteAddr = $cgi->remote_host() || "unknown";
 
 $logger->info("JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
 
@@ -146,9 +161,10 @@ open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate
 print $cgi->header("Application/X-Java-Jnlp-File");
 
 while (<INPUT>) {
-    s/\$\$token/$shibsession/;
+    s/\$\$shibSession/$shibsession/;
     s/\$\$code_base/$code_base/;
     s/\$\$genCredURL/$genCredURL/;
+    s/\$\$token/$tokenString/;
     print;
 }
 close(INPUT);

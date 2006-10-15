@@ -103,7 +103,7 @@ sub getIdP
 # getShibSession
 # Returns the Shibboleth session cookie as a "variable=value" string.
 # Arguments: None
-# Returns: Shibboleth session or undef if cannout be found
+# Returns: Shibboleth session or undef if cannot be found
 sub getShibSession
 {
     use CGI::Cookie;
@@ -121,6 +121,15 @@ sub getShibSession
     return $shibsession;
 }
 
+# getToken
+# Returns the token from the posted request.
+# Arguments: None
+# Returns: Token as string on undef if cannot be found
+sub getToken
+{
+    my $self = shift;
+    return $self->param("token");
+}
     
 # Return true for import/use
 1;

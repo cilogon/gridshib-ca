@@ -156,6 +156,7 @@ MKDIR = mkdir
 RMDIR = rmdir
 CP = cp
 TOUCH = touch
+OPENSSL = @OPENSSL@
 
 # Tools needed for building and distribution
 
@@ -258,39 +259,80 @@ $(DIST_FILE): $(DIST_FILES) check-perl
 
 ######################################################################
 #
+# Token key installation
+#
+
+TOKEN_KEY=@GRIDSHIB_CA_TOKEN_KEY@
+
+install-token-key: $(TOKEN_KEY)
+
+# Generate a random password for encrypting tokens
+$(TOKEN_KEY):
+	@echo "Creating token key"
+	@(umask 077 && $(OPENSSL) rand -base64 -out token-key 16)
+	@$(INSTALL) -o $(WWW_USER) -m 0600 token-key $@
+	@(rm -rf token-key)
+
+######################################################################
+#
 # Installation
 #
 
-install: configure-generated-scripts
+INSTALL_ALL=install-conf \
+	install-binaries \
+	install-perl \
+	install-html \
+	install-cgi \
+	install-token-key
+
+install: $(INSTALL_ALL)
+	@echo "Installation done."
+
+$(GRIDSHIB_CA_CONF_DIR):
 	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
+
+install-conf: $(GRIDSHIB_CA_CONF_DIR)
 	@for file in $(CONF_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
+
+install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
 	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
+
+$(PERL_MODULE_DIR): $(GRIDSHIB_CA_CONF_DIR)
 	@echo "Creating $(PERL_MODULE_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(PERL_MODULE_DIR)
+
+install-perl: $(PERL_MODULE_DIR) $(PERL_MODULES)
 	@for file in $(PERL_MODULES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(PERL_MODULE_DIR) ;\
 	done
+
+$(GRIDSHIB_CA_HTML_DIR):
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
+
+install-html: $(GRIDSHIB_CA_HTML_DIR)
 	@for file in $(HTML_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
+
+$(SHIB_PROTECTED_CGI_BIN_DIR):
 	@echo "Creating $(SHIB_PROTECTED_CGI_BIN_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
+
+install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(PROTECTED_CGI_BIN_FILES)
 	@for file in $(PROTECTED_CGI_BIN_FILES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
 	done
-	@echo "Installation done."
 
 uninstall:
 	@for file in $(CONF_FILES) ; do \
