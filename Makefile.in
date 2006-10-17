@@ -135,6 +135,8 @@ SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 PROTECTED_CGI_BIN_FILES=@CGI_BIN_SCRIPTS@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
 GRIDSHIB_CA_DOC_DIR=@GRIDSHIB_CA_DOC_DIR@
+CGI_DEMO_SCRIPTS=@CGI_DEMO_SCRIPTS@
+CGI_BIN_DIR=@CGI_BIN_DIR@
 DOC_FILES=@DOC_FILES@
 HTML_FILES=$(IMAGES) \
 	@HTML_FILES@ \
@@ -334,6 +336,12 @@ install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(PROTECTED_CGI_BIN_FILES)
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
 	done
 
+install-demos:
+	@for file in $(CGI_DEMO_SCRIPTS) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
+	done
+
 uninstall:
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
@@ -372,6 +380,11 @@ config.status: configure
 $(srcdir)/configure: @CONFIGURE_DEP@
 	cd $(srcdir) && autoconf
 
+# Allow for update of aclocal.m4
+
+aclocal.m4: configure.ac
+	aclocal --acdir=$(HOME)/lib/aclocal
+
 ######################################################################
 #
 # configure-generated stuff
@@ -390,6 +403,10 @@ configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 
 # welcome.pl also depends on HTML header and footer
 welcome.pl: welcome.pl.in config.status $(HTML_INCS)
+	./config.status
+
+# All cgi programs rely on $(HTML_INCS) as well
+%.cgi: %.cgi.in config.status $(HTML_INCS)
 	./config.status
 
 ######################################################################
@@ -439,3 +456,4 @@ install-docs: $(DOC_FILES)
 
 release: dist install-docs
 	rsync -auv $(DIST_FILE) welch@terra.mcs.anl.gov:gridshib.globus.org/downloads/
+

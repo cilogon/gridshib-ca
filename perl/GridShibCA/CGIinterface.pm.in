@@ -130,7 +130,27 @@ sub getToken
     my $self = shift;
     return $self->param("token");
 }
-    
+
+# getPortalURL
+# Returns the URL for a portal requesting a delegation
+# Arguments: None
+# Returns: URL as string, or undef if not found
+sub getPortalURL
+{
+    my $self = shift;
+    return $self->param("portalURL");
+}
+
+# getPortalData
+# Returns opaque portal data to be passed back to portal.
+# Arguments: None
+# Returns: Data as string, empty string if not found.
+sub getPortalData
+{
+    my $self = shift;
+    return $self->param("portalData") || "";
+}
+
 # Return true for import/use
 1;
 

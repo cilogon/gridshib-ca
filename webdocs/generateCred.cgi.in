@@ -220,9 +220,46 @@ if (!defined($certificate))
 # XXX Add serial number to logging
 $logger->info("ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
 
-# Success, print credential to STDOUT to be returned to client
-print $cgi->header("text/plain");
-print $certificate;
+# Success, output credential
+
+# XXX Authorize portalURL long before we get here
+my $portalURL = $cgi->getPortalURL();
+
+if (!defined($portalURL))
+{
+    # No portal URL, we are outputing to simple client as text
+    print $cgi->header("text/plain");
+    print $certificate;
+}
+else
+{
+    # We are outputting a form to allow certificate to be posted
+    # to a portal
+    my $portalData = $cgi->getPortalData();
+    print $cgi->header();
+    print <<"EOF";
+<html>
+<head>
+  <title>GridShib CA Welcome</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+</head>
+@HTML_HEADER@
+
+<center>
+<form action="$portalURL" method=post>
+<input name="status" type="hidden" value="success">
+<input name="certificate" type="hidden" value="$certificate">
+<input name="portalData" type="hidden" value="$portalData">
+Your certificate is ready to be returned to the portal.
+<p>
+<input value="Click here finish delegation and return to the portal" type="submit">
+</form>
+
+@HTML_FOOTER@
+</html>
+EOF
+}
 
 ######################################################################
 #

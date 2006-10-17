@@ -118,12 +118,13 @@ if test ${MODE} = "build" ; then
    AC_PATH_PROG(JARSIGNER, jarsigner)
    AC_PATH_PROG(TAR, tar)
 
-   # Enable regeneration of configure from configure.ac
-   AC_SUBST(CONFIGURE_DEP, configure.ac)
+   # Enable regeneration of configure from configure.ac and aclocal.m4
+   CONFIGURE_DEP="configure.ac aclocal.m4"
 else
    # No regeneration of configure
-   AC_SUBST(CONFIGURE_DEP, "")
+   CONFIGURE_DEP=""
 fi
+AC_SUBST(CONFIGURE_DEP)
 
 default=gridshib-ca-${PACKAGE_VERSION}
 AC_ARG_WITH(gridshib-ca-dir-name,
@@ -268,9 +269,38 @@ AC_SUBST(HTML_DEPS)
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/login \
 	webdocs/sysinfo.pl \
-	webdocs/welcome.pl"
+	webdocs/welcome.pl \
+	webdocs/portalLogin.cgi"
 AC_SUBST(CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
+
+CGI_DEMO_SCRIPTS=""
+AC_ARG_ENABLE(demos,
+	AC_HELP_STRING([--enable-demos],
+		[Build demos. (Default: Disabled)]),
+	[ENABLE_DEMOS=true],
+	[ENABLE_DEMOS=false])
+
+if test ${ENABLE_DEMOS} = "true" ; then
+   CGI_DEMO_SCRIPTS="\
+	webdocs/gridshib-ca-demo-portal.cgi"
+   AC_CONFIG_FILES([$CGI_DEMO_SCRIPTS])
+
+   AC_MSG_CHECKING([for path to cgi-bin directory])
+   default=${WWW_DIR}/cgi-bin/
+   AC_ARG_WITH(cgi-bin-dir,
+	AC_HELP_STRING([--with-cgi-bin-dir=<path>],
+		[Specify the (unprotected) cgi-bin directory. (Default: <www-dir>/cgi-bin/)]),
+	[CGI_BIN_DIR=$withval],
+	[CGI_BIN_DIR=$default])
+   AC_SUBST(CGI_BIN_DIR)
+   AC_MSG_RESULT(${CGI_BIN_DIR})
+
+   AC_PROG_PERL_MODULES([Crypt::OpenSSL::PKCS10])
+   AC_GLOBUS_LOCATION()
+fi
+AC_SUBST(CGI_DEMO_SCRIPTS)
+
 
 HTML_FILES="webdocs/index.html \
 	webdocs/login.html \
@@ -364,6 +394,7 @@ CONF_GENERATED_SCRIPTS="${CGI_BIN_SCRIPTS} \
 	${GENERATED_DOC_FILES} \
 	${MISC_FILES} \
 	${PERL_MODULES} \
+	${CGI_DEMO_SCRIPTS} \
 	Makefile"
 
 for subdir in ${SUBDIRS} ; do

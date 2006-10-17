@@ -1,0 +1,281 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# This script is to be invoked protected by Shibboleth using a form
+# from another portal that wants a X.509 credential for the user. It
+# should be passed a certificate request. This script serves to
+# validate that the user wants to delegate to the other portal and if
+# so invokes generateCred.cgi with a token to assert the user's
+# intent.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+use GridShibCA::CGIinterface;
+use GridShibCA::Command;
+
+######################################################################
+
+$OPENSSL = "@OPENSSL@";
+
+# Allow for secure execution
+$ENV{"PATH"} = "/bin";
+
+######################################################################
+
+$cgi = new GridShibCA::CGIinterface;
+$status = $cgi->param("status");
+
+if (!defined($status))
+{
+    # No status, we are being called for the first time by the user
+    # Create a certificate request and create a form for requesting
+    # delegation.
+    makeRequest();
+}
+elsif ($status eq "success")
+{
+    # Successful delegation from GridShib-CA. Read in certificate
+    # and store.
+    handleSuccess();
+}
+elsif ($status eq "rejected")
+{
+    # We were rejected for some reason. Clean up.
+    handleRejected();
+}
+
+exit(0);
+
+######################################################################
+
+sub makeRequest
+{
+    # being called by user, generated certificate request
+    use Crypt::OpenSSL::PKCS10;
+
+    my $req = Crypt::OpenSSL::PKCS10->new();
+    # Use dummy DN, GridShib-CA will override with correct value
+    $req->set_subject("/C=US/O=Dummy/CN=Dummy");
+    $req->sign();
+
+    # Write private key out to temproary file.
+    # The name of the file because the "tag" which we use to
+    # identify this request, so that when the delegation gets
+    # returned to us, we can put the certificate with the private
+    # key
+    use File::Temp;
+
+    my ($fh, $filename) = File::Temp::tempfile(UNLINK => 0,
+					       DIR => "/tmp");
+    print $fh $req->get_pem_pk();
+    close($fh);
+
+    use File::Basename;
+    my $tag = basename($filename);
+
+    my $reqPEM = $req->get_pem_req();
+
+    my $targetURL = "@SHIB_PROTECTED_CGI_BIN_URL@/portalLogin.cgi";
+    my $myURL = $cgi->url();
+
+    print $cgi->header();
+    print $cgi->start_html("GridShib CA Demo CA");
+    print <<"EOF";
+<center>
+Welcome to the GridShib-CA demo portal
+</center>
+<p>
+This script shows how a portal can ask for a delegated credential
+from the GridShib-CA by redirecting a user there with a credential
+request.
+<p>
+This demo uses the GridShib CA at: $targetURL
+<p>
+Your certificate request has been generated.
+<p>
+<form action="$targetURL" method=post>
+<input name="certificateRequest" type="hidden" value="$reqPEM">
+<input name="portalURL" type="hidden" value="$myURL">
+<input name="portalData" type="hidden" value="$tag">
+<input value="Click to submit Delegation request" type="submit">
+</form>
+EOF
+    print $cgi->end_html();
+    
+}
+
+sub handleSuccess
+{
+    my $certificate = $cgi->param("certificate");
+    my $tag = getTag();
+    my $filename = "/tmp/" . $tag;
+    if ( ! -w $filename )
+    {
+	errorExit("File $filename does not exist.");
+    }
+    if (!open(CRED, ">>$filename"))
+    {
+	errorExit("Failed to open $filename: $!");
+    }
+    # Get rid of extra carriage returns
+    $certificate =~ s/\x0d\x0a/\x0a/g;
+
+    # Make sure module of certificate matches private key
+    my $cmd = GridShibCA::Command->new($OPENSSL, "rsa",
+				       "-in", $filename,
+				       "-modulus", "-noout");
+    if (!$cmd->exec())
+    {
+	errorExit("Error getting private key (%s) modulus: %s",
+		  $filename, $cmd->getError());
+    }
+    my $privateKeyModulus = $cmd->getOutput();
+    if ($privateKeyModulus =~ /Modulus=(\w+)/)
+    {
+	$privateKeyModulus = $1;
+    }
+    else
+    {
+	errorExit("Could not parse private key modulus: $privateKeyModulus");
+    }
+    $cmd = GridShibCA::Command->new($OPENSSL, "x509",
+				    "-modulus", "-noout");
+    $cmd->setInput($certificate);
+    if (!$cmd->exec())
+    {
+	errorExit("Error getting certificate modulus: %s",
+		  $cmd->getError());
+    }
+    my $certificateModulus = $cmd->getOutput();
+    if ($certificateModulus =~ /Modulus=(\w+)/)
+    {
+	$certificateModulus = $1;
+    }
+    else
+    {
+	errorExit("Could not parse certificate modulus: $certificateModulus");
+    }
+    if ($certificateModulus ne $privateKeyModulus)
+    {
+	errorExit("Certificate modulus and private key modulus do not match." .
+		  " %s != %s", $certificateModulus,
+		  $privateKeyModulus);
+    }
+    print CRED $certificate . "\n";
+    close(CRED);
+
+    # Set up environment to run Globus binaries
+    my $globusLocation = "/usr/local/gt-4.0.1/";
+    $ENV{"GLOBUS_LOCATION"} = "@GLOBUS_LOCATION@";
+    $ENV{"LD_LIBRARY_PATH"} = join(":",
+				   $ENV{"LD_LIBRARY_PATH"} || "",
+				   $globusLocation . "lib/");
+    my $cmd = GridShibCA::Command->new($globusLocation . "/bin/grid-cert-info",
+				       "-file", $filename);
+    if (!$cmd->exec())
+    {
+	errorExit("Error executing grid-cert-info: %s",
+		  $cmd->getError());
+    }
+    my $certInfo = $cmd->getOutput();
+
+    print $cgi->header();
+    print $cgi->start_html("Delegation Successful");
+    print <<"EOF";
+Your delegated credential was successfully retrieved. Runing grid-cert-info.
+<p>
+<pre>
+$certInfo
+</pre>
+EOF
+    print $cgi->end_html();
+}
+
+sub handleRejected
+{
+    print $cgi->header();
+    print $cgi->start_html("Delegation Request Rejected");
+    my $tag = getTag();
+    my $filename = "/tmp/" . $tag;
+    my $unlinkCnt = unlink($filename);
+    print <<"EOF";
+The delegation failed. Cleaning up state.
+EOF
+    print $cgi->end_html();
+}
+
+######################################################################
+#
+# Utility functions
+#
+
+# getTag()
+# Get untainted tag from CGI.
+sub getTag
+{
+    my $tag = $cgi->param("portalData");
+    if ($tag =~ /^(\w+)$/)
+    {
+	$tag = $1;
+    }
+    else
+    {
+	print "Illegal characters in portalData.";
+	exit(1);
+    }
+}
+
+# errorExit()
+# Dump HTML error and exit
+sub errorExit
+{
+    my $format = shift;
+    print $cgi->header();
+    print sprintf("Error: " . $format, @_);
+    exit(1);
+}
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
