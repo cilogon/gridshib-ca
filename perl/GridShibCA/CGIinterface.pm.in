@@ -72,15 +72,19 @@ sub getUserId
 {
     my $self = shift;
     my $remote_user = $self->remote_user();
-    my $userId = undef;
+    if (!defined($remote_user))
+    {
+	return undef;
+    }
     # Clean user anme (from perlsec manual)
+    my $userId = undef;
     if ($remote_user =~ /^([-\@\w.]+)$/)
     {
 	$userId = $1;
     }
     else
     {
-	my $logger = Logger->new();
+	my $logger = GridShibCA::Logger->new();
 	$logger->err("Illegal characters detected in REMOTE_USER ($remote_user)");
     }
     return $userId;
