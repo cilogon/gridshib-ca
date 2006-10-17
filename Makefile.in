@@ -400,10 +400,6 @@ configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 % :: %.in config.status
 	./config.status
 
-# welcome.pl also depends on HTML header and footer
-welcome.pl: welcome.pl.in config.status $(HTML_INCS)
-	./config.status
-
 # All cgi programs rely on $(HTML_INCS) as well
 %.cgi: %.cgi.in config.status $(HTML_INCS)
 	./config.status

@@ -267,9 +267,9 @@ HTML_DEPS="${DOC_HEADER} ${DOC_FOOTER}"
 AC_SUBST(HTML_DEPS)
 
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
-	webdocs/login \
+	webdocs/create-jnlp \
 	webdocs/sysinfo.pl \
-	webdocs/welcome.pl \
+	webdocs/login.cgi \
 	webdocs/portalLogin.cgi"
 AC_SUBST(CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
@@ -303,7 +303,6 @@ AC_SUBST(CGI_DEMO_SCRIPTS)
 
 
 HTML_FILES="webdocs/index.html \
-	webdocs/login.html \
 	webdocs/checkPrerequisites.html \
 	webdocs/GridShibCATester.jnlp"
 AC_SUBST(HTML_FILES)

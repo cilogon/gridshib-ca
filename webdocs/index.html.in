@@ -52,7 +52,7 @@ known to work with the GridShib-CA.
 <tr>
 <td bgcolor="#0303C0" align=center><b>Go</b></td>
 <td colspan=2 align=center>
-<form action="@SHIB_PROTECTED_CGI_BIN_URL@/welcome.pl">
+<form action="@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
 <input type="submit" value="Shibboleth logon to generate Grid credentials">
 </form>
 After clicking on this button you will be asked to select your home
