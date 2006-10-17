@@ -115,7 +115,7 @@ sub makeRequest
 
     my $reqPEM = $req->get_pem_req();
 
-    my $targetURL = "@SHIB_PROTECTED_CGI_BIN_URL@/portalLogin.cgi";
+    my $targetURL = "https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/portalLogin.cgi";
     my $myURL = $cgi->url();
 
     print $cgi->header();
