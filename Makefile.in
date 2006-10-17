@@ -381,8 +381,7 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 	cd $(srcdir) && autoconf
 
 # Allow for update of aclocal.m4
-
-aclocal.m4: configure.ac
+aclocal:
 	aclocal --acdir=$(HOME)/lib/aclocal
 
 ######################################################################
