@@ -1,0 +1,19 @@
+#
+# GridShib CA configuration file
+#
+# Everything after a "#" is a comment.
+# All declarations should look like "variable = value"
+# Unknown variables will cause the GridShib CA to die with a message
+# to STDERR, so watch for typos.
+
+# Perl module to use for logging
+loggerModule = GridShibCA::Logger
+
+# Perl module to use for CA
+caModule = GridShibCA::OpenSSLCA
+
+# Perl module to use for CGI interface
+cgiModule = GridShibCA::CGIinterface
+
+# Perl module to generate tokens
+tokenGeneratorModule = GridShibCA::TokenGenerator

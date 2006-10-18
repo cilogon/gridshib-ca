@@ -47,9 +47,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use @GRIDSHIB_CA_MODULE@;
-use GridShibCA::CGIinterface;
-use GridShibCA::Logger;
+use GridShibCA::Config;
 
 sub errorExit($)
 {
@@ -78,11 +76,25 @@ EOF
 # For safe mode
 $ENV{PATH} = "/bin";
 
-$logger = GridShibCA::Logger->new();
+my $config = GridShibCA::Config->new();
+
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this error
+    die "Could not get Logger: " . $config->getError();
+}
 
 ######################################################################
 
-my $cgi = new GridShibCA::CGIinterface;
+my $cgi = $config->getCGI();
+
+if (!defined($cgi))
+{
+    errorExit("Could not access CGI interface: "
+	      . $config->getError());
+}
 
 my $user = $cgi->getUserId();
 my $idp = $cgi->getIdP();
@@ -90,7 +102,11 @@ my $DN = undef;
 
 if (defined($user))
 {
-    my $ca = @GRIDSHIB_CA_MODULE@->new($user, $idp);
+    my $ca = $config->getCA($user, $idp);
+    if (!defined($ca))
+    {
+	errorExit("Could not instantiate CA: " . $config->getError());
+    }
     $DN = $ca->getDN();
     if (!defined($DN))
     {

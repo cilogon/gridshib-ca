@@ -114,6 +114,7 @@ DIST_FILES=$(JARFILE) \
 	utils/*.in \
 	$(CA_CERTS) \
 	LICENSE \
+	gridshib-ca.conf.in \
 	openssl-ca/Makefile.in \
 	openssl-ca/*.[ch] \
 	$(PERL_MODULE_SRCS)
@@ -296,8 +297,13 @@ $(GRIDSHIB_CA_CONF_DIR):
 
 install-conf: $(GRIDSHIB_CA_CONF_DIR)
 	@for file in $(CONF_FILES) ; do \
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+		f=`basename $${file}` ;\
+		if test -f $(GRIDSHIB_CA_CONF_DIR)/$${f} ; then \
+			echo "Skipping install of $${file}" ; \
+		else \
+			echo "Installing $${file}" ;\
+			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+		fi \
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)

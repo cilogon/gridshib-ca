@@ -59,8 +59,6 @@ if test "$CA_TYPE" = "myproxy"; then
       AC_MSG_ERROR([Could not find myproxy-logon binary in path.])
    fi
 
-  GRIDSHIB_CA_MODULE="GridShibCA::MyProxyCA"
-
 # CA_TYPE = myproxy
 elif test "$CA_TYPE" = "openssl"; then
 
@@ -91,15 +89,12 @@ elif test "$CA_TYPE" = "openssl"; then
   AC_SUBST(CA_DN)
   AC_MSG_RESULT(${CA_DN})
 
-  GRIDSHIB_CA_MODULE="GridShibCA::OpenSSLCA"
   BINARIES="${BINARIES} openssl-ca/openssl-ca"
   SUBDIRS="${SUBDIRS} openssl-ca"
 
 else # CA_TYPE = openssl
      AC_MSG_ERROR([Unknown CA Type specified.])
 fi 
-
-AC_SUBST(GRIDSHIB_CA_MODULE)
 
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
@@ -308,7 +303,9 @@ HTML_FILES="webdocs/index.html \
 AC_SUBST(HTML_FILES)
 AC_CONFIG_FILES([$HTML_FILES])
 
-CONF_FILES="webdocs/CredentialRetriever.jnlp"
+CONF_FILES="\
+	webdocs/CredentialRetriever.jnlp \
+	gridshib-ca.conf"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
@@ -338,6 +335,7 @@ PERL_MODULES="\
 	perl/GridShibCA/CA.pm \
 	perl/GridShibCA/CGIinterface.pm \
 	perl/GridShibCA/Command.pm \
+	perl/GridShibCA/Config.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
 	perl/GridShibCA/TokenGenerator.pm"
@@ -376,6 +374,9 @@ AC_SUBST(GRIDSHIB_AUTHZ_PROG)
 
 GRIDSHIB_CA_TOKEN_KEY=${GRIDSHIB_CA_CONF_DIR}/token-key
 AC_SUBST(GRIDSHIB_CA_TOKEN_KEY)
+
+GRIDSHIB_CA_CONFIG_FILE=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca.conf
+AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)
 
 # I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
 # they get carried over into @INC and screw up Perl.

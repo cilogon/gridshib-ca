@@ -48,14 +48,13 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use @GRIDSHIB_CA_MODULE@;
-use GridShibCA::CGIinterface;
-use GridShibCA::Logger;
-use GridShibCA::TokenGenerator;
+use GridShibCA::Config;
 
 # Run safely
 $ENV{PATH} = "/bin";
 umask (0077);
+
+my $config = GridShibCA::Config->new();
 
 $AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
 
@@ -94,11 +93,24 @@ sub errorExit($$)
 # Initialize Logging
 #
 
-$logger = GridShibCA::Logger->new();
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this
+    die "Could not initialize Logger: " . $config->getError();
+}
 
 ######################################################################
 
-$cgi = new GridShibCA::CGIinterface;
+$cgi = $config->getCGI();
+
+if (!defined($cgi))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not initialize CGI interface: "
+	      . $config->getError());
+}
 
 $user = $cgi->getUserId();
 
@@ -154,8 +166,16 @@ if (!defined($token))
 # This ensures that this request was routed here through a trusted
 # CGI script and not, e.g., malicious javascript.
 
-my $tokenGenerator = GridShibCA::TokenGenerator->new($user,
-						     $remoteAddr);
+my $tokenGenerator = $config->getTokenGenerator($user,
+						$remoteAddr);
+
+if (!defined($tokenGenerator))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not initialize token generator: "
+	      . $config->getError());
+}
+
 if (!$tokenGenerator->verify($token))
 {
     errorExit($HTTP_BAD_REQUEST, "Error verifying token: "
@@ -167,7 +187,13 @@ if (!$tokenGenerator->verify($token))
 # Get DN for logging
 #
 
-my $ca = @GRIDSHIB_CA_MODULE@->new($user, $cgi->getIdP());
+my $ca = $config->getCA($user, $cgi->getIdP());
+if (!defined($ca))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not instantiate CA interface "
+	      . $config->getError());
+}
 my $DN = $ca->getDN();
 if (!defined($DN))
 {
@@ -183,6 +209,7 @@ if (!defined($DN))
 
 if (-x $AUTHZ_PROG)
 {
+    use GridShibCA::Command;
     my $authzCmd = GridShibCA::Command->new($AUTHZ_PROG, $user);
     if (!$authzCmd->exec())
     {

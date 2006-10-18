@@ -1,0 +1,225 @@
+######################################################################
+#
+# $Id$
+#
+# GridShib configuration and class loader.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+#
+# Config class
+#
+# Interface to GridShib CA configuration and loader of classes based
+# on that configuration.
+#
+
+package GridShibCA::Config;
+
+my $initialized = 0;
+
+my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
+
+# Default configuration
+my %config = (
+    loggerModule => "GridShibCA::Logger",
+    caModule => "GridShibCA::OpenSSLCA",
+    cgiModule => "GridShibCA::CGIinterface",
+    tokenGeneratorModule => "GridShibCA::TokenGenerator",
+    );
+    
+# new()
+# Create a new Config object.
+# Arguments: None
+# Returns: Config instance
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    if (!$initialized)
+    {
+	_readConfig($configFile);
+	$initialized = 1;
+    }
+    bless($self, $class);
+    return $self;
+}
+
+# getParam()
+# Return a configuration parameter.
+# Arguments: Parameter name as string
+# Returns: Value as string, undef if not defined
+sub getParam
+{
+    my $self = shift;
+    my $param = shift;
+    return $config{$param};
+}
+
+######################################################################
+#
+# Class fetching functions. These functions fetch instances of
+# classes bases on configuration.
+
+sub getLogger
+{
+    my $self = shift;
+    return $self->_newInstance($config{"loggerModule"}, @_);
+}
+
+sub getCA
+{
+    my $self = shift;
+    return $self->_newInstance($config{"caModule"}, @_);
+}
+
+sub getCGI
+{
+    my $self = shift;
+    return $self->_newInstance($config{"cgiModule"}, @_);
+}
+
+sub getTokenGenerator
+{
+    my $self = shift;
+    return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
+}
+
+######################################################################
+#
+# _newInstance()
+# Create a new instance of the given class
+# Arguments:
+#  $class   Name of class to create
+#  @_       Arguments to pass to new() method
+# Returns: Instance, or undef on error, 
+sub _newInstance
+{
+    my $self = shift;
+    my $class = shift;
+    if (!defined($class))
+    {
+	$self->_error("\$class undefined");
+	return undef;
+    }
+    my @args = @_;
+
+    my $instance = undef;
+    eval "use $class; \$instance = $class->new(\@args);";
+    if ($@)
+    {
+	$self->_error($@);
+	return undef;
+    }
+    return $instance;
+}
+
+# _readConfig()
+# Read our configuration file.
+# Arguments: Filename
+# Returns: Nothing
+sub _readConfig
+{
+    use GridShibCA::Logger;
+    use FileHandle;
+
+    my $filename = shift;
+
+    # We use the default logger for now until we know what class we
+    # will use in general
+    my $logger = GridShibCA::Logger->new();
+
+    my $fh = new FileHandle;
+    if (!$fh->open("<" . $filename))
+    {
+	$logger->err("Could not open configuration file ($filename): $!");
+	return;
+    }
+    while (<$fh>)
+    {
+	# Strip comments
+	s/#.*$//;
+	# Ignore blank lines
+	next if (/^\s*$/);
+	# Parameters should be of the form "var = value"
+	if (/(\w+)\s*=\s*(.*)$/)
+	{
+	    my $var = $1;
+	    my $value = $2;
+	    if (!defined($config{$var}))
+	    {
+		$logger->err("Unrecognized variable $var on line $. of $filename");
+		next;
+	    }
+	    $config{$var} = $value;
+	}
+	else
+	{
+	    $logger->err("Could not parse line $. of $filename: $_");
+	    next;
+	}
+    }
+    $fh->close();
+}
+
+
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
+}
+
+# Return true for import/use
+1;
+
+#
+# End include.pl
+#
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################
