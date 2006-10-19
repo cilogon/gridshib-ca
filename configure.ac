@@ -311,7 +311,8 @@ AC_CONFIG_FILES([$CONF_FILES])
 
 UTILS="utils/mapper.sh \
 	utils/create-openssl-ca.pl \
-	utils/ca-myproxy.pl"
+	utils/ca-myproxy.pl \
+	utils/check-config.pl"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 

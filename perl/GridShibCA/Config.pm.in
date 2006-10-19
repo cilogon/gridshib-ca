@@ -54,6 +54,8 @@ package GridShibCA::Config;
 
 my $initialized = 0;
 
+my $debug = 0;
+
 my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
 
 # Default configuration
@@ -71,7 +73,12 @@ my %config = (
 sub new
 {
     my $class = shift;
+    my %args = @_;
     my $self = {};
+    if (defined($args{debug}) && $args{debug})
+    {
+	$debug = 1;
+    }
     if (!$initialized)
     {
 	_readConfig($configFile);
@@ -90,6 +97,19 @@ sub getParam
     my $self = shift;
     my $param = shift;
     return $config{$param};
+}
+
+# dump()
+# Print parameters to STDOUT. Inteded for debugging.
+# Arguments: None
+# Returns: Nothing
+sub dump
+{
+    my $self = shift;
+    for $key (keys(%config))
+    {
+	print $key . ": " . $self->getParam($key) . "\n";
+    }
 }
 
 ######################################################################
@@ -160,6 +180,7 @@ sub _readConfig
     use FileHandle;
 
     my $filename = shift;
+    _debug("Parsing $filename");
 
     # We use the default logger for now until we know what class we
     # will use in general
@@ -169,6 +190,7 @@ sub _readConfig
     if (!$fh->open("<" . $filename))
     {
 	$logger->err("Could not open configuration file ($filename): $!");
+	_debug("Could not open configuration file ($filename): $!");
 	return;
     }
     while (<$fh>)
@@ -184,14 +206,13 @@ sub _readConfig
 	    my $value = $2;
 	    if (!defined($config{$var}))
 	    {
-		$logger->err("Unrecognized variable $var on line $. of $filename");
-		next;
+		_debug("Unrecognized variable $var on line $.");
 	    }
 	    $config{$var} = $value;
 	}
 	else
 	{
-	    $logger->err("Could not parse line $. of $filename: $_");
+	    _debug("Could not parse line $.: $_");
 	    next;
 	}
     }
@@ -199,12 +220,24 @@ sub _readConfig
 }
 
 
+sub _debug
+{
+    my $format = shift;
+    my @args = @_;
+
+    if ($debug)
+    {
+	chomp($format);
+	print sprintf($format, @args) . "\n";
+    }
+}
 
 sub _error
 {
     my $self = shift;
     my $format = shift;
     $self->{error} = sprintf($format, @_);
+    _debug($format, @_);
 }
 
 sub getError
