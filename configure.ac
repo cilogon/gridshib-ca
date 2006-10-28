@@ -206,7 +206,9 @@ AC_MSG_RESULT(${RELATIVE_DN})
 
 # Included HTML files that are install in the configuration directory
 HTML_HEADER=$srcdir/webdocs/header.html
+AC_SUBST_FILE(HTML_HEADER)
 HTML_FOOTER=$srcdir/webdocs/footer.html
+AC_SUBST_FILE(HTML_FOOTER)
 HTML_INCS="${HTML_HEADER} ${HTML_FOOTER}"
 AC_SUBST(HTML_INCS)
 AC_CONFIG_FILES([${HTML_INCS}])
@@ -264,6 +266,7 @@ AC_CONFIG_FILES([$HTML_FILES])
 CONF_FILES="\
 	webdocs/CredentialRetriever.jnlp \
 	gridshib-ca.conf \
+	authorizedIdps.conf \
 	${HTML_INCS}"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
@@ -292,7 +295,9 @@ AC_SUBST(JAR_FILE)
 
 dnl PERL modules
 PERL_MODULES="\
+	perl/GridShibCA/Authorization.pm \
 	perl/GridShibCA/CA.pm \
+	perl/GridShibCA/CertRegistry.pm \
 	perl/GridShibCA/CGIinterface.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \

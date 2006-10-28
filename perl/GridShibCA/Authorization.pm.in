@@ -1,0 +1,258 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::Authorization
+
+Authorization system interface.
+
+=cut
+
+package GridShibCA::Authorization;
+
+use FileHandle;
+
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new Authorization object.
+
+B<Arguments:> None
+
+B<Returns:> Authorization instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    bless($self, $class);
+    return $self;
+}
+
+=item authorizeUser()
+
+Authorize whether a user can be issued a certificate.
+This implementation authorizes all users.
+
+B<Arguments:>
+
+I<$user> - user id.
+
+I<$idp> - user idp as string
+
+B<Returns:> 1 if user authorized, 0 otherwise
+
+=cut
+
+sub authorizeUser
+{
+    my $self = shift;
+    my $user = shift;
+    my $idp = shift;
+
+    my $authorizedIdpFilename = $config->getParam("AuthorizedIdpsFile");
+    my $status = $self->_inFile($idp, $authorizedIdpFilename);
+
+    if ($status == -1)
+    {
+	return 0;
+    }
+    
+    if ($status == 0)
+    {
+	$self->_error("Idp not authorized (%s).", $idp);
+	return 0;
+    }
+
+    return 1;
+}
+
+=item authorizePortal()
+
+Authorize whether a portal can receive a delegated credential.
+
+B<Arguments:> Portal URL as string
+
+B<Returns:> One if authorized, zero otherwise
+
+=cut
+
+sub authorizePortal
+{
+    my $self = shift;
+    my $portalURL = shift;
+
+    return 1;
+}
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Error string
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+=item _inFile()
+
+Does the given string appear in the given file. File is expected to have
+one string per line and strings can contain an "*" which matches any portion
+of the given string.
+
+Line in the file begining with a "#" are treated as comments and ignored.
+
+B<Arguments:>
+
+I<$string> - String to match
+
+I<$filename> - Filename
+
+B<Returns:> One if string matches a line in file, zero if not, -1 on error
+
+=cut
+
+sub _inFile
+{
+    my $self = shift;
+    my $string = shift;
+    my $filename = shift;
+
+    my $found = 0;
+
+    my $fh = new FileHandle;
+    if (!$fh->open("<$filename"))
+    {
+	$self->_error("Could not open authorized Idp file (%s): %s",
+		      $filename, $!);
+	return -1;
+    }
+    while (<$fh>)
+    {
+	my $regex = $_;
+	chomp($regex);
+
+	# Strip comments
+	$regex =~ s/#.*$//;
+
+	# Ignore empty lines
+	if ($regex =~ /^\s*$/)
+	{
+	    next;
+	}
+
+	# Convert to perl regex form
+	$regex =~ s/\*/.+/g;
+	$regex = "^" . $regex . "\$";
+
+	if ($string =~ /$regex/)
+	{
+	    $found = 1;
+	    last;
+	}
+    }
+
+    $fh->close();
+
+    return $found;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

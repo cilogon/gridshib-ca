@@ -49,9 +49,10 @@
 
 use GridShibCA::Config;
 
-sub errorExit($)
+sub errorExit
 {
-    my $string = shift;
+    my $format = shift;
+    my $string = sprintf($format, @_);
 
     $logger->err($string);
 
@@ -95,6 +96,19 @@ if (!defined($cgi))
 
 my $user = $cgi->getUserId();
 my $idp = $cgi->getIdP();
+
+if (!defined($user))
+{
+    if (defined($idp))
+    {
+	errorExit("Origin sie ($idp) is not releasing identity to GridShibCA.");
+    }
+    else
+    {
+	errorExit("Cannot identify origin site or user. It appears this script is not Shibboleth protected.");
+    }
+}
+
 my $DN = undef;
 
 if (defined($user))
@@ -108,6 +122,28 @@ if (defined($user))
     if (!defined($DN))
     {
 	errorExit("Could not get DN for user: " . $ca->getError());
+    }
+}
+
+######################################################################
+#
+# Check user authoriztion
+#
+
+my $authorization = $config->getAuthorization();
+
+if (!$authorization->authorizeUser($user, $idp))
+{
+    errorExit("Authorization failed: User %s (Idp %s): %s",
+	      $user, $idp, $authorization->getError());
+}
+
+if (defined($portalURL))
+{
+    if (!$authorization->authorizePortal($portalURL))
+    {
+	errorExit("Authorization failed: Portal (%s) not authorized: %s",
+		  $portalURL, $authorization->getError());
     }
 }
 
@@ -128,13 +164,11 @@ Content-type: text/html
 $htmlHeader
 EOF
 
-if (defined($user))
-{
-    my $shibProtectedCGIBinURL =
-	$config->getParam("ShibbolethProtectedCGIBinURL");
-    my $gridShibCAURL = $config->getParam("GridShibCAURL");
+my $shibProtectedCGIBinURL =
+    $config->getParam("ShibbolethProtectedCGIBinURL");
+my $gridShibCAURL = $config->getParam("GridShibCAURL");
 
-    print <<"EOF";
+print <<"EOF";
 <center>
 Welcome $user.
 <p>
@@ -151,25 +185,6 @@ close this browser window.
 <input type="submit" value="Return to GridShib CA main page">
 </form>
 </center>
-EOF
-}
-elsif (defined($idp))
-{
-    print <<"EOF";
-We're sorry. Your origin site ($idp) 
-is not releasing your identity to us, so we cannot proceed.
-EOF
-}
-else
-{
- print <<"EOF";
-Cannot determine Shibboleth identity or origin site.
-It appears this script is not Shibboleth protected.
-Please check configuration.
-EOF
-}
-
-print <<"EOF";
 $htmlFooter
 </html>
 EOF

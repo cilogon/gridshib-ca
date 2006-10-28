@@ -70,6 +70,8 @@ my %config = (
     cgiModule => "GridShibCA::CGIinterface",
     tokenGeneratorModule => "GridShibCA::TokenGenerator",
     commandModule => "GridShibCA::Command",
+    certRegistryModule => "GridShibCA::CertRegistry",
+    authorizationModule => "GridShibCA::Authorization",
     # Configuration stuff
     GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
     JNLPTemplate =>"\$(GridShibCAConfDir)/CredentialRetriever.jnlp",
@@ -88,6 +90,10 @@ my %config = (
     # Logging parameters
     SyslogId =>"@SYSLOG_ID@",
     SyslogFacility =>"@SYSLOG_FACILITY@",
+    # Registry parameters
+    CertRegistryDir => "\$(GridShibCAConfDir)/certs/",
+    # Authorization parameters
+    AuthorizedIdpsFile => "\$(GridShibCAConfDir)/authorizedIdps.conf",
     # Binares
     OpenSSL =>"@OPENSSL@",
     GlobusLocation =>"@GLOBUS_LOCATION@",
@@ -302,6 +308,42 @@ sub getCommand
 {
     my $self = shift;
     return $self->_newInstance($config{"commandModule"}, @_);
+}
+
+
+=item getCertRegistry()
+
+Get an instance of the GridShibCA::CertRegistry module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::CertRegistry>.
+
+The exact module loaded is controlled by the certRegistryModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getCertRegistry
+{
+    my $self = shift;
+    return $self->_newInstance($config{"certRegistryModule"}, @_);
+}
+
+
+=item getAuthorization()
+
+Get an instance of the GridShibCA::Authorization module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::Authorization>.
+
+The exact module loaded is controlled by the authorizationModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getAuthorization
+{
+    my $self = shift;
+    return $self->_newInstance($config{"authorizationModule"}, @_);
 }
 
 =back

@@ -1,0 +1,10 @@
+# Authorized IdPs File
+#
+# This file lists all the Idps which are trusted by the GridShib CA to assert
+# user identities.
+#
+# Any line starting with a "#" is treated as a comment and ignored.
+# A "*" matches any string.
+
+# Any idp in InQueue
+urn:mace:inqueue:*

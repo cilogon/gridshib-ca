@@ -56,8 +56,6 @@ umask (0077);
 
 my $config = GridShibCA::Config->new();
 
-$AUTHZ_PROG = "@GRIDSHIB_AUTHZ_PROG@";
-
 ######################################################################
 #
 # HTTP Status codes returned in case of error
@@ -69,12 +67,13 @@ my $HTTP_INTERNAL_ERROR = 500;
 
 ######################################################################
 
-sub errorExit($$)
+sub errorExit
 {
     # HTTP status code
     my $status = shift;
     # Error message
-    my $string = shift;
+    my $format = shift;
+    my $string = sprintf($format, @_);
 
     print $cgi->header(
 	-status=>sprintf("%d %s", $status, $string),
@@ -159,6 +158,8 @@ if (!defined($token))
     errorExit($HTTP_BAD_REQUEST, "Token missing from request");
 }
 
+my $portalURL = $cgi->getPortalURL();
+
 ######################################################################
 #
 # Validate token
@@ -187,7 +188,7 @@ if (!$tokenGenerator->verify($token))
 # Get DN for logging
 #
 
-my $ca = $config->getCA($user, $cgi->getIdP());
+my $ca = $config->getCA($user, $idp);
 if (!defined($ca))
 {
     errorExit($HTTP_INTERNAL_ERROR,
@@ -203,33 +204,27 @@ if (!defined($DN))
 
 ######################################################################
 #
-# Callout to external authz program if it exists
+# Authorize request
 #
 
+my $authorization = $config->getAuthorization();
 
-if (-x $AUTHZ_PROG)
+if (!$authorization->authorizeUser($user, $idp))
 {
-    use GridShibCA::Command;
-    my $authzCmd = GridShibCA::Command->new($AUTHZ_PROG, $user);
-    if (!$authzCmd->exec())
-    {
-	my $status = $authzCmd->getStatus() >> 8;
-	my $error = $authzCmd->getError();
-	if ($status == 255)
-	{
-	    $logger->err("ERROR: %s failed: %s", $AUTHZ_PROG, $error);
-	    errorExit($HTTP_INTERNAL_ERROR,
-		      "Authorization callout to $AUTHZ_PROG failed: $error");
-	}
-	else
-	{
-	    $logger->err("ERROR: %s returned %d: %s",
-			 $AUTHZ_PROG, $status, $error);
-	    errorExit($HTTP_UNAUTHORIZED, "Authorization for $user denied.");
-	}
-    }
+    errorExit($HTTP_UNAUTHORIZED,
+	      "Authorization failed: User %s (Idp %s): %s",
+	      $user, $idp, $authorization->getError());
 }
 
+if (defined($portalURL))
+{
+    if (!$authorization->authorizePortal($portalURL))
+    {
+	errorExit($HTTP_UNAUTHORIZED,
+		  "Authorization failed: Portal (%s) not authorized: %s",
+		  $portalURL, $authorization->getError());
+    }
+}
 
 ######################################################################
 #
@@ -245,12 +240,21 @@ if (!defined($certificate))
 }
 
 # XXX Add serial number to logging
-$logger->info("ISSUE:%s:%s:%s", $user, $remoteAddr, $DN);
+$logger->info("ISSUE:%s (%s):%s:%s", $user, $idp, $remoteAddr, $DN);
+
+my $certRegistry = $config->getCertRegistry();
+
+if (defined($certRegistry))
+{
+    if (!$certRegistry->registerCert($user, $idp, $DN, $certificate))
+    {
+	errorExit($HTTP_INTERNAL_ERROR,
+		  "Error registering certificate: %s",
+		  $certRegistry->getError());
+    }
+}
 
 # Success, output credential
-
-# XXX Authorize portalURL long before we get here
-my $portalURL = $cgi->getPortalURL();
 
 if (!defined($portalURL))
 {
@@ -288,30 +292,6 @@ Your certificate is ready to be returned to the portal.
 $htmlFooter
 </html>
 EOF
-}
-
-######################################################################
-#
-# Call external logging program if it exists
-#
-# XXX Needs to be revamped to parse X509 cert
-
-if (-x $LOGGER_PROG)
-{
-    my @args = ($LOGGER_PROG, $user, $DN);
-    my $status = system(@args);
-
-    if ($status != 0)
-    {
-	if ($? == -1)
-	{
-	    $logger->err("ERROR: %s failed: $!", $LOGGER_PROG);
-	}
-	else
-	{
-	    $logger->err("ERROR: %s returned %d", $LOGGER_PROG, ($? >> 8));
-	}
-    }
 }
 
 ######################################################################

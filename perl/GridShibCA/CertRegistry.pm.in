@@ -1,0 +1,220 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::CertRegistry.pm
+
+Interface for certificate registry, used to record issued certificates.
+This implementation records the last certificate issued for each user
+in the directory specified by the configuration parameter I<CertRegistryDir>
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item CertRegistryDir
+
+Directory in which to store certificates.
+
+=back
+
+=cut
+
+package GridShibCA::CertRegistry;
+
+use File::Spec;
+use FileHandle;
+
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new CertRegistry object.
+
+B<Arguments:> None
+
+B<Returns:> CertRegistry instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    bless($self, $class);
+    return $self;
+}
+
+=item registerCert()
+
+Record an issued certificate.
+
+B<Arguments:>
+
+I<$userId> - User identity as a string.
+
+I<$idp> - IDP for user as a string.
+
+I<$dn> - DN issued to user as a string.
+
+I<$certificate> - PEM-encoded certificate as a string.
+
+B<Returns:> One on success, zero on error
+
+=cut
+
+sub registerCert()
+{
+    my $self = shift;
+    my $userId = shift;
+    my $idp = shift;
+    my $dn = shift;
+    my $certificate = shift;
+
+    my $registryDir = $config->getParam("CertRegistryDir");
+
+    if (! -d $registryDir)
+    {
+	if (!mkdir($registryDir, 0700))
+	{
+	    $self->_error("Could not create certificate registry directory (%s): %s",
+			  $registryDir, $!);
+	    return 0;
+	}
+    }
+
+    my $certFilename = File::Spec->catfile($registryDir, $userId);
+    my $certFile = new FileHandle;
+    
+    if (!$certFile->open(">$certFilename"))
+    {
+	$self->_error("Could not open certificate file (%s): %s",
+		      $certFilename, $!);
+	return 0;
+    }
+
+    my $timeString = localtime();
+    my $timeSeconds = time();
+
+    print $certFile <<"EOF";
+User: $userId
+IdP: $idp
+DN: $dn
+Time: $timeString
+Seconds: $timeSeconds
+
+$certificate
+EOF
+
+    # Success
+    return 1;
+}
+
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Error string
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
+}
+
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

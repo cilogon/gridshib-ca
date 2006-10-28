@@ -27,6 +27,12 @@
 # Perl module to invoke commands
 #commandModule = GridShibCA::Command
 
+# Perl module to registry issued certificates
+# certRegistryModule = GridShibCA::CertRegistry
+
+# Perl module to authorize actions
+# authorzationModule = GridShibCA::Authorization
+
 ######################################################################
 #
 # Configuration files
@@ -89,6 +95,14 @@
 
 # Facility to use for logging
 #SyslogFacility = @SYSLOG_FACILITY@
+
+######################################################################
+#
+# Certificate Registry Parameters
+#
+
+# Directory to store issued certificates in
+#CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
 
 ######################################################################
 #
