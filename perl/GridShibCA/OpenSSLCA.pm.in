@@ -46,6 +46,37 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+=head1 GridShibCA::OpenSSLCA
+
+Implementation of L<GridShibCA::CA Class|GridShibCA::CA> based on OpenSSL.
+See that Module for a description of methods.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item OpenSSLCA
+
+Path to executable to use.
+
+=item OpenSSLCACert
+
+Path to CA certificate.
+
+=item OpenSSLCAKey
+
+Path to private key to use.
+
+=item OpenSSLCASerial
+
+Path to file containing the serial number.
+
+=back
+
+=cut
+
 package GridShibCA::OpenSSLCA;
 
 # Inherit CA class
@@ -75,9 +106,8 @@ sub new
 
 # signRequest
 # Given a certificate request return a certificate
-# Arguments: None
+# Arguments: Certificate request as string
 # Returns: Certificate as string, or undef on error
-#  Username
 sub signRequest
 {
     my $self = shift;
@@ -137,6 +167,13 @@ sub signRequest
     }
     return $cmd->getOutput();
 }
+
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
 
 # Return true for import/use
 1;

@@ -43,19 +43,23 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
-#
-# Config class
-#
-# Interface to GridShib CA configuration and loader of classes based
-# on that configuration.
-#
+
+=head1 GridShibCA::Config
+
+Interface to GridShib CA configuration and loader of classes based
+on that configuration.
+
+=cut
 
 package GridShibCA::Config;
 
+# Have we read out configuration yet?
 my $initialized = 0;
 
+# Are we in debug mode?
 my $debug = 0;
 
+# Configuration file to read?
 my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
 
 # Default configuration
@@ -89,11 +93,21 @@ my %config = (
     GlobusLocation =>"@GLOBUS_LOCATION@",
     OpenSSLCA =>"\$(GridShibCAConfDir)/openssl-ca",
     );
-    
-# new()
-# Create a new Config object.
-# Arguments: None
-# Returns: Config instance
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new Config object.
+
+B<Arguments:> None
+
+B<Returns:> Config instance
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -115,10 +129,19 @@ sub new
     return $self;
 }
 
-# getParam()
-# Return a configuration parameter.
-# Arguments: Parameter name as string
-# Returns: Value as string, undef if not defined
+=item getParam()
+
+Return a configuration parameter. Handles substituion of $(variable) in that
+parameters (to a recursion depth of 10).
+
+B<Arguments:>
+ Parameter name as string
+
+B<Returns:>
+Value as string, undef if not defined
+
+=cut
+
 sub getParam
 {
     my $self = shift;
@@ -146,10 +169,16 @@ sub getParam
     return $value;
 }
 
-# dump()
-# Print parameters to STDOUT. Inteded for debugging.
-# Arguments: None
-# Returns: Nothing
+=item dump()
+
+Print parameters to STDOUT. Intended for debugging.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
 sub dump
 {
     my $self = shift;
@@ -159,10 +188,45 @@ sub dump
     }
 }
 
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error};
+}
+
+=back
+
+=cut
+
 ######################################################################
-#
-# Class fetching functions. These functions fetch instances of
-# classes bases on configuration.
+
+=head2 Module Loading Methods
+
+These functions fetch instances of Modules bases on configuration.
+Each returns an instance of the given Module or a derived Module
+which implements the same interface.
+
+=over 4
+
+=item getLogger()
+
+Get an instance of the GridShibCA::Logger module by loading it and
+calling its new method with the given arguments. See L<GridShibCA::Logger>.
+
+The exact module loaded is controlled by the loggerModule variable
+in F<gridshib-ca.conf>.
+
+=cut
 
 sub getLogger
 {
@@ -170,11 +234,34 @@ sub getLogger
     return $self->_newInstance($config{"loggerModule"}, @_);
 }
 
+
+=item getCA()
+
+Get an instance of the GridShibCA::CA module by loading it and
+calling its new method with the given arguments. See L<GridShibCA::CA>.
+
+The exact module loaded is controlled by the caModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
 sub getCA
 {
     my $self = shift;
     return $self->_newInstance($config{"caModule"}, @_);
 }
+
+
+=item getCGI()
+
+Get an instance of the GridShibCA::CGI module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::CGIinterface>.
+
+The exact module loaded is controlled by the cgiModule variable
+in F<gridshib-ca.conf>.
+
+=cut
 
 sub getCGI
 {
@@ -182,11 +269,34 @@ sub getCGI
     return $self->_newInstance($config{"cgiModule"}, @_);
 }
 
+
+=item getTokenGenerator()
+
+Get an instance of the GridShibCA::TokenGenerator module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::TokenGenerator>.
+
+The exact module loaded is controlled by the tokenGeneratorModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
 sub getTokenGenerator
 {
     my $self = shift;
     return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
 }
+
+
+=item getCommand()
+
+Get an instance of the GridShibCA::Command module by loading it and
+calling its new method with the given arguments. See L<GridShibCA::Command>.
+
+The exact module loaded is controlled by the commandModule variable
+in F<gridshib-ca.conf>.
+
+=cut
 
 sub getCommand
 {
@@ -194,14 +304,32 @@ sub getCommand
     return $self->_newInstance($config{"commandModule"}, @_);
 }
 
+=back
+
+=cut
+
 ######################################################################
-#
-# _newInstance()
-# Create a new instance of the given class
-# Arguments:
-#  $class   Name of class to create
-#  @_       Arguments to pass to new() method
-# Returns: Instance, or undef on error, 
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item  _newInstance()
+
+Create a new instance of the given class
+
+B<Arguments:>
+
+C<$class> Name of class to create
+
+C<@_> Arguments to pass to new() method
+
+B<Returns:> Instance, or undef on error 
+
+=cut
+
 sub _newInstance
 {
     my $self = shift;
@@ -223,10 +351,16 @@ sub _newInstance
     return $instance;
 }
 
-# _readConfig()
-# Read our configuration file.
-# Arguments: Filename
-# Returns: Nothing
+=item _readConfig()
+
+Read our configuration file.
+
+B<Arguments:> Filename
+
+B<Returns:> Nothing
+
+=cut
+
 sub _readConfig
 {
     use FileHandle;
@@ -267,6 +401,15 @@ sub _readConfig
     $fh->close();
 }
 
+=item _debug()
+
+Handle a debug message. Does nothing if we're not in debugging mode.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
 
 sub _debug
 {
@@ -280,6 +423,17 @@ sub _debug
 	print sprintf($format, @args) . "\n";
     }
 }
+
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
 
 sub _error
 {
@@ -297,11 +451,13 @@ sub _error
     printf(STDERR $string);
 }
 
-sub getError
-{
-    my $self = shift;
-    return $self->{error};
-}
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
 
 # Return true for import/use
 1;

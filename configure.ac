@@ -27,6 +27,7 @@ AC_SUBST(DIST_DIR)
 
 AC_PROG_INSTALL
 AC_PATH_PROG(PERL, perl)
+AC_PATH_PROG(POD2HTML, pod2html)
 
 CA_TYPE="openssl"
 AC_MSG_CHECKING([for CA type])
@@ -176,15 +177,6 @@ AC_ARG_WITH(gridshib-ca-html-dir,
 AC_SUBST(GRIDSHIB_CA_HTML_DIR)
 AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
 
-AC_MSG_CHECKING([for path to GridShib CA documentation directory])
-AC_ARG_WITH(gridshib-ca-doc-dir,
-	AC_HELP_STRING([--with-gridshib-ca-doc_dir],
-		[Specify the direcotry for the gridshib-ca documentation. Not used for normal installation. (Default: <www-dir>/html/gridshib-ca/]),
-	[GRIDSHIB_CA_DOC_DIR=$withval],
-	[GRIDSHIB_CA_DOC_DIR=${WWW_DIR}/html/gridshib-ca/])
-AC_SUBST(GRIDSHIB_CA_DOC_DIR)
-AC_MSG_RESULT(${GRIDSHIB_CA_DOC_DIR})
-
 AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
 AC_ARG_WITH(www-hostname,
 	AC_HELP_STRING([--with-www-hostname],
@@ -330,7 +322,8 @@ if test ${MODE} = "build" ; then
    # List of all documentation files to be installed
    DOC_FILES="\
 	${GENERATED_DOC_FILES} \
-	doc/gridshib-ca-process-flow.jpg"
+	doc/gridshib-ca-process-flow.jpg \
+	doc/perl"
    AC_SUBST(DOC_FILES)
 fi
 

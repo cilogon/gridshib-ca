@@ -43,11 +43,28 @@
 # CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
-#
-# Logger class
-#
-# Interface to logging.
-#
+
+=head1 GridShibCA::Logger
+
+Interface to logging based on Perl Sys::Syslog Module.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item SyslogId
+
+Identifying string to use with Syslog.
+
+=item SyslogFacility
+
+Facility to use with Syslog.
+
+=back
+
+=cut
 
 package GridShibCA::Logger;
 
@@ -62,10 +79,21 @@ $SYSLOG_ID = $config->getParam("SyslogId");
 $SYSLOG_OPTS = "pid";
 $SYSLOG_FACILITY = $config->getParam("SyslogFacility");
 
-# new()
-# Create a new Logger object.
-# Arguments: None
-# Returns: Logger instance
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new Logger object.
+
+B<Arguments:> None
+
+B<Returns:> Logger instance
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -76,12 +104,20 @@ sub new
     return $self;
 }
 
-# log()
-# Log a message.
-# Arguments:
-#  $level - one of "info", "warn", "err"
-#  $format, @args - as would be presented to sprintf()
-# Returns: Nothing
+=item log()
+
+Log a message.
+
+B<Arguments:>
+
+I<$level> - one of "info", "warn", "err"
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
 sub log
 {
     my $self = shift;
@@ -91,11 +127,18 @@ sub log
     syslog($level, $format, @args);
 }
 
-# info()
-# Log an informative message
-# Arguments:
-#  $format, @args - as would be presented to sprintf()
-# Returns: Nothing
+=item info()
+
+Log an informative message
+
+B<Arguments:>
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
 sub info
 {
     my $self = shift;
@@ -103,16 +146,32 @@ sub info
 }
 
 
-# err()
-# Log an error message
-# Arguments:
-#  $format, @args - as would be presented to sprintf()
-# Returns: Nothing
+=item err()
+
+Log an error message
+
+B<Arguments:>
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
 sub err
 {
     my $self = shift;
     $self->log("err", @_);
 }
+
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
 
 # Return true for import/use
 1;

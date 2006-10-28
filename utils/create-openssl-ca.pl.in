@@ -45,6 +45,38 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+=head1 create-openssl-ca.pl
+
+Creates certificates and keys for using the GridShibCA with an
+OpenSSL-based CA.
+
+=head2 Usage
+
+create-openssl-ca.pl [<options>] <CA DN>
+
+I<CA DN>             Distinguished name of CA in OpenSSL format
+                     E.g. /C=US/O=Test Org/OU=Test Unit/CN=Test CA
+
+B<Options>:
+
+I<-h>                  Print help and exit.
+
+I<-k>                 CA key length in bits [Default is 2048]
+
+I<-l> E<lt>lifetimeE<gt>       CA Lifetime in days [Default is 10 years]
+
+=head2 Return Value
+
+Zero on success, one on error.
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
+
+######################################################################
+
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
 

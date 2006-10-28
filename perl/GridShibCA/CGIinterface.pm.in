@@ -46,6 +46,30 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+=head1 GridShibCA::CGIinterface
+
+Wrapper around standard PERL CGI
+(L<http://search.cpan.org/dist/CGI.pm/CGI.pm>) interface with
+convienence functions for the GridShibCA.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item HTMLFooter
+
+Path to file to use as HTML footer.
+
+=item HTMLHeader
+
+Path to file to use as HTML header.
+
+=back
+
+=cut
+
 package GridShibCA::CGIinterface;
 use GridShibCA::Config;
 
@@ -56,21 +80,37 @@ use CGI;
 my $config = GridShibCA::Config->new();
 $logger = $config->getLogger();
 
-# getCertificateRequest
-# Returns the certificate request from POST.
-# Arguments: None
-# Returns: Certificate request, or undef if not present
+=head2 Methods
+
+=over 4
+
+=item getCertificateRequest()
+
+Returns the certificate request from POST.
+
+B<Arguments:> None
+
+B<Returns:> Certificate request, or undef if not present
+
+=cut
+
 sub getCertificateRequest
 {
     my $self = shift;
     return $self->param('certificateRequest');
 }
 
-# getUserId
-# Return the user id as reported by Shibboleth through REMOTE_USER.
-# Clean the user id so it can pass taint checking.
-# Arguments: None
-# Returns: User id as string, or under if unknown
+=item getUserId()
+
+Return the user id as reported by Shibboleth through REMOTE_USER.
+Clean the user id so it can pass taint checking.
+
+B<Arguments:> None
+
+B<Returns:> User id as string, or under if unknown
+
+=cut
+
 sub getUserId
 {
     my $self = shift;
@@ -93,10 +133,16 @@ sub getUserId
     return $userId;
 }
 
-# getIdP
-# Returns the Shibboleth identity provider
-# Arguments: None
-# Returns: IdP as string, or undef if unknown
+=item getIdP()
+
+Returns the Shibboleth identity provider
+
+B<Arguments:> None
+
+B<Returns:> IdP as string, or undef if unknown
+
+=cut
+
 sub getIdP
 {
     my $idp = undef;
@@ -117,10 +163,16 @@ sub getIdP
     return $idp;
 }
 
-# getShibSession
-# Returns the Shibboleth session cookie as a "variable=value" string.
-# Arguments: None
-# Returns: Shibboleth session or undef if cannot be found
+=item getShibSession()
+
+Returns the Shibboleth session cookie as a "variable=value" string.
+
+B<Arguments:> None
+
+B<Returns:> Shibboleth session or undef if cannot be found
+
+=cut
+
 sub getShibSession
 {
     use CGI::Cookie;
@@ -138,40 +190,64 @@ sub getShibSession
     return $shibsession;
 }
 
-# getToken
-# Returns the token from the posted request.
-# Arguments: None
-# Returns: Token as string, or undef if cannot be found
+=item getToken()
+
+Returns the token from the posted request.
+
+B<Arguments:> None
+
+B<Returns:> Token as string, or undef if cannot be found
+
+=cut
+
 sub getToken
 {
     my $self = shift;
     return $self->param("token");
 }
 
-# getPortalURL
-# Returns the URL for a portal requesting a delegation
-# Arguments: None
-# Returns: URL as string, or undef if not found
+=item getPortalURL()
+
+Returns the URL for a portal requesting a delegation
+
+B<Arguments:> None
+
+B<Returns:> URL as string, or undef if not found
+
+=cut
+
 sub getPortalURL
 {
     my $self = shift;
     return $self->param("portalURL");
 }
 
-# getPortalData
-# Returns opaque portal data to be passed back to portal.
-# Arguments: None
-# Returns: Data as string, empty string if not found.
+=item getPortalData()
+
+Returns opaque portal data to be passed back to portal.
+
+B<Arguments:> None
+
+B<Returns:> Data as string, empty string if not found.
+
+=cut
+
 sub getPortalData
 {
     my $self = shift;
     return $self->param("portalData") || "";
 }
 
-# getHTMLFromFile
-# Returns HTML from given filename.
-# Arguments: Filename
-# Returns: HTML as string
+=item getHTMLFromFile()
+
+Returns HTML from given filename.
+
+B<Arguments:> Filename
+
+B<Returns:> HTML as string
+
+=cut
+
 sub getHTMLFromFile
 {
     my $self = shift;
@@ -192,10 +268,16 @@ sub getHTMLFromFile
     return $htmlString;
 }
 
-# getHTMLFooter
-# Returns HTML footer for GridShibCA web pages
-# Arguments: None
-# Returns: HTML as string, undef on error
+=item getHTMLFooter()
+
+Returns HTML footer for GridShibCA web pages.
+
+B<Arguments:> None
+
+B<Returns:> HTML as string, undef on error
+
+=cut
+
 sub getHTMLFooter
 {
     my $self = shift;
@@ -203,15 +285,29 @@ sub getHTMLFooter
 }
 
 
-# getHTMLHeader
-# Returns HTML header for GridShibCA web pages
-# Arguments: None
-# Returns: HTML as string, undef on error
+=item getHTMLHeader()
+
+Returns HTML header for GridShibCA web pages.
+
+B<Arguments:> None
+
+B<Returns:> HTML as string, undef on error
+
+=cut
+
 sub getHTMLHeader
 {
     my $self = shift;
     return $self->getHTMLFromFile($config->getParam("HTMLHeader"));
 }
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
 
 # Return true for import/use
 1;

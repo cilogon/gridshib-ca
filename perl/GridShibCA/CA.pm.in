@@ -45,6 +45,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
+=head1 GridShibCA::CA
+
+Abstract interface to CA to sign certificates. This class isn't intended
+to be used itself, it just serves as a base for other classes.
+
+Current implementations include: L<GridShibCA::OpenSSLCA|GridShibCA::OpenSSLCA>
+
+=cut
+
 package GridShibCA::CA;
 
 use GridShibCA::Config;
@@ -54,12 +63,24 @@ my $config = GridShibCA::Config->new();
 $LIFETIME = 1;   # in days
 $RELATIVE_DN = $config->getParam("RelativeDN");
 
-# new()
-# Create a new interface to the CA.
-# Arguments:
-#  $username - name of user as string
-#  $idp - idp of user as string
-# Returns: CA instance
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new interface to the CA.
+
+B<Arguments:>
+
+C<$username> - name of user as string
+
+C<$idp> - idp of user as string
+
+B<Returns:> CA instance
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -73,10 +94,15 @@ sub new
     return $self;
 }
 
-# getDN
-# Given a username, return the DN for the user
-# Arguments: None
-# Returns: DN as string, or undef on error
+=item getDN()
+
+Return the DN for the user.
+
+B<Arguments:> None
+
+B<Returns:> DN as string, or undef on error
+
+=cut
 
 sub getDN
 {
@@ -87,16 +113,61 @@ sub getDN
     return $DN;
 }
 
-# signRequest
-# Given a certificate request return a certificate
-# Arguments: None
-# Returns: Certificate as string, or undef on error
-#  Username
+=item signRequest()
+
+Given a certificate request return a certificate
+
+B<Arguments:> PEM-encoded PKCS10 certificate request as string.
+
+B<Returns:> Certificate as string, or undef on error
+
+=cut
+
 sub signRequest
 {
     $self->_error("signRequest() unimplemented");
     return undef;
 }
+
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
 
 sub _error
 {
@@ -105,11 +176,13 @@ sub _error
     $self->{error} = sprintf($format, @_);
 }
 
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
-}
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+
+=cut
 
 # Return true for import/use
 1;
