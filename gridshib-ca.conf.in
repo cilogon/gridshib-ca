@@ -107,6 +107,17 @@ CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
 
 ######################################################################
 #
+# Authorization configuration files
+#
+
+# Authorized Idps
+AuthorizedIdpsFile = @GRIDSHIB_CA_CONF@/authorizedIdps.conf
+
+# Authorized Portals
+AuthorizedPortalsFile = @GRIDSHIB_CA_CONF@/authorizedPortals.conf
+
+######################################################################
+#
 # Binaries
 #
 

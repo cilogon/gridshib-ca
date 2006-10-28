@@ -94,6 +94,7 @@ my %config = (
     CertRegistryDir => "\$(GridShibCAConfDir)/certs/",
     # Authorization parameters
     AuthorizedIdpsFile => "\$(GridShibCAConfDir)/authorizedIdps.conf",
+    AuthorizedPortalsFile => "\$(GridShibCAConfDir)/authorizedPortals.conf",
     # Binares
     OpenSSL =>"@OPENSSL@",
     GlobusLocation =>"@GLOBUS_LOCATION@",

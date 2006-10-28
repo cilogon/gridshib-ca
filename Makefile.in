@@ -116,6 +116,7 @@ DIST_FILES=$(JARFILE) \
 	LICENSE \
 	gridshib-ca.conf.in \
 	authorizedIdps.conf.in \
+	authorizedPortals.conf.in \
 	openssl-ca/Makefile.in \
 	openssl-ca/*.[ch] \
 	$(PERL_MODULE_SRCS)

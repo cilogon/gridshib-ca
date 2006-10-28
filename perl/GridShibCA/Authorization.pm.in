@@ -107,7 +107,7 @@ sub authorizeUser
     
     if ($status == 0)
     {
-	$self->_error("Idp not authorized (%s).", $idp);
+	$self->_error("Idp unrecognized.");
 	return 0;
     }
 
@@ -128,6 +128,20 @@ sub authorizePortal
 {
     my $self = shift;
     my $portalURL = shift;
+
+    my $authorizedPortalsFilename = $config->getParam("AuthorizedPortalsFile");
+    my $status = $self->_inFile($portalURL, $authorizedPortalsFilename);
+
+    if ($status == -1)
+    {
+	return 0;
+    }
+    
+    if ($status == 0)
+    {
+	$self->_error("URL unrecognized.");
+	return 0;
+    }
 
     return 1;
 }
