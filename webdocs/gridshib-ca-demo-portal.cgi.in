@@ -50,19 +50,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use GridShibCA::CGIinterface;
-use GridShibCA::Command;
+use GridShibCA::Config;
+
+my $config = GridShibCA::Config->new();
+
+$OPENSSL = $config->getParam("OpenSSL");
 
 ######################################################################
 
-$OPENSSL = "@OPENSSL@";
-
-# Allow for secure execution
-$ENV{"PATH"} = "/bin";
-
-######################################################################
-
-$cgi = new GridShibCA::CGIinterface;
+$cgi = $config->getCGI();
 $status = $cgi->param("status");
 
 if (!defined($status))
@@ -115,7 +111,11 @@ sub makeRequest
 
     my $reqPEM = $req->get_pem_req();
 
-    my $targetURL = "https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/portalLogin.cgi";
+    my $wwwHostname = $config->getParam("WWWHostname");
+    my $shibProtectedCGIBinURL =
+	$config->getParam("ShibbolethProtectedCGIBinURL");
+    my $targetURL = "https://" . $wwwHostname .
+	$shibProtectedCGIBinURL . "/portalLogin.cgi";
     my $myURL = $cgi->url();
 
     print $cgi->header();
@@ -161,9 +161,9 @@ sub handleSuccess
     $certificate =~ s/\x0d\x0a/\x0a/g;
 
     # Make sure module of certificate matches private key
-    my $cmd = GridShibCA::Command->new($OPENSSL, "rsa",
-				       "-in", $filename,
-				       "-modulus", "-noout");
+    my $cmd = $config->getCommand($OPENSSL, "rsa",
+				  "-in", $filename,
+				  "-modulus", "-noout");
     if (!$cmd->exec())
     {
 	errorExit("Error getting private key (%s) modulus: %s",
@@ -178,8 +178,8 @@ sub handleSuccess
     {
 	errorExit("Could not parse private key modulus: $privateKeyModulus");
     }
-    $cmd = GridShibCA::Command->new($OPENSSL, "x509",
-				    "-modulus", "-noout");
+    $cmd = $config->getCommand($OPENSSL, "x509",
+			       "-modulus", "-noout");
     $cmd->setInput($certificate);
     if (!$cmd->exec())
     {
@@ -205,13 +205,13 @@ sub handleSuccess
     close(CRED);
 
     # Set up environment to run Globus binaries
-    my $globusLocation = "/usr/local/gt-4.0.1/";
-    $ENV{"GLOBUS_LOCATION"} = "@GLOBUS_LOCATION@";
+    my $globusLocation = $config->getParam("GlobusLocation");
+    $ENV{"GLOBUS_LOCATION"} = $globusLocation;
     $ENV{"LD_LIBRARY_PATH"} = join(":",
 				   $ENV{"LD_LIBRARY_PATH"} || "",
 				   $globusLocation . "lib/");
-    $cmd = GridShibCA::Command->new($globusLocation . "/bin/grid-cert-info",
-				       "-file", $filename);
+    $cmd = $config->getCommand($globusLocation . "/bin/grid-cert-info",
+			       "-file", $filename);
     if (!$cmd->exec())
     {
 	errorExit("Error executing grid-cert-info: %s",

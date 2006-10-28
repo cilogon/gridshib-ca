@@ -1,19 +1,105 @@
 #
 # GridShib CA configuration file
+# $Id$
 #
 # Everything after a "#" is a comment.
 # All declarations should look like "variable = value"
-# Unknown variables will cause the GridShib CA to die with a message
-# to STDERR, so watch for typos.
+# Default values are shown, to change, uncomment and modify.
+# Use check-config.pl to validate file after changing.
+
+######################################################################
+#
+# Perl Modules
+#
 
 # Perl module to use for logging
-loggerModule = GridShibCA::Logger
+#loggerModule = GridShibCA::Logger
 
 # Perl module to use for CA
-caModule = GridShibCA::OpenSSLCA
+#caModule = GridShibCA::OpenSSLCA
 
 # Perl module to use for CGI interface
-cgiModule = GridShibCA::CGIinterface
+#cgiModule = GridShibCA::CGIinterface
 
 # Perl module to generate tokens
-tokenGeneratorModule = GridShibCA::TokenGenerator
+#tokenGeneratorModule = GridShibCA::TokenGenerator
+
+# Perl module to invoke commands
+#commandModule = GridShibCA::Command
+
+######################################################################
+#
+# Configuration files
+#
+
+# GridShib CA configuration directory
+#GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
+
+# JNLP file template
+#JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
+
+# Symetric key file for tokens
+#TokenKeyFile = @GRIDSHIB_CA_TOKEN_KEY@
+
+# HTML header to include on web pages
+#HTMLHeader = $(GridShibCAConfDir)/header.html
+
+# HTML footer to include on web pages
+#HTMLFooter = $(GridShibCAConfDir)/footer.html
+
+######################################################################
+#
+# URLs
+#
+
+# Hostname to use in URLs
+#WWWHostname = @WWW_HOSTNAME@
+
+# Relative URL to unprotected GridShib CA files
+#GridShibCAURL = @GRIDSHIB_CA_URL@
+
+# Relative URL to Shibboleth-protected CGI-BIN directory
+#ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
+
+######################################################################
+#
+# CA Parameters
+#
+
+# Relative DN for issued certificates
+# Must be in RFC 2253 format. E.g. O=NCSA, C=US
+#RelativeDN = @RELATIVE_DN@
+
+# Certificate for OpenSSL-based CA
+#OpenSSLCACert = @GRIDSHIB_CA_CERT_PATH@
+
+# Certificate for OpenSSL-based CA
+#OpenSSLCAKey = @GRIDSHIB_CA_KEY_PATH@
+
+# Serial number file for OpenSSL-based CA
+#OpenSSLCASerial = @GRIDSHIB_CA_CONF_DIR@/serial
+
+######################################################################
+#
+# Logging Parameters
+#
+
+# ID to use for syslog
+#SyslogId = @SYSLOG_ID@
+
+# Facility to use for logging
+#SyslogFacility = @SYSLOG_FACILITY@
+
+######################################################################
+#
+# Binaries
+#
+
+# OpenSSL binary to use
+#OpenSSL = @OPENSSL@
+
+# Globus Location to use
+#GlobusLocation = @GLOBUS_LOCATION@
+
+# OpenSSL-CA program to use
+#OpenSSLCA = $(GridShibCAConfDir)/openssl-ca

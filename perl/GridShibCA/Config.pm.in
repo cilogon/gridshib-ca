@@ -60,10 +60,34 @@ my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
 
 # Default configuration
 my %config = (
+    # Perl modules
     loggerModule => "GridShibCA::Logger",
     caModule => "GridShibCA::OpenSSLCA",
     cgiModule => "GridShibCA::CGIinterface",
     tokenGeneratorModule => "GridShibCA::TokenGenerator",
+    commandModule => "GridShibCA::Command",
+    # Configuration stuff
+    GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
+    JNLPTemplate =>"\$(GridShibCAConfDir)/CredentialRetriever.jnlp",
+    TokenKeyFile =>"\$(GridShibCAConfDir)/token-key",
+    HTMLHeader =>"\$(GridShibCAConfDir)/header.html",
+    HTMLFooter =>"\$(GridShibCAConfDir)/footer.html",
+    # URLs
+    WWWHostname =>"@WWW_HOSTNAME@",
+    GridShibCAURL =>"@GRIDSHIB_CA_URL@",
+    ShibbolethProtectedCGIBinURL =>"@SHIB_PROTECTED_CGI_BIN_URL@",
+    # CA Parameters
+    RelativeDN =>"@RELATIVE_DN@",
+    OpenSSLCACert =>"\$(GridShibCAConfDir)/gridshib-ca-cert.pem",
+    OpenSSLCAKey =>"\$(GridShibCAConfDir)/gridshib-ca-key.pem",
+    OpenSSLCASerial =>"\$(GridShibCAConfDir)/serial",
+    # Logging parameters
+    SyslogId =>"@SYSLOG_ID@",
+    SyslogFacility =>"@SYSLOG_FACILITY@",
+    # Binares
+    OpenSSL =>"@OPENSSL@",
+    GlobusLocation =>"@GLOBUS_LOCATION@",
+    OpenSSLCA =>"\$(GridShibCAConfDir)/openssl-ca",
     );
     
 # new()
@@ -79,12 +103,15 @@ sub new
     {
 	$debug = 1;
     }
+
+    # Maximum recusion depth for configuration variable replacement
+    $self->{recursionLimit} = 10;
+    bless($self, $class);
     if (!$initialized)
     {
-	_readConfig($configFile);
+	$self->_readConfig($configFile);
 	$initialized = 1;
     }
-    bless($self, $class);
     return $self;
 }
 
@@ -96,7 +123,27 @@ sub getParam
 {
     my $self = shift;
     my $param = shift;
-    return $config{$param};
+    my $value = $config{$param};
+
+    my $recursionDepth = 0;
+
+    # Expand any $(refs) in $value. Allowing for recursion
+    while ($value =~ /\$\((\w+)\)/)
+    {
+	my $replaceWith = $config{$1};
+	$value =~ s/\$\((\w+)\)/$replaceWith/g;
+
+	# Prevent run-away replacement with limit on recusion depth
+	$recursionDepth += 1;
+	if ($recursionDepth > $self->{recursionLimit})
+	{
+	    $self->_error("Recusion limit hit for expanding configuration parameter %s",
+			  $value);
+	    last;
+	}
+    }
+
+    return $value;
 }
 
 # dump()
@@ -141,6 +188,12 @@ sub getTokenGenerator
     return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
 }
 
+sub getCommand
+{
+    my $self = shift;
+    return $self->_newInstance($config{"commandModule"}, @_);
+}
+
 ######################################################################
 #
 # _newInstance()
@@ -176,21 +229,16 @@ sub _newInstance
 # Returns: Nothing
 sub _readConfig
 {
-    use GridShibCA::Logger;
     use FileHandle;
 
+    my $self= shift;
     my $filename = shift;
-    _debug("Parsing $filename");
-
-    # We use the default logger for now until we know what class we
-    # will use in general
-    my $logger = GridShibCA::Logger->new();
+    $self->_debug("Parsing $filename");
 
     my $fh = new FileHandle;
     if (!$fh->open("<" . $filename))
     {
-	$logger->err("Could not open configuration file ($filename): $!");
-	_debug("Could not open configuration file ($filename): $!");
+	$self->_error("Could not open configuration file ($filename): $!");
 	return;
     }
     while (<$fh>)
@@ -206,13 +254,13 @@ sub _readConfig
 	    my $value = $2;
 	    if (!defined($config{$var}))
 	    {
-		_debug("Unrecognized variable $var on line $.");
+		$self->_debug("Unrecognized variable $var on line $.");
 	    }
 	    $config{$var} = $value;
 	}
 	else
 	{
-	    _debug("Could not parse line $.: $_");
+	    $self->_debug("Could not parse line $.: $_");
 	    next;
 	}
     }
@@ -222,6 +270,7 @@ sub _readConfig
 
 sub _debug
 {
+    my $self = shift;
     my $format = shift;
     my @args = @_;
 
@@ -236,22 +285,27 @@ sub _error
 {
     my $self = shift;
     my $format = shift;
-    $self->{error} = sprintf($format, @_);
-    _debug($format, @_);
+    
+    chomp($format);
+    my $string = sprintf($format . "\n", @_);
+    $self->{error} = $string;
+
+    # Don't use our Logger module as that could create a deadlock as the
+    # Logger class tries to load its configuration using this module
+    # Instead we'll print to STDERR, which should end up in the web
+    # server error logs, and then die.
+    printf(STDERR $string);
 }
 
 sub getError
 {
     my $self = shift;
-    return $self->{error}
+    return $self->{error};
 }
 
 # Return true for import/use
 1;
 
-#
-# End include.pl
-#
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***

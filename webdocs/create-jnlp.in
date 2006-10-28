@@ -60,7 +60,7 @@ umask(0077);
 
 my $config = GridShibCA::Config->new();
 
-my $JNLPtemplate = "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp";
+my $JNLPtemplate = $config->getParam("JNLPTemplate");
 
 ######################################################################
 
@@ -168,13 +168,15 @@ $logger->info("JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
 # Create returned text
 #
 
-my $code_base = $url_base . "@GRIDSHIB_CA_URL@";
+my $GridShibCAURL = $config->getParam("GridShibCAURL");
+my $code_base = $url_base . $GridShibCAURL;
 
 # JWS can't load jar files from HTTPS with untrusted CA certificates
 # Since JAR file is signed, this is a reasonable work around.
 $code_base =~ s/https:/http:/;
 
-my $genCredURL = $url_base . "@SHIB_PROTECTED_CGI_BIN_URL@/generateCred.cgi";
+my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
+my $genCredURL = $url_base . $ShibProtectedCGIBinURL . "/generateCred.cgi";
 
 open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
 

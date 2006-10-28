@@ -77,18 +77,6 @@ elif test "$CA_TYPE" = "openssl"; then
       AC_MSG_ERROR([Could not find openssl binary in path.])
   fi
 
-  # XXX It would be nice to make this RFC 2253 format, but it gets fed
-  # to openssl req -subj, which requires /C=X/O=XX/...
-  AC_MSG_CHECKING([for DN of CA])
-  default="/C=US/O=TEST ORG/OU=TEST OU/CN=Test CA"
-  AC_ARG_WITH(ca-dn,
-	AC_HELP_STRING([--with-ca-dn],
-		[Provide the DN for GridShib CA. Unless you are going to provide a CA key and certificate, the install process will create one for you. This will be its DN. (Default: /C=US/O=TEST ORG/OU=TEST OU/CN=Test CA)]),
-	[CA_DN=$withval],
-	[CA_DN=$default])
-  AC_SUBST(CA_DN)
-  AC_MSG_RESULT(${CA_DN})
-
   BINARIES="${BINARIES} openssl-ca/openssl-ca"
   SUBDIRS="${SUBDIRS} openssl-ca"
 
@@ -224,31 +212,9 @@ AC_ARG_WITH(relative-dn,
 AC_SUBST(RELATIVE_DN)
 AC_MSG_RESULT(${RELATIVE_DN})
 
-AC_MSG_CHECKING([for path to GridShib CA certificate])
-AC_ARG_WITH(cert-path,
-	AC_HELP_STRING([--with-cert-path],
-		[Path to certificate file used either to generate certificates, if openssl is used as the CA, or authenticate to myproxy, if myproxy is used as a CA. (Default: <gridshib-ca-conf-dir>/gridshib-ca-cert.pem)]),
-	[GRIDSHIB_CA_CERT_PATH=$withval],
-	[GRIDSHIB_CA_CERT_PATH="${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-cert.pem"])
-AC_SUBST(GRIDSHIB_CA_CERT_PATH)
-AC_MSG_RESULT(${GRIDSHIB_CA_CERT_PATH})
-
-AC_MSG_CHECKING([for path to GridShib CA key])
-AC_ARG_WITH(key-path,
-	AC_HELP_STRING([--with-key-path],
-		[Path to key file used either to generate certificates, if openssl is used as the CA, or authenticate to myproxy, if myproxy is used as a CA. (Default: <gridshib-ca-conf-dir>/gridshib-ca-key.pem)]),
-	[GRIDSHIB_CA_KEY_PATH=$withval],
-	[GRIDSHIB_CA_KEY_PATH="${GRIDSHIB_CA_CONF_DIR}/gridshib-ca-key.pem"])
-AC_SUBST(GRIDSHIB_CA_KEY_PATH)
-AC_MSG_RESULT(${GRIDSHIB_CA_KEY_PATH})
-
-# We generate webdocs/header.html and webdocs/footer.html and then
-# include those in other html files we generate. So they must be
-# listed first before other html files.
+# Included HTML files that are install in the configuration directory
 HTML_HEADER=$srcdir/webdocs/header.html
-AC_SUBST_FILE(HTML_HEADER)
 HTML_FOOTER=$srcdir/webdocs/footer.html
-AC_SUBST_FILE(HTML_FOOTER)
 HTML_INCS="${HTML_HEADER} ${HTML_FOOTER}"
 AC_SUBST(HTML_INCS)
 AC_CONFIG_FILES([${HTML_INCS}])
@@ -305,7 +271,8 @@ AC_CONFIG_FILES([$HTML_FILES])
 
 CONF_FILES="\
 	webdocs/CredentialRetriever.jnlp \
-	gridshib-ca.conf"
+	gridshib-ca.conf \
+	${HTML_INCS}"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 
@@ -372,9 +339,6 @@ AC_SUBST(GRIDSHIB_LOGGER_PROG)
 
 GRIDSHIB_AUTHZ_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-authz-prog
 AC_SUBST(GRIDSHIB_AUTHZ_PROG)
-
-GRIDSHIB_CA_TOKEN_KEY=${GRIDSHIB_CA_CONF_DIR}/token-key
-AC_SUBST(GRIDSHIB_CA_TOKEN_KEY)
 
 GRIDSHIB_CA_CONFIG_FILE=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca.conf
 AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)

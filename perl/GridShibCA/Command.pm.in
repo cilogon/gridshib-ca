@@ -116,7 +116,11 @@ sub exec
     }
 
     my (@cmdArgs) = ( $self->{command}, @{$self->{args}} );
-    
+
+    # Allow for safe program execution in taint mode
+    my $savePATH = $ENV{PATH};
+    $ENV{PATH} = "/bin";
+
     # XXX Error handling
     $pid = IPC::Open3::open3($inFD, \*cmdOut, \*cmdErr, @cmdArgs);
 
@@ -145,6 +149,8 @@ sub exec
 	$self->{stdout} .= $_;
     }
     close(cmdOut);
+
+    $ENV{PATH} = $savePATH;
 
     return ($self->{status} == 0);
 }

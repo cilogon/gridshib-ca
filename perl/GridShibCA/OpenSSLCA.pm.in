@@ -52,7 +52,8 @@ package GridShibCA::OpenSSLCA;
 use GridShibCA::CA;
 @ISA = ("GridShibCA::CA");
 
-use GridShibCA::Command;
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
 
 # new()
 # Create a new interface to the CA.
@@ -64,10 +65,10 @@ sub new
 {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
-    $self->{caProg} = "@GRIDSHIB_CA_CONF_DIR@/openssl-ca";
-    $self->{cert} = "@GRIDSHIB_CA_CERT_PATH@";
-    $self->{key} = "@GRIDSHIB_CA_KEY_PATH@";
-    $self->{serialFile} = "@GRIDSHIB_CA_CONF_DIR@/serial";
+    $self->{caProg} = $config->getParam("OpenSSLCA");
+    $self->{cert} = $config->getParam("OpenSSLCACert");
+    $self->{key} = $config->getParam("OpenSSLCAKey");
+    $self->{serialFile} = $config->getParam("OpenSSLCASerial");
     bless($self, $class);
     return $self;
 }
@@ -126,7 +127,7 @@ sub signRequest
     push(@args, "-CAserial", $self->{serialFile});
     push(@args, "-CAcreateserial");
 
-    my $cmd = GridShibCA::Command->new($self->{caProg}, @args);
+    my $cmd = $config->getCommand($self->{caProg}, @args);
     $cmd->setInput($certificateRequest);
     if (!$cmd->exec())
     {

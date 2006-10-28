@@ -73,9 +73,6 @@ EOF
 
 ######################################################################
 
-# For safe mode
-$ENV{PATH} = "/bin";
-
 my $config = GridShibCA::Config->new();
 
 $logger = $config->getLogger();
@@ -116,6 +113,9 @@ if (defined($user))
 
 ######################################################################
 
+my $htmlHeader = $cgi->getHTMLHeader();
+my $htmlFooter = $cgi->getHTMLFooter();
+
 print <<"EOF";
 Content-type: text/html
 
@@ -125,25 +125,29 @@ Content-type: text/html
   <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
   <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
 </head>
-@HTML_HEADER@
+$htmlHeader
 EOF
 
 if (defined($user))
 {
+    my $shibProtectedCGIBinURL =
+	$config->getParam("ShibbolethProtectedCGIBinURL");
+    my $gridShibCAURL = $config->getParam("GridShibCAURL");
+
     print <<"EOF";
 <center>
 Welcome $user.
 <p>
 Your GridShib-CA identity will be $DN
 <p>
-<form action=\"@SHIB_PROTECTED_CGI_BIN_URL@/create-jnlp\">
+<form action=\"$shibProtectedCGIBinURL/create-jnlp\">
   <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
 </form>
 <p>
 When the Credential Retriever application completes, you may click on
 the following button to return to the main GridShib CA page or simply
 close this browser window.
-<form action="@GRIDSHIB_CA_URL@">
+<form action="$gridShibCAURL">
 <input type="submit" value="Return to GridShib CA main page">
 </form>
 </center>
@@ -166,7 +170,7 @@ EOF
 }
 
 print <<"EOF";
-@HTML_FOOTER@
+$htmlFooter
 </html>
 EOF
 

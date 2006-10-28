@@ -263,6 +263,8 @@ else
     # We are outputting a form to allow certificate to be posted
     # to a portal
     my $portalData = $cgi->getPortalData();
+    my $htmlHeader = $cgi->getHTMLHeader();
+    my $htmlFooter = $cgi->getHTMLFooter();
     print $cgi->header();
     print <<"EOF";
 <html>
@@ -271,7 +273,7 @@ else
   <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
   <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
 </head>
-@HTML_HEADER@
+$htmlHeader
 
 <center>
 <form action="$portalURL" method=post>
@@ -283,7 +285,7 @@ Your certificate is ready to be returned to the portal.
 <input value="Click here finish delegation and return to the portal" type="submit">
 </form>
 
-@HTML_FOOTER@
+$htmlFooter
 </html>
 EOF
 }

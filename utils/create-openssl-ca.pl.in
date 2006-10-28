@@ -1,4 +1,4 @@
-#!@PERL@
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
@@ -45,19 +45,65 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-my $openssl = "@OPENSSL@";
-my $certFile = "@GRIDSHIB_CA_CERT_PATH@";
-my $keyFile = "@GRIDSHIB_CA_KEY_PATH@";
-my $confPath = "@GRIDSHIB_CA_CONF_DIR@";
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+my $openssl = $config->getParam("OpenSSL");
+my $confPath = $config->getParam("GridShibCAConfDir");
+my $certFile = $config->getParam("OpenSSLCACert");
+my $keyFile = $config->getParam("OpenSSLCAKey");
+
+######################################################################
+
+use Getopt::Std;
+
 
 # Default CA lifetime is 10 years
 my $lifetime = sprintf("%d", 10 * 365);
 
-# CA subject
-my $subject = "@CA_DN@";
-
 # Key length in bits
 my $keyLength = 2048;
+
+my $usage = <<"EOF";
+Usage: $0 [<options>] <CA DN>
+ <CA DN>             Distinguished name of CA in OpenSSL format
+                     E.g. /C=US/O=Test Org/OU=Test Unit/CN=Test CA
+
+Options are:
+ -h                  Print help
+ -k                  CA key length in bits [Default is $keyLength]
+ -l <lifetime>       CA Lifetime in days [Default is $lifetime]
+EOF
+
+my %options;
+getopts('hl:k:', \%options);
+
+if ($options{h})
+{
+    print $usage;
+    exit(0);
+}
+
+if ($options{k})
+{
+    $keyLength = $options{k};
+}
+
+if ($options{l})
+{
+    $lifetime = $options{l};
+}
+
+# CA subject
+my $subject = shift;
+if (!defined($subject))
+{
+    print(STDERR "CA Distinguished name expected.");
+    print(STDERR $usage);
+    exit(1);
+}
+
+######################################################################
 
 umask(0077);
 
@@ -67,7 +113,7 @@ print "Creating GridShib CA\n";
 print " Keyfile is $keyFile\n";
 print " Certificate is $certFile\n";
 
-my @args = ( $openssl );
+my @args = ();
 push(@args, "req");
 push(@args, "-x509");
 push(@args, "-newkey", "rsa:$keyLength");
@@ -77,9 +123,11 @@ push(@args, "-days", $lifetime);
 push(@args, "-nodes");
 push(@args, "-subj", $subject);
 
-if (system(@args) != 0)
+my $cmd = $config->getCommand($openssl, @args);
+
+if (!$cmd->exec())
 {
-    print "Execution of " . join(' ', @args) . " failed: $?\n";
+    print "Execution of $openssl failed: " . $cmd->getError();
     exit(1);
 }
 
@@ -87,21 +135,20 @@ if (system(@args) != 0)
 
 print "Getting hash of GridShib CA\n";
 
-@args = ( $openssl );
+@args = ();
 push(@args, "x509");
 push(@args, "-in", $certFile);
 push(@args, "-hash");
 push(@args, "-noout");
 
-if (open(fromOpenSSL, join(' ', @args) . "|") == 0)
+$cmd = $config->getCommand($openssl, @args);
+
+if (!$cmd->exec())
 {
-    print "Execution of " . join(' ', @args) . " failed: $?\n";
+    print "Execution of $openssl failed: " . $cmd->getError();
     exit(1);
 }
-
-my $hash = <fromOpenSSL>;
-chomp($hash);
-close(fromOpenSSL);
+my $hash = $cmd->getOutput();
 
 print " Hash is $hash\n";
 
@@ -122,7 +169,8 @@ if (copy($certFile, $hashFile) == 0)
 ######################################################################
 
 my $policyFile = "${confPath}/${hash}.signing_policy";
-my $signingSpace = "@RELATIVE_DN@/*";
+my $relativeDN = $config->getParam("RelativeDN");
+my $signingSpace = $relativeDN . "/*";
 
 # Remove duplicate /'s
 $signingSpace =~ s/\/\//\//g;
@@ -167,14 +215,15 @@ close(FH);
 #
 
 print "Setting ownership of created files.\n";
-@args=("chown");
+@args=();
 push(@args, "@WWW_USER@");
 push(@args, $certFile, $keyFile, $hashFile, $policyFile, $serialFile);
 
+$cmd = $config->getCommand("chown", @args);
 
-if (system(@args) != 0)
+if (!$cmd->exec())
 {
-    print "Execution of " . join(' ', @args) . " failed: $?\n";
+    print "Execution of $openssl failed: " . $cmd->getError();
     exit(1);
 }
 
@@ -182,3 +231,9 @@ if (system(@args) != 0)
 
 print "Done.\n";
 exit(0);
+
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

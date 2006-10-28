@@ -47,9 +47,12 @@
 
 package GridShibCA::CA;
 
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
 # Credential parameters
 $LIFETIME = 1;   # in days
-$RELATIVE_DN = "@RELATIVE_DN@";
+$RELATIVE_DN = $config->getParam("RelativeDN");
 
 # new()
 # Create a new interface to the CA.

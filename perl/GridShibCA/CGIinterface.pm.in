@@ -141,7 +141,7 @@ sub getShibSession
 # getToken
 # Returns the token from the posted request.
 # Arguments: None
-# Returns: Token as string on undef if cannot be found
+# Returns: Token as string, or undef if cannot be found
 sub getToken
 {
     my $self = shift;
@@ -166,6 +166,51 @@ sub getPortalData
 {
     my $self = shift;
     return $self->param("portalData") || "";
+}
+
+# getHTMLFromFile
+# Returns HTML from given filename.
+# Arguments: Filename
+# Returns: HTML as string
+sub getHTMLFromFile
+{
+    my $self = shift;
+    my $filename = shift;
+    my $htmlString = "";
+    if (!open(HTMLFile, $filename))
+    {
+	$logger->err("Could not open HTML file %s for reading: %s",
+		     $filename, $!);
+	# Return empty string to avoid other errors
+	return "";
+    }
+    while(<HTMLFile>)
+    {
+	$htmlString .= $_;
+    }
+    close(HTMLFile);
+    return $htmlString;
+}
+
+# getHTMLFooter
+# Returns HTML footer for GridShibCA web pages
+# Arguments: None
+# Returns: HTML as string, undef on error
+sub getHTMLFooter
+{
+    my $self = shift;
+    return $self->getHTMLFromFile($config->getParam("HTMLFooter"));
+}
+
+
+# getHTMLHeader
+# Returns HTML header for GridShibCA web pages
+# Arguments: None
+# Returns: HTML as string, undef on error
+sub getHTMLHeader
+{
+    my $self = shift;
+    return $self->getHTMLFromFile($config->getParam("HTMLHeader"));
 }
 
 # Return true for import/use

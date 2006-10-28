@@ -265,7 +265,7 @@ $(DIST_FILE): $(DIST_FILES) check-perl
 # Token key installation
 #
 
-TOKEN_KEY=@GRIDSHIB_CA_TOKEN_KEY@
+TOKEN_KEY=@GRIDSHIB_CA_CONF_DIR@/token-key
 
 install-token-key: $(TOKEN_KEY)
 

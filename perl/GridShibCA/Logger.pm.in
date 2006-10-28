@@ -54,12 +54,13 @@ package GridShibCA::Logger;
 use Sys::Syslog;
 use File::Basename;
 
-# Syslog parameters
-$SYSLOG_ID = "@SYSLOG_ID@";
-$SYSLOG_OPTS = "pid";
-$SYSLOG_FACILITY = "@SYSLOG_FACILITY@";
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
 
-$LOGGER_PROG = "@GRIDSHIB_LOGGER_PROG@";
+# Syslog parameters
+$SYSLOG_ID = $config->getParam("SyslogId");
+$SYSLOG_OPTS = "pid";
+$SYSLOG_FACILITY = $config->getParam("SyslogFacility");
 
 # new()
 # Create a new Logger object.
@@ -116,9 +117,6 @@ sub err
 # Return true for import/use
 1;
 
-#
-# End include.pl
-#
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
