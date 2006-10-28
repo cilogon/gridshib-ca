@@ -16,10 +16,8 @@
 <li><a href="#shib-conf">Shibboleth Configuration</a>
 <li><a href="#download">Download GridShib-CA</a>
 <li><a href="#install">Installing the Software</a>
-<li><a href="#ca-conf">CA Configuration</a>
-<li><a href="#openssl">OpenSSL CA Configuration</a>
-<li><a href="#myproxy">MyProxy CA Configuration</a>
-<li><a href="#other-conf">Other Configuration Options</a>
+<li><a href="#ca-install">CA Installation</a>
+<li><a href="#conf">Configuration Options</a>
 <li><a href="#test">Testing</a>
 <li><a href="#troubleshooting">Troubleshooting</a>
 </ul>
@@ -35,15 +33,8 @@ README.QUICKSTART.SSL which should be included with your server.)
 <li><a href="http://shibboleth.internet2.edu/latest.html">Shibboleth
 		SP software</a> (Tested with 1.3)
 <li><a href="http://www.perl.org">Perl</a> (Tested with 5.8.x)
-</ul>
-<p>
-You also need some CA software. Your choices are:
-<ul>
-<li><a href="http://www.openssl.org">OpenSSL</a> (Tested with 0.9.7f)
-<li><a href="http://myproxy.ncsa.uiuc.edu">MyProxy</a> (Tested with
-	3.5). You need client software installed on the system hosting the
-	GridShib-CA and a MyProxy CA installed either locally or on a
-	machine that is network-accessible to the GridShib-CA.
+<li><a href="http://www.openssl.org">OpenSSL</a> Both the binary
+	and the development libraries and header files. (Tested with 0.9.7f)
 </ul> 
 <h2><a name="shib-conf">Shibboleth Configuration</a></h2>
 You need to configure Shibboleth so that you have a Shibboleth
@@ -85,144 +76,54 @@ than "apache" you need to tell configure this with '-with-www-user'
 </pre>
 If your Apache root directory is not "/var/www/" then you need to tell
 configure this with '--with-www-dir'.
-<pre>
---with-ca-type=myproxy
-</pre>
-If you want to use MyProxy instead of the default OpenSSL CA, this is
-your chance to say so. Note this involves extra configuration as
-<a href="#myproxy">described below</a>, so you probably don't want to
-do this unless you have a good reason.
 <li>Run "make" - don't be surprised if this does little or nothing as
 	a lot of work is done by configure.
 <li>As root, run "make install"
 </ol>
-<h2><a name="ca-conf">CA Configuration</a></h2>
-The next configuration step depends on which CA you selected with the
---with-ca-type argument to configure: OpenSSL (the default) or
-MyProxy.
+<h2><a name="ca-install">CA Installation</a></h2>
+You need to install the CA certificate and private key for the GridShib
+CA. Running the script
+<a href="perl/create-openssl-ca.html">utils/create-openssl-ca.pl</a>
+will generate these automatically for you, creating a CA based on some
+defaults or the options you provided to configure.
 <p>
-Regardless of which CA you selected, at the end of configuration the
-script /usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca-prog
-should work. (Note that if you are using MyProxy you will need to
-invoke it as the Apache user so you own the client credentials.)
-<p>Here is an example of gridshib-ca-prog running successfully:
-<pre>
-# /usr/local/gridshib-ca-test/gridshib-ca-prog vwelch@uiuc.edu
-GRIDSHIB-CA-SUCCESS
------BEGIN CERTIFICATE-----
-MIICiTCCAXECAQcwDQYJKoZIhvcNAQEEBQAwTzELMAkGA1UEBhMCVVMxEjAQBgNV
-BAoTCU5DU0EtVEVTVDERMA8GA1UECxMIR3JpZFNoaWIxGTAXBgNVBAMTEEdyaWRT
-...snip...
-2+rVxoisc1fAPCvbYv8fZEW4e3bvFb8CXyoVRoQ=
------END CERTIFICATE-----
------BEGIN RSA PRIVATE KEY-----
-MIICXAIBAAKBgQDCPA7I14kS/F/aAiSxlccBHYEFo8pl5j4wwcBpOZa6nJqlA9EA
-...snip...
-3xOzxXjsehDhB73UvoO8/3/P9VVDxNR6qZZuzxnyfrg=
------END RSA PRIVATE KEY-----
-</pre>
-<h2><a name="openssl">OpenSSL CA Configuration</a></h2> 
-If you are using the OpenSSL CA (which is the default), you need to
-Install the CA certificate and private key for the GridShib
-CA. Running the script "utils/create-openssl-ca.pl" will generate
-these automatically for you, creating a CA based on some defaults or
-the options you provided to configure.
-<p>
- If you already have a CA certificate and key you want to use, you
-need to install them as
-/usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca-cert.pem and
-gridshib-ca-key.pem respectively. You need to make sure they are owned
-by the user under which the Apache httpd runs. Permissions must be set
-as shown here:
-<pre>
--rw-------  1 apache root 1387 Jun  2 16:24 gridshib-ca-cert.pem
--rw-------  1 apache root 1679 Jun  2 16:24 gridshib-ca-key.pem
-</pre>
 Now got to <a href="#test">Testing</a>
-<h2><a name="myproxy">MyProxy CA Configuration</a></h2>
-If you elect to use a MyProxy CA instead of the default OpenSSL CA, it
-is assumed you have some experience with Grid certificate
-management and have access to a PKI infrastructure and know how to get
-certificates. So these directions, out of necessity, skip over these
-details which are specific to your local environment.
+<h2><a name="conf">Configuration Options</a></h2>
+The GridShib-CA uses the file
+/usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca.conf to control
+a number of configuration options, including:
+<ul>
+<li>What PERL modules are used to accomplish tasks, allowing
+	deployment modification of behavior;
+<li>Syslog options to control how the GridShib-CA logs;
+<li>Locations of files including the CA certificate, private key;
+<li>Where issued certificates are stored.
+</ul>
+By default the values in the file should work without modification.
+The file is commented and self-documenting, so all the options are
+not described here. The general form of the file looks like the
+following:
+<pre>
+######################################################################
+#
+# Configuration files
+# 
+
+# GridShib CA configuration directory
+GridShibCAConfDir = /usr/local/gridshib-ca-0.2.1-test
+
+# JNLP file template
+JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
+
+# Symetric key file for tokens
+TokenKeyFile = $(GridShibCAConfDir)/token-key
+</pre>
+A pound character (#) indicates a comment. Everything from the # to
+the end of the line is ignored.
 <p>
-Note that you probably don't want to use the same MyProxy server for
-GridShib-CA and anything else.  These directions assume a MyProxy
-server dedicated to a GridShib-CA.  It's possible in theory to use it
-for other things, but you'll need to figure out how to tweak the
-configuration yourself.
+A string such a <i>$(var)</i> is replaced with the variable as defined
+elsewhere in the file. Recursion is allowed to a depth of 10.
 <p>
-On the GridShib-CA system:
-<ol>
-<li>You need to create a set of credentials for the GridShib CA to use
-	when contacting the MyProxy server. The DN of these credentials can
-	be whatever you want, just remember it for subsequent steps where it
-	will be referred to as the <i>GridShib-CA DN</i>. For the
-	purposes of these installation instructions, we will assume a DN of
-	"/C=US/O=NCSA-TEST/OU=User/CN=SP-Service", adjust them to match your
-	chosen DN.
-<li>You need to install the credentials as
-/usr/local/gridshib-ca-@PACKAGE_VERSION@/myproxy-client-cert.pem and
-/usr/local/gridshib-ca-@PACKAGE_VERSION@/myproxy-client-key.pem. You
-need to make sure they are owned by the user under which the Apache
-httpd runs. Permissions should be as shown here:
-<pre>
--rw-------  1 apache root 1387 Jun  2 16:24 myproxy-client-cert.pem
--rw-------  1 apache root 1679 Jun  2 16:24 myproxy-client-key.pem
-</pre>
-<li>If your myproxy server is not running on the local host and
-	default port (7512), then you need to edit
-	/usr/local/gridshib-ca-@PACKAGE_VERSION@ and set $MYPROXY_HOST and
-	$MYPROXY_PORT appropriately.
-<li>If your myproxy server is used a certificate with a distinguished
-	name that is not the default (i.e. has a commonName other than
-	"host/hostname"), then you need to edit 
-	/usr/local/gridshib-ca-@PACKAGE_VERSION@ and set $MYPROXY_SERVER_DN
-	to the distinguished name it is using.
-</ol>
-On the MyProxy server system, do the following. These steps give the
-GridShib-CA to request and receive any certificate from the MyProxy CA
-with the mapper program specifying which certificates are generated.
-<ol>
-<li>The MyProxy server must
-	be <a href="http://grid.ncsa.uiuc.edu/myproxy/ca/">configured to act
-		as a CA</a>
-<li>In /etc/myproxy-server.config set authorized_retrievers to the
-	GridShib-CA DN. For example:
-<pre>
-authorized_retrievers      "/C=US/O=NCSA-TEST/OU=User/CN=SP-Service"
-</pre>
-<li>In /etc/myproxy-server.config trusted_retrievers must include the
-	GridShib-CA DN. For example:
-<pre>
-trusted_retrievers      "/C=US/O=NCSA-TEST/OU=User/CN=SP-Service"
-</pre>
-<li>In /etc/myproxy-server.config default_trusted_retrievers must
-include the GridShib-CA DN. For example:
-<pre>
-default_trusted_retrievers      "/C=US/O=NCSA-TEST/OU=User/CN=SP-Service"
-</pre>
-<li>From the GridShib-CA system, copy the file
-	/usr/local/gridshib-ca-@PACKAGE_VERSION@/mapper.sh to somewhere on
-	the MyProxy server. It should be installed owned by root and with
-	permissions 0600. For these directions we assume you installed it as
-	/usr/local/bin/mapper.sh. If you are running the myproxy server on
-	the same system as the GridShib-CA you can just leave this file
-	where it is and specify its path in the next step.
-<li>In /etc/myproxy-server.config set certificate_mapapp to the path
-	of mapper.sh. For example:
-<pre>
-certificate_mapapp        "/usr/local/bin/mapper.sh"
-</pre>
-<li>If the MyProxy server is already running, restart the myproxy
-server by killing it and restarting it in order to reload the
-configuration. (Running "/etc/init.d/myproxy stop; /etc/init.d/myproxy
-	start" should do it.)
-<li>Proceed to <a href="#test">Testing</a>
-</ol>
-<h2><a name="other-conf">Other Configuration Options</a></h2>
-The GridShib-CA has a number of <a href="callouts.html">configurable
-	callouts</a> which may optionally be used to tailor a deployment.
 <h2><a name="test">Testing</a></h2>
 Here are some steps to test your GridShib-CA installation. Note that
 it's normal to get some browser warnings/questions about trusting
@@ -284,21 +185,12 @@ lies. Checking the following logs is a good way to do that:
 <ol>
 <li>Check your system logs (e.g. /var/log/messages) for messages. The
 	GridShib-CA scripts will log errors here.
-<li>If you are using MyProxy, it will also log to the local system
-	logs on the system on which it is installed.
 <li>Check your apache ssl_error_logs
 	(e.g. /var/log/http/ssl_error_logs) for messages. Errors encountered
 	by Apache will be logged here.
 <li>Check your Shibboleth logs. Check
 	log4j.appender.shibd_log.fileName in /etc/shibboleth/shid.logger for
 	the location of this log.
-</ol>
-Some common errors and their causes:
-<ol>
-<li><b>Fatal Error: Got no data from server trying to read
-		Credential.</b> from Credential Retriever Java Web Start
-	application usually indicates Apache got an error running the
-	GridShib-CA, check the Apache ssl_error_logs for messages.
 </ol>
 @DOC_FOOTER@
 </html>
