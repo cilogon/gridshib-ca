@@ -10,48 +10,49 @@
 ######################################################################
 #
 # Perl Modules
-#
+# These control what PERL modules the GridShib-CA uses. These can
+# be changed to install local modules.
 
 # Perl module to use for logging
-#loggerModule = GridShibCA::Logger
+loggerModule = GridShibCA::Logger
 
 # Perl module to use for CA
-#caModule = GridShibCA::OpenSSLCA
+caModule = GridShibCA::OpenSSLCA
 
 # Perl module to use for CGI interface
-#cgiModule = GridShibCA::CGIinterface
+cgiModule = GridShibCA::CGIinterface
 
 # Perl module to generate tokens
-#tokenGeneratorModule = GridShibCA::TokenGenerator
+tokenGeneratorModule = GridShibCA::TokenGenerator
 
 # Perl module to invoke commands
-#commandModule = GridShibCA::Command
+commandModule = GridShibCA::Command
 
 # Perl module to registry issued certificates
-# certRegistryModule = GridShibCA::CertRegistry
+ certRegistryModule = GridShibCA::CertRegistry
 
 # Perl module to authorize actions
-# authorzationModule = GridShibCA::Authorization
+ authorzationModule = GridShibCA::Authorization
 
 ######################################################################
 #
 # Configuration files
-#
+# Various files used by the GridShib-CA.
 
 # GridShib CA configuration directory
-#GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
+GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 
 # JNLP file template
-#JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
+JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
 
 # Symetric key file for tokens
-#TokenKeyFile = @GRIDSHIB_CA_TOKEN_KEY@
+TokenKeyFile = $(GridShibCAConfDir)/token-key
 
 # HTML header to include on web pages
-#HTMLHeader = $(GridShibCAConfDir)/header.html
+HTMLHeader = $(GridShibCAConfDir)/header.html
 
 # HTML footer to include on web pages
-#HTMLFooter = $(GridShibCAConfDir)/footer.html
+HTMLFooter = $(GridShibCAConfDir)/footer.html
 
 ######################################################################
 #
@@ -59,31 +60,31 @@
 #
 
 # Hostname to use in URLs
-#WWWHostname = @WWW_HOSTNAME@
+WWWHostname = @WWW_HOSTNAME@
 
 # Relative URL to unprotected GridShib CA files
-#GridShibCAURL = @GRIDSHIB_CA_URL@
+GridShibCAURL = @GRIDSHIB_CA_URL@
 
 # Relative URL to Shibboleth-protected CGI-BIN directory
-#ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
+ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 
 ######################################################################
 #
 # CA Parameters
-#
+# Parameters related to certificate signing.
 
 # Relative DN for issued certificates
 # Must be in RFC 2253 format. E.g. O=NCSA, C=US
-#RelativeDN = @RELATIVE_DN@
+RelativeDN = @RELATIVE_DN@
 
 # Certificate for OpenSSL-based CA
-#OpenSSLCACert = @GRIDSHIB_CA_CERT_PATH@
+OpenSSLCACert = @GRIDSHIB_CA_CERT_PATH@
 
 # Certificate for OpenSSL-based CA
-#OpenSSLCAKey = @GRIDSHIB_CA_KEY_PATH@
+OpenSSLCAKey = @GRIDSHIB_CA_KEY_PATH@
 
 # Serial number file for OpenSSL-based CA
-#OpenSSLCASerial = @GRIDSHIB_CA_CONF_DIR@/serial
+OpenSSLCASerial = @GRIDSHIB_CA_CONF_DIR@/serial
 
 ######################################################################
 #
@@ -91,10 +92,10 @@
 #
 
 # ID to use for syslog
-#SyslogId = @SYSLOG_ID@
+SyslogId = @SYSLOG_ID@
 
 # Facility to use for logging
-#SyslogFacility = @SYSLOG_FACILITY@
+SyslogFacility = @SYSLOG_FACILITY@
 
 ######################################################################
 #
@@ -102,7 +103,7 @@
 #
 
 # Directory to store issued certificates in
-#CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
+CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
 
 ######################################################################
 #
@@ -110,10 +111,10 @@
 #
 
 # OpenSSL binary to use
-#OpenSSL = @OPENSSL@
+OpenSSL = @OPENSSL@
 
 # Globus Location to use
-#GlobusLocation = @GLOBUS_LOCATION@
+GlobusLocation = @GLOBUS_LOCATION@
 
 # OpenSSL-CA program to use
-#OpenSSLCA = $(GridShibCAConfDir)/openssl-ca
+OpenSSLCA = $(GridShibCAConfDir)/openssl-ca
