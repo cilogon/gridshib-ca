@@ -136,7 +136,7 @@ Return the last error message as a string.
 
 B<Arguments:> None
 
-B<Returns:> Nothing
+B<Returns:> Error string
 
 =cut
 
