@@ -62,10 +62,20 @@ with the version you are actually installing.
 % tar xfz gridshib-ca-@PACKAGE_VERSION@.tar.gz
 % cd gridshib-ca-@PACKAGE_VERSION@
 </pre>
-<li>Run "configure". configure takes a number of arguments, which can
-	be viewed by running "configure --help". Assuming you are using the 
-  default paths configure should handle most of the work for you, the
-	only help you may need to give it would be to specify the following:
+<li><a name="configure">Run "configure".</a> configure takes a number
+	of arguments, which can	be viewed by running "configure
+	--help". Assuming you are using the default paths configure should --
+	--handle most of the work for you, the only help you may need to --
+	--give it would be to specify the following:
+<pre>
+--with-gridshib-ca-conf-dir=&lt;path&gt;
+</pre>
+The GridShib-CA configuration files, PERL modules,
+basically everything that is not served by directly by Apache is
+stored in this directory (which should not be accessible by HTTP).
+The default location
+is <I>/usr/local/gridshib-ca-@PACKAGE_VERSION@</I>, but this can be
+overridden using this configure option.
 <pre>
 --with-www-user=&lt;username&gt;
 </pre>
@@ -76,9 +86,14 @@ than "apache" you need to tell configure this with '-with-www-user'
 </pre>
 If your Apache root directory is not "/var/www/" then you need to tell
 configure this with '--with-www-dir'.
-<li>Run "make" - don't be surprised if this does little or nothing as
-	a lot of work is done by configure.
+<li>Run "make"
+<pre>
+% make
+</pre>
 <li>As root, run "make install"
+<pre>
+# make install
+</pre>
 </ol>
 <h2><a name="ca-install">CA Installation</a></h2>
 You need to install the CA certificate and private key for the GridShib
@@ -89,12 +104,25 @@ defaults or the options you provided to configure.
 <p>
 Now got to <a href="#test">Testing</a>
 <h2><a name="conf">Configuration Options</a></h2>
+The GridShib-CA has several configuration files that control its
+behavior. These files are all found in the <i>gridshib-ca-conf-dir</i>
+as provided to <a href="#configure">configure</a>.
+<ul>
+<li><a href="#gridshib-ca.conf">gridshib-ca.conf</a>: General
+	configuration
+<li><a href="#authorizedIdps.conf">authorizedIdps.conf</a>: List of
+	Shibboleth IdPs trusted by the GridShib-CA
+<li><a href="#authorizedPortals.con">authorizedPortals.conf</a>: List
+	of Portals authorized to <a href="portal-delegation.html">receive
+		delegations</a> from the GridShib-CA
+</ul>
+<h3><a name="gridshib-ca.conf">gridshib-ca.conf</a></h3>
 The GridShib-CA uses the file
 /usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca.conf to control
 a number of configuration options, including:
 <ul>
-<li>What PERL modules are used to accomplish tasks, allowing
-	deployment modification of behavior;
+<li>What <a href="modules.html">PERL modules</a> are used to
+	accomplish tasks, allowing deployment modification of behavior;
 <li>Syslog options to control how the GridShib-CA logs;
 <li>Locations of files including the CA certificate, private key;
 <li>Where issued certificates are stored.
@@ -123,6 +151,45 @@ the end of the line is ignored.
 <p>
 A string such a <i>$(var)</i> is replaced with the variable as defined
 elsewhere in the file. Recursion is allowed to a depth of 10.
+<p>
+<h3><a name="authorizedIdps.conf">authorizedIdps.conf</a></h3>
+This file controls which Shibboleth identity providers are trusted by
+the GridShib-CA. A user must have an identity asserted by an Idp
+specified as trusted by this file in order to use the GridShib-CA.
+<p>
+The configuration installed by default will trust any IdP in InQueue.
+<p>
+The file has the general form as the following example:
+<pre>
+# Any idp in InQueue
+urn:mace:inqueue:*
+</pre>
+Each line of the file lists an Idp or set of Idps using a
+wildcard. An asterix (*) matches any characters, allowing for sets of
+Idps to be specified on a single line. A pound (#) indicates a comment
+- all text from a pound to the end of a line is ignored.
+<p>
+The script <a href="perl/check-config.html">check-config.pl</a> should
+be run after changing gridshib-ca.conf to check for errors in the file.
+<p>
+<h3><a name="authorizedPortals.conf">authorizedPortals.conf</a></h3>
+Starting with version 0.3.0, the GridShib-CA allows for the
+<a href="portal-delegation.html">delegation of credentials directly to
+	other portals</a>. This file controls which portals are trusted to
+receive delegations.
+<p>
+The configuration installed by default will only trust portals on the
+same system as the GridShib-CA.
+<p>
+The file has the general form as the following example:
+<pre>
+# Any url on the local hsot
+https://myhost.somedomain.edu/*
+</pre>
+Each line of the file lists a URL or set of URLs using a
+wildcard. An asterix (*) matches any characters, allowing for sets of
+URLs to be specified on a single line. A pound (#) indicates a comment
+- all text from a pound to the end of a line is ignored.
 <p>
 <h2><a name="test">Testing</a></h2>
 Here are some steps to test your GridShib-CA installation. Note that

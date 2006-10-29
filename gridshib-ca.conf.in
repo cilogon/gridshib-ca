@@ -29,10 +29,10 @@ tokenGeneratorModule = GridShibCA::TokenGenerator
 commandModule = GridShibCA::Command
 
 # Perl module to registry issued certificates
- certRegistryModule = GridShibCA::CertRegistry
+certRegistryModule = GridShibCA::CertRegistry
 
 # Perl module to authorize actions
- authorzationModule = GridShibCA::Authorization
+authorzationModule = GridShibCA::Authorization
 
 ######################################################################
 #
