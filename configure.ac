@@ -329,7 +329,7 @@ if test ${MODE} = "build" ; then
    # List of all documentation files to be installed
    DOC_FILES="\
 	${GENERATED_DOC_FILES} \
-	doc/gridshib-ca-process-flow.jpg \
+	doc/*.jpg \
 	doc/perl"
    AC_SUBST(DOC_FILES)
 fi
