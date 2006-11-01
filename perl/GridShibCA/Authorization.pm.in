@@ -97,6 +97,12 @@ sub authorizeUser
     my $user = shift;
     my $idp = shift;
 
+    if (!defined($idp))
+    {
+	$self->_error("Could not determine Idp. Check system logs for reason.");
+	return 0;
+    }
+
     my $authorizedIdpFilename = $config->getParam("AuthorizedIdpsFile");
     my $status = $self->_inFile($idp, $authorizedIdpFilename);
 
