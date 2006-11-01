@@ -151,7 +151,7 @@ sub getIdP
 	$idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
     }
     # Clean Idp Id (from perlsec manual)
-    if ($idp =~ /^([-:\@\w.]+)$/)
+    if ($idp =~ /^([-\/:\@\w.]+)$/)
     {
 	$idp = $1;
     }
