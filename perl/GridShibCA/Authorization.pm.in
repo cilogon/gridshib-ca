@@ -135,6 +135,12 @@ sub authorizePortal
     my $self = shift;
     my $portalURL = shift;
 
+    if (!defined($portalURL))
+    {
+	$self->_error("portalURL undefined. Internal error.");
+	return 0;
+    }
+
     my $authorizedPortalsFilename = $config->getParam("AuthorizedPortalsFile");
     my $status = $self->_inFile($portalURL, $authorizedPortalsFilename);
 
