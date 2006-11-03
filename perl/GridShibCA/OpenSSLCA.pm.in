@@ -100,6 +100,7 @@ sub new
     $self->{cert} = $config->getParam("OpenSSLCACert");
     $self->{key} = $config->getParam("OpenSSLCAKey");
     $self->{serialFile} = $config->getParam("OpenSSLCASerial");
+    $self->{randFile} = $config->getParam("OpenSSLRandFile");
     bless($self, $class);
     return $self;
 }
@@ -132,6 +133,10 @@ sub signRequest
 	$self->_error("Could not read private key: " . $self->{key});
 	return undef;
     }
+
+    # Allow openssl to save random number state to avoid "unable to
+    # write 'random state'" errors
+    $ENV{"RANDFILE"} = $self->{randFile};
 
     my @args;
 

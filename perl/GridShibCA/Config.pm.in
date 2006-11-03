@@ -87,6 +87,7 @@ my %config = (
     OpenSSLCACert =>"\$(GridShibCAConfDir)/gridshib-ca-cert.pem",
     OpenSSLCAKey =>"\$(GridShibCAConfDir)/gridshib-ca-key.pem",
     OpenSSLCASerial =>"\$(GridShibCAConfDir)/serial",
+    OpenSSLRandFile =>"\$(GridShibCAConfDir)/.rand",
     # Logging parameters
     SyslogId =>"@SYSLOG_ID@",
     SyslogFacility =>"@SYSLOG_FACILITY@",
@@ -154,6 +155,11 @@ sub getParam
     my $self = shift;
     my $param = shift;
     my $value = $config{$param};
+
+    if (!defined($value))
+    {
+	return undef;
+    }
 
     my $recursionDepth = 0;
 

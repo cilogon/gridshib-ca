@@ -86,6 +86,9 @@ OpenSSLCAKey = @GRIDSHIB_CA_KEY_PATH@
 # Serial number file for OpenSSL-based CA
 OpenSSLCASerial = @GRIDSHIB_CA_CONF_DIR@/serial
 
+# Where OpenSSL can store its random state
+OpenSSLRandFile = @GRIDSHIB_CA_CONF_DIR@/.rand
+
 ######################################################################
 #
 # Logging Parameters
