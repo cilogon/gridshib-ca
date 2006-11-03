@@ -68,6 +68,9 @@ VERSION_JAVA = edu/ncsa/gridshib/gridshibca/Version.java
 JAVA_SRCS = @JAVA_SRCS@ $(VERSION_JAVA)
 JAVA_CLASSES = $(JAVA_SRCS:.java=.class)
 
+# BouncyCastle source
+BC_SOURCE=@BC_SOURCE@
+
 # Password to pass into keytool. Not actually used for anything, just keeps
 # keytool for prompting for one.
 TRUST_STORE_PASSWD=abcdef
@@ -170,7 +173,7 @@ OPENSSL = @OPENSSL@
 # Tools needed for building and distribution
 
 JAVAC = @JAVAC@
-JAVAC_OPTS= #-source 1.4 -target 1.4
+JAVAC_OPTS= -sourcepath .:$(BC_SOURCE) #-source 1.4 -target 1.4
 JAR = @JAR@
 KEYTOOL = @KEYTOOL@
 JARSIGNER = @JARSIGNER@
@@ -179,6 +182,7 @@ RM = rm
 DIR_EXISTS = test -d
 PERL = @PERL@
 POD2HTML = @POD2HTML@
+FIND = find
 
 ######################################################################
 
@@ -186,8 +190,12 @@ default: build-$(MODE)
 
 all: configure-generated-scripts subdirs $(JARFILE)
 
-clean: subdirs-clean
+clean: subdirs-clean bc-clean
 	rm -f $(JAVA_CLASSES)
+
+# Clean all BouncyCastle class files
+bc-clean:
+	$(FIND) $(BC_SOURCE) -name \*.class -exec $(RM) -f {} \;
 
 realclean: clean
 	rm -f $(CONFIGURE_GENERATED_SCRIPTS)
@@ -226,7 +234,10 @@ $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 # Need to include the org.globus stuff here because one of the
 # class files has a "$" in it and I haven't figured out any other
 # way to do this and avoid getting it expanded.
+	@echo Creating $@ from local class files
 	$(JAR) cf $@ $^ org/globus/util/*.class
+	@ echo Adding BouncyCastle class files
+	@(pwd=`pwd` && cd $(BC_SOURCE) && jar uf $${pwd}/$@ `(cd $(BC_SOURCE) && $(FIND) org -name \*.class)`)
 
 $(JARFILE): $(UNSIGNED_JARFILE)
 	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default

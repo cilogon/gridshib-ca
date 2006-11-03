@@ -309,6 +309,7 @@ AC_SUBST(PERL_MODULES)
 AC_CONFIG_FILES([$PERL_MODULES])
 
 MISC_FILES=""
+BC_SOURCE=""
 
 if test ${MODE} = "build" ; then
    MISC_FILES="${MISC_FILES} utils/tag-version.pl"
@@ -332,7 +333,22 @@ if test ${MODE} = "build" ; then
 	doc/*.jpg \
 	doc/perl"
    AC_SUBST(DOC_FILES)
+
+
+   AC_MSG_CHECKING([for Bouncy Castle source directory])
+   AC_ARG_WITH(bc-source-path,
+	AC_HELP_STRING([--with-bc-source-path],
+		[Provide the path to the Bouncy Castle source]),
+	[BC_SOURCE=$withval],
+	[BC_SOURCE="FAILED"])
+	AC_MSG_RESULT(${BC_SOURCE})
+
+   if test ${BC_SOURCE} = "FAILED"; then
+	AC_MSG_ERROR([Could not find Bouncy Castle source path.])
+   fi
 fi
+
+AC_SUBST(BC_SOURCE)
 
 GRIDSHIB_LOGGER_PROG=${GRIDSHIB_CA_CONF_DIR}/gridshib-logger-prog
 AC_SUBST(GRIDSHIB_LOGGER_PROG)

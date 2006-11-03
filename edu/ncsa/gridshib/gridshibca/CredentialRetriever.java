@@ -58,6 +58,10 @@ import java.security.interfaces.RSAPrivateKey;
 import org.globus.util.ConfigUtil;
 import org.globus.util.Util;
 
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+
 public class CredentialRetriever {
     GUI gui = new GUI("GridShib CA Credential Retriever");
     Boolean debug = false;
@@ -67,6 +71,12 @@ public class CredentialRetriever {
 
     // Key algorithm to use
     String keyAlg = "RSA";
+
+    // This just seems to work, not sure why
+    static String pkcs10Provider = "SunRsaSign";
+
+    // Algorithm to use when signing request
+    static String pkcs10SigAlgName = "MD5withRSA";
 
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
@@ -123,10 +133,15 @@ public class CredentialRetriever {
 
 			gui.displayMessage("Generating certificate request...");
 
-            PKCS10CertificateRequest pkcs10 =
-                new PKCS10CertificateRequest(keypair, DN);
+            PKCS10CertificationRequest pkcs10 =
+                new PKCS10CertificationRequest(pkcs10SigAlgName,
+                                               new X509Name(DN),
+                                               keypair.getPublic(),
+                                               new DERSet(),
+                                               keypair.getPrivate(),
+                                               pkcs10Provider);
 
-            String requestPEM = pkcs10.toPEM();
+            String requestPEM = PEM.encodePKCS10CertificationRequest(pkcs10);
 
 			gui.displayMessage("Connecting to " + credURL.toString());
 
@@ -223,10 +238,10 @@ public class CredentialRetriever {
             // Now output private key
             RSAPrivateKey privateKey= (RSAPrivateKey) keypair.getPrivate();
             String privateKeyPEM =
-                PEM.encodeRSAPrivateKey(privateKey);
+                PEM.encodeRSAPrivateKeyPKCS1(privateKey);
             out.write(privateKeyPEM);
 			out.close();
-            
+
 			gui.displayMessage("Success.");
 		} catch (java.net.MalformedURLException e) {
 			gui.error("Malformed URL: " + args[0]);
