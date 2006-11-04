@@ -461,7 +461,7 @@ configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 ######################################################################
 
 edu/ncsa/gridshib/gridshibca/Version: edu/ncsa/gridshib/gridshibca/Version.in config.status
-	./config.status
+	./config.status --file=$@:$<
 
 # Only copy Version to Version.java when it has actually changed
 # in order to prevent unnecessary rebuilds of jar file
