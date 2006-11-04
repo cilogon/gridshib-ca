@@ -3,8 +3,12 @@ following license.
 
 Exceptions:
 
-* The openssl-ca code in openssl-ca/ is under the OpenSSL license. See
-  openssl-ca/LICENSE.
+* This product includes cryptographic software written by Eric Young
+  (eay@cryptsoft.com). The openssl-ca code in openssl-ca/ is under the
+  OpenSSL license. See openssl-ca/LICENSE.
+
+* The Globus CoG kit files in org/globus/util are under the Apache2
+  License. See org/globus/util/LICENSE.txt
 
 ----
 

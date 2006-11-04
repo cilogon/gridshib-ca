@@ -1,0 +1,9 @@
+Class files from JAVA CoG kit.
+
+It would be nice to build the original sources, but that would
+introduce a long depedency tree we don't need.
+
+You can find the original (and latest source) at
+http://dev.globus.org/wiki/CoG_jglobus
+
+These files are under the Apache2 License (see LICENSE.txt).
