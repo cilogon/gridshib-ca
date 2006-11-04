@@ -1,10 +1,6 @@
 GridShib-CA Todo List:
 
 
-* Make dev-tools directory
-
-* Make portal redirction configurable (off by default)
-
 * Clean up configuration code
 
 * Add a make-release process

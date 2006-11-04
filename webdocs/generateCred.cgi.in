@@ -218,6 +218,12 @@ if (!$authorization->authorizeUser($user, $idp))
 
 if (defined($portalURL))
 {
+    if (!$config->getParamBoolean("allowPortalDelegation"))
+    {
+	errorExit($HTTP_UNAUTHORIZED,
+		  "Portal delegation disabled.");
+    }
+
     if (!$authorization->authorizePortal($portalURL))
     {
 	errorExit($HTTP_UNAUTHORIZED,

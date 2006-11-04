@@ -125,6 +125,16 @@ my $portalData = $cgi->getPortalData();
 
 ######################################################################
 #
+# Do we allow delegation to portals?
+#
+
+if (!$config->getParamBoolean("allowPortalDelegation"))
+{
+    errorExit("Portal delegation disabled.");
+}
+
+######################################################################
+#
 # Get the user's DN to pass to JWS application
 #
 

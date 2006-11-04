@@ -17,6 +17,11 @@ Grid credential based on Shibboleth authentication of the user to a
 web portal that is not itself Shibboleth enabled. This web page
 describes the process.
 <p>
+Note that this functionality is disabled by default. To enabled this
+functionality the parameter <i>allowPortalDelegation</i> must be set
+to "True". (See the <a href="install.html#conf">configuration
+	directions in the installation guide</a> for details.)
+<p>
 In addition to the user being authorized, the portal must also
 <a href="install.html#authorizedPortals.conf">be authorized to receive
 	credentials</a>

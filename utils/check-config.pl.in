@@ -67,9 +67,12 @@ GridShib-CA version @PACKAGE_VERSION@ ($Id$)
 
 use GridShibCA::Config;
 
+print "Checking configuration file: "
+  . GridShibCA::Config::getFilename() . "\n";
+
 my $config = GridShibCA::Config->new(debug => 1);
 
-$config->dump();
+print "Check complete.\n";
 
 exit(0);
 

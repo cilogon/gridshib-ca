@@ -5,7 +5,17 @@
 # Everything after a "#" is a comment.
 # All declarations should look like "variable = value"
 # Default values are shown, to change, uncomment and modify.
-# Use check-config.pl to validate file after changing.
+# Use @GRIDSHIB_CA_CONF_DIR@/check-config.pl
+# to validate file after changing.
+
+######################################################################
+#
+# General Configuration
+#
+
+# Allow delegation to portals. Currently experimental so disabled
+# by default. (Should be "False" to disallow, or "True" to allow.)
+allowPortalDelegation = False
 
 ######################################################################
 #
@@ -32,7 +42,7 @@ commandModule = GridShibCA::Command
 certRegistryModule = GridShibCA::CertRegistry
 
 # Perl module to authorize actions
-authorzationModule = GridShibCA::Authorization
+authorizationModule = GridShibCA::Authorization
 
 ######################################################################
 #
@@ -78,16 +88,16 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 RelativeDN = @RELATIVE_DN@
 
 # Certificate for OpenSSL-based CA
-OpenSSLCACert = @GRIDSHIB_CA_CERT_PATH@
+OpenSSLCACert = $(GridShibCAConfDir)/gridshib-ca-cert.pem
 
 # Certificate for OpenSSL-based CA
-OpenSSLCAKey = @GRIDSHIB_CA_KEY_PATH@
+OpenSSLCAKey = $(GridShibCAConfDir)/gridshib-ca-key.pem
 
 # Serial number file for OpenSSL-based CA
-OpenSSLCASerial = @GRIDSHIB_CA_CONF_DIR@/serial
+OpenSSLCASerial = $(GridShibCAConfDir)/serial
 
 # Where OpenSSL can store its random state
-OpenSSLRandFile = @GRIDSHIB_CA_CONF_DIR@/.rand
+OpenSSLRandFile = $(GridShibCAConfDir)/.rand
 
 ######################################################################
 #
@@ -114,10 +124,10 @@ CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
 #
 
 # Authorized Idps
-AuthorizedIdpsFile = @GRIDSHIB_CA_CONF@/authorizedIdps.conf
+AuthorizedIdpsFile = $(GridShibCAConfDir)/authorizedIdps.conf
 
 # Authorized Portals
-AuthorizedPortalsFile = @GRIDSHIB_CA_CONF@/authorizedPortals.conf
+AuthorizedPortalsFile = $(GridShibCAConfDir)/authorizedPortals.conf
 
 ######################################################################
 #
