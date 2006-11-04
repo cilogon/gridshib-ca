@@ -426,10 +426,10 @@ perl-script-doc: $(PERL_DOC_DIR) configure-generated-scripts
 #
 
 Makefile: Makefile.in config.status
-	./config.status
+	./config.status --file=$@:$<
 
 openssl-ca/Makefile: openssl-ca/Makefile.in config.status
-	./config.status
+	./config.status --file=$@:$<
 
 config.status: configure
 	./config.status --recheck
@@ -448,18 +448,15 @@ aclocal:
 
 configure-generated-scripts: $(CONFIGURE_GENERATED_SCRIPTS)
 
+# HTML files also depend on $(HTML_DEPS)
 %.html: %.html.in config.status $(HTML_DEPS)
-	./config.status
+	./config.status --file=$@:$<
 
 # If we have a target and that target exists with a ".in" suffix, then
 # assume that is a prerequisite along with config.status and use
 # config.status to regenerate it if needed.
 % :: %.in config.status
-	./config.status
-
-# All cgi programs rely on $(HTML_INCS) as well
-%.cgi: %.cgi.in config.status $(HTML_INCS)
-	./config.status
+	./config.status --file=$@:$<
 
 ######################################################################
 

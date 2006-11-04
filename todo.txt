@@ -1,14 +1,13 @@
 GridShib-CA Todo List:
 
-* Fix config.status rebuilding all files
-
-* Make portal redirction configurable (off by default)
 
 * Use Globus COG source files
 
 * Update licenses - add globus cog
 
 * Make dev-tools directory
+
+* Make portal redirction configurable (off by default)
 
 * Clean up configuration code
 
