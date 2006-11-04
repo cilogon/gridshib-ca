@@ -12,8 +12,7 @@
       <all-permissions/>
   </security>
     <resources> 
-        <!-- Require Sun's JRE since we use internal PKCS10 class -->
-        <j2se version="1.4+" href="http://java.sun.com/products/autodl/j2se"/> 
+        <j2se version="1.4+"/> 
         <jar href="@JAR_FILE@"/> 
     </resources> 
     <application-desc main-class="edu.ncsa.gridshib.gridshibca.GridShibCATester"/>

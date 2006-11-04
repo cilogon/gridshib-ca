@@ -1,15 +1,18 @@
 GridShib-CA Todo List:
 
-* DN in welcome.pl script needs to be configurable.
+* Fix config.status rebuilding all files
 
-* jnlp file is world-readable file in /tmp
-The browser needs umask set correctly. Nothing I can do otherwise. I
-need to check and make sure umask is set correctly.
+* Make portal redirction configurable (off by default)
 
-* Write mapping to DB
+* Use Globus COG source files
 
-* Email subjectAltName
+* Update licenses - add globus cog
 
-* Truncating username "madhatter@openidp.org" -> "madhatter@ope"
+* Make dev-tools directory
 
-* Add acknowledgments
+* Clean up configuration code
+
+* Add a make-release process
+
+* MyProxy work
+
