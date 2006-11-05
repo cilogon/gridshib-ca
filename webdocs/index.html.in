@@ -9,7 +9,7 @@
 <tr>
 <td bgcolor="#30A030" align=center><b>About</b></td>
 <td colspan=2>
-This is the GridShib-CA (version @PACKAGE_VERSION@). This software
+This is the GridShib-CA (version @PACKAGE_VERSION_STRING@). This software
 allows you to acquire a short-lived (<1 day) Grid Credential through
 your web browser and Shibboleth. After successfully authenticating, a
 credential will be installed and is suitable for use with Grid Tools
@@ -22,6 +22,10 @@ grid-mapfile).
 <p>
 For further documentation and the latest release please see 
 <a href="http://gridshib.globus.org">http://gridshib.globus.org</a>.
+Full documentation regarding this release can be found at
+<a href="http://gridshib.globus.org/docs/@DOC_INSTALL_DIR@">
+http://gridshib.globus.org/docs/@DOC_INSTALL_DIR@</a>
+
 </td>
 </tr>
 <tr><td><p><p><p></td></tr>

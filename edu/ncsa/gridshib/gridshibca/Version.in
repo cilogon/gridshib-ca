@@ -42,7 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 */
 
 public class Version {
-    final String version = "@PACKAGE_VERSION@";
+    final String version = "@PACKAGE_VERSION_STRING@";
     final String copyright = "@COPYRIGHT@";
 
     public String getVersion()

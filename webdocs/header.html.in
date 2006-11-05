@@ -6,7 +6,7 @@
                 <td id="head" width=80%>
 									<center>
 										<h1>GridShib CA</h1>
-										(Version @PACKAGE_VERSION@)<br>
+										(Version @PACKAGE_VERSION_STRING@)<br>
 										<a href="http://gridshib.globus.org">GridShib Home Page</a>
 								</center>
 								</td>

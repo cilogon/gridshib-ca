@@ -10,7 +10,7 @@
 </head>
 @DOC_HEADER@
 
-<b>Version @PACKAGE_VERSION@:</b>
+<b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
 <li>Added support for <a href="protal-delegation.html">delegation of
 		X509 credential to portal</a>.

@@ -25,9 +25,14 @@ specific the module loaded is given below.
 	currently <a href="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</a></td>
 </tr>
 <tr>
+<td><a href="perl/GridShibCA/CertRegistry.html">CertRegistry</a></td>
+<td>certRegistryModule</td>
+<td>Wrapper around Certificate Registry module</td>
+</tr>
+<tr>
 <td><a href="perl/GridShibCA/CGIinterface.html">CGIinterface</a></td>
 <td>cgiModule</td>
-<td>Wrapper aroung PERL CGI module</td>
+<td>Wrapper around PERL CGI module</td>
 </tr>
 <tr>
 <td><a href="perl/GridShibCA/Command.html">Command</a></td>

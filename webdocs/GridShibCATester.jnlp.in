@@ -2,7 +2,7 @@
 
 <jnlp spec="1.0+" codebase="http://@WWW_HOSTNAME@@GRIDSHIB_CA_URL@" > 
    <information> 
-      <title>GridShib CA Test Application (v@PACKAGE_VERSION@)</title>
+      <title>GridShib CA Test Application (v@PACKAGE_VERSION_STRING@)</title>
       <vendor>Von Welch</vendor>
       <homepage href="http://gridshib.globus.org"/>
       <description>Test client system for proper configuration for running GridShib CA.</description>

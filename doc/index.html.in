@@ -19,7 +19,7 @@ To use the GridShib CA you need to have
 <a href="http://java.sun.com/products/javawebstart/download.jsp">
 Java Web Start</a> installed on your system.
 <p>
-<a href="https://computer.ncsa.uiuc.edu/gridshib-ca-@PACKAGE_VERSION@/">Try out the latest stable version of the GridShib CA</a>
+<a href="https://computer.ncsa.uiuc.edu/gridshib-ca-stable/">Try out the latest stable version of the GridShib CA</a>
 <p>
 Please note that the GridShib-CA is not a well known CA, so you will
 need to install the GridShib-CA certificate to actually use generated
@@ -40,7 +40,7 @@ Other versions of the GridShib-CA:
 <ul>
 <li>The source code for the GridShib
 	CA: <a
-				 href="/downloads/gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
+				 href="/downloads/@DIST_FILE_BASE@.tar.gz">@DIST_FILE_BASE@.tar.gz</a>
 <p>
 <li><a href="install.html">Installation directions</a>
 </ul>

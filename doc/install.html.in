@@ -12,7 +12,7 @@
 <h1>GridShib-CA Installation Directions</h1>
 <h2>Table of Contents</h2>
 <ul>
-<li><a href="#prerequisties">Prerequisites</a>
+<li><a href="#prerequisites">Prerequisites</a>
 <li><a href="#shib-conf">Shibboleth Configuration</a>
 <li><a href="#download">Download GridShib-CA</a>
 <li><a href="#install">Installing the Software</a>
@@ -50,17 +50,17 @@ assumed that the URL for the Shibboleth-protected cgi-bin directory is
 /cgi-bin/shib-protected/, if not adjust accordingly.
 <h2><a name="downlaod">Download GridShib-CA</a></h2>
 The source code for the GridShib
-	CA: <a href="/downloads/gridshib-ca-@PACKAGE_VERSION@.tar.gz">gridshib-ca-@PACKAGE_VERSION@-tar.gz</a>
+	CA: <a href="/downloads/@DIST_FILE_BASE@.tar.gz">@DIST_FILE_BASE@.tar.gz</a>
 <h2><a name="install">Installing the Software</a></h2>
 These directions assume you are installing GridShib-CA with version
-@PACKAGE_VERSION@. If not replace all instances of @PACKAGE_VERSION@
-with the version you are actually installing.
+@PACKAGE_VERSION_STRING@. If not replace all instances of
+@PACKAGE_VERSION_STRING@ with the version you are actually installing.
 <ol>
 <li>Unpack the gridshib-ca tarball and cd into the resulting
 	directory. 
 <pre>
-% tar xfz gridshib-ca-@PACKAGE_VERSION@.tar.gz
-% cd gridshib-ca-@PACKAGE_VERSION@
+% tar xfz @DIST_FILE_BASE@.tar.gz
+% cd @DIST_DIR@
 </pre>
 <li><a name="configure">Run "configure".</a> configure takes a number
 	of arguments, which can	be viewed by running "configure
@@ -74,7 +74,7 @@ The GridShib-CA configuration files, PERL modules,
 basically everything that is not served by directly by Apache is
 stored in this directory (which should not be accessible by HTTP).
 The default location
-is <I>/usr/local/gridshib-ca-@PACKAGE_VERSION@</I>, but this can be
+is <I>@GRIDSHIB_CONF_DIR@@</I>, but this can be
 overridden using this configure option.
 <pre>
 --with-www-user=&lt;username&gt;
@@ -118,7 +118,7 @@ as provided to <a href="#configure">configure</a>.
 </ul>
 <h3><a name="gridshib-ca.conf">gridshib-ca.conf</a></h3>
 The GridShib-CA uses the file
-/usr/local/gridshib-ca-@PACKAGE_VERSION@/gridshib-ca.conf to control
+@GRIDSHIB_CA_CONF_DIR@/gridshib-ca.conf to control
 a number of configuration options, including:
 <ul>
 <li>What <a href="modules.html">PERL modules</a> are used to
@@ -173,7 +173,7 @@ The script <a href="perl/check-config.html">check-config.pl</a> should
 be run after changing gridshib-ca.conf to check for errors in the file.
 <p>
 <h3><a name="authorizedPortals.conf">authorizedPortals.conf</a></h3>
-Starting with version 0.3.0, the GridShib-CA allows for the
+Starting with version 0.3.0, if so configured, the GridShib-CA allows for the
 <a href="portal-delegation.html">delegation of credentials directly to
 	other portals</a>. This file controls which portals are trusted to
 receive delegations.
@@ -198,7 +198,7 @@ certificates, both for web sites and Java Web Start applications, as
 you go through the process.
 <ol>
 <li>Fire up your favorite browser and point it at
-https://hostname/gridshib-ca-@PACKAGE_VERSION@ replacing hostname with
+https://hostname/@PACKAGE_FULLNAME@ replacing hostname with
 the name of the host on which you installed the GridShib-CA. <b>Be
 sure to use 'https'.</b><br> If this didn't work then something is
 fundamentally broken. Each Apache isn't installed right or a 404 error

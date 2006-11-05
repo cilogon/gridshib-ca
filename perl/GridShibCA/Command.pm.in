@@ -238,7 +238,7 @@ sub getStatus
 
 =head2 Version
 
-GridShib-CA version @PACKAGE_VERSION@ ($Id$)
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 
 =cut
 
