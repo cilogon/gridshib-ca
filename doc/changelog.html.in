@@ -13,22 +13,23 @@
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
 <li>Added support for <a href="protal-delegation.html">delegation of
-		X509 credential to portal</a>.
+		X509 credential to portal</a> (disabled by default).
 <li>Run-time <a href="install.html#conf">configuration of trusted Idps
 		and portals</a> added.
 <li>Cleaned up protocol between CredentialRetriever and GridShib-CA. Use
 	HTTP status code instead of own internal status header.
-<li>CredentialRetriever now generating key pair and sending
-	certificate request to generateCred.pl. Currently using Sun PKCS10
-	classes to accomplish this (to keep JAR file small), resulting in
-	dependency on SUN JRE. 
+<li>CredentialRetriever now generating key pair on client side and
+	sending PKCS#10 certificate request to generateCred.pl.
 <li>Now builds and installs own openssl-based ca (openssl-ca)
 	that allows setting of DN by GridShib CA
+<li>Includes GridShibCA::MyProxyCA.pm, a pure perl MyProxy client to
+	allow <a href="myproxy-ca.html">outsourcing of CA functionality to
+		MyProxy</a>.
 <li>Now uses a set of <a href="modules.html">PERL modules</a> to
 	accomplish basic tasks, which can be configured
 	using <a href="install.html#gridshib-ca.conf">gridshib-ca.conf</a>
 	file. 
-<li>Starting to use RFC 2253 style DNs internally.
+<li>Starting to use RFC 2253 format DNs internally.
 <li>CredentialRetreiver.java: Circumvent JWS installing its own
 	SSLSocketFactory so that default SSLSocketFactory is used and our
 	list of trusted CAs is honored.
