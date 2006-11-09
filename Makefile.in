@@ -85,6 +85,7 @@ CGI_BIN_DIR=@CGI_BIN_DIR@
 DOC_FILES=@DOC_FILES@
 HTML_FILES=@HTML_FILES@
 PERL_MODULES = @PERL_MODULES@
+PERL_DIST_MODULES = @PERL_DIST_MODULES@
 
 # Files to be distributed (will be added to through this file)
 DIST_FILES=\
@@ -159,6 +160,7 @@ clean::
 realclean:: clean
 
 build-dist: subdirs $(BUILD_ALL)
+	@echo Build complete. Run \"make install\" to install.
 
 ######################################################################
 #
@@ -188,7 +190,6 @@ clean::
 
 # Installation directories
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
-PERL_MODULE_DIR=$(GRIDSHIB_CA_CONF_DIR)/GridShibCA/
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
 GRIDSHIB_CA_DOC_DIR=@GRIDSHIB_CA_DOC_DIR@
@@ -227,22 +228,20 @@ install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 
-$(PERL_MODULE_DIR): $(GRIDSHIB_CA_CONF_DIR)
-	@echo "Creating $(PERL_MODULE_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(PERL_MODULE_DIR)
-
-install-perl: $(PERL_MODULE_DIR) $(PERL_MODULES)
-	@for file in $(PERL_MODULES) ; do \
+install-perl: $(PERL_MODULES) $(PERL_DIST_MODULES)
+	@for file in $(PERL_MODULES) $(PERL_DIST_MODULES) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(PERL_MODULE_DIR) ;\
+		d=`dirname $${file}` ;\
+		$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)/$${d} ;\
+		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR)/$${file} ;\
 	done
 
 $(GRIDSHIB_CA_HTML_DIR):
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 
-install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES)
-	@for file in $(HTML_FILES) ; do \
+install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES) $(JARFILE)
+	@for file in $(HTML_FILES) $(IMAGES) $(JARFILE) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
@@ -444,10 +443,12 @@ realclean::
 # Perl
 #
 
-
 PERL_SCRIPTS= $(CGI_BIN_SCRIPTS) $(UTILS) $(DEV_UTILS)
 
-check-perl: $(PERL_SCRIPTS) $(PERL_MODULES)
+DIST_FILES += $(PERL_DIST_MODULES)
+DIST_FILES += $(PERL_MODULE_SRCS)
+
+check-perl: $(PERL_SCRIPTS) $(PERL_MODULES) $(PERL_DIST_MODULES)
 	@for script in $(PERL_SCRIPTS) ; do \
 		echo Checking $${script} ;\
 		$(PERL) -c -T -I./perl/ $${script} ;\
@@ -579,8 +580,6 @@ Makefile: Makefile.in config.status
 openssl-ca/Makefile: openssl-ca/Makefile.in config.status
 	@$(CONFIG_STATUS) --file=$@:$<
 
-# Go ahead and run config.status here to avoid running it individually
-# for each file
 config.status: configure
 	@echo Rebulding $<
 	./config.status --recheck

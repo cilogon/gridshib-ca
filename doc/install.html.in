@@ -74,7 +74,7 @@ The GridShib-CA configuration files, PERL modules,
 basically everything that is not served by directly by Apache is
 stored in this directory (which should not be accessible by HTTP).
 The default location
-is <I>@GRIDSHIB_CONF_DIR@@</I>, but this can be
+is <I>@GRIDSHIB_CA_CONF_DIR@</I>, but this can be
 overridden using this configure option.
 <pre>
 --with-www-user=&lt;username&gt;
@@ -96,8 +96,13 @@ configure this with '--with-www-dir'.
 </pre>
 </ol>
 <h2><a name="ca-install">CA Installation</a></h2>
-You need to install the CA certificate and private key for the GridShib
-CA. Running the script
+These directions assume you are using the OpenSSL-based CA that comes
+with the GridShib-CA, which is the easiest route. You can also use
+<a href="myproxy-ca.html">MyProxy as a backend CA for the
+	GridShib-CA</a>.
+<p>
+To install the OpenSSL-based CA, you need to install the CA
+certificate and private key for the GridShib CA. Running the script
 <a href="perl/create-openssl-ca.html">utils/create-openssl-ca.pl</a>
 will generate these automatically for you, creating a CA based on some
 defaults or the options you provided to configure.

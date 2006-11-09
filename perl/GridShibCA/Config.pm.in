@@ -90,6 +90,11 @@ my %config = (
     OpenSSLCAKey =>"\$(GridShibCAConfDir)/gridshib-ca-key.pem",
     OpenSSLCASerial =>"\$(GridShibCAConfDir)/serial",
     OpenSSLRandFile =>"\$(GridShibCAConfDir)/.rand",
+    # MyProxy client parameters
+    MyProxyHostname =>"localhost",
+    MyProxyPort =>"7512",
+    MyProxyClientCert =>"\$(GridShibCAConfDir)/myproxy-client-cert.pem",
+    MyProxyClientKey =>"\$(GridShibCAConfDir)/myproxy-client-key.pem",
     # Logging parameters
     SyslogId =>"@SYSLOG_ID@",
     SyslogFacility =>"@SYSLOG_FACILITY@",

@@ -22,7 +22,10 @@ specific the module loaded is given below.
 <td><a href="perl/GridShibCA/CA.html">CA</a></td>
 <td>caModule</td>
 <td>Default implementation is
-	currently <a href="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</a></td>
+	currently <a href="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</a>.
+	A <a href="myproxy-ca.html">MyProxy-based CA</a> is also available
+	with <a href="perl/GridShibCA/MyProxyCA.html">MyProxyCA.pm</a>.
+</td>
 </tr>
 <tr>
 <td><a href="perl/GridShibCA/CertRegistry.html">CertRegistry</a></td>

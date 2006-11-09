@@ -1,0 +1,226 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# Use MyProxy to act as a CA and create certificates for the
+# GridShib-CA.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::MyProxyCA
+
+Implementation of L<GridShibCA::CA Class|GridShibCA::CA> based on MyProxy.
+See that Module for a description of methods.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item MyProxyHostname
+
+Hostname of MyProxy Server
+
+=item MyProxyPort
+
+Port of MyProxy Server
+
+=item MyProxyClientCert
+
+Certificate to use to authenticate to MyProxy
+
+=item MyProxyClientKey
+
+Key to use to authenticate to MyProxy
+
+=back
+
+=cut
+
+package GridShibCA::MyProxyCA;
+
+# Inherit CA class
+use GridShibCA::CA;
+@ISA = ("GridShibCA::CA");
+
+use Globus::MyProxyClient;
+
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+# new()
+# Create a new interface to the CA.
+# Arguments:
+#  $username - name of user as string
+#  $idp - idp of user as string
+# Returns: CA instance
+sub new
+{
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->{host} = $config->getParam("MyProxyHostname");
+    $self->{port} = $config->getParam("MyProxyPort");
+    $self->{cert} = $config->getParam("MyProxyClientCert");
+    $self->{key} = $config->getParam("MyProxyClientKey");
+    bless($self, $class);
+    return $self;
+}
+
+# signRequest
+# Given a certificate request return a certificate
+# Arguments: Certificate request as string
+# Returns: Certificate as string, or undef on error
+sub signRequest
+{
+    my $self = shift;
+    my $certificateRequest = shift;
+
+    my $client = Globus::MyProxyClient->new(
+	ServerHost => $self->{host},
+	ServerPort => $self->{port},
+	ClientCert => $self->{cert},
+	ClientKey => $self->{key});
+
+    if (!defined($client))
+    {
+	$self->_error("Error creating MyProxyClient object: %s",
+		      Globus::MyProxyClient::errstr());
+	return undef;
+    }
+    my $reqPEM = $self->_convertReqToDER($certificateRequest);
+    if (!defined($reqPEM))
+    {
+	# Error already set
+	return undef;
+    }
+    my $cred = $client->getCred(
+	Username => $self->{username},
+	# This isn't used since we're authenticated with a certificate
+	# and private key
+	Passphrase => "Dummy",
+	Lifetime => ($self->{lifetime} * 24 * 60 * 60),
+	CertReq => $reqPEM,
+	CertReqFormat => "DER");
+
+    if (!defined($cred))
+    {
+	$self->_error("Error getting credential from MyProxy: %s",
+		      $client->errstr());
+	return undef;
+    }
+
+    # Get certificate chain and convert to PEM
+    my $certChain = "";
+    my @certs = $cred->getDERCerts();
+    foreach my $cert (@certs)
+    {
+	my $certPEM = $self->_convertCertToPEM($cert);
+	if (!defined($certPEM))
+	{
+	    # Error already set
+	    return undef;
+	}
+	$certChain .= $certPEM;
+    }
+
+    return $certChain;
+}
+
+######################################################################
+#
+# Conversion routines to convert from DER to/from PEM
+# These call out to openssl, which is a pain, but there doesn't seem
+# to be a native way to accomplish this.
+
+sub _convertReqToDER {
+    my $self = shift;
+    my $reqPEM = shift;
+    my @args = ();
+    push(@args, "req");
+    push(@args, "-inform", "PEM");
+    push(@args, "-outform", "DER");
+    my $openssl = $config->getParam("OpenSSL");
+    my $cmd = $config->getCommand($openssl, @args);
+    $cmd->setInput($reqPEM);
+    if (!$cmd->exec())
+    {
+	$self->_error("Error executing %s: %s",
+		      $openssl, $cmd->getError());
+	return undef;
+    }
+    return $cmd->getOutput();
+}
+
+
+sub _convertCertToPEM {
+    my $self = shift;
+    my $certDER = shift;
+    my @args = ();
+    push(@args, "x509");
+    push(@args, "-inform", "DER");
+    push(@args, "-outform", "PEM");
+    my $openssl = $config->getParam("OpenSSL");
+    my $cmd = $config->getCommand($openssl, @args);
+    $cmd->setInput($certDER);
+    if (!$cmd->exec())
+    {
+	$self->_error("Error executing %s: %s",
+		      $openssl, $cmd->getError());
+	return undef;
+    }
+    return $cmd->getOutput();
+}
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

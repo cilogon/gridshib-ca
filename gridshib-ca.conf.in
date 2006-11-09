@@ -101,6 +101,23 @@ OpenSSLRandFile = $(GridShibCAConfDir)/.rand
 
 ######################################################################
 #
+# Configuration for MyproxyCA client (if in use)
+#
+
+# Hostname where MyProxy server is to be found
+MyProxyHostname = localhost
+
+# Port of MyProxy server
+MyProxyPort = 7512
+
+# Certificate to use to authenticate to MyProxy server
+MyProxyClientCert = $(GridShibCAConfDir)/myproxy-client-cert.pem
+
+# Key to use to authenticate to MyProxy server
+MyProxyClientKey = $(GridShibCAConfDir)/myproxy-client-key.pem
+
+######################################################################
+#
 # Logging Parameters
 #
 
@@ -116,7 +133,7 @@ SyslogFacility = @SYSLOG_FACILITY@
 #
 
 # Directory to store issued certificates in
-CertRegistryDir = @GRIDSHIB_CA_CONF_DIR@/certs/
+CertRegistryDir = $(GridShibCAConfDir)/certs/
 
 ######################################################################
 #
