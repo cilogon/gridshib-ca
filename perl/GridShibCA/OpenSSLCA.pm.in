@@ -73,6 +73,10 @@ Path to private key to use.
 
 Path to file containing the serial number.
 
+=item OpenSSLRandFile
+
+Path to file to store random state.
+
 =back
 
 =cut
