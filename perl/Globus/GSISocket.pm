@@ -63,7 +63,10 @@ use IO::Socket::SSL;
 # Enabling debugging if non-zero
 $DEBUG = 0;
 
+# Turn on debugging in IO::Socket:SSL
 #$IO::Socket::SSL::DEBUG = 1;
+
+my $ERRSTR = undef;
 
 # Static values
 
@@ -116,6 +119,10 @@ sub new
 	_debug("Setting trusted CA path to %s",
 	       $arg_hash->{SSL_ca_path});
     }
+    #
+    # A lot of errors will here will result in the following string:
+    # IO::Socket::INET configuration failederror:00000000:lib(0):func(0):reason(0) at ./myproxy-client.pl line 39. 
+    # For example, if the client certificate is expired! Argh.
     my $self = $class->SUPER::new(%$arg_hash);
     if (!defined($self))
     {
@@ -124,6 +131,15 @@ sub new
     }
     ${*$self}{errstr} = undef;
     bless($self, $class);
+
+    if (!$self->_authorize())
+    {
+	# Error already set
+	$self->close();
+	# Save error string to class state
+	$ERRSTR = $self->errstr();
+	return undef;
+    }
 
     # We don't support delegation here yet
     $self->write($NO_DELEGATION_FLAG);
@@ -242,6 +258,54 @@ sub readDERCertificate
     return $cert;
 }
 
+=item _authorize()
+
+Authorize the peer we've connected to.
+
+Currently assumes host authorization based on DNS name.
+
+B<Arguments:> None
+
+B<Returns:> 1 on success, 0 on error calling _error()
+
+=cut
+sub _authorize
+{
+    use Net::hostent;
+    my $self = shift;
+    my $peerDN = $self->peer_certificate("subject");
+    $self->_debug("Peer DN is: %s", $peerDN);
+    $peerDN =~ /CN=(.*)/;
+    if (!defined($1))
+    {
+	$self->_error("Authorization failed. Could not extract hostname from peer DN (%d).",
+		      $peerDN);
+	return 0;
+    }
+    my $peerHostname = $1;
+    # Remove "host/" prefix if present
+    $peerHostname =~ s/^host\///;
+    my $peerAddr = $self->peeraddr();
+    my $host = gethostbyaddr($peerAddr);
+    if (!defined($host))
+    {
+	$self->_error("Authorization failed. Could not resolve host address %s",
+		      $self->peerhost());
+	return 0;
+    }
+    my $expectedHostname = $host->name;
+    $self->_debug("Expected peer hostname is: %s", $expectedHostname);
+    if ($peerHostname ne $expectedHostname)
+    {
+	$self->_error("Host authorization failed. Expected %s got %s.",
+	    $expectedHostname, $peerHostname);
+	return 0;
+    }
+    # Success
+    $self->_debug("Host authorization success.");
+    return 1;
+}
+
 =item _error()
 
 Set our error string
@@ -255,12 +319,7 @@ sub _error
 {
     my $self = shift;
     my $format = shift;
-    my $sslErr = $self->SUPER::errstr();
-    my $message = "";
-    if (defined($sslErr))
-    {
-	$message = $sslErr;
-    }
+    my $message = $self->SUPER::errstr() || "";
     $message .= sprintf($format, @_);
     ${*$self}{errstr} = $message;
 }
@@ -308,7 +367,7 @@ sub errstr
     }
     else
     {
-	return IO::Socket::SSL::errstr();
+	return $ERRSTR || IO::Socket::SSL::errstr();
     }
 }
 
