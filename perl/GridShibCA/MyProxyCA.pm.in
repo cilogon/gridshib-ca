@@ -87,6 +87,7 @@ use Globus::MyProxyClient;
 
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
+my $logger = $config->getLogger();
 
 # new()
 # Create a new interface to the CA.
@@ -133,12 +134,17 @@ sub signRequest
 	# Error already set
 	return undef;
     }
+    my $lifetime = $self->{lifetime};
+    my $username = $self->{username};
+    # This isn't used since we're authenticated with a certificate
+    # and private key
+    my $passphrase = "Dummy";
+    $logger->debug("MyProxy request: username = %s lifetime = %d",
+		   $username, $lifetime);
     my $cred = $client->getCred(
-	Username => $self->{username},
-	# This isn't used since we're authenticated with a certificate
-	# and private key
-	Passphrase => "Dummy",
-	Lifetime => ($self->{lifetime} * 24 * 60 * 60),
+	Username => $username,
+	Passphrase => $passphrase,
+	Lifetime => $lifetime,
 	CertReq => $reqPEM,
 	CertReqFormat => "DER");
 
