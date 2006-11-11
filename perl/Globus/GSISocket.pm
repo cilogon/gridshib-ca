@@ -271,7 +271,6 @@ B<Returns:> 1 on success, 0 on error calling _error()
 =cut
 sub _authorize
 {
-    use Net::hostent;
     my $self = shift;
     my $peerDN = $self->peer_certificate("subject");
     $self->_debug("Peer DN is: %s", $peerDN);
@@ -285,15 +284,12 @@ sub _authorize
     my $peerHostname = $1;
     # Remove "host/" prefix if present
     $peerHostname =~ s/^host\///;
-    my $peerAddr = $self->peeraddr();
-    my $host = gethostbyaddr($peerAddr);
-    if (!defined($host))
+    my $expectedHostname = $self->_getpeername();
+    if (!defined($expectedHostname))
     {
-	$self->_error("Authorization failed. Could not resolve host address %s",
-		      $self->peerhost());
+	# error already set
 	return 0;
     }
-    my $expectedHostname = $host->name;
     $self->_debug("Expected peer hostname is: %s", $expectedHostname);
     if ($peerHostname ne $expectedHostname)
     {
@@ -304,6 +300,50 @@ sub _authorize
     # Success
     $self->_debug("Host authorization success.");
     return 1;
+}
+
+=item _getpeername()
+
+Return the peer hostname for authorization.
+
+B<Arguments:> None
+
+B<Returns:> Hostname as string, undef on error
+
+=cut
+
+sub _getpeername()
+{
+    use Net::hostent;
+    use Net::Domain;
+    use Socket;
+    my $self = shift;
+    my $peerAddr = $self->peeraddr();
+    my $peername = undef;
+    # Are we connected to localhost?
+    if (inet_ntoa($peerAddr) eq inet_ntoa(INADDR_LOOPBACK))
+    {
+	# Yes, localhost
+	$peername = Net::Domain::hostfqdn();
+	if (!defined($peername))
+	{
+	    $self->_error("Authorization failed. Could not resolve local hostname.");
+	    return undef;
+	}
+    }
+    else
+    {
+	# No, some other host
+	my $host = gethostbyaddr($peerAddr);
+	if (!defined($host))
+	{
+	    $self->_error("Authorization failed. Could not resolve host address %s",
+			  $self->peerhost());
+	    return undef;
+	}
+	$peername = $host->name
+    }
+    return $peername;
 }
 
 =item _error()
