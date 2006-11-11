@@ -339,7 +339,7 @@ realclean::
 # Development mode
 #
 
-build-build: class-files build-dist
+build-build: jar build-dist
 
 build-mode:
 	@if test $(MODE) != "build" ; then \
