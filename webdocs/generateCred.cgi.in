@@ -160,6 +160,8 @@ if (!defined($token))
 
 my $portalURL = $cgi->getPortalURL();
 
+my $requestedLifetime = $cgi->getRequestedCredLifetime();
+
 ######################################################################
 #
 # Validate token
@@ -237,6 +239,17 @@ if (defined($portalURL))
 # And generate the credentials, which will be written to stdout.
 #
 
+if ($requestedLifetime)
+{
+    $logger->debug("Requesting lifetime of %d", $requestedLifetime);
+    if (!$ca->setCredLifetime($requestedLifetime))
+    {
+	errorExit($HTTP_UNAUTHORIZED,
+		  "Error with requested lifetime: %s",
+		  $ca->getError());
+    }
+}
+
 my $certificate = $ca->signRequest($certificateRequest);
 
 if (!defined($certificate))
@@ -246,7 +259,8 @@ if (!defined($certificate))
 }
 
 # XXX Add serial number to logging
-$logger->info("ISSUE:%s (%s):%s:%s", $user, $idp, $remoteAddr, $DN);
+$logger->info("ISSUE: user=%s idp=%s remoteAddr=%s DN=\"%s\" lifetime=%d",
+	      $user, $idp, $remoteAddr, $DN, $ca->getCredLifetime());
 
 my $certRegistry = $config->getCertRegistry();
 

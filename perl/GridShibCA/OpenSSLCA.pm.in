@@ -160,7 +160,7 @@ sub signRequest
     # Sign certificate request
     # Request is read from stdin and certificate output to stdout
     push(@args, "-subj", $opensslFormatDN);
-    push(@args, "-days", $self->{lifetime});
+    push(@args, "-lifetime", $self->{lifetime});
     push(@args, "-CA", $self->{cert});
     push(@args, "-CAkey", $self->{key});
     push(@args, "-CAserial", $self->{serialFile});

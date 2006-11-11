@@ -64,6 +64,8 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 public class CredentialRetriever {
     GUI gui = new GUI("GridShib CA Credential Retriever");
+
+    // Print debugging messages
     Boolean debug = false;
 
     // Size of private key to generate
@@ -78,6 +80,18 @@ public class CredentialRetriever {
     // Algorithm to use when signing request
     static String pkcs10SigAlgName = "MD5withRSA";
 
+    // URL to use to retrieve credentials
+    URL credURL = null;
+
+    // Our shibboleth session cookie
+    String shibSession = null;
+
+    // Token string to pass
+    String token = null;
+
+    // Credential lifetime to request (0 == default)
+    int lifetime = 0;
+
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
 		app.doit(args);
@@ -88,15 +102,12 @@ public class CredentialRetriever {
         gui.displayMessage("Running...");
 
 		try {
+            parseArguments(args);
+
             // Create my SSLSocketFactory beforce JWS has a change to
             // initialize things and install its own.
             SSLSocketFactory mySSLSocketFactory = 
                 getMySSLSocketFactory();
-
-            int argIndex = 0;
-			URL credURL = new URL(args[argIndex++]);
-			String shibSession = args[argIndex++];
-            String token = args[argIndex++];
 
             // A bogus DN to put in the certificate request. It will
             // be overwritten by the GridShib-CA with the real user DN
@@ -175,7 +186,9 @@ public class CredentialRetriever {
                 URLEncoder.encode(requestPEM, "UTF-8")
                 + "&" +
                 "token=" +
-                URLEncoder.encode(token, "UTF-8");
+                URLEncoder.encode(token, "UTF-8")
+                + "&" +
+                "lifetime=" + lifetime;
             postWriter.write(postData);
             postWriter.flush();
             
@@ -243,8 +256,6 @@ public class CredentialRetriever {
 			out.close();
 
 			gui.displayMessage("Success.");
-		} catch (java.net.MalformedURLException e) {
-			gui.error("Malformed URL: " + args[0]);
 		} catch (java.io.IOException e) {
 			gui.error("IO Error: " + e.getMessage());
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
@@ -252,6 +263,8 @@ public class CredentialRetriever {
         } catch (java.security.NoSuchAlgorithmException e) {
             gui.error("Could not load " + keyAlg + " key generator algorithm:"
                       + e.getMessage());
+        } catch (java.lang.IllegalArgumentException e) {
+            gui.error("Error parsing JWS arguments. Client/server version mismatch? Error: " + e.getMessage());
 		} catch (Exception e) {
 			gui.error(e.getMessage());
 		}
@@ -259,6 +272,81 @@ public class CredentialRetriever {
         gui.displayMessage("Press OK to close application.");
         gui.waitForOK();
 	}
+       
+    // Parse commandline arguments. They should be of the form
+    // "var=value"
+    private void parseArguments(String[] args)
+        throws java.lang.IllegalArgumentException
+    {
+        int argIndex = 0;
+        boolean argError = false;
+        for (argIndex = 0; argIndex < args.length; argIndex++)
+        {
+            String arg = args[argIndex].trim();
+            int equalIndex = arg.indexOf('=');
+            if (equalIndex == -1)
+            {
+                throw new java.lang.IllegalArgumentException(
+                    "Failed to parse argument: " + arg);
+            }
+            String var = arg.substring(0,equalIndex);
+            String value = arg.substring(equalIndex+1);
+            if (arg.startsWith("_shibsession_"))
+            {   
+                shibSession = arg;
+                debug("Shibboleth session: " + shibSession);
+            }
+            else if (var.equals("token"))
+            {
+                token = value;
+                debug("Token: " + token);
+            }
+            else if (var.equals("url"))
+            {
+                try {
+                    credURL = new URL(value);
+                } catch (java.net.MalformedURLException e) {
+                    throw new java.lang.IllegalArgumentException(
+                        "Error parsing credential creator URL: " + value);
+                }
+                debug("URL: " + credURL.toString());
+            }
+            else if (var.equals("debug"))
+            {
+                debug = Boolean.valueOf(value);
+                debug("Debug: " + debug.toString());
+            }
+            else if (var.equals("lifetime"))
+            {
+                try {
+                    lifetime = Integer.parseInt(value);
+                    debug("Requesting credential lifetime of " + lifetime);
+                } catch (java.lang.NumberFormatException e) {
+                    throw new java.lang.IllegalArgumentException(
+                        "Bad lifetime argument: " + value);
+                }
+            }
+            else
+            {
+                throw new IllegalArgumentException(
+                    "Unrecognized variable in argument: " + arg);
+            }   
+        }
+
+        // Make sure everything got set that needed to be
+        if (credURL == null)
+        {
+            throw new IllegalArgumentException("Missing URL argument for credential generator.");
+        }
+        if (shibSession == null)
+        {
+            throw new IllegalArgumentException("Missing Shibboleth Session argument.");
+        }
+        if (token == null)
+        {
+            throw new IllegalArgumentException("Missing token argument.");
+        }
+    }
 
     private SSLSocketFactory getMySSLSocketFactory()
     {
@@ -337,7 +425,7 @@ public class CredentialRetriever {
     {
         if (debug)
         {
-             gui.displayMessage(msg);  
+             gui.displayMessage("DEBUG: " + msg);  
         }
     }
 }

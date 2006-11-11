@@ -238,6 +238,46 @@ sub getPortalData
     return $self->param("portalData") || "";
 }
 
+=item getRequestedCredLifetime
+
+Returns the requested credential lifetime in seconds.
+
+B<Arguments:> None
+
+B<Returns:> Lifetime in seconds, 0 if no request found.
+
+=cut
+
+sub getRequestedCredLifetime
+{
+    my $self = shift;
+    my $lifetime = $self->param("lifetime");
+    if (!defined($lifetime) or ($lifetime eq "default"))
+    {
+	$lifetime = $config->getParam("DefaultCredLifetime");
+    }
+    elsif ($lifetime eq "specified")
+    {
+	$lifetime = $self->param("specifiedLifetime");
+	my $unit = $self->param("lifetimeUnit");
+	if (defined($unit) && ($unit eq "hours"))
+	{
+	    $lifetime *= 3600;
+	}
+    }
+    # Clean lifetime for taint mode
+    if ($lifetime =~ /^(\d+)$/)
+    {
+	$lifetime = $1;
+    }
+    else
+    {
+	$logger->err("Illegal characters detected in lifetime ($lifetime)");
+	return $config->getParam("DefaultCredLifetime");
+    }
+    return $lifetime;
+}
+
 =item getHTMLFromFile()
 
 Returns HTML from given filename.

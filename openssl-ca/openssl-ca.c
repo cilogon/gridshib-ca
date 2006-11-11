@@ -73,13 +73,13 @@
 
 #undef POSTFIX
 #define	POSTFIX	".srl"
-#define DEF_DAYS	30
+#define DEF_LIFETIME	8 * 60 * 60 /* 8 hours */
 
 static const char *x509_usage[]={
 "usage: x509 args\n",
 " -in arg         - input file - default stdin\n",
 " -out arg        - output file - default stdout\n",
-" -days arg       - How long till expiry of a signed certificate - def 30 days\n",
+" -lifetime arg   - Lifetime of signed certificate in seconds- def 8 hours\n",
 " -subj arg       - set the subject DN in the signed certificate.\n",
 " -utf8           - input characters are UTF8 (default ASCII)\n",
 " -multivalue-rdn - enable support for multivalued RDNs\n",
@@ -97,7 +97,7 @@ NULL
 
 static int x509_certify (X509_STORE *ctx,char *CAfile,const EVP_MD *digest,
 			 X509 *x,X509 *xca,EVP_PKEY *pkey,char *serial,
-			 int create,int days, int clrext, CONF *conf, char *section,
+			 int create,long lifetime, int clrext, CONF *conf, char *section,
                          ASN1_INTEGER *sno);
 EVP_PKEY *load_key(BIO *err, const char *file, int format, int maybe_stdin,
                    const char *pass, ENGINE *e, const char *key_descrip);
@@ -129,7 +129,8 @@ int main(int argc, char **argv)
     unsigned long chtype = MBSTRING_ASC;
     int CA_flag=0,CA_createserial=0;
     int clrext=0;
-    int x509req=0,days=DEF_DAYS;
+    int x509req=0;
+    long lifetime=DEF_LIFETIME;
     const char **pp;
     X509_STORE *ctx=NULL;
     const EVP_MD *md_alg,*digest=EVP_sha1();
@@ -159,13 +160,13 @@ int main(int argc, char **argv)
     num=0;
     while (argc >= 1)
     {
-        if (strcmp(*argv,"-days") == 0)
+        if (strcmp(*argv,"-lifetime") == 0)
         {
             if (--argc < 1) goto bad;
-            days=atoi(*(++argv));
-            if (days == 0)
+            lifetime=atol(*(++argv));
+            if (lifetime == 0)
             {
-                BIO_printf(STDout,"bad number of days\n");
+                BIO_printf(STDout,"bad lifetime\n");
                 goto bad;
             }
         }
@@ -392,7 +393,7 @@ goto end;
     }
                 
     X509_gmtime_adj(X509_get_notBefore(x),0);
-    X509_gmtime_adj(X509_get_notAfter(x),(long)60*60*24*days);
+    X509_gmtime_adj(X509_get_notAfter(x),lifetime);
 
     pkey = X509_REQ_get_pubkey(req);
     X509_set_pubkey(x,pkey);
@@ -423,7 +424,7 @@ goto end;
 				
     assert(need_rand);
     if (!x509_certify(ctx,CAfile,digest,x,xca,
-                      CApkey, CAserial,CA_createserial,days, clrext,
+                      CApkey, CAserial,CA_createserial,lifetime, clrext,
                       extconf, extsect, sno))
     {
         goto end;
@@ -522,7 +523,7 @@ static ASN1_INTEGER *x509_load_serial(char *CAfile, char *serialfile, int create
 
 static int x509_certify(X509_STORE *ctx, char *CAfile, const EVP_MD *digest,
                         X509 *x, X509 *xca, EVP_PKEY *pkey, char *serialfile, int create,
-                        int days, int clrext, CONF *conf, char *section, ASN1_INTEGER *sno)
+                        long lifetime, int clrext, CONF *conf, char *section, ASN1_INTEGER *sno)
 {
     int ret=0;
     ASN1_INTEGER *bs=NULL;
@@ -566,7 +567,7 @@ goto end;
 goto end;
 
     /* hardwired expired */
-    if (X509_gmtime_adj(X509_get_notAfter(x),(long)60*60*24*days) == NULL)
+    if (X509_gmtime_adj(X509_get_notAfter(x),lifetime) == NULL)
 goto end;
 
     if (clrext)

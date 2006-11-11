@@ -62,6 +62,15 @@ my $config = GridShibCA::Config->new();
 
 my $JNLPtemplate = $config->getParam("JNLPTemplate");
 
+# Arguments to pass to JWS application
+my @jwsArgs = ();
+
+# Bug debug first to turn on debugging early
+if ($config->getParamBoolean("clientDebug"))
+{
+    push(@jwsArgs, "debug=True");
+}
+
 ######################################################################
 
 sub errorExit($)
@@ -110,6 +119,7 @@ if (!defined($shibsession))
 {
     errorExit("Could not determine Shibboleth session Id.");
 }
+push(@jwsArgs, $shibsession);
 
 my $user = $cgi->getUserId();
 
@@ -122,19 +132,23 @@ my $remoteAddr = $cgi->remote_host();
 
 ######################################################################
 #
-# Get the user's DN to pass to JWS application
+# Handle requested lifetime
 #
 
-my $ca = $config->getCA($user, $cgi->getIdP());
-if (!defined($ca))
+my $requestedLifetime = $cgi->getRequestedCredLifetime();
+$logger->debug("Requested lifetime: $requestedLifetime");
+my $maxLifetime = $config->getParam("MaximumCredLifetime");
+if ($requestedLifetime > $maxLifetime)
 {
-    errorExit("Could not instantiate CA: " . $config->getError());
+    errorExit("Requested lifetime ($requestedLifetime) greater than allowed ($maxLifetime).");
 }
-my $DN = $ca->getDN();
-if (!defined($DN))
+
+if ($requestedLifetime == 0)
 {
-    errorExit("Couldn't determine DN for user: " . $ca->getError());
+    errorExit("Requested credential with zero lifetime.");
 }
+
+push(@jwsArgs, "lifetime=" . $requestedLifetime);
 
 ######################################################################
 #
@@ -155,13 +169,15 @@ if (!defined($tokenString))
     errorExit("Could not generate token: " . $tokenGenerator->getError());
 }
 
+push(@jwsArgs, "token=" . $tokenString);
+
 ######################################################################
 #
 # Log this
 #
 
 
-$logger->info("JWSLAUNCH:%s:%s:%s", $user, $remoteAddr, $DN);
+$logger->info("JWSLAUNCH:%s:%s", $user, $remoteAddr);
 
 ######################################################################
 #
@@ -177,16 +193,22 @@ $code_base =~ s/https:/http:/;
 
 my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
 my $genCredURL = $url_base . $ShibProtectedCGIBinURL . "/generateCred.cgi";
+push(@jwsArgs, "url=" . $genCredURL);
+
+# Build string of arguments
+my $arguments = "";
+for my $arg (@jwsArgs)
+{
+    $arguments .= "\t<argument>$arg</argument>\n";
+}
 
 open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
 
 print $cgi->header("Application/X-Java-Jnlp-File");
 
 while (<INPUT>) {
-    s/\$\$shibSession/$shibsession/;
+    s/\$\$arguments/$arguments/;
     s/\$\$code_base/$code_base/;
-    s/\$\$genCredURL/$genCredURL/;
-    s/\$\$token/$tokenString/;
     print;
 }
 close(INPUT);

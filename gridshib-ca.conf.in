@@ -17,6 +17,12 @@
 # by default. (Should be "False" to disallow, or "True" to allow.)
 allowPortalDelegation = False
 
+# Set to "True" to enable debugging on server
+debug = False
+
+# Set to "True" to enable debugging in the CredentialRetriever client
+clientDebug = False
+
 ######################################################################
 #
 # Perl Modules
@@ -86,6 +92,17 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 # Relative DN for issued certificates
 # Must be in RFC 2253 format. E.g. O=NCSA, C=US
 RelativeDN = @RELATIVE_DN@
+
+# Default credential lifetime in seconds (12 hours)
+DefaultCredLifetime = 43200
+
+# Maximum credential lifetime in seconds (7 days)
+MaximumCredLifetime = 604800
+
+######################################################################
+#
+# Parameters specific to the OpenSSL-based CA
+#
 
 # Certificate for OpenSSL-based CA
 OpenSSLCACert = $(GridShibCAConfDir)/gridshib-ca-cert.pem

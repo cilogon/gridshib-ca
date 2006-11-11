@@ -33,6 +33,9 @@
 <li>CredentialRetreiver.java: Circumvent JWS installing its own
 	SSLSocketFactory so that default SSLSocketFactory is used and our
 	list of trusted CAs is honored.
+<li>Added debug support with debug and clientDebug parameters in
+	configuration file.
+<li>Added support for requested lifetimes from user.
 </ul>
 
 <b>Version 0.2.0:</b> Changelog started Oct 7, 2006

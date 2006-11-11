@@ -168,13 +168,25 @@ my $shibProtectedCGIBinURL =
     $config->getParam("ShibbolethProtectedCGIBinURL");
 my $gridShibCAURL = $config->getParam("GridShibCAURL");
 
+my $defaultLifetime = $config->getParam("DefaultCredLifetime") / 3600;
+my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
+
 print <<"EOF";
 <center>
 Welcome $user.
 <p>
-Your GridShib-CA identity will be $DN
+Your GridShib-CA identity will be "$DN"
 <p>
 <form action=\"$shibProtectedCGIBinURL/create-jnlp\">
+Credential Lifetime:
+<input type="radio" name="lifetime" value="default" checked>
+    Default ($defaultLifetime hours)
+<input type="radio" name="lifetime" value="specified">
+  Other:
+<input type="text" name="specifiedLifetime" value="$defaultLifetime" size=4>
+  Hours ($maximumLifetime max)
+<input type="hidden" name="lifetimeUnit" value="hours">
+<br>
   <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
 </form>
 <p>
@@ -182,6 +194,7 @@ When the Credential Retriever application completes, you may click on
 the following button to return to the main GridShib CA page or simply
 close this browser window.
 <form action="$gridShibCAURL">
+
 <input type="submit" value="Return to GridShib CA main page">
 </form>
 </center>

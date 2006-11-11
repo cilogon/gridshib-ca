@@ -59,10 +59,6 @@ package GridShibCA::CA;
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
 
-# Credential parameters
-$LIFETIME = 1;   # in days
-$RELATIVE_DN = $config->getParam("RelativeDN");
-
 =head2 Methods
 
 =over 4
@@ -87,8 +83,8 @@ sub new
     my $self = {};
     $self->{username} = shift;
     $self->{idp} = shift;
-    $self->{lifetime} = $LIFETIME;
-    $self->{relativeDN} = $RELATIVE_DN;
+    $self->{lifetime} = $config->getParam("DefaultCredLifetime");
+    $self->{relativeDN} = $config->getParam("RelativeDN");
     $self->{error} = undef;
     bless($self, $class);
     return $self;
@@ -129,6 +125,46 @@ sub signRequest
     return undef;
 }
 
+=item setCredLifetime
+
+Set the lifetime of signed credentials
+
+B<Arguments:> Lifetime in seconds
+
+B<Returns:> 1 on success, 0 on error
+
+=cut
+
+sub setCredLifetime
+{
+    my $self = shift;
+    my $lifetime = shift;
+    my $maxLifetime = $config->getParam("MaximumCredLifetime");
+    if ($lifetime > $maxLifetime)
+    {
+	$self->_error("Requested lifetime (%d) greater than maximum allowed (%d)",
+		      $lifetime, $maxLifetime);
+	return 0;
+    }
+    $self->{lifetime} = $lifetime;
+    return 1;
+}
+
+=item getCredLifetime
+
+Get the lifetime of signed credentials.
+
+B<Arguments:> None
+
+B<Returns:> Credential lifetime in seconds
+
+=cut
+
+sub getCredLifetime
+{
+    my $self = shift;
+    return $self->{lifetime};
+}
 
 =item getError()
 

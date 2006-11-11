@@ -100,6 +100,7 @@ sub new
     my $self = {};
     my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
     openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
+    $self->{debug} = $config->getParamBoolean("debug");
     bless($self, $class);
     return $self;
 }
@@ -143,6 +144,28 @@ sub info
 {
     my $self = shift;
     $self->log("info", @_);
+}
+
+
+=item debug()
+
+Log an debugging message if so configured.
+
+B<Arguments:>
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub debug
+{
+    my $self = shift;
+    if ($self->{debug})
+    {
+	$self->log("info", @_);
+    }
 }
 
 
