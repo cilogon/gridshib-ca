@@ -327,6 +327,7 @@ trustStore:	build-mode $(TRUST_STORE)
 
 $(TRUST_STORE): ${CA_CERTS}
 	@$(RM) -f $@
+	@$(DIR_EXISTS) resources || $(MKDIR) resources
 	@for cert in $^; do \
 		echo Adding $${cert} to trustStore ;\
 		${KEYTOOL} -import -keystore $@ -noprompt -alias $${cert} -storepass ${TRUST_STORE_PASSWD} -file $${cert} ;\
