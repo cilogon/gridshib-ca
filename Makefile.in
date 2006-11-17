@@ -106,7 +106,9 @@ BUILD_ALL =\
 	$(PERL_MODULES) \
 	$(HTML_FILES) \
 	$(CGI_BIN_SCRIPTS) \
-	$(CGI_DEMO_SCRIPTS)
+	$(CGI_DEMO_SCRIPTS) \
+	$(DEV_UTILS) \
+	$(DOC_FILES)
 
 ######################################################################
 ######################################################################
@@ -473,7 +475,7 @@ DIST_EXTRA_FILES=@DIST_EXTRA_FILES@
 DIST_FILES += $(DIST_EXTRA_FILES)
 
 # Distribution file
-DIST_FILE=@DIST_FILE_BASE@.tar.gz
+DIST_FILE=@DIST_TARBALL_NAME@
 
 dist:	build-mode $(DIST_FILE)
 

@@ -3,7 +3,10 @@
 #
 # $Id$
 #
-# Tag head of CVS with current version.
+# Make a release.
+#
+# Optional argument is version string, e.g. "0.1.4"
+# By default, current version from configure.ac is used.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,7 +48,18 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-my $version = "@PACKAGE_VERSION_STRING@";
+use Cwd;
+use File::Copy;
+use File::Path;
+use File::Temp;
+
+my $cvsroot = ":pserver:anonymous\@cvs.globus.org:/home/globdev/CVS/globus-packages";
+
+my $version = shift;
+if (!defined($version))
+{
+    $version = "@PACKAGE_VERSION_STRING@";
+}
 
 if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
 {
@@ -56,14 +70,47 @@ if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
 $version =~ s/\./_/g;
 $version = "v" . $version;
 
-my $cmd = "@CVS@ rtag $version gridshib-ca";
+my $cwd = getcwd();
 
-print "Executing $cmd\n";
-if (system($cmd))
-{
-    print "Exec of \"$cmd\" failed.\n";
-    exit(1);
-}
+my $working_dir = mkdtemp("gridshibca-make-release-XXXXXXXX");
+chdir($working_dir) || die "Could not chdir($working_dir): $!";
+
+my $cmd = "@CVS@ -d$cvsroot export -r $version -d gridshib-ca gridshib/gridshib-ca";
+execCmd($cmd);
+
+chdir("gridshib-ca") || die "Could not chdir(gridshib-ca): $!";
+
+$cmd = "autoconf";
+execCmd($cmd);
+
+$cmd = "./configure --enable-build";
+execCmd($cmd);
+
+$cmd = "@MAKE@ dist";
+execCmd($cmd);
+
+my $tarball = "@DIST_TARBALL_NAME@";
+
+copy($tarball, $cwd) || die "Could not copy $tarball to $cwd: $!";
+
+rmtree($working_dir);
 
 exit(0);
+
+######################################################################
+#
+# Support functions
+#
+
+sub execCmd
+{
+    my $cmd = shift;
+
+    print "Executing $cmd\n";
+    if (system($cmd))
+    {
+	print "Exec of \"$cmd\" failed.\n";
+	exit(1);
+    }
+}
 

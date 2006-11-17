@@ -21,10 +21,15 @@ AC_SUBST(PACKAGE_VERSION_STRING)
 PACKAGE_FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}-${PACKAGE_RELEASE_STATUS}
 AC_SUBST(PACKAGE_FULLNAME)
 
+dnl tarball uses dashes of dots
 PACKAGE_VERSION_MOD=`echo ${PACKAGE_VERSION} | sed -e "s/\./-/g"`
 DIST_FILE_BASE=${PACKAGE_NAME}-${PACKAGE_VERSION_MOD}-${PACKAGE_RELEASE_STATUS}
 AC_SUBST(DIST_FILE_BASE)
 
+DIST_TARBALL_NAME=${DIST_FILE_BASE}.tar.gz
+AC_SUBST(DIST_TARBALL_NAME)
+
+dnl Documentation directory doesn't include release status (e.g. alpha/beta)
 DOC_INSTALL_DIR=${PACKAGE_NAME}-${PACKAGE_VERSION_MOD}
 AC_SUBST(DOC_INSTALL_DIR)
 
@@ -37,8 +42,8 @@ SUBDIRS=""
 AC_SUBST(SUBDIRS)
 
 dnl ------------------------------------------------------------
-dnl AC_SRC_FILE(FILE, SRC_FILES)
-dnl For each file listed in FILE add ${file}.in to SRC_FILES
+dnl AC_SRC_FILE(FILES, SRC_FILES)
+dnl For each file listed in FILES add ${file}.in to SRC_FILES
 AC_DEFUN([AC_SRC_FILES],
 [
 $2="";
@@ -224,29 +229,16 @@ OPENSSL_CA_SRCS="\
 	openssl-ca/*.h"
 AC_SUBST(OPENSSL_CA_SRCS)
 
-dnl ----------------------------------------------------------------------
-dnl Enable building of java?
+dnl ------------------------------------------------------------
+dnl Command-line options
+
+dnl Enable building (aka development) mode?
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
 		[Enable build environment. For developers. (Default: Disabled)]),
 	[MODE=build],
 	[MODE=dist])
 AC_SUBST(MODE)
-
-if test ${MODE} = "build" ; then
-   AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version])
-
-   dnl These tools are only needed for building distributions
-   AC_PATH_PROG(KEYTOOL, keytool)
-   AC_PATH_PROG(JAVAC, javac)
-   AC_PATH_PROG(JAR, jar)
-   AC_PATH_PROG(JARSIGNER, jarsigner)
-   AC_PATH_PROG(TAR, tar)
-   AC_PATH_PROG(FIND, find)
-fi
-
-dnl ------------------------------------------------------------
-dnl Command-line options
 
 default=gridshib-ca-${PACKAGE_VERSION}
 AC_ARG_WITH(gridshib-ca-dir-name,
@@ -396,15 +388,29 @@ CONFIGURE_DEP=""
 AC_SUBST(CONFIGURE_DEP)
 
 if test ${MODE} = "build" ; then
+
+   dnl Enable building of java
+   AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version])
+
+   dnl Programs needed for building java
+   AC_PATH_PROG(KEYTOOL, keytool)
+   AC_PATH_PROG(JAVAC, javac)
+   AC_PATH_PROG(JAR, jar)
+   AC_PATH_PROG(JARSIGNER, jarsigner)
+   AC_PATH_PROG(TAR, tar)
+   AC_PATH_PROG(FIND, find)
+
    dnl Generate development utilities in dev-utils
-   DEV_UTILS="dev-utils/tag-version.pl"
-   AC_CONFIG_FILES([$DEV_UTILS])
+   DEV_UTILS="\
+	dev-utils/tag-version.pl \
+	dev-utils/make-release.pl"
+   AC_CONFIG_FILES([${DEV_UTILS}])
 
    dnl Enable regeneration of configure from configure.ac and aclocal.m4
    CONFIGURE_DEP="configure.ac aclocal.m4"
 
    dnl Generate documentation
-   AC_CONFIG_FILES([$DOC_FILES])
+   AC_CONFIG_FILES([${DOC_FILES}])
 
    AC_MSG_CHECKING([for Bouncy Castle source directory])
    AC_ARG_WITH(bc-source-path,
@@ -421,6 +427,8 @@ if test ${MODE} = "build" ; then
    dnl Make dev-utils/*.pl executable
    AC_CONFIG_COMMANDS([chmod-dev-utils], [chmod +x dev-utils/*.pl])
 
+   AC_PATH_PROG(CVS, cvs)
+   AC_PATH_PROG(MAKE, make)
 fi
 
 PERL_DOC_DIR="doc/perl"
