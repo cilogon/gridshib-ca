@@ -17,6 +17,10 @@
 # by default. (Should be "False" to disallow, or "True" to allow.)
 allowPortalDelegation = False
 
+# Directory of trusted CA certificates to pass to client
+# Can be set to /dev/null to not pass any
+TrustedCADirectory = /etc/grid-security/certificates
+
 # Set to "True" to enable debugging on server
 debug = False
 

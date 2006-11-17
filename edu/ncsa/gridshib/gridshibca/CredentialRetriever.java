@@ -83,6 +83,9 @@ public class CredentialRetriever {
     // URL to use to retrieve credentials
     URL credURL = null;
 
+    // URL from which to retrieve trusted CAs
+    URL trustURL = null;
+
     // Our shibboleth session cookie
     String shibSession = null;
 
@@ -91,6 +94,9 @@ public class CredentialRetriever {
 
     // Credential lifetime to request (0 == default)
     int lifetime = 0;
+
+    // SSLSocketFactory to use for my HTTPS connections
+    SSLSocketFactory mySSLSocketFactory = null;
 
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
@@ -106,8 +112,7 @@ public class CredentialRetriever {
 
             // Create my SSLSocketFactory beforce JWS has a change to
             // initialize things and install its own.
-            SSLSocketFactory mySSLSocketFactory = 
-                getMySSLSocketFactory();
+            mySSLSocketFactory = getMySSLSocketFactory();
 
             // A bogus DN to put in the certificate request. It will
             // be overwritten by the GridShib-CA with the real user DN
@@ -172,11 +177,7 @@ public class CredentialRetriever {
                 // Class doesn't exist, don't need to do anything
             }
 
-            HttpsURLConnection conn =
-                (HttpsURLConnection) credURL.openConnection();
-            conn.setSSLSocketFactory(mySSLSocketFactory);
-	        conn.setDoOutput(true);
-            conn.setRequestProperty("Cookie", shibSession);
+            HttpsURLConnection conn = openHttpsURL(credURL);
             
             // Write our POST data
             OutputStreamWriter postWriter =
@@ -255,6 +256,12 @@ public class CredentialRetriever {
             out.write(privateKeyPEM);
 			out.close();
 
+            // Get trusted CAs if we got a trustURL
+            if (trustURL != null)
+            {
+                getTrustedCAs(trustURL);
+            }
+
 			gui.displayMessage("Success.");
 		} catch (java.io.IOException e) {
 			gui.error("IO Error: " + e.getMessage());
@@ -326,6 +333,16 @@ public class CredentialRetriever {
                         "Bad lifetime argument: " + value);
                 }
             }
+            else if (var.equals("trustURL"))
+            {
+                try {
+                    trustURL = new URL(value);
+                } catch (java.net.MalformedURLException e) {
+                    throw new java.lang.IllegalArgumentException(
+                        "Error parsing trusted CA URL: " + value);
+                }
+                debug("Trusted CA URL: " + trustURL.toString());
+            }
             else
             {
                 throw new IllegalArgumentException(
@@ -346,6 +363,18 @@ public class CredentialRetriever {
         {
             throw new IllegalArgumentException("Missing token argument.");
         }
+    }
+
+    // Open and configure a HTTPS connection given a URL
+    private HttpsURLConnection openHttpsURL(URL url)
+        throws IOException
+    {
+        HttpsURLConnection conn =
+            (HttpsURLConnection) url.openConnection();
+        conn.setSSLSocketFactory(mySSLSocketFactory);
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Cookie", shibSession);
+        return conn;
     }
 
     private SSLSocketFactory getMySSLSocketFactory()
@@ -407,6 +436,88 @@ public class CredentialRetriever {
             (SSLSocketFactory) SSLSocketFactory.getDefault();
 
         return defaultSSLSocketFactory;
+    }
+
+    /*
+     * Read trusted CAs from given URL.
+     */
+    private void getTrustedCAs(URL trustedCAsURL)
+        throws IOException
+    {
+        String prefix = "-----File:";
+
+        gui.displayMessage("Reading trusted CAs");
+        debug("Trusted CAs URL: " + trustedCAsURL);
+        File trustedCAPath = getUserCADir();
+        debug("Writing trusted CAs to " + trustedCAPath);
+        HttpsURLConnection conn = openHttpsURL(trustedCAsURL);
+
+        BufferedReader trustedCAStream =
+            new BufferedReader(
+                new InputStreamReader(
+                    conn.getInputStream()));
+        String line;
+        FileOutputStream out = null;
+        while ((line = trustedCAStream.readLine()) != null)
+        {
+            if (line.startsWith(prefix))
+            {
+                // Start of new file
+                String filename = line.substring(prefix.length()).trim();
+                if (out != null)
+                {
+                    out.close();
+                    out = null;
+                }
+                File file = new File(trustedCAPath + File.separator + filename);
+                if (file.exists())
+                {
+                    debug("File " + file + " already exists. Skipping.");
+                }
+                else
+                {
+                    debug("Writing " + file);
+                    out = new FileOutputStream(file);
+                }
+            }
+            else
+            {
+                // Line of data, output if we have a valid output file
+                if (out != null)
+                {
+                    String lineCR = line + "\n";
+                    out.write(lineCR.getBytes());
+                }
+            }
+        }
+        if (out != null)
+        {
+            out.close();
+        }
+    }
+
+    /*
+     * Return the path of the user's trusted certificates directory.
+     * Normally ~/.globus/certificates.
+     * Create this directory if it doesn't exist (counting on umask to be
+     * set appropriately). 
+     */
+    private File getUserCADir()
+        throws IOException
+    {
+        File trustedCAPath = new File(ConfigUtil.globus_dir
+                                      + "certificates"
+                                      + File.separator);
+        if (!trustedCAPath.exists())
+        {
+            trustedCAPath.mkdirs();
+        }
+        if (!trustedCAPath.isDirectory())
+        {
+            throw new IOException("Trusted CA directory is not a directory: "
+                                  + trustedCAPath);
+        }
+        return trustedCAPath;
     }
 
 	public void copyStream(InputStream in, OutputStream out)

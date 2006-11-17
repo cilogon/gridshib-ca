@@ -1,0 +1,173 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# This script is to be invoked protected by Shibboleth. It generates
+# list of trusted CA files and signing policies to be installed by
+# its client.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+use DirHandle;
+use FileHandle;
+use File::Spec;
+
+use GridShibCA::Config;
+
+my $config = GridShibCA::Config->new();
+
+my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+
+######################################################################
+
+sub errorExit($)
+{
+  my $error_string = shift;
+
+  print $cgi->header("text/plain");
+
+  print "ERROR: " . $error_string . "\n";
+  
+  $logger->err("ERROR: %s", $error_string);
+
+  exit(1);
+}
+
+######################################################################
+#
+# Initialize Logging
+#
+
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this error
+    die "Could not get Logger: " . $config->getError();
+}
+
+######################################################################
+#
+# Main code
+#
+
+$cgi = $config->getCGI();
+if (!defined($cgi))
+{
+    errorExit("Could not access CGI interface: "
+	      . $config->getError());
+}
+
+######################################################################
+#
+# Validate trusted CA directory
+#
+
+if (!defined($trustedCADirectory))
+{
+    # Write nothing
+    print $cgi->header();
+    exit(0);
+}
+
+if (! -x $trustedCADirectory)
+{
+    errorExit("Configuration error: $trustedCADirectory does not exist.");
+}
+
+if (! -d $trustedCADirectory)
+{
+    errorExit("Configuration error: $trustedCADirectory not a directory.");
+}
+
+my $dir = new DirHandle($trustedCADirectory);
+
+if (!defined($dir))
+{
+    errorExit("Could not open $trustedCADirectory: $!");
+}
+
+######################################################################
+#
+# Open each file from trusted CA directory and write to client
+#
+
+
+print $cgi->header();
+
+while (defined(my $filename = $dir->read()))
+{
+    # Skip "." and ".."
+    if (($filename eq ".") ||
+	($filename eq ".."))
+    {
+	next;
+    }
+    my $filepath = File::Spec->catfile($trustedCADirectory,
+				       $filename);
+    # If it's not a normal file, skip it
+    if (! -f $filepath)
+    {
+	$logger->debug("Skipping trusted CA file $filepath, not a normal file.");
+	next;
+    }
+    my $file = new FileHandle($filepath);
+    if (!defined($file))
+    {
+	$logger->err("Could not open trusted CA file $filepath: $!");
+	next;
+    }
+    print "-----File: $filename\n";
+    while (my $line = $file->getline())
+    {
+	print $line;
+    }
+    $file->close();
+}
+
+exit(0);
+
+
+# The following triggers PERL mode in emaces.
+### Local Variables: ***
+### mode:perl ***
+### End: ***

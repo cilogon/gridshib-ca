@@ -61,6 +61,7 @@ umask(0077);
 my $config = GridShibCA::Config->new();
 
 my $JNLPtemplate = $config->getParam("JNLPTemplate");
+my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
 
 # Arguments to pass to JWS application
 my @jwsArgs = ();
@@ -173,9 +174,26 @@ push(@jwsArgs, "token=" . $tokenString);
 
 ######################################################################
 #
-# Log this
+# Do we have trusted CAs to pass to client?
 #
 
+my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+
+if (defined($trustedCADirectory) &&
+    (-x $trustedCADirectory) &&
+    (-d $trustedCADirectory))
+{
+    # Yes, pass pointer to CGI script
+    my $getTrustedCAsURL = $url_base .
+	$ShibProtectedCGIBinURL .
+	"/getTrustedCAs.cgi";
+    push(@jwsArgs, "trustURL=$getTrustedCAsURL");
+}
+
+######################################################################
+#
+# Log this
+#
 
 $logger->info("JWSLAUNCH:%s:%s", $user, $remoteAddr);
 
@@ -191,7 +209,6 @@ my $code_base = $url_base . $GridShibCAURL;
 # Since JAR file is signed, this is a reasonable work around.
 $code_base =~ s/https:/http:/;
 
-my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
 my $genCredURL = $url_base . $ShibProtectedCGIBinURL . "/generateCred.cgi";
 push(@jwsArgs, "url=" . $genCredURL);
 

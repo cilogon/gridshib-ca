@@ -30,7 +30,7 @@ DIST_TARBALL_NAME=${DIST_FILE_BASE}.tar.gz
 AC_SUBST(DIST_TARBALL_NAME)
 
 dnl Documentation directory doesn't include release status (e.g. alpha/beta)
-DOC_INSTALL_DIR=${PACKAGE_NAME}-${PACKAGE_VERSION_MOD}
+DOC_INSTALL_DIR=${PACKAGE_NAME}-${PACKAGE_VERSION}
 AC_SUBST(DOC_INSTALL_DIR)
 
 DIST_DIR=${PACKAGE_FULLNAME}
@@ -90,7 +90,8 @@ CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/create-jnlp \
 	webdocs/sysinfo.pl \
 	webdocs/login.cgi \
-	webdocs/portalLogin.cgi"
+	webdocs/portalLogin.cgi \
+	webdocs/getTrustedCAs.cgi"
 AC_SUBST(CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
 AC_SRC_FILES(CGI_BIN_SCRIPTS, CGI_BIN_SRCS)

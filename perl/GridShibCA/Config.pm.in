@@ -66,6 +66,7 @@ my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
 my %config = (
     # General configuration
     allowPortalDelegation => "false",
+    TrustedCADirectory => "/etc/grid-security/certificates",
     debug => "false",
     clientDebug => "false",
     # Perl modules

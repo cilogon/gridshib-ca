@@ -36,6 +36,7 @@
 <li>Added debug support with debug and clientDebug parameters in
 	configuration file.
 <li>Added support for requested lifetimes from user.
+<li>Added support for updating user's trusted certificates directory
 </ul>
 
 <b>Version 0.2.0:</b> Changelog started Oct 7, 2006
