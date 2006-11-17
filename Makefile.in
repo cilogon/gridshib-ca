@@ -637,7 +637,7 @@ rsync-myvocs: $(DIST_FILES)
 
 install-doc: doc
 	@echo Rsyncing docs to gridshib.globus.org
-	@chmod ag+r $(DOC_FILES)
+	@chmod -R ag+r $(DOC_FILES) $(EXTRA_DOC_FILES) $(PERL_DOC_DIR) 
 	@rsync -auvp $(DOC_FILES) $(EXTRA_DOC_FILES) $(PERL_DOC_DIR) welch@terra.mcs.anl.gov:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
 
 release: dist install-docs
