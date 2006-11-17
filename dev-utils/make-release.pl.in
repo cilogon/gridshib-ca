@@ -55,11 +55,10 @@ use File::Temp;
 
 my $cvsroot = ":pserver:anonymous\@cvs.globus.org:/home/globdev/CVS/globus-packages";
 
-my $version = shift;
-if (!defined($version))
-{
-    $version = "@PACKAGE_VERSION_STRING@";
-}
+#
+# Figure out version string
+#
+my $version = "@PACKAGE_VERSION_STRING@";
 
 if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
 {
@@ -70,12 +69,29 @@ if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
 $version =~ s/\./_/g;
 $version = "v" . $version;
 
+# Save current working directory for later
 my $cwd = getcwd();
 
+######################################################################
+#
+# Tag CVS head
+#
+
+my $cmd = "@CVS@ rtag -F $version gridshib/gridshib-ca";
+execCmd($cmd);
+
+######################################################################
+#
+# Make temporary directory and chdir() to it
+#
 my $working_dir = mkdtemp("gridshibca-make-release-XXXXXXXX");
 chdir($working_dir) || die "Could not chdir($working_dir): $!";
 
-my $cmd = "@CVS@ -d$cvsroot export -r $version -d gridshib-ca gridshib/gridshib-ca";
+######################################################################
+#
+# Export code from CVS ane make distribution
+#
+$cmd = "@CVS@ -d$cvsroot export -r $version -d gridshib-ca gridshib/gridshib-ca";
 execCmd($cmd);
 
 chdir("gridshib-ca") || die "Could not chdir(gridshib-ca): $!";
@@ -83,7 +99,7 @@ chdir("gridshib-ca") || die "Could not chdir(gridshib-ca): $!";
 $cmd = "autoconf";
 execCmd($cmd);
 
-$cmd = "./configure --enable-build";
+$cmd = "./configure --enable-build --with-bc-source-path=@BC_SOURCE@";
 execCmd($cmd);
 
 $cmd = "@MAKE@ dist";
@@ -91,7 +107,21 @@ execCmd($cmd);
 
 my $tarball = "@DIST_TARBALL_NAME@";
 
+######################################################################
+#
+# Copy tarball back to original current directory
+#
 copy($tarball, $cwd) || die "Could not copy $tarball to $cwd: $!";
+
+chdir($cwd) || die "Could not return to original directory ($cwd): $!";
+
+$cmd = "ls -l $tarball";
+execCmd($cmd);
+
+######################################################################
+#
+# Done
+#
 
 rmtree($working_dir);
 
