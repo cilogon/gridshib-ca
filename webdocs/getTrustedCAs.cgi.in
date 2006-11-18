@@ -159,7 +159,9 @@ while (defined(my $filename = $dir->read()))
     print "-----File: $filename\n";
     while (my $line = $file->getline())
     {
-	print $line;
+	# Make sure we have a carriage return at the end of the line
+	chomp($line);
+	print $line . "\n";
     }
     $file->close();
 }
