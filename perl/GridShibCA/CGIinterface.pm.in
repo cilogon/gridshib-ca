@@ -278,6 +278,28 @@ sub getRequestedCredLifetime
     return $lifetime;
 }
 
+=item requestedTrustedCAUpdate
+
+Did the user request update of their trusted CAs?
+
+B<Arguments:> None
+
+B<Returns:> 1 if yes, 0 otherwise
+
+=cut
+
+sub requestedTrustedCAUpdate
+{
+    my $self = shift;
+    my $requestedCAUpdate = $self->param("installTrustedCAs");
+    if (defined($requestedCAUpdate) and
+	($requestedCAUpdate eq "true"))
+    {
+	return 1;
+    }
+    return 0;
+}
+
 =item getHTMLFromFile()
 
 Returns HTML from given filename.

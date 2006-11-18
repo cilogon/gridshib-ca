@@ -187,6 +187,28 @@ Credential Lifetime:
   Hours ($maximumLifetime max)
 <input type="hidden" name="lifetimeUnit" value="hours">
 <br>
+EOF
+    ;
+
+#
+# Do we have trusted CAs to pass to client?
+#
+
+my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+
+if (defined($trustedCADirectory) &&
+    (-x $trustedCADirectory) &&
+    (-d $trustedCADirectory))
+{
+    print <<"EOF";
+<input type=checkbox name="installTrustedCAs" value="true" checked>
+Update my trusted CAs
+<br>
+EOF
+;
+}
+
+print <<"EOF";
   <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
 </form>
 <p>

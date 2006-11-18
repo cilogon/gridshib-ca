@@ -174,14 +174,16 @@ push(@jwsArgs, "token=" . $tokenString);
 
 ######################################################################
 #
-# Do we have trusted CAs to pass to client?
+# Do we have trusted CAs to pass to client and did the client request
+# we do so?
 #
 
 my $trustedCADirectory = $config->getParam("TrustedCADirectory");
 
 if (defined($trustedCADirectory) &&
     (-x $trustedCADirectory) &&
-    (-d $trustedCADirectory))
+    (-d $trustedCADirectory) &&
+    $cgi->requestedTrustedCAUpdate())
 {
     # Yes, pass pointer to CGI script
     my $getTrustedCAsURL = $url_base .
