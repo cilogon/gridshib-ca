@@ -463,44 +463,6 @@ clean::
 ######################################################################
 ######################################################################
 #
-# Distribution building
-#
-
-# Directory to build distribution in
-DIST_DIR=@DIST_DIR@
-
-# Extra files to distribute
-DIST_EXTRA_FILES=@DIST_EXTRA_FILES@
-
-# Files to include in distribution
-DIST_FILES += $(DIST_EXTRA_FILES)
-
-# Distribution file
-DIST_FILE=@DIST_TARBALL_NAME@
-
-dist:	build-mode $(DIST_FILE)
-
-$(DIST_FILE): $(DIST_FILES)
-	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
-	@echo Copying files into $(DIST_DIR)
-	@for file in $^; do \
-		dir=`dirname $${file}` ;\
-		$(DIR_EXISTS) $(DIST_DIR)/$${dir} || $(MKDIR) -p $(DIST_DIR)/$${dir} ;\
-		$(CP) $${file} $(DIST_DIR)/$${dir} ;\
-	done
-	$(TAR) cfz $@ $(DIST_DIR)/*
-	$(RM) -rf $(DIST_DIR)
-	ls -l $(DIST_FILE)
-
-clean::
-	$(RM) -rf $(DIST_DIR)
-
-realclean::
-	$(RM) -f $(DIST_FILE)
-
-######################################################################
-######################################################################
-#
 # Documentation generation
 #
 
@@ -523,6 +485,45 @@ doc-clean::
 	$(RM) -f $(DOC_FILES)
 
 realclean:: doc-clean
+
+######################################################################
+######################################################################
+#
+# Distribution building
+#
+
+# Directory to build distribution in
+DIST_DIR=@DIST_DIR@
+
+# Extra files to distribute
+DIST_EXTRA_FILES=@DIST_EXTRA_FILES@
+
+# Files to include in distribution
+DIST_FILES += $(DIST_EXTRA_FILES)
+
+# Distribution file
+DIST_FILE=@DIST_TARBALL_NAME@
+
+dist:	build-mode $(DIST_FILE)
+
+$(DIST_FILE): $(DIST_FILES)
+	$(DIR_EXISTS) $(DIST_DIR) || $(MKDIR) $(DIST_DIR)
+	@echo Copying files into $(DIST_DIR)
+	@for file in $^; do \
+		echo $${file} ;\
+		dir=`dirname $${file}` ;\
+		$(DIR_EXISTS) $(DIST_DIR)/$${dir} || $(MKDIR) -p $(DIST_DIR)/$${dir} ;\
+		$(CP) $${file} $(DIST_DIR)/$${dir} ;\
+	done
+	$(TAR) cfz $@ $(DIST_DIR)/*
+	$(RM) -rf $(DIST_DIR)
+	ls -l $(DIST_FILE)
+
+clean::
+	$(RM) -rf $(DIST_DIR)
+
+realclean::
+	$(RM) -f $(DIST_FILE)
 
 ######################################################################
 #
