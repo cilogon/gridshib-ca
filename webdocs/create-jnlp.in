@@ -221,7 +221,7 @@ for my $arg (@jwsArgs)
     $arguments .= "\t<argument>$arg</argument>\n";
 }
 
-open(INPUT, $JNLPtemplate) || errorExit("Could not open input file $JNLPtemplate: $!");
+open(INPUT, $JNLPtemplate) || errorExit("Could not open JNLP template file \"$JNLPtemplate\": $!");
 
 print $cgi->header("Application/X-Java-Jnlp-File");
 
