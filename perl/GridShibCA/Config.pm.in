@@ -79,6 +79,7 @@ my %config = (
     authorizationModule => "GridShibCA::Authorization",
     # Configuration stuff
     GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
+    JNLPTemplate => "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp",
     TokenKeyFile =>"\$(GridShibCAConfDir)/token-key",
     HTMLHeader =>"\$(GridShibCAConfDir)/header.html",
     HTMLFooter =>"\$(GridShibCAConfDir)/footer.html",
