@@ -403,7 +403,6 @@ if test ${MODE} = "build" ; then
 
    dnl Generate development utilities in dev-utils
    DEV_UTILS="\
-	dev-utils/tag-version.pl \
 	dev-utils/make-release.pl"
    AC_CONFIG_FILES([${DEV_UTILS}])
 
