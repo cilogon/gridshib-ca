@@ -84,7 +84,9 @@ execCmd($cmd);
 #
 # Make temporary directory and chdir() to it
 #
-my $working_dir = mkdtemp("gridshibca-make-release-XXXXXXXX");
+my $template = "gridshib-ca-make-release-XXXXXX";
+my $working_dir = File::Temp->tempdir($template);
+print "Working dir is $working_dir\n";
 chdir($working_dir) || die "Could not chdir($working_dir): $!";
 
 ######################################################################
