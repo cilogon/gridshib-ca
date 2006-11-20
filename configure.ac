@@ -444,8 +444,12 @@ dnl ------------------------------------------------------------
 dnl PERL arguments
 dnl I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
 dnl they get carried over into @INC and screw up Perl.
-PERL_ARGS="-T -w -I ${GRIDSHIB_CA_CONF_DIR}/perl"
+PERL_ARGS="-I ${GRIDSHIB_CA_CONF_DIR}/perl"
 AC_SUBST(PERL_ARGS)
+
+dnl PERL arguments for CGI-BIN scripts
+PERL_CGI_BIN_ARGS="-T -w ${PERL_ARGS}"
+AC_SUBST(PERL_CGI_BIN_ARGS)
 
 dnl ------------------------------------------------------------
 dnl Make utils/*.pl executable
