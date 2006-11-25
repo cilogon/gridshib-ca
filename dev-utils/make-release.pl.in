@@ -51,34 +51,99 @@
 use Cwd;
 use File::Copy;
 use File::Path;
+use File::Spec;
 use File::Temp;
+use Getopt::Std;
 
+# CVSROOT for exporting source
 my $cvsroot = ":pserver:anonymous\@cvs.globus.org:/home/globdev/CVS/globus-packages";
 
-#
-# Figure out version string
-#
-my $version = "@PACKAGE_VERSION_STRING@";
-
-if ($version !~ /[0-9]+\.[0-9]+\.[0-9]+/)
-{
-  print "Provided version string ($version) is not in legal format. E.g. \"4.5.3\"\n";
-  exit(1);
-}
-
-$version =~ s/\./_/g;
-$version = "v" . $version;
-
-# Save current working directory for later
-my $cwd = getcwd();
+my $packageVersion = "@PACKAGE_VERSION_STRING@";
 
 ######################################################################
 #
-# Tag CVS head
+# Parse commandline options
 #
 
-my $cmd = "@CVS@ rtag -F $version gridshib/gridshib-ca";
-execCmd($cmd);
+sub HELP_MESSAGE
+{
+    print <<"EOF";
+Usage $0: [<options>]
+
+Options are:
+   -d <dir>      Destination directory for tarball (default is current dir)
+   -F            Force tag (for use with -t)
+   -h            Print usage and exit
+   -t            Tag current CVS head
+   -v            Print version and exit
+   -V <version>  Use <version> instead of $packageVersion
+
+EOF
+;
+}
+
+sub VERSION_MESSAGE
+{
+    print "$0 GridShib-CA $packageVersion\n";
+}
+
+my %options;
+getopts('d:FhtvV:', \%options);
+
+if (defined($options{h}))
+{
+    HELP_MESSAGE();
+    exit(0);
+}
+
+if ($options{v})
+{
+    VERSION_MESSAGE();
+    exit(0);
+}
+
+my $cvstag = $options{V} || $packageVersion;
+
+if ($cvstag !~ /^[0-9]+\.[0-9]+\.[0-9]+(-\w+)?/)
+{
+  print "Provided version string ($cvstag) is not in legal format. E.g. \"4.5.3\"\n";
+  exit(1);
+}
+
+$cvstag =~ s/\./_/g;
+$cvstag = "v" . $cvstag;
+
+######################################################################
+#
+# Get target directory for tarball
+#
+
+my $targetDir = $options{d} || getcwd();
+
+if (! -d $targetDir )
+{
+    print "Target directory $targetDir is not a directory.\n";
+    exit(1);
+}
+
+if (! -w $targetDir )
+{
+    print "Target directory $targetDir is not writable.\n";
+    exit(1);
+}
+
+######################################################################
+#
+# Tag CVS head, if so requested
+#
+
+if ($options{t})
+{
+    print "Tagging CVS head with $cvstag\n";
+    my $cmd = sprintf("@CVS@ rtag %s $cvstag gridshib/gridshib-ca",
+		      ($options{"F"} ? "-F" : ""));
+    execCmd($cmd);
+}
 
 ######################################################################
 #
@@ -93,7 +158,7 @@ chdir($working_dir) || die "Could not chdir($working_dir): $!";
 #
 # Export code from CVS ane make distribution
 #
-$cmd = "@CVS@ -d$cvsroot export -r $version -d gridshib-ca gridshib/gridshib-ca";
+$cmd = "@CVS@ -d$cvsroot export -r $cvstag -d gridshib-ca gridshib/gridshib-ca";
 execCmd($cmd);
 
 chdir("gridshib-ca") || die "Could not chdir(gridshib-ca): $!";
@@ -113,11 +178,11 @@ my $tarball = "@DIST_TARBALL_NAME@";
 #
 # Copy tarball back to original current directory
 #
-copy($tarball, $cwd) || die "Could not copy $tarball to $cwd: $!";
+copy($tarball, $targetDir) || die "Could not copy $tarball to $targetDir: $!";
 
-chdir($cwd) || die "Could not return to original directory ($cwd): $!";
+my $fullPath = File::Spec->catfile($targetDir, $tarball);
 
-$cmd = "ls -l $tarball";
+$cmd = "ls -l $fullPath";
 execCmd($cmd);
 
 ######################################################################
