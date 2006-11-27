@@ -106,6 +106,13 @@ my %config = (
     SyslogFacility =>"@SYSLOG_FACILITY@",
     # Registry parameters
     CertRegistryDir => "\$(GridShibCAConfDir)/certs/",
+    # myVocsDBCertRegistry parameters
+    myVocsDBName => "sympa",
+    myVocsDBTable => "GridShib_Name_Mapping",
+    myVocsDBHostname => "localhost",
+    myVocsDBPort => "9999",
+    myVocsDBUsername => "dummy",
+    myVocsDBPassword => "dummy",
     # Authorization parameters
     AuthorizedIdpsFile => "\$(GridShibCAConfDir)/authorizedIdps.conf",
     AuthorizedPortalsFile => "\$(GridShibCAConfDir)/authorizedPortals.conf",
@@ -141,6 +148,8 @@ sub new
 
     # Maximum recusion depth for configuration variable replacement
     $self->{recursionLimit} = 10;
+    # Error string
+    $self->{error} = "";
     bless($self, $class);
     if (!$initialized)
     {
@@ -323,7 +332,13 @@ in F<gridshib-ca.conf>.
 sub getLogger
 {
     my $self = shift;
-    return $self->_newInstance($config{"loggerModule"}, @_);
+    my $logger = $self->_newInstance($config{"loggerModule"}, @_);
+    if (!defined($logger))
+    {
+	$self->_error("Failed to load loggerModule:" . $config{"loggerModule"});
+	exit(1);
+    }
+    return $logger;
 }
 
 
@@ -340,7 +355,13 @@ in F<gridshib-ca.conf>.
 sub getCA
 {
     my $self = shift;
-    return $self->_newInstance($config{"caModule"}, @_);
+    my $ca = $self->_newInstance($config{"caModule"}, @_);
+    if (!defined($ca))
+    {
+	$self->_error("Failed to load caModule:" . $config{"caModule"});
+	exit(1);
+    }
+    return $ca;
 }
 
 
@@ -358,7 +379,13 @@ in F<gridshib-ca.conf>.
 sub getCGI
 {
     my $self = shift;
-    return $self->_newInstance($config{"cgiModule"}, @_);
+    my $cgi = $self->_newInstance($config{"cgiModule"}, @_);
+    if (!defined($cgi))
+    {
+	$self->_error("Failed to load cgiModule:" . $config{"cgiModule"});
+	exit(1);
+    }
+    return $cgi;
 }
 
 
@@ -376,7 +403,15 @@ in F<gridshib-ca.conf>.
 sub getTokenGenerator
 {
     my $self = shift;
-    return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
+    my $tokenGenerator = $self->_newInstance($config{"tokenGeneratorModule"},
+					     @_);
+    if (!defined($tokenGenerator))
+    {
+	$self->_error("Failed to load tokenGeneratorModule:" .
+		      $config{"tokenGeneratorModule"});
+	exit(1);
+    }
+    return $tokenGenerator;
 }
 
 
@@ -393,7 +428,14 @@ in F<gridshib-ca.conf>.
 sub getCommand
 {
     my $self = shift;
-    return $self->_newInstance($config{"commandModule"}, @_);
+    my $command = $self->_newInstance($config{"commandModule"}, @_);
+    if (!defined($command))
+    {
+	$self->_error("Failed to load commandModule:" .
+		      $config{"commandModule"});
+	exit(1);
+    }
+    return $command;
 }
 
 
@@ -411,7 +453,14 @@ in F<gridshib-ca.conf>.
 sub getCertRegistry
 {
     my $self = shift;
-    return $self->_newInstance($config{"certRegistryModule"}, @_);
+    my $certRegistry = $self->_newInstance($config{"certRegistryModule"}, @_);
+    if (!defined($certRegistry))
+    {
+	$self->_error("Failed to load certRegistryModule:" .
+		      $config{"certRegistryModule"});
+	exit(1);
+    }
+    return $certRegistry;
 }
 
 
@@ -429,7 +478,14 @@ in F<gridshib-ca.conf>.
 sub getAuthorization
 {
     my $self = shift;
-    return $self->_newInstance($config{"authorizationModule"}, @_);
+    my $authorization = $self->_newInstance($config{"authorizationModule"}, @_);
+    if (!defined($authorization))
+    {
+	$self->_error("Failed to load authorizationModule:" .
+		      $config{"authorizationModule"});
+	exit(1);
+    }
+    return $authorization;
 }
 
 =back
@@ -569,8 +625,9 @@ sub _error
     my $format = shift;
     
     chomp($format);
-    my $string = sprintf($format . "\n", @_);
-    $self->{error} = $string;
+    my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
+			 @_);
+    $self->{error} .= $string;
 
     # Don't use our Logger module as that could create a deadlock as the
     # Logger class tries to load its configuration using this module

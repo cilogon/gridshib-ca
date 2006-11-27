@@ -1,0 +1,322 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::myVocsCertRegistry.pm
+
+Implementation of L<GridShibCA::CertRegistry|GridShibCA::CertRegistry>
+which registers certificate with myVocs using a back-channel database
+connection to myVocs. Provides functionality of
+L<GridShibCA::CertRegistry|GridShibCA::CertRegistry> in addition.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item myVocsDBName
+
+Name of the myVocs database.
+
+=item myVocsDBTable
+
+Nma of the myVocs database table.
+
+=item myVocsDBHostname
+
+Host on which the database is running.
+
+=item myVocsDBPort
+
+Port on which the database is running.
+
+=item myVocsDBUsername
+
+Username to authenticate to the database.
+
+=item myVocsDBPassword
+
+Password to use to authenticate to the database.
+
+=back
+
+=cut
+
+package GridShibCA::myVocsDBCertRegistry;
+
+use GridShibCA::CertRegistry;
+@ISA = ("GridShibCA::CertRegistry");
+
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+my $logger = $config->getLogger();
+
+use DBI;
+use POSIX;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new myVocsDBCertRegistry object.
+
+B<Arguments:> None
+
+B<Returns:> CertRegistry instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->{DBName} = $config->getParam("myVocsDBName");
+    $self->{DBTable} = $config->getParam("myVocsDBTable");
+    $self->{DBHostname} = $config->getParam("myVocsDBHostname");
+    $self->{DBPort} = $config->getParam("myVocsDBPort");
+    $self->{DBUsername} = $config->getParam("myVocsDBUsername");
+    $self->{DBPassword} = $config->getParam("myVocsDBPassword");
+    bless($self, $class);
+    return $self;
+}
+
+=item registerCert()
+
+Record an issued certificate (both locally and with myVocs).
+
+B<Arguments:>
+
+I<$userId> - User identity as a string.
+
+I<$idp> - IDP for user as a string.
+
+I<$dn> - DN issued to user as a string.
+
+I<$certificate> - PEM-encoded certificate as a string.
+
+B<Returns:> One on success, zero on error
+
+=cut
+
+sub registerCert()
+{
+    my $self = shift;
+
+    $self->SUPER::registerCert(@_);
+
+    my $userId = shift;
+    my $idp = shift;
+    my $dn = shift;
+    my $certificate = shift;
+    my $lifetime = shift;
+
+    my $DBname = sprintf("DBI:mysql:database=%s;host=%s;port=%d",
+			 $self->{DBName},
+			 $self->{DBHostname},
+			 $self->{DBPort});
+
+    $logger->debug("myVocs database name: $DBname");
+
+    my $DBconnection = DBI->connect($DBname,
+				    $self->{DBUsername},
+				    $self->{DBPassword},
+				    {AutoCommit => 0});
+
+    if (!defined($DBconnection))
+    {
+	$self->_error("Connection to myVocs database (%s) failed: %s",
+	    $DBname,
+	    DBI->errstr);
+	return 0;
+    }
+
+    # Get strings for start and end time of certificate formatted
+    # as myVocs expects them ("2005-03-08 19:14:32")
+    my $now = time();
+    my $expires = $now + $lifetime;
+    my $startTime = $self->_myVocsTimeString($now);
+    my $endTime = $self->_myVocsTimeString($expires);
+
+    # Canonicalize DN for myVocs mapper. This entails making it lowercase
+    # and removing whitespace between components
+    $dn = lc($dn);
+    $dn =~ s/,(\s+)/,/g;
+
+    # First remove entry in case it already exists
+    my $cmd = sprintf("DELETE FROM %s WHERE DistinguishedName = '%s';",
+		      $self->{DBTable},
+		      $dn);
+    if (!$self->_sendDBCommand($DBconnection, $cmd))
+    {
+	$DBconnection->rollback();
+	$DBconnection->disconnect();
+	return 0;
+    }
+
+    # Now insert
+    $cmd = sprintf("INSERT INTO %s VALUES('%s','%s','%s','%s',%s)",
+		   $self->{DBTable},
+		   $dn,
+		   $userId,
+		   $startTime,
+		   $endTime,
+		   # No certificate for now
+		   "NULL");
+    if (!$self->_sendDBCommand($DBconnection, $cmd))
+    {
+	$DBconnection->rollback();
+	$DBconnection->disconnect();
+	return 0;
+    }
+    $DBconnection->commit();
+    $DBconnection->disconnect();
+
+    # Success
+    return 1;
+}
+
+=back
+
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _sendDBCommand
+
+Prepare and send command to database.
+On error it calls calling _error()
+
+B<Arguments:>
+
+I<$DBconnection> - Database connection handle from DBI->connect()
+
+I<$cmdStr> - command string
+
+B<Returns:> 1 on success. 0 on error
+
+=cut
+
+sub _sendDBCommand
+{
+    my $self = shift;
+    my $DBconnection = shift;
+    my $cmdStr = shift;
+
+    $logger->debug("Sending myVocs DB command: " . $cmdStr);
+
+    my $cmd = $DBconnection->prepare($cmdStr);
+
+    if (!$cmd)
+    {
+	$self->_error("Prepare(%s) call to myVocs DB failed: %s",
+		      $cmdStr,
+		      $DBconnection->errstr);
+	return 0;
+    }
+
+    if (!$cmd->execute())
+    {
+	$self->_error("Execute(%s) call to myVocs DB failed: %s",
+		      $cmdStr,
+		      $DBconnection->errstr);
+	return 0;
+    }
+
+    return 1;
+}
+
+=item _myVocsTimeString
+
+Convert time in seconds to the string needed by the myVocs database
+(e.g. "2005-03-08 19:14:32")
+
+B<Arguments:> Time in seconds
+
+B<Returns:> Time string as needed by myVocs
+
+=cut
+
+sub _myVocsTimeString
+{
+    my $self = shift;
+    my $seconds = shift;
+
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday) = gmtime($seconds);
+
+    # Convert to myVocs DB format, e.g. "2005-03-08 19:14:32"
+    return POSIX::strftime("%F %T",
+			   $sec,
+			   $min,
+			   $hour,
+			   $mday,
+			   $mon,
+			   $year,
+			   $wday,
+			   $yday);
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

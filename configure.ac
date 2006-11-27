@@ -152,6 +152,7 @@ PERL_MODULES="\
 	perl/GridShibCA/Config.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/MyProxyCA.pm \
+	perl/GridShibCA/myVocsDBCertRegistry.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
 	perl/GridShibCA/TokenGenerator.pm"
 AC_SUBST(PERL_MODULES)

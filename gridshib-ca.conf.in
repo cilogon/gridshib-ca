@@ -158,6 +158,27 @@ CertRegistryDir = $(GridShibCAConfDir)/certs/
 
 ######################################################################
 #
+# myVocs DB Certificate Registry Parameters (if in use)
+#
+
+# Database name
+myVocsDBName = sympa
+
+# Table name
+myVocsDBTable = GridShib_Name_Mapping
+
+# Host on which database resides
+myVocsDBHostname = localhost
+
+# Port on which database is to be contacted
+myVocsDBPort = 9999
+
+# Username and password to use for database
+myVocsDBUsername = dummy
+myVocsDBPassword = dummy
+
+######################################################################
+#
 # Authorization configuration files
 #
 

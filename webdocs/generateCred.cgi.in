@@ -266,7 +266,11 @@ my $certRegistry = $config->getCertRegistry();
 
 if (defined($certRegistry))
 {
-    if (!$certRegistry->registerCert($user, $idp, $DN, $certificate))
+    if (!$certRegistry->registerCert($user,
+				     $idp,
+				     $DN,
+				     $certificate,
+				     $ca->getCredLifetime()))
     {
 	errorExit($HTTP_INTERNAL_ERROR,
 		  "Error registering certificate: %s",

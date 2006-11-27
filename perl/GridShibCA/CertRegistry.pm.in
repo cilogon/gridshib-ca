@@ -47,6 +47,8 @@ Interface for certificate registry, used to record issued certificates.
 This implementation records the last certificate issued for each user
 in the directory specified by the configuration parameter I<CertRegistryDir>
 
+Other implementations include: L<GridShibCA::myVocsDBCertRegistry|GridShibCA::myVocsDBCertRegistry>
+
 =head2 Configuration Parameters
 
 This class uses the following values from F<gridshib-ca.conf>:
@@ -105,6 +107,8 @@ I<$dn> - DN issued to user as a string.
 
 I<$certificate> - PEM-encoded certificate as a string.
 
+I<$lifetime> - Certificate lifetime in seconds
+
 B<Returns:> One on success, zero on error
 
 =cut
@@ -116,6 +120,7 @@ sub registerCert()
     my $idp = shift;
     my $dn = shift;
     my $certificate = shift;
+    my $lifetime = shift;
 
     my $registryDir = $config->getParam("CertRegistryDir");
 
@@ -148,6 +153,7 @@ IdP: $idp
 DN: $dn
 Time: $timeString
 Seconds: $timeSeconds
+Lifetime: $lifetime
 
 $certificate
 EOF

@@ -214,6 +214,7 @@ $(GRIDSHIB_CA_CONF_DIR):
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 
 install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
+	@echo "Installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
 		if test -f $(GRIDSHIB_CA_CONF_DIR)/$${f} ; then \
@@ -225,12 +226,14 @@ install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
+	@echo "Installing binaries to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 
 install-perl: $(PERL_MODULES) $(PERL_DIST_MODULES)
+	@echo "Installing perl modules to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(PERL_MODULES) $(PERL_DIST_MODULES) ; do \
 		echo "Installing $${file}" ;\
 		d=`dirname $${file}` ;\
@@ -243,6 +246,7 @@ $(GRIDSHIB_CA_HTML_DIR):
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 
 install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES) $(JARFILE)
+	@echo "Installing html to $(GRIDSHIB_CA_HTML_DIR)"
 	@for file in $(HTML_FILES) $(IMAGES) $(JARFILE) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
@@ -253,12 +257,14 @@ $(SHIB_PROTECTED_CGI_BIN_DIR):
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
 
 install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(CGI_BIN_SCRIPTS)
+	@echo "Installing cgi-bin scripts to $(SHIB_PROTECTED_CGI_BIN_DIR)"
 	@for file in $(CGI_BIN_SCRIPTS) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
 	done
 
 install-demos: $(CGI_DEMO_SCRIPTS)
+	@echo "Installing demo scripts to $(CGI_BIN_DIR)"
 	@for file in $(CGI_DEMO_SCRIPTS) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
@@ -476,6 +482,10 @@ DOC_FILES = @DOC_FILES@
 # Extra documentation files
 EXTRA_DOC_FILES = @EXTRA_DOC_FILES@
 
+# Directory name for installed documentation
+# Dont include release status on documentation directory
+DOC_INSTALL_DIR=@DOC_INSTALL_DIR@
+
 doc: perl-doc $(DOC_FILES)
 
 # Documentation files also depend on $(DOC_INCS)
@@ -542,7 +552,7 @@ $(PERL_DOC_DIR):
 doc-clean::
 	$(RM) -rf $(PERL_DOC_DIR)
 
-POD2HTML_ROOT=/docs/$(DIST_DIR)/perl
+POD2HTML_ROOT=/docs/$(DOC_INSTALL_DIR)/perl
 
 perl-module-doc: $(PERL_DOC_DIR) $(PERL_MODULES)
 	@$(INSTALL) -d -m 0755 $(PERL_DOC_DIR)/GridShibCA
@@ -621,9 +631,6 @@ aclocal:
 RSYNC=rsync -auvR 
 TEST_HOST=computer.ncsa.uiuc.edu
 
-# Dont include release status on documentation directory
-DOC_INSTALL_DIR=@DOC_INSTALL_DIR@
-
 rsync: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
 	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca
@@ -634,7 +641,7 @@ rsync-myproxy: $(DIST_FILES)
 
 rsync-myvocs: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/myvocs-gridshib-ca
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-myvocs
 
 install-doc: doc
 	@echo Rsyncing docs to gridshib.globus.org
