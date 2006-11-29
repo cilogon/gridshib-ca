@@ -3,7 +3,7 @@ dnl See Copyright statement below.
 dnl See file 'LICENSE' for license.
 
 AC_INIT(gridshib-ca, 0.3.0)
-PACKAGE_RELEASE_STATUS="alpha"
+PACKAGE_RELEASE_STATUS="alpha2-test"
 
 AC_REVISION($Id$)
 
@@ -244,7 +244,7 @@ AC_SUBST(MODE)
 
 default=gridshib-ca-${PACKAGE_VERSION}
 AC_ARG_WITH(gridshib-ca-dir-name,
-	AC_HELP_STRING([--with-grishib-ca-dir-name=<name>],
+	AC_HELP_STRING([--with-gridshib-ca-dir-name=<name>],
 		[Specifiy the name to use for install directories. (Default: gridshib-ca-<version>)]),
 	[GRIDSHIB_CA_DIR_NAME=$withval],
 	[GRIDSHIB_CA_DIR_NAME=$default])
@@ -253,7 +253,7 @@ AC_SUBST(GRIDSHIB_CA_DIR_NAME)
 AC_MSG_CHECKING([for path to GridShib CA configuration directory])
 default=/usr/local/${GRIDSHIB_CA_DIR_NAME}
 AC_ARG_WITH(gridshib-ca-conf-dir,
-	AC_HELP_STRING([--with-grishib-ca-conf-dir=<path>],
+	AC_HELP_STRING([--with-gridshib-ca-conf-dir=<path>],
 		[Specify the gridshib-ca configuration directory. This is where keys, certificates and other files for the GridShib CA are stored. (Default: /usr/local/<gridshib-ca-dir-name>)]),
 	[GRIDSHIB_CA_CONF_DIR=$withval],
 	[GRIDSHIB_CA_CONF_DIR=$default])
@@ -274,7 +274,7 @@ AC_MSG_CHECKING([for URL for Shibboleth-protected CGI-BIN directory])
 default=/cgi-bin/shib-protected/${GRIDSHIB_CA_DIR_NAME}
 AC_ARG_WITH(shib-protected-cgi-bin-url,
 	AC_HELP_STRING([--with-shib-protected-cgi-bin-url=<url>],
-		[Specify the Shibboleth-protected cgi-bin url. This is the relative URL, without hostname, where Shibboleth-protected CGI-BIN executables are installed. (Default: /cgi/bin/shib-protected/<gridshib-ca-dir-name>)]),
+		[Specify the Shibboleth-protected cgi-bin url. This is the relative URL, without hostname, where Shibboleth-protected CGI-BIN executables are installed. (Default: /cgi-bin/shib-protected/<gridshib-ca-dir-name>)]),
 	[SHIB_PROTECTED_CGI_BIN_URL=$withval],
 	[SHIB_PROTECTED_CGI_BIN_URL=$default])
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_URL)

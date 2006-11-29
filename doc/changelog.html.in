@@ -12,6 +12,11 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
+<li>Bugs fixed: 4877
+</ul>
+
+<b>Version 0.3.0-alpha:</b>
+<ul>
 <li>Added support for <a href="protal-delegation.html">delegation of
 		X509 credential to portal</a> (disabled by default).
 <li>Run-time <a href="install.html#conf">configuration of trusted Idps
