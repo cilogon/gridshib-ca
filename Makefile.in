@@ -648,6 +648,6 @@ install-doc: doc
 	@chmod -R ag+r $(DOC_FILES) $(EXTRA_DOC_FILES) $(PERL_DOC_DIR) 
 	@rsync -auvp $(DOC_FILES) $(EXTRA_DOC_FILES) $(PERL_DOC_DIR) welch@terra.mcs.anl.gov:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
 
-release: dist install-docs
+release: dist install-doc
 	@rsync -auv $(DIST_FILE) welch@terra.mcs.anl.gov:gridshib.globus.org/downloads/
 
