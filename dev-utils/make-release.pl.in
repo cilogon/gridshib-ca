@@ -169,6 +169,10 @@ execCmd($cmd);
 $cmd = "./configure --enable-build --with-bc-source-path=@BC_SOURCE@";
 execCmd($cmd);
 
+# Make sure we are only included needed BouncyCastle files
+$cmd = "@MAKE@ bc-clean";
+execCmd($cmd);
+
 $cmd = "@MAKE@ dist";
 execCmd($cmd);
 
