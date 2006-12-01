@@ -348,7 +348,7 @@ realclean::
 # Development mode
 #
 
-build-build: jar build-dist
+build-build: java-prebuild jar build-dist
 
 build-mode:
 	@if test $(MODE) != "build" ; then \
@@ -410,6 +410,11 @@ $(VERSION_JAVA): $(VERSION_BASE)
 	  echo "Creating Version.java" ;\
 	  $(CP) $^ $@ ;\
 	fi
+
+java-prebuild:: build-mode $(VERSION_JAVA)
+
+realclean::
+	$(RM) -f $(VERSION_JAVA)
 
 ######################################################################
 #
