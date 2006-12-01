@@ -242,6 +242,7 @@ AC_ARG_ENABLE(build,
 	[MODE=dist])
 AC_SUBST(MODE)
 
+AC_MSG_CHECKING([for name of various GridShib-CA directories])
 default=gridshib-ca-${PACKAGE_VERSION}
 AC_ARG_WITH(gridshib-ca-dir-name,
 	AC_HELP_STRING([--with-gridshib-ca-dir-name=<name>],
@@ -249,12 +250,19 @@ AC_ARG_WITH(gridshib-ca-dir-name,
 	[GRIDSHIB_CA_DIR_NAME=$withval],
 	[GRIDSHIB_CA_DIR_NAME=$default])
 AC_SUBST(GRIDSHIB_CA_DIR_NAME)
+AC_MSG_RESULT(${GRIDSHIB_CA_DIR_NAME})
+
+dnl Figure out prefix
+myprefix=${prefix}
+if test "x$myprefix" = xNONE ; then
+   myprefix=$ac_default_prefix
+fi
 
 AC_MSG_CHECKING([for path to GridShib CA configuration directory])
-default=/usr/local/${GRIDSHIB_CA_DIR_NAME}
+default=${myprefix}/${GRIDSHIB_CA_DIR_NAME}
 AC_ARG_WITH(gridshib-ca-conf-dir,
 	AC_HELP_STRING([--with-gridshib-ca-conf-dir=<path>],
-		[Specify the gridshib-ca configuration directory. This is where keys, certificates and other files for the GridShib CA are stored. (Default: /usr/local/<gridshib-ca-dir-name>)]),
+		[Specify the full path of the gridshib-ca configuration directory. This is where keys, certificates and other files for the GridShib CA are stored. (Default: <prefix>/<gridshib-ca-dir-name>)]),
 	[GRIDSHIB_CA_CONF_DIR=$withval],
 	[GRIDSHIB_CA_CONF_DIR=$default])
 AC_SUBST(GRIDSHIB_CA_CONF_DIR)

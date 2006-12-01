@@ -12,6 +12,8 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
+<li>configure.ac: --with-gridshib-ca-conf-dir uses ${prefix} instead 
+of static '/usr/local/'
 <li>Bugs fixed: 4877
 </ul>
 
