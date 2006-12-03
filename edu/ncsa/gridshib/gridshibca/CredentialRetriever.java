@@ -95,9 +95,18 @@ public class CredentialRetriever {
     // Credential lifetime to request (0 == default)
     int lifetime = 0;
 
+    // Use list of trusted CAs bundled with Jar when validating HTTPS
+    // connections?
+    boolean useBundledCAs = true;
+
     // SSLSocketFactory to use for my HTTPS connections
+    // null means to use default JWS installs
     SSLSocketFactory mySSLSocketFactory = null;
 
+    // A bogus DN to put in the certificate request. It will
+    // be overwritten by the GridShib-CA with the real user DN
+    String DN = "CN=Credential Retriever, O=GridShib-CA, C=US";
+            
 	public static void main(String[] args) {
 		CredentialRetriever app = new CredentialRetriever();
 		app.doit(args);
@@ -110,14 +119,13 @@ public class CredentialRetriever {
 		try {
             parseArguments(args);
 
-            // Create my SSLSocketFactory beforce JWS has a change to
-            // initialize things and install its own.
-            mySSLSocketFactory = getMySSLSocketFactory();
+            if (useBundledCAs)
+            {
+                // Create my SSLSocketFactory beforce JWS has a change to
+                // initialize things and install its own.
+                mySSLSocketFactory = getMySSLSocketFactory();
+            }
 
-            // A bogus DN to put in the certificate request. It will
-            // be overwritten by the GridShib-CA with the real user DN
-            String DN = "CN=Credential Retriever, O=GridShib-CA, C=US";
-            
             UMask umask = new UMask();
 
             try
@@ -343,6 +351,11 @@ public class CredentialRetriever {
                 }
                 debug("Trusted CA URL: " + trustURL.toString());
             }
+            else if (var.equals("useBundledCAs"))
+            {
+                useBundledCAs = Boolean.valueOf(value);
+                debug("useBundledCAs: " + useBundledCAs);
+            }
             else
             {
                 throw new IllegalArgumentException(
@@ -369,9 +382,15 @@ public class CredentialRetriever {
     private HttpsURLConnection openHttpsURL(URL url)
         throws IOException
     {
+        debug("Setting up connection to URL: " + url);
+
         HttpsURLConnection conn =
             (HttpsURLConnection) url.openConnection();
-        conn.setSSLSocketFactory(mySSLSocketFactory);
+        if (mySSLSocketFactory != null)
+        {
+            debug("Using my list of bundled CAs.");
+            conn.setSSLSocketFactory(mySSLSocketFactory);
+        }
         conn.setDoOutput(true);
         conn.setRequestProperty("Cookie", shibSession);
         return conn;
@@ -380,9 +399,9 @@ public class CredentialRetriever {
     private SSLSocketFactory getMySSLSocketFactory()
     {
         /*
-         * Get a socket factory for our use that trusts all the CAs we want it
-         * to trust.This function has to be called before Java Web Start has
-         * a change to initialize its own SSLSocketFactory.
+         * Get a socket factory for our use that trusts all the CAs that come
+         * bundled with this Jar. This function has to be called before Java
+         * Web Start has a change to initialize its own SSLSocketFactory.
          */
 
 		try

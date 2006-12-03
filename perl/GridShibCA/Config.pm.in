@@ -69,6 +69,7 @@ my %config = (
     TrustedCADirectory => "/etc/grid-security/certificates",
     debug => "false",
     clientDebug => "false",
+    useBundledCAs => "true",
     # Perl modules
     loggerModule => "GridShibCA::Logger",
     caModule => "GridShibCA::OpenSSLCA",

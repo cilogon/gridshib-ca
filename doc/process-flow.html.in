@@ -25,10 +25,15 @@
 	Start application. The JNLP file contains the following arguments
   for the CredentialRetrieve Java app:
 <ol>
-	<li>the URL for the generateCred.pl script
+	<li>the URL for the generateCred.pl script (step 6)
   <li>The user's Shibboleth Session cookie
   <li>An encrypted token so that CredentialRetriever can assert that
 		it was legitimately invoked.
+	<li>Whether or not the client should run in debug mode.
+	<li>The lifetime requested by the user for the credential.
+	<li>The URL from which the client can receive trusted CAs (step 10)
+  <li>Optionally a parameter telling the client not to use its bundled
+		CAs to validate its https connections (steps 2,3,6 and 10)
 </ol>
 <li>The web browser saves the jnlp file to disk and launches Java Web
 	Start, passing it the jnlp file.

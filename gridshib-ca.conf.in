@@ -27,6 +27,14 @@ debug = False
 # Set to "True" to enable debugging in the CredentialRetriever client
 clientDebug = False
 
+# The jar file includes a bundle of CA certificates (i.e. a
+# trustStore). Should the client use this bundle to validate the https
+# connection back to the GridShib-CA, or should it use the default JWS
+# trust store? The latter has the benefit that if the CA that signed
+# the web server certificate isn't recognized, the user will be
+# prompted if they want to trust the web site.
+useBundledCAs = True
+
 ######################################################################
 #
 # Perl Modules

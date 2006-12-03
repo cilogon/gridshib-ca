@@ -12,6 +12,8 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
+<li>Added 'useBundledCAs' option to gridshib-ca.conf to allow turning
+	off use of bundled CAs (Bug 4875).
 <li>configure.ac: --with-gridshib-ca-conf-dir uses ${prefix} instead 
 of static '/usr/local/'
 <li>Bugs fixed: 4877, 4878
