@@ -30,38 +30,97 @@ http://gridshib.globus.org/docs/@DOC_INSTALL_DIR@</a>
 </tr>
 <tr><td><p><p><p></td></tr>
 <tr>
-<td rowspan=2 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
-<td colspan=2>
-Prior to using the GridShib CA on a new system,
-please <a href="checkPrerequisites.html">make sure you have the
+<td bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
+<td>
+Prior to using the GridShib CA on a new client system,
+please <a href="checkPrerequisites.html">make sure you have the client
 system properly configured</a>. Failing to do so may cause you
 headaches as well as being insecure.
-<tr>
-<td>
+<p>
 The GridShib-CA will work for for any Institution with a Shibboleth
 server in InQueue that will release an identity to the
 GridShib-CA. You can find the list of institutions that are part of 
-InQueue <a href="http://inqueue.internet2.edu/who/">here</a>. If your
-institution doesn't have a Shibboleth Identity server in InQueue (or
-it doesn't release your identity to us), we suggest you register
-with <a href="http://www.openidp.org">OpenIdp</a>, which is easy and
-known to work with the GridShib-CA.
+InQueue <a href="http://inqueue.internet2.edu/who/">here</a>.
+<p>
+If your institution doesn't have a Shibboleth Identity
+provider <a href="http://inqueue.internet2.edu/who/">in InQueue</a>
+<!-- or
+<a href="http://www.incommonfederation.org/participants.cfm">in
+InCommon</a>
+--> (or it doesn't release your identity to us), we suggest you
+register with a public identity provider such
+as <a href="http://www.openidp.org">OpenIdp</a> or
+<a href="http://www.protectnetwork.com">ProtectNetwork</a>, both of
+which are easy to use and known to work with the GridShib-CA.
 </td>
-<td>
+<td align=center>
 <a href="http://www.openidp.org">
 <img src="openidp-logo-small.png" Align="middle"></a>
+<a href="http://www.protectnetwork.com">
+<img src="protectnetwork.png" Align="middle"></a>
 </td>
 </tr>
 <tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#0303C0" align=center><b>Go</b></td>
+<td bgcolor="#0303C0" rowspan=2 align=center><b>Go</b></td>
 <td colspan=2 align=center>
-<form action="@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
-<input type="submit" value="Shibboleth logon to generate Grid credentials">
+<table width=100%>
+<tr><td width=50% align=center>
+<!--
+<b>Login via a Federation</b>
+-->
+<br>
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
+<input type="hidden" name="target"
+			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+<input type="submit" value="Login via InQueue">
 </form>
-After clicking on this button you will be asked to select your home
-institution (or OpenIdp), you will then be redirected back to that
+<!--
+		The GridShib-CA isn't in InCommon yet
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
+<input type="hidden" name="target"
+			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+<input type="submit" value="Login via InCommon">
+</form>
+-->
+</td>
+<td align=center>
+<b>Login via a Public Identity Provider</b>
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
+<input type="hidden" name="target"
+			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+<input type="hidden" name="providerId"
+			 value="urn:mace:inqueue:openidp.org">
+<input type="submit" value="Login via OpenIdp">
+</form>
+
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
+<input type="hidden" name="target"
+			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+<input type="hidden" name="providerId"
+			 value="https://idp.protectnetwork.org/protectnetwork-id">
+<input type="submit" value="Login via ProtectNetwork">
+</form>
+</td><tr>
+<tr><td colspan=2 align=center>
+<!--
+		This assumes you have a myVocs session established in your
+		Shibboleth configuration.
+ -->
+<b>Login via Other Mechanisms</b>
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/myvocs">
+<input type="hidden" name="target"
+			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+<input type="submit" value="Login via myVocs">
+</form>
+</td></tr>
+</table>
+</td></tr>
+<tr><td colspan=2>
+After clicking on a link you will then be redirected back to that
 site to authenticate and then you will be returned to the GridShib CA.
+If you have any problems, please send email
+to <a href="mailto:gridshib-users@globus.org">gridshib-users@globus.org</a>
 </td></tr>
 </table>
 @HTML_FOOTER@
