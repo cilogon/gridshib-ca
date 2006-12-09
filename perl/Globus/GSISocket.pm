@@ -119,14 +119,19 @@ sub new
 	_debug("Setting trusted CA path to %s",
 	       $arg_hash->{SSL_ca_path});
     }
-    #
-    # A lot of errors will here will result in the following string:
-    # IO::Socket::INET configuration failederror:00000000:lib(0):func(0):reason(0) at ./myproxy-client.pl line 39. 
-    # For example, if the client certificate is expired! Argh.
     my $self = $class->SUPER::new(%$arg_hash);
     if (!defined($self))
     {
-	# Error already set
+	$ERRSTR = IO::Socket::SSL::errstr();
+	if ($ERRSTR =~ /error:00000000:lib\(0\):func\(0\):reason\(0\)/)
+	{
+	    # Unfortunately this error string can mean lots of things
+	    # like "connection refused" and "client certificate expired"
+	    # so we can't return a decent error message.
+	    $ERRSTR = sprintf("Error connecting to %s:%s",
+			      $arg_hash->{PeerHost},
+			      $arg_hash->{PeerPort});
+	}
 	return undef;
     }
     ${*$self}{errstr} = undef;
@@ -359,8 +364,7 @@ sub _error
 {
     my $self = shift;
     my $format = shift;
-    my $message = $self->SUPER::errstr() || "";
-    $message .= sprintf($format, @_);
+    my $message .= sprintf($format, @_);
     ${*$self}{errstr} = $message;
 }
 
@@ -401,7 +405,7 @@ B<Returns:> Error as string, undef if no error set.
 sub errstr
 {
     my $self = shift;
-    if (defined($self))
+    if (defined($self) && defined(${*$self}{errstr}))
     {
 	return ${*$self}{errstr};
     }
