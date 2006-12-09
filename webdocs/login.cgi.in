@@ -54,8 +54,6 @@ sub errorExit
     my $format = shift;
     my $string = sprintf($format, @_);
 
-    $logger->err($string);
-
     print <<"EOF";
 Content-type: text/html
 
@@ -69,6 +67,15 @@ $string
 </html>
 EOF
 ;
+
+    my $referer = $cgi-referer();
+    if (defined($referer))
+    {
+	$string .= sprintf(" (referer=%s)", $referer);
+    }
+
+    $logger->err($string);
+
     exit(1);
 }
 
