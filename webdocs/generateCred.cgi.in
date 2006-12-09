@@ -80,7 +80,6 @@ sub errorExit
 	-type=>"text/plain");
 
     print "ERROR: $string\n";
-    print STDERR "ERROR: $string\n";
 
     $logger->err("ERROR: %s", $string);
 
