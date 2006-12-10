@@ -125,7 +125,7 @@ if (defined($user))
     {
 	errorExit("Could not instantiate CA: " . $config->getError());
     }
-    $DN = $ca->getDN();
+    $DN = $ca->getOpenSSLDN();
     if (!defined($DN))
     {
 	errorExit("Could not get DN for user: " . $ca->getError());
@@ -155,6 +155,14 @@ if (defined($portalURL))
 }
 
 ######################################################################
+#
+# Make a html-friendly version of DN
+
+my $formattedDN = $DN;
+# Replace any spaces with non-breaking spaces
+$formattedDN =~ s/ /&nbsp;/g;
+
+######################################################################
 
 my $htmlHeader = $cgi->getHTMLHeader();
 my $htmlFooter = $cgi->getHTMLFooter();
@@ -182,7 +190,8 @@ print <<"EOF";
 <center>
 Welcome $user.
 <p>
-Your GridShib-CA identity will be "$DN"
+Your GridShib-CA X.509 identity is:<br>
+$formattedDN
 <p>
 <form action=\"$shibProtectedCGIBinURL/create-jnlp\">
 Credential Lifetime:
