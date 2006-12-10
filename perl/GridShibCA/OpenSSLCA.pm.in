@@ -144,12 +144,7 @@ sub signRequest
 
     my @args;
 
-    my $DN = $self->getDN();
-
-    # We need a DN in openssl format - e.g. /C=US/O=Foo/OU=Bar/CN=John Smith
-    # Split RFC 2253 style DN on comma, reverse and join with slashes
-    # Need to prepend a slash, as join doesn't do that for us.
-    my $opensslFormatDN = "/" . join("/", reverse(split(/, /, $DN)));
+    my $DN = $self->getOpenSSLDN();
 
     # Everything checks out. Go ahead and sign certificate request.
 
@@ -159,7 +154,7 @@ sub signRequest
 
     # Sign certificate request
     # Request is read from stdin and certificate output to stdout
-    push(@args, "-subj", $opensslFormatDN);
+    push(@args, "-subj", $DN);
     push(@args, "-lifetime", $self->{lifetime});
     push(@args, "-CA", $self->{cert});
     push(@args, "-CAkey", $self->{key});
