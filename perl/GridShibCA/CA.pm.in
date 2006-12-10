@@ -92,7 +92,7 @@ sub new
 
 =item getDN()
 
-Return the DN for the user.
+Return the DN for the user in RFC 2253 format.
 
 B<Arguments:> None
 
@@ -108,6 +108,29 @@ sub getDN
 
     return $DN;
 }
+
+=item getOpenSSLDN()
+
+Return the DN for the user in OpenSSL format (e.g.
+/C=US/O=Example/CN=John Smith).
+
+B<Arguments:> None
+
+B<Returns:> DN as string, or undef on error
+
+=cut
+
+sub getOpenSSLDN
+{
+    my $self = shift;
+
+    my $rfc2253DN = $self->getDN();
+
+    my $DN = "/" . join("/", reverse(split(/, */, $rfc2253DN)));
+
+    return $DN;
+}
+
 
 =item signRequest()
 
