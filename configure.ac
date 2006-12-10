@@ -335,14 +335,26 @@ AC_ARG_WITH(www-user,
 AC_MSG_RESULT(${WWW_USER})
 AC_SUBST(WWW_USER)
 
-AC_MSG_CHECKING([for relative DN of generated certificates])
-AC_ARG_WITH(relative-dn,
-	AC_HELP_STRING([--with-relative-dn],
-		[Provide the relative DN for generated certificates. (Default: OU=TEST OU, O=TEST ORG, C=US)]),
-	[RELATIVE_DN=$withval],
-	[RELATIVE_DN="OU=TEST OU, O=TEST ORG, C=US"])
+dnl Figure out our base DN
+BASE_DN=""
+hostnameComponents=`hostname | sed -e "s/\./ /g"`
+for component in $hostnameComponents ; do
+    test -n "${BASE_DN}" && BASE_DN="${BASE_DN},"
+    BASE_DN="${BASE_DN}DC=${component}"
+done
+
+dnl Check and make sure we have a valid Relative DN
+if test "X${BASE_DN}" = "X"; then
+   AC_MSG_ERROR([Relative DN string is empty ('hostname' returned empty string?)])
+fi
+
+dnl Relative DN for certificates issued to users
+RELATIVE_DN="O=Shibboleth User,${BASE_DN}"
 AC_SUBST(RELATIVE_DN)
-AC_MSG_RESULT(${RELATIVE_DN})
+
+dnl DN for the default CA create-openssl-ca.pl will create
+CA_DN="CN=GridShib CA,O=Certificate Authority,${BASE_DN}"
+AC_SUBST(CA_DN)
 
 dnl ------------------------------------------------------------
 dnl CGI-BIN demo scripts.
