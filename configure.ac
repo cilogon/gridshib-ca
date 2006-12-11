@@ -53,6 +53,12 @@ done
 ])dnl
 
 dnl ------------------------------------------------------------
+dnl AC_CLEAN_PATH(PATH)
+dnl Clean up a path, removing duplicate /'s
+AC_DEFUN([AC_CLEAN_PATH],
+[$1=`echo ${$1} | sed -e "s/\/\/*/\//g"`])dnl
+
+dnl ------------------------------------------------------------
 dnl Different groups of files
 
 dnl Extra files that are distributed
@@ -265,6 +271,7 @@ AC_ARG_WITH(gridshib-ca-conf-dir,
 		[Specify the full path of the gridshib-ca configuration directory. This is where keys, certificates and other files for the GridShib CA are stored. (Default: <prefix>/<gridshib-ca-dir-name>)]),
 	[GRIDSHIB_CA_CONF_DIR=$withval],
 	[GRIDSHIB_CA_CONF_DIR=$default])
+AC_CLEAN_PATH(GRIDSHIB_CA_CONF_DIR)
 AC_SUBST(GRIDSHIB_CA_CONF_DIR)
 AC_MSG_RESULT(${GRIDSHIB_CA_CONF_DIR})
 
@@ -275,6 +282,7 @@ AC_ARG_WITH(www-dir,
 		[Specify the base www directory. This is directory under which the Apache HTTPD has the html/ and cgi-bin/ directories. (Default: /var/www/)]),
 	[WWW_DIR=$withval],
 	[WWW_DIR=$default])
+AC_CLEAN_PATH(WWW_DIR)
 AC_SUBST(WWW_DIR)
 AC_MSG_RESULT(${WWW_DIR})
 
@@ -295,6 +303,7 @@ AC_ARG_WITH(shib-protected-cgi-bin-dir,
 		[Specify the Shibboleth-protected cgi-bin directory. This is the path that corresponds the the shib-protected-cgi-bin url. (Default: <www-dir>/<gridshib-ca-cgi-bin-url>)]),
 	[SHIB_PROTECTED_CGI_BIN_DIR=$withval],
 	[SHIB_PROTECTED_CGI_BIN_DIR=$default])
+AC_CLEAN_PATH(SHIB_PROTECTED_CGI_BIN_DIR)
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_DIR)
 AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_DIR})
 
@@ -314,6 +323,7 @@ AC_ARG_WITH(gridshib-ca-html-dir,
 		[Specify the direcotry for the gridshib-ca HTML corresponding to the gridshib-ca-url. Default: <www-dir>/html/<gridshib-ca-dir-name>/]),
 	[GRIDSHIB_CA_HTML_DIR=$withval],
 	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_DIR_NAME}/])
+AC_CLEAN_PATH(GRIDSHIB_CA_HTML_DIR)
 AC_SUBST(GRIDSHIB_CA_HTML_DIR)
 AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
 
@@ -379,6 +389,7 @@ if test ${ENABLE_DEMOS} = "true" ; then
 		[Specify the (unprotected) cgi-bin directory. (Default: <www-dir>/cgi-bin/)]),
 	[CGI_BIN_DIR=$withval],
 	[CGI_BIN_DIR=$default])
+   AC_CLEAN_PATH(CGI_BIN_DIR)
    AC_SUBST(CGI_BIN_DIR)
    AC_MSG_RESULT(${CGI_BIN_DIR})
 
@@ -466,6 +477,7 @@ dnl ------------------------------------------------------------
 dnl Installed path of the configuration file
 
 GRIDSHIB_CA_CONFIG_FILE=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca.conf
+AC_CLEAN_PATH(GRIDSHIB_CA_CONFIG_FILE)
 AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)
 
 dnl ------------------------------------------------------------
