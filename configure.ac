@@ -365,6 +365,7 @@ AC_ARG_ENABLE(demos,
 		[Build demos. (Default: Disabled)]),
 	[ENABLE_DEMOS=true],
 	[ENABLE_DEMOS=false])
+AC_SUBST(ENABLE_DEMOS)
 
 if test ${ENABLE_DEMOS} = "true" ; then
    CGI_DEMO_SCRIPTS="\
@@ -384,8 +385,14 @@ if test ${ENABLE_DEMOS} = "true" ; then
    AC_PROG_PERL_MODULES([Crypt::OpenSSL::PKCS10])
 
    AC_GLOBUS_LOCATION()
+
+   if test "X${GLOBUS_LOCATION}" = "X" ; then
+      AC_MSG_ERROR([Could not find GLOBUS_LOCATION needed for demos. Please specify using --with-globus-location])
+   fi
 fi
 AC_SUBST(CGI_DEMO_SCRIPTS)
+AC_SRC_FILES(CGI_DEMO_SCRIPTS, CGI_DEMO_SRCS)
+AC_SUBST(CGI_DEMO_SRCS)
 
 dnl ------------------------------------------------------------
 dnl syslog parameters

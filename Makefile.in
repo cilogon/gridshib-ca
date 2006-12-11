@@ -51,6 +51,9 @@ prefix = @prefix@
 # Mode: "build" if build is enabled; "dist" otherwise
 MODE=@MODE@
 
+# Enable demos, "true" or "false"
+ENABLE_DEMOS=@ENABLE_DEMOS@
+
 ######################################################################
 #
 # Groups of files
@@ -73,6 +76,7 @@ UTIL_SRCS = @UTIL_SRCS@
 PERL_MODULE_SRCS = @PERL_MODULE_SRCS@
 DOC_SRCS = @DOC_SRCS@
 OPENSSL_CA_SRCS = @OPENSSL_CA_SRCS@
+CGI_DEMO_SRCS = @CGI_DEMO_SRCS@
 
 # Groups of files
 CONF_FILES=@CONF_FILES@
@@ -96,7 +100,8 @@ DIST_FILES=\
 	$(UTIL_SRCS) \
 	$(PERL_MODULES_SRCS) \
 	$(DOC_SRCS) \
-	$(OPENSSL_CA_SRCS)
+	$(OPENSSL_CA_SRCS) \
+	$(CGI_DEMO_SRCS)
 
 # All files to be build by default
 BUILD_ALL =\
@@ -204,7 +209,8 @@ INSTALL_ALL=install-conf \
 	install-perl \
 	install-html \
 	install-cgi \
-	install-token-key
+	install-token-key \
+	install-demos
 
 install: $(INSTALL_ALL)
 	@echo "Installation done."
@@ -264,11 +270,13 @@ install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(CGI_BIN_SCRIPTS)
 	done
 
 install-demos: $(CGI_DEMO_SCRIPTS)
-	@echo "Installing demo scripts to $(CGI_BIN_DIR)"
-	@for file in $(CGI_DEMO_SCRIPTS) ; do \
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
-	done
+	@if test $(ENABLE_DEMOS) = "true"; then \
+		echo "Installing demo scripts to $(CGI_BIN_DIR)" ;\
+		for file in $(CGI_DEMO_SCRIPTS) ; do \
+			echo "Installing $${file}" ;\
+			$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
+		done ;\
+	fi
 
 ######################################################################
 #
