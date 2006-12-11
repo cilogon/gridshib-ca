@@ -12,6 +12,7 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
+<li>Use "DC" components for relative DN (Bug 4887).
 <li>Added 'useBundledCAs' option to gridshib-ca.conf to allow turning
 	off use of bundled CAs (Bug 4875).
 <li>configure.ac: --with-gridshib-ca-conf-dir uses ${prefix} instead 
