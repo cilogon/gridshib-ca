@@ -98,7 +98,7 @@ which are easy to use and known to work with the GridShib-CA.
 <input type="hidden" name="target"
 			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
 <input type="hidden" name="providerId"
-			 value="https://idp.protectnetwork.org/protectnetwork-id">
+			 value="https://idp.protectnetwork.org/protectnetwork-idp">
 <input type="submit" value="Login via ProtectNetwork">
 </form>
 </td><tr>
