@@ -81,7 +81,7 @@ sub errorExit
 
     print "ERROR: $string\n";
 
-    my $referer = $cgi-referer();
+    my $referer = $cgi->referer();
     if (defined($referer))
     {
 	$string .= sprintf(" (referer=%s)", $referer);
