@@ -209,8 +209,7 @@ sub acceptDelegation
 	my $cert = $self->readDERCertificate();
 	if (!defined($cert))
 	{
-	    $self->_error("Error reading certificate #%d",
-			  ($count + 1));
+	    # $self->_error() already called.
 	    return undef;
 	}
 	$cred->addDERCert($cert);
