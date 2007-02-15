@@ -90,7 +90,7 @@ which are easy to use and known to work with the GridShib-CA.
 <input type="hidden" name="target"
 			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
 <input type="hidden" name="providerId"
-			 value="urn:mace:inqueue:openidp.org">
+			 value="urn:mace:inqueue:shib13.openidp.org">
 <input type="submit" value="Login via OpenIdp">
 </form>
 
