@@ -186,6 +186,7 @@ DOC_FILES="\
 	doc/index.html \
 	doc/license.html \
         doc/install.html \
+	doc/https-cas.html \
 	doc/changelog.html \
 	doc/process-flow.html \
 	doc/modules.html \
