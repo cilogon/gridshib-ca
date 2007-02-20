@@ -144,6 +144,8 @@ print "Creating GridShib CA\n";
 print " Keyfile is $keyFile\n";
 print " Certificate is $certFile\n";
 print " DN for CA is $subject\n";
+print "\n";
+print "Generated keys. This may take a minute...\n";
 
 my @args = ();
 push(@args, "req");
