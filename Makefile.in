@@ -166,7 +166,7 @@ clean::
 
 realclean:: clean
 
-build-dist: subdirs $(BUILD_ALL)
+build-dist: subdirs $(BUILD_ALL) chmod-utils
 	@echo Build complete. Run \"make install\" to install.
 
 ######################################################################
@@ -188,6 +188,14 @@ clean::
 		echo "Running 'make clean' in $${subdir}:" ; \
 		(cd $${subdir}; make clean) ; \
 	done
+
+######################################################################
+#
+# Make utilities executable
+#
+
+chmod-utils: $(UTILS)
+	chmod 755 $(UTILS)
 
 ######################################################################
 ######################################################################
