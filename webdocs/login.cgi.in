@@ -93,7 +93,7 @@ if (!defined($logger))
 
 ######################################################################
 
-my $cgi = $config->getCGI();
+$cgi = $config->getCGI();
 
 if (!defined($cgi))
 {
