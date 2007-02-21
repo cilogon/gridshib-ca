@@ -101,8 +101,11 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 # CA Parameters
 # Parameters related to certificate signing.
 
+# DN of the CA in RFC 2253 format
+CADN = @CA_DN@
+
 # Relative DN for issued certificates
-# Must be in RFC 2253 format. E.g. O=NCSA, C=US
+# Must be in RFC 2253 format: e.g. O=NCSA,C=US
 RelativeDN = @RELATIVE_DN@
 
 # Default credential lifetime in seconds (12 hours)

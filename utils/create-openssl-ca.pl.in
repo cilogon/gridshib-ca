@@ -76,6 +76,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
+my $ca = $config->getCA();
 
 my $openssl = $config->getParam("OpenSSL");
 my $confPath = $config->getParam("GridShibCAConfDir");
@@ -123,16 +124,11 @@ if ($options{l})
 
 ######################################################################
 
-#
-# Get our relative DN and convert from RFC2253 format to OpenSSL format
-# E.g. "DC=ncsa,DC=uiuc,DC=edu" -> "/DC=edu/DC=uiuc/DC=ncsa"
-#
-my $rfc2253RelativeDN = $config->getParam("RelativeDN");
-my $relativeDN = "/" . join("/", reverse(split(/,/, $rfc2253RelativeDN)));
+# Get our relative DN
+my $relativeDN = $ca->getRelativeOpenSSLDN();
 
-# Get our CA DN and convert from RFC2253 to OpenSSL format
-my $rfc2253subject = "@CA_DN@";
-my $subject = "/" . join("/", reverse(split(/,/, $rfc2253subject)));
+# Get our CA DN
+my $subject = $ca->getCAOpenSSLDN();
 
 ######################################################################
 
@@ -144,6 +140,7 @@ print "Creating GridShib CA\n";
 print " Keyfile is $keyFile\n";
 print " Certificate is $certFile\n";
 print " DN for CA is $subject\n";
+print " Relative DN is $relativeDN\n";
 print "\n";
 print "Generated keys. This may take a minute...\n";
 
@@ -258,7 +255,7 @@ $cmd = $config->getCommand("chown", @args);
 
 if (!$cmd->exec())
 {
-    print "Execution of $openssl failed: " . $cmd->getError();
+    print "Execution of chown failed: " . $cmd->getError();
     exit(1);
 }
 

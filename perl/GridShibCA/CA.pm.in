@@ -104,7 +104,9 @@ sub getDN
 {
     my $self = shift;
 
-    my $DN = "CN=" . $self->{username} . ", " . $self->{relativeDN};
+    my $CN = sprintf("CN=%s", $self->{username});
+    my $OU = sprintf("OU=%s", $self->{idp});
+    my $DN = sprintf("%s, %s, %s", $CN, $OU, $self->{relativeDN});
 
     return $DN;
 }
@@ -115,7 +117,7 @@ Return the DN for the user in OpenSSL format (e.g.
 /C=US/O=Example/CN=John Smith).
 
 B<Arguments:> None
-
+ 
 B<Returns:> DN as string, or undef on error
 
 =cut
@@ -126,11 +128,114 @@ sub getOpenSSLDN
 
     my $rfc2253DN = $self->getDN();
 
-    my $DN = "/" . join("/", reverse(split(/, */, $rfc2253DN)));
+    my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
 
     return $DN;
 }
 
+
+=item getProtectedOpenSSLDN()
+
+Return the DN for the user in OpenSSL format with any forward slahses
+protected so that it can be passed to OpenSSL. E.g.:
+
+/C=US/O=Example/OU=https:\/\/someurl.edu\/foo/CN=John Smith).
+
+B<Arguments:> None
+ 
+B<Returns:> DN as string, or undef on error
+
+=cut
+
+sub getProtectedOpenSSLDN
+{
+    my $self = shift;
+
+    my $rfc2253DN = $self->getDN();
+
+    # Protect any slashes in the DN with a backslash
+    $rfc2253DN =~ s|/|\\/|g;
+
+    my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
+
+    return $DN;
+}
+
+=item getCADN
+
+Return the DN of the CA.
+
+B<Arguments:> None
+
+B<Returns:> CA DN as string, undef on error
+
+=cut
+
+sub getCADN
+{
+    my $self = shift;
+
+    return $config->getParam("CADN");
+}
+
+
+=item getCAOpenSSLDN
+
+Return the CA DN in OpenSSL "oneline" format.
+
+B<Arguments:> None
+
+B<Returns:> CA DN as string, undef on error
+
+=cut
+
+sub getCAOpenSSLDN
+{
+    my $self = shift;
+
+    my $rfc2253DN = $self->getCADN();
+
+    return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
+}
+
+
+
+=item getRelativeDN
+
+Return the Relative DN in RFC 2253 format.
+
+B<Arguments:> None
+
+B<Returns:> Relative DN as string, undef on error
+
+=cut
+
+sub getRelativeDN
+{
+    my $self = shift;
+
+    return $config->getParam("RelativeDN");
+}
+
+
+=item getRelativeOpenSSLDN
+
+Return the Relative DN in OpenSSL "oneline" format.
+
+B<Arguments:> None
+
+B<Returns:> Relative DN as string, undef on error
+
+=cut
+
+sub getRelativeOpenSSLDN
+{
+    my $self = shift;
+
+    my $rfc2253DN = $self->getRelativeDN();
+
+    return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
+}
 
 =item signRequest()
 
@@ -144,6 +249,8 @@ B<Returns:> Certificate as string, or undef on error
 
 sub signRequest
 {
+    my $self = shift;
+
     $self->_error("signRequest() unimplemented");
     return undef;
 }
@@ -203,6 +310,33 @@ sub getError
 {
     my $self = shift;
     return $self->{error}
+}
+
+=item convertRFC2253DNToOpenSSL
+
+Convert a DN in RFC 2253 format to OpenSSL "oneline" format as used by
+the Globus Toolkit.
+
+B<Arguments:> DN string in RFC 2253 format
+
+B<Returns:> DN string in OpenSSL "oneline" format
+
+=cut
+sub convertRFC2253DNToOpenSSL
+{
+    my $self = shift;
+    my $rfc2253DN = shift;
+
+    if (!defined($rfc2253DN))
+    {
+	$self->_error("DN is undefined");
+	return undef;
+    }
+
+    
+    my $DN = "/" . join("/", reverse(split(/, */, $rfc2253DN)));
+
+    return $DN;
 }
 
 =back

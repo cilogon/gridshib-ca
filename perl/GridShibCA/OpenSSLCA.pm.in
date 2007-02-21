@@ -144,7 +144,7 @@ sub signRequest
 
     my @args;
 
-    my $DN = $self->getOpenSSLDN();
+    my $DN = $self->getProtectedOpenSSLDN();
 
     # Everything checks out. Go ahead and sign certificate request.
 
