@@ -652,17 +652,17 @@ aclocal:
 RSYNC=rsync -auvR 
 TEST_HOST=computer.ncsa.uiuc.edu
 
-rsync: $(DIST_FILES)
+rsync-test: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-test
+
+rsync-test2: $(DIST_FILES)
+	@echo Rsyncing to $(TEST_HOST)
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-test2
 
 rsync-myproxy: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
 	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-myproxy
-
-rsync-myvocs: $(DIST_FILES)
-	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-myvocs
 
 install-doc: doc
 	@echo Rsyncing docs to gridshib.globus.org
