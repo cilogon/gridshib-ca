@@ -133,7 +133,8 @@ AC_SUBST(CONF_SRCS)
 dnl Utilities
 UTILS="\
 	utils/create-openssl-ca.pl \
-	utils/check-config.pl"
+	utils/check-config.pl \
+	utils/issue-cert.pl"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 AC_SRC_FILES(UTILS, UTIL_SRCS)

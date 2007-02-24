@@ -1,0 +1,225 @@
+#!@PERL@ @PERL_ARGS@ -w
+######################################################################
+#
+# $Id$
+#
+# This script serves as a welcome mat for users. It should be Shibboleth
+# protected and it makes sure that REMOTE_USER is available before
+# providing a link to invoke the "create-jnlp" script.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+
+=head1 issue-cert.pl
+
+Issues a certificate from the GridShib CA from the commandline.
+Intended for testing.
+
+=head2 Usage
+
+-issue-cert.pl <userId> <Identity Provider id>
+
+=head2 Return Value
+
+Zero on success, outputing certificate and private key.
+
+One on error.
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+######################################################################
+
+use GridShibCA::Config;
+my $config = GridShibCA::Config->new();
+
+######################################################################
+#
+# Initialize Logging
+#
+
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this
+    die "Could not initialize Logger: " . $config->getError();
+}
+
+######################################################################
+#
+# Parse commandline options
+#
+
+use Getopt::Std;
+
+my $usage = <<"EOF";
+Usage: $0 <userId> <Identity Provider Id>
+
+Options are:
+ -h                  Print help
+EOF
+
+my %options;
+getopts('h', \%options);
+
+if ($options{h})
+{
+    print $usage;
+    exit(0);
+}
+
+my $userId = shift;
+my $idp = shift;
+
+if (!defined($userId) or !defined($idp))
+{
+    errorExit($usage);
+}
+
+######################################################################
+#
+# Instantiate CA
+#
+
+my $ca = $config->getCA($userId, $idp);
+
+if (!defined($ca))
+{
+    errorExit("Could not instantiate CA: ", $config->getError());
+}
+
+my $dn = $ca->getOpenSSLDN();
+if (!defined($dn))
+{
+    errorExit("Could not get DN for user: %s", $ca->getError());
+}
+
+######################################################################
+#
+# Check authorization
+#
+
+my $authorization = $config->getAuthorization();
+
+if (!$authorization->authorizeUser($userId, $idp))
+{
+    errorExit("Authorization failed: User %s (Idp %s): %s",
+	      $userId, $idp, $authorization->getError());
+}
+
+######################################################################
+#
+# Generate certificate request
+#
+
+use Crypt::OpenSSL::PKCS10;
+
+my $req = Crypt::OpenSSL::PKCS10->new();
+$req->set_subject("/C=US/O=Dummy/CN=Dummy");
+$req->sign();
+my $reqPEM = $req->get_pem_req();
+
+######################################################################
+#
+# And sign request
+#
+
+my $certificate = $ca->signRequest($reqPEM);
+
+if (!defined($certificate))
+{
+    errorExit("Failure signing request: %s", $ca->getError());
+}
+
+$logger->info("ISSUE: user=%s idp=%s remoteAddr=LOCAL DN=\"%s\" lifetime=%d",
+	      $userId, $idp, $dn, $ca->getCredLifetime());
+
+######################################################################
+#
+# Register certificate
+#
+
+my $certRegistry = $config->getCertRegistry();
+
+if (defined($certRegistry))
+{
+    if (!$certRegistry->registerCert($userId,
+				     $idp,
+				     $dn,
+				     $certificate,
+				     $ca->getCredLifetime()))
+    {
+	errorExit("Error registering certificate: %s",
+		  $certRegistry->getError());
+    }
+}
+
+######################################################################
+#
+# Success. Output certificate and private key.
+#
+
+print $certificate;
+print $req->get_pem_pk();
+exit(0);
+
+######################################################################
+#
+# Support functions.
+#
+
+sub errorExit
+{
+    my $format = shift;
+    # Make sure format ends with a single carriage return
+    chomp($format);
+    $format .= "\n";
+    printf(STDERR $format, @_);
+    exit(1)
+}
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
