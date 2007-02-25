@@ -51,6 +51,7 @@ Abstract interface to CA to sign certificates. This class isn't intended
 to be used itself, it just serves as a base for other classes.
 
 Current implementations include: L<GridShibCA::OpenSSLCA|GridShibCA::OpenSSLCA>
+and L<GridShibCA::MyProxyCA|GridShibCA::MyProxyCA>
 
 =cut
 
@@ -86,6 +87,7 @@ sub new
     $self->{lifetime} = $config->getParam("DefaultCredLifetime");
     $self->{relativeDN} = $config->getParam("RelativeDN");
     $self->{error} = undef;
+    $self->{logger} = $config->getLogger();
     bless($self, $class);
     return $self;
 }
@@ -367,6 +369,41 @@ sub _error
     my $self = shift;
     my $format = shift;
     $self->{error} = sprintf($format, @_);
+}
+
+
+=item _warn()
+
+Hande a warning message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _warn
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{logger}->err($format, @_);
+}
+
+=item _debug()
+
+Hande a debug message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _debug
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{logger}->debug($format, @_);
 }
 
 =back
