@@ -58,6 +58,13 @@ Other versions of the GridShib-CA:
 <li><a href="process-flow.html">GridShib-CA Process Flow</a>
 <p>
 <li><a href="portal-delegation.html">GridShib-CA Portal Delegation</a>
+<p>
+<li><a href="saml-issuer.html">Integrating the GridShib-CA with the
+		GridShib SAML Tools to include SAML attributes in the issued
+		certificates</a>
+<p>
+<li><a href="https-cas.html">Adding extra Certificate Authorities to
+		the GridShibCA jar</a>
 </ul>
 @DOC_FOOTER@
 </html>

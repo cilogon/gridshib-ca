@@ -10,7 +10,7 @@ PACKAGE_RELEASE_STATUS="preview"
 
 AC_REVISION($Id$)
 
-COPYRIGHT="Copyright 2006 The Board of Trustees of the University of Illinois."
+COPYRIGHT="Copyright 2007 The Board of Trustees of the University of Illinois."
 AC_SUBST(COPYRIGHT)
 AC_COPYRIGHT(${COPYRIGHT})
 
@@ -198,7 +198,8 @@ DOC_FILES="\
 	doc/process-flow.html \
 	doc/modules.html \
 	doc/myproxy-ca.html \
-	doc/portal-delegation.html"
+	doc/portal-delegation.html \
+	doc/saml-issuer.html"
 AC_SUBST(DOC_FILES)
 AC_SRC_FILES(DOC_FILES, DOC_SRCS)
 AC_SUBST(DOC_SRCS)

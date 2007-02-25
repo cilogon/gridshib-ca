@@ -133,6 +133,20 @@ OpenSSLRandFile = $(GridShibCAConfDir)/.rand
 
 ######################################################################
 #
+# Parameters relating to including SAML assertion from Shibboleth
+# in certificate. This only works with the OpenSSL CA.
+
+# Include Shibboleth SAML assertion in certificate
+IncludeSAMLInCert = false
+
+# JAVA_HOME (needed for inclusion of SAML)
+JavaHome = /usr/local/java
+
+# Path to GridShib SAML Tools install (needed for inclusion of SAML)
+GridShibSAMLToolsPath = /usr/local/gridshib-saml-tool-0_1_3/
+
+######################################################################
+#
 # Configuration for MyproxyCA client (if in use)
 #
 

@@ -75,6 +75,8 @@
 #define	POSTFIX	".srl"
 #define DEF_LIFETIME	8 * 60 * 60 /* 8 hours */
 
+#define SAML_EXT_OID "1.3.6.1.4.1.3536.1.1.1.10"
+
 static const char *x509_usage[]={
 "usage: x509 args\n",
 " -in arg         - input file - default stdin\n",
@@ -90,11 +92,14 @@ static const char *x509_usage[]={
 " -CAserial arg   - serial file\n",
 " -set_serial     - serial number to use\n",
 " -md2/-md5/-sha1/-mdc2 - digest to use\n",
+" -samlExt        - file with SAML extension to add\n",
 " -extfile        - configuration file with X509V3 extensions to add\n",
 " -clrext         - delete extensions before signing and input certificate\n",
 NULL
 };
 
+static int readFile(char *, unsigned char **, int *);
+static X509_EXTENSION *create_SAML_extension(char *);
 static int x509_certify (X509_STORE *ctx,char *CAfile,const EVP_MD *digest,
 			 X509 *x,X509 *xca,EVP_PKEY *pkey,char *serial,
 			 int create,long lifetime, int clrext, CONF *conf, char *section,
@@ -136,6 +141,8 @@ int main(int argc, char **argv)
     const EVP_MD *md_alg,*digest=EVP_sha1();
     CONF *extconf = NULL;
     char *extsect = NULL, *extfile = NULL;
+    char *samlExtFile = NULL;
+    X509_EXTENSION *samlExt = NULL;
     int need_rand = 1;
     char *engine=NULL;
     EVP_PKEY *pkey;
@@ -226,6 +233,11 @@ clrext = 1;
 multirdn=1;
         else if (strcmp(*argv,"-utf8") == 0)
 chtype = MBSTRING_UTF8;
+        else if (strcmp(*argv,"-samlExt") == 0)
+        {
+            if (--argc < 1) goto bad;
+            samlExtFile = *(++argv);
+        }
         else if ((md_alg=EVP_get_digestbyname(*argv + 1)))
         {
             /* ok */
@@ -299,7 +311,16 @@ BIO_printf(bio_err,
         }
     }       
 
-
+    if (samlExtFile)
+    {
+        samlExt = create_SAML_extension(samlExtFile);
+        if (samlExt == NULL)
+        {
+            /* Error already printed in create_SAML_extension() */
+            goto end;
+        }
+    }
+    
     if (!CA_flag)
     {
         BIO_printf(bio_err,"We need a private key to sign with\n");
@@ -399,6 +420,17 @@ goto end;
     X509_set_pubkey(x,pkey);
     EVP_PKEY_free(pkey);
 
+    if (samlExt != NULL)
+    {
+        if (!X509_add_ext(x, samlExt, -1 /* at end */))
+        {
+            BIO_printf(bio_err, "Failed to add SAML extension to certifiate\n");
+            goto end;
+        }
+        X509_EXTENSION_free(samlExt);
+        samlExt = NULL;
+    }
+    
     if (x == NULL) goto end;
     if (CA_flag)
     {
@@ -593,3 +625,135 @@ ERR_print_errors(bio_err);
     if (!sno) ASN1_INTEGER_free(bs);
     return ret;
 }
+
+/*
+ * Read data from filename. Return data in allocated buffer *pbuf with length
+ * in *pbuf_len. Returns -1 on error, 0 otherwise.
+ */
+static int
+readFile(char           *filename,
+         unsigned char  **pbuf,
+         int            *pbuf_len)
+{
+    FILE                    *file = NULL;
+    unsigned char           *buf = NULL;
+    /* Size of buffer */
+    int                     buf_size = 0;
+    /* Length of data read */
+    int                     data_len = 0;
+    int                     read;
+
+    *pbuf = NULL;
+    *pbuf_len = 0;
+        
+    file = fopen(filename, "r");
+    if (!file)
+    {
+        BIO_printf(bio_err, "Cannot open file '%s'\n",
+                   filename);
+        return(-1);
+    }
+        
+    do
+    {
+        if (buf_size == data_len)
+        {
+            buf_size += 512;
+            /* First time through this is essentially a malloc() */
+            buf = realloc(buf, buf_size);
+            if (buf == NULL)
+            {
+                BIO_printf(bio_err, "Memory allocation failed (size = %d)\n",
+                           buf_size);
+                return(-1);
+                }       
+            }   
+                        
+            read = fread(&buf[data_len], 1, buf_size - data_len, file);
+            data_len += read;
+        }
+        while (read > 0);
+        
+        if (ferror(file))
+        {
+            BIO_printf(bio_err, "Error reading from file '%s'\n",
+                       filename);
+            if (buf)
+            {
+                free(buf);
+                return(-1);
+            }
+        }
+        fclose(file);
+
+        *pbuf = buf;
+        *pbuf_len = data_len;
+        
+        return(0);
+}
+
+X509_EXTENSION *
+create_SAML_extension(char *samlExtFilename)
+{
+    unsigned char               *ext_buf = NULL;
+    int                         ext_buf_len = 0;
+    X509_EXTENSION*             ext = NULL;
+    ASN1_OBJECT *               oid_obj = NULL;
+    ASN1_OCTET_STRING *         ext_DER_string = NULL;
+
+
+    if (readFile(samlExtFilename, &ext_buf, &ext_buf_len))
+    {
+        BIO_printf(bio_err, "Failed to read SAML extension file '%s'\n",
+                   samlExtFilename);
+        goto end;
+    }
+    
+    oid_obj = OBJ_txt2obj(SAML_EXT_OID,
+                          0 /* Allow short and long names */);
+        
+    if (oid_obj == NULL)
+    {
+        BIO_printf(bio_err, "Error parsing SAML OID '%s'\n",
+                   SAML_EXT_OID);
+        goto end;
+    }
+        
+    ext_DER_string = ASN1_OCTET_STRING_new();
+    if (ext_DER_string == NULL)
+    {
+        BIO_printf(bio_err, "Could not create new ASN.1 string for SAML extension\n");
+        goto end;
+    }
+    
+    if (!ASN1_OCTET_STRING_set(ext_DER_string, ext_buf, ext_buf_len))
+    {
+        BIO_printf(bio_err, "Could not fill ASN.1 string for SAML extension\n");
+        goto end;
+    }
+    
+    ext = X509_EXTENSION_create_by_OBJ(
+        NULL,
+        oid_obj,
+        0 /* not critical */,
+        ext_DER_string);
+    
+    if (ext == NULL)
+    {
+        BIO_printf(bio_err, "Failed to create SAML Extension\n");
+        goto end;
+    }
+    
+  end:
+    if (ext_buf != NULL)
+    {
+        free(ext_buf);
+    }
+    if (oid_obj)
+    {  
+        ASN1_OBJECT_free(oid_obj);
+    }  
+
+    return ext; /* May be NULL on error */
+}
+

@@ -77,11 +77,25 @@ Path to file containing the serial number.
 
 Path to file to store random state.
 
+=item IncludeSAMLInCert
+
+Boolean - use GridShib SAML Tools to include SAML in issued certificates.
+
+=item JavaHome
+
+Path to JAVA_HOME. Needed to run GridShib SAML Tools.
+
+=item GridShibSAMLToolsPath
+
+Path to GridShib SAML Tools installation.
+
 =back
 
 =cut
 
 package GridShibCA::OpenSSLCA;
+
+use File::Temp;
 
 # Inherit CA class
 use GridShibCA::CA;
@@ -90,12 +104,24 @@ use GridShibCA::CA;
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
 
-# new()
-# Create a new interface to the CA.
-# Arguments:
-#  $username - name of user as string
-#  $idp - idp of user as string
-# Returns: CA instance
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new interface to the CA.
+
+B<Arguments:>
+
+C<$username> - name of user as string
+
+C<$idp> - idp of user as string
+
+B<Returns>: CA instance
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -109,14 +135,23 @@ sub new
     return $self;
 }
 
-# signRequest
-# Given a certificate request return a certificate
-# Arguments: Certificate request as string
-# Returns: Certificate as string, or undef on error
+=item signRequest()
+
+Given a certificate request return a certificate
+
+B<Arguments>: Certificate request as string
+
+B<Returns>: Certificate as string, or undef on error
+
+=cut
+
 sub signRequest
 {
     my $self = shift;
     my $certificateRequest = shift;
+
+    # If defined, has file containing SAML extension
+    my $samlExtFilename = undef;
 
     # Check for our key and certificate
     if (! -e $self->{caProg})
@@ -138,6 +173,8 @@ sub signRequest
 	return undef;
     }
 
+    # Everything checks out. Go ahead and sign certificate request.
+
     # Allow openssl to save random number state to avoid "unable to
     # write 'random state'" errors
     $ENV{"RANDFILE"} = $self->{randFile};
@@ -146,7 +183,27 @@ sub signRequest
 
     my $DN = $self->getProtectedOpenSSLDN();
 
-    # Everything checks out. Go ahead and sign certificate request.
+    if ($config->getParamBoolean("IncludeSAMLInCert"))
+    {
+	$self->_debug("Including SAML in certificate");
+	my $samlExt = $self->getSAMLExt();
+
+	if (defined($samlExt))
+	{
+	    $self->_debug("SAML extension: %s.", $samlExt);
+	    # Create temporary file and put extension in it
+	    my $samlExtFile = new File::Temp(UNLINK => 0);
+	    print $samlExtFile $samlExt;
+	    # Set filename to indicate success. Will be used later.
+	    $samlExtFilename = $samlExtFile->filename();
+	    close($samlExtFile);
+	}
+	else
+	{
+	    # We should have logged an error in getSAMLExt()
+	    $self->_debug("SAML extension creationed FAILED.");
+	}
+    }
 
     # XXX Need to have locking here to serialize access to the serial file
     my $status;
@@ -160,8 +217,13 @@ sub signRequest
     push(@args, "-CAkey", $self->{key});
     push(@args, "-CAserial", $self->{serialFile});
     push(@args, "-CAcreateserial");
+    if (defined($samlExtFilename))
+    {
+	push(@args, "-samlExt", $samlExtFilename);
+    }
 
     my $cmd = $config->getCommand($self->{caProg}, @args);
+    $self->_debug("Executing: %s %s", $self->{caProg}, join(" ", @args));
     $cmd->setInput($certificateRequest);
     if (!$cmd->exec())
     {
@@ -172,6 +234,109 @@ sub signRequest
     return $cmd->getOutput();
 }
 
+=item getSAMLExt()
+
+Return, as a string, a hunk of SAML for inclusion in the certificate.
+
+B<Arguments:> None
+
+B<Returns:> String containing SAML or undef on error
+
+=cut
+
+sub getSAMLExt
+{
+    my $self = shift;
+
+    use File::Spec;
+    use MIME::Base64();
+
+    my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
+
+    if (!defined($base64EncodedSAML))
+    {
+	$self->_warn("No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
+	return undef;
+    }
+
+    # This function doesn't seem to have use failure modes
+    my $ssoResponse = MIME::Base64::decode($base64EncodedSAML);
+
+    if (!defined($ssoResponse) or ($ssoResponse eq ""))
+    {
+	$self->_warn("Base64 decode of SSO Response failed.");
+	return undef;
+    }
+
+    # Write to temporary file as required by gridshib-saml-issuer
+    my $ssoResponseFile = new File::Temp(UNLINK => 0);
+    my $ssoResponseFilename = $ssoResponseFile->filename();
+    print $ssoResponseFile $ssoResponse;
+    close($ssoResponseFile);
+
+    # Ok, now call gridshib-saml-issuer to build SAML for includion
+    # in certificate.
+    my $gridshibHome = $config->getParam("GridShibSAMLToolsPath");
+
+    if (! -d $gridshibHome )
+    {
+	$self->_warn("GridShibSAMLToolsPath does not exist: $gridshibHome");
+	return undef;
+    }
+
+    # Current version of gridshib-saml-issuer requires GRIDSHIB_HOME to be
+    # set.
+    $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
+
+    my $javaHome = $config->getParam("JavaHome");
+
+    $ENV{"JAVA_HOME"} = $javaHome;
+    
+    # Get full path to gridshib-saml-issuer
+    my $gridshibIssuer = File::Spec->catfile($gridshibHome,
+					     "bin",
+					     "gridshib-saml-issuer");
+
+    if ( ! -f $gridshibIssuer )
+    {
+	$self->_warn("gridshib-saml-issuer does not exist ($gridshibIssuer)");
+	return undef;
+    }
+
+    my $status;
+    my @args = ();
+
+    push(@args, "--user", $self->getDN());
+    # --ssoResponse expects a file: url
+    push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
+
+    my $cmd = $config->getCommand($gridshibIssuer, @args);
+    $self->_debug("Executing: %s %s", $gridshibIssuer, join(" ", @args));
+    if (!$cmd->exec())
+    {
+	# Verison 0.1.3 of gridshib-saml-issuer doesn't return non-zero
+	# on exit, so we won't catch failures unfortunately.
+	$self->_warn("Error executing %s: %s",
+		     $gridshibIssuer,
+		     $cmd->getError());
+	return undef;
+    }
+    my $saml = $cmd->getOutput();
+    
+    # Remove any CR's to make sure we have a single line of SAML
+    # This will also strip any CR at line's end.
+    $saml =~ s/\n//g;
+
+    if ($saml eq "")
+    {
+	$self->_warn("SAML assertion empty.");
+	return undef;
+    }
+
+    return $saml;
+}
+
+=back
 
 =head2 Version
 

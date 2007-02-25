@@ -97,6 +97,10 @@ my %config = (
     OpenSSLCAKey =>"\$(GridShibCAConfDir)/gridshib-ca-key.pem",
     OpenSSLCASerial =>"\$(GridShibCAConfDir)/serial",
     OpenSSLRandFile =>"\$(GridShibCAConfDir)/.rand",
+    # Parameters related to inclusion of SAML in certificate
+    IncludeSAMLInCert => "false",
+    JavaHome => "/usr/local/java",
+    GridShibSAMLToolsPath => "/usr/local/gridshib-saml-tool-0_1_3/",
     # MyProxy client parameters
     MyProxyHostname =>"localhost",
     MyProxyPort =>"7512",
