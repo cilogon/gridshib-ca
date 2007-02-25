@@ -122,6 +122,16 @@ sub registerCert()
     my $certificate = shift;
     my $lifetime = shift;
 
+    if (!defined($userId) or
+	!defined($idp) or
+	!defined($dn) or
+	!defined($certificate) or
+	!defined($lifetime))
+    {
+	$self->_error("Argument missing.");
+	return 0;
+    }
+
     my $registryDir = $config->getParam("CertRegistryDir");
 
     if (! -d $registryDir)
