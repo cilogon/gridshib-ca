@@ -192,6 +192,8 @@ sub signRequest
 	{
 	    $self->_debug("SAML extension: %s.", $samlExt);
 	    # Create temporary file and put extension in it
+	    # Don't automatically unlink the file when $samlExtFile
+	    # is not used as we need file later.
 	    my $samlExtFile = new File::Temp(UNLINK => 0);
 	    print $samlExtFile $samlExt;
 	    # Set filename to indicate success. Will be used later.
@@ -225,12 +227,20 @@ sub signRequest
     my $cmd = $config->getCommand($self->{caProg}, @args);
     $self->_debug("Executing: %s %s", $self->{caProg}, join(" ", @args));
     $cmd->setInput($certificateRequest);
-    if (!$cmd->exec())
+    my $result = $cmd->exec();
+    # Clean up SAML extension if need be
+    if (defined($samlExtFilename))
+    {
+	unlink($samlExtFilename);
+    }
+    # Did certificate signing succeed?
+    if (!$result)
     {
 	$self->_error("Error executing %s: %s",
 		      $self->{caProg}, $cmd->getError());
 	return undef;
     }
+    # Yes, return PEM-encoded certificate as string
     return $cmd->getOutput();
 }
 
@@ -269,7 +279,7 @@ sub getSAMLExt
     }
 
     # Write to temporary file as required by gridshib-saml-issuer
-    my $ssoResponseFile = new File::Temp(UNLINK => 0);
+    my $ssoResponseFile = new File::Temp();
     my $ssoResponseFilename = $ssoResponseFile->filename();
     print $ssoResponseFile $ssoResponse;
     close($ssoResponseFile);
