@@ -134,7 +134,8 @@ dnl Utilities
 UTILS="\
 	utils/create-openssl-ca.pl \
 	utils/check-config.pl \
-	utils/issue-cert.pl"
+	utils/issue-cert.pl \
+	utils/myproxy-mapapp.pl"
 AC_SUBST(UTILS)
 AC_CONFIG_FILES([$UTILS])
 AC_SRC_FILES(UTILS, UTIL_SRCS)
@@ -355,12 +356,14 @@ AC_MSG_RESULT(${WWW_USER})
 AC_SUBST(WWW_USER)
 
 dnl Figure out our base DN
+AC_MSG_CHECKING([for our base DN])
 BASE_DN=""
 hostnameComponents=`hostname | sed -e "s/\./ /g"`
 for component in $hostnameComponents ; do
     test -n "${BASE_DN}" && BASE_DN="${BASE_DN},"
     BASE_DN="${BASE_DN}DC=${component}"
 done
+AC_MSG_RESULT(${BASE_DN})
 
 dnl Check and make sure we have a valid Relative DN
 if test "X${BASE_DN}" = "X"; then
@@ -368,11 +371,33 @@ if test "X${BASE_DN}" = "X"; then
 fi
 
 dnl Relative DN for certificates issued to users
-RELATIVE_DN="O=Shibboleth User,${BASE_DN}"
+AC_MSG_CHECKING([for the CA relative DN])
+AC_ARG_WITH(relative-dn,
+	AC_HELP_STRING([--with-relative-dn=<rfc2253DN>],
+		[Specify the relative DN in RFC 2254 format (no extra whitespace)]),
+		[RELATIVE_DN=$withval],
+		[RELATIVE_DN="O=Shibboleth User,${BASE_DN}"])
+AC_MSG_RESULT(${RELATIVE_DN})
 AC_SUBST(RELATIVE_DN)
 
+dnl Generate an OpenSSL version of Relative DN
+dnl This assumes no commas in DN
+AC_MSG_CHECKING([for the relativce DN in OpenSSL format])
+OPENSSL_RELATIVE_DN=`(\
+	IFS=",";\
+	DN="";\
+	for component in ${RELATIVE_DN} ; do \
+	    DN="/${component}${DN}" ;\
+	done ;\
+	echo ${DN} ;\
+	)`
+AC_MSG_RESULT(${OPENSSL_RELATIVE_DN})
+AC_SUBST(OPENSSL_RELATIVE_DN)
+
 dnl DN for the default CA create-openssl-ca.pl will create
+AC_MSG_CHECKING([for the DN of the GridShib-ca])
 CA_DN="CN=GridShib CA,O=Certificate Authority,${BASE_DN}"
+AC_MSG_RESULT(${CA_DN})
 AC_SUBST(CA_DN)
 
 dnl ------------------------------------------------------------

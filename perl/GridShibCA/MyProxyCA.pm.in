@@ -135,14 +135,14 @@ sub signRequest
 	return undef;
     }
     my $lifetime = $self->{lifetime};
-    my $username = $self->{username};
+    my $dn = $self->getOpenSSLDN();
     # This isn't used since we're authenticated with a certificate
     # and private key
     my $passphrase = "Dummy";
-    $logger->debug("MyProxy request: username = %s lifetime = %d",
-		   $username, $lifetime);
+    $logger->debug("MyProxy request: DN = %s lifetime = %d",
+		   $dn, $lifetime);
     my $cred = $client->getCred(
-	Username => $username,
+	Username => $dn,
 	Passphrase => $passphrase,
 	Lifetime => $lifetime,
 	CertReq => $reqPEM,

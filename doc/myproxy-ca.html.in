@@ -76,7 +76,7 @@ parameters:
 <h2><a name="myproxy-config">Configuring the MyProxy Server</a></h2>
 On the MyProxy server system, do the following. These steps give the
 GridShib-CA to request and receive any certificate from the MyProxy CA
-with the mapper program specifying which certificates are generated.
+with the mapapp program specifying which certificates are generated.
 <ol>
 <li>The MyProxy server must
       be <a href="http://grid.ncsa.uiuc.edu/myproxy/ca/">configured to act
@@ -97,16 +97,22 @@ include the GridShib-CA DN. For example:
 default_trusted_retrievers      "/C=US/O=NCSA-TEST/OU=User/CN=SP-Service"
 </pre>
 <li>From the GridShib-CA system, copy the file
-      @GRIDSHIB_CA_CONF_DIR@/mapper.sh to somewhere on
-      the MyProxy server. It should be installed owned by root and with
-      permissions 0700. For these directions we assume you installed it as
-      /usr/local/bin/mapper.sh. If you are running the myproxy server on
-      the same system as the GridShib-CA you can just leave this file
-      where it is and specify its path in the next step.
+  "@GRIDSHIB_CA_CONF_DIR@/myproxy-mapapp.pl" to somewhere on
+  the MyProxy server. It should be installed owned by root and with
+  permissions 0700. For these directions we assume you installed it as
+  "/usr/local/bin/myproxy-mapapp.pl".
+	If you are running the myproxy server on
+  the same system as the GridShib-CA you can just leave this file
+  where it is and specify its path in the next step.
+	If you did not specify --with-relative-dn during configuration,
+	you will need to edit this file and set the value
+	for <i>$namespace</i> to the correct relative DN for your MyProxy
+	CA. This value must be in OpenSSL format
+	(e.g. /C=US/O=NCSA-TEST/OU=User/).
 <li>In /etc/myproxy-server.config set certificate_mapapp to the path
-      of mapper.sh. For example:
+      of mapapp.pl. For example:
 <pre>
-certificate_mapapp        "/usr/local/bin/mapper.sh"
+certificate_mapapp        "/usr/local/bin/mapapp.pl"
 </pre>
 <li>If the MyProxy server is already running, restart the myproxy
 server by killing it and restarting it in order to reload the

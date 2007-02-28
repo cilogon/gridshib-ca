@@ -1,0 +1,79 @@
+#!@PERL@ @PERL_CGI_BIN_ARGS@
+######################################################################
+#
+# $Id$
+#
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# This file is distributed under the Apache 2.0 License
+# See: http://www.apache.org/licenses/LICENSE-2.0.html
+######################################################################
+
+=head1 mapapp.pl
+
+mapapp script for myproxy to map DN as passed by the GridShib CA
+to a local DN. Really all this script does is validate that the
+DN passed by the GridShib-CA is valid and in our namespace. Assuming
+so it should just echo the same DN back to myproxy.
+
+MyProxy and this script handle only OpenSSL-formated DNs - e.g.:
+/C=OS/O=Organization/CN=My Common Name
+
+=head2 Usage
+
+mapapp.pl [<DN>]
+
+=head2 Return Value
+
+Zero on success, printing DN to STDOUT; one on error.
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+######################################################################
+#
+# My DN namespace
+
+my $namespace = "@OPENSSL_RELATIVE_DN@";
+
+######################################################################
+#
+# Set up loging
+
+use Sys::Syslog;
+openlog("myproxy-mapapp", "pid", "auth");
+
+######################################################################
+#
+# Get requested DN and validate
+
+my $requestedDN = shift;
+
+if (!defined($requestedDN) || ($requestedDN eq ""))
+{
+    syslog("err", "Missing argument");
+    exit(1);
+}
+
+# Make sure requestedDN starts with required namespace
+if ($requestedDN !~ /^${namespace}/)
+{
+    syslog("err", "Requested DN \"%s\" does not comply with namespace \"%s\"",
+	   $requestedDN, $namespace);
+    exit(1);
+}
+
+# All seems well, print out DN so MyProxy will pick it up and return
+# success.
+print $requestedDN . "\n";
+exit(0);
+
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################
