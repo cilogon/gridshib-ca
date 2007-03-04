@@ -117,6 +117,7 @@ sub getUserId
     my $remote_user = $self->remote_user();
     if (!defined($remote_user))
     {
+	$logger->err("Cannot determine user identifier (REMOTE_USER undefined)")
 	return undef;
     }
     # Clean user name (from perlsec manual)
@@ -145,10 +146,11 @@ B<Returns:> IdP as string, or undef if unknown
 
 sub getIdP
 {
-    my $idp = undef;
-    if (defined($ENV{"HTTP_SHIB_IDENTITY_PROVIDER"}))
+    my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+    if (!defined($idp))
     {
-	$idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+	$logger->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
+	return undef;
     }
     # Clean Idp Id (from perlsec manual)
     if ($idp =~ /^([-\/:\@\w.]+)$/)
