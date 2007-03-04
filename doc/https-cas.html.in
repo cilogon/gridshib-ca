@@ -91,7 +91,7 @@ we address in the subsequent step).
 Now resign the jar with the PKCS12 store you created in step two.
 Use the password you created in step two (the "Export Password").
 <pre>
-% jarsigner -keystore mycred.pkcs12 -storetype pkcs12 -signedjar GridShibCA.jar GridShibCA.jar.mod default
+% jarsigner -keystore mycred.pkcs12 -storetype pkcs12 -signedjar GridShibCA.jar GridShibCA.jar.modified default
 Enter Passphrase for keystore:
 </pre>
 <h2>Step Six: Install new jar file</h2>
