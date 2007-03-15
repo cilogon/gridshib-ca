@@ -142,7 +142,7 @@ print " Certificate is $certFile\n";
 print " DN for CA is $subject\n";
 print " Relative DN is $relativeDN\n";
 print "\n";
-print "Generated keys. This may take a minute...\n";
+print "Generating keys. This may take a minute...\n";
 
 my @args = ();
 push(@args, "req");
