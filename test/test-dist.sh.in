@@ -1,0 +1,89 @@
+#!/bin/sh
+######################################################################
+#
+# test-dist.sh
+#
+# Given a distribution file, trying unpacking, building and installing
+# it.
+#
+# Usage: test-dist.sh <dist-file>
+#
+# $Id$
+#
+######################################################################
+#
+# Exit on any error
+
+set -e
+
+######################################################################
+
+dist_file=$1
+shift
+
+if test X${dist_file} = X ; then
+    echo "Usage: $0 <dist-file"
+    exit 1
+fi
+
+######################################################################
+#
+# Make a temp directory to install into.
+#
+
+tmpDir="/tmp/gridshib-ca-test-dist.$$"
+echo "Temporary directory is ${tmpDir}"
+mkdir $tmpDir
+
+######################################################################
+#
+# Unpack and change into build directory
+#
+
+echo "Unpacking ${dist_file}..."
+cat $dist_file | (cd $tmpDir; tar xvfz - )
+
+cd $tmpDir/gridshib-ca-*
+
+######################################################################
+#
+# configure
+#
+
+confOpts=""
+confOpts="${confOpts} --with-gridshib-ca-conf-dir=${tmpDir}/gridshib-ca/"
+confOpts="${confOpts} --with-shib-protected-cgi-bin-dir=${tmpDir}/gridshib-ca-shib-cgi/"
+confOpts="${confOpts} --with-cgi-bin-dir=${tmpDir}/gridshib-ca-cgi/"
+confOpts="${confOpts} --with-gridshib-ca-html_dir=${tmpDir}/gridshib-ca-html/"
+
+# Figure out right user to own web files
+if grep www /etc/passwd > /dev/null ; then
+    confOpts="${confOpts} --with-www-user=www"
+fi
+
+echo "Configure options: ${confOpts}"
+
+./configure ${confOpts}
+
+######################################################################
+#
+# Build and install, testing on the way
+#
+
+echo "Building and testing:"
+make
+make test
+
+echo "Installing and testing:"
+make install
+utils/create-openssl-ca.pl
+make test-post-install
+
+echo "Success."
+
+# Clean up
+#'cd /' prevents errors trying to remove current directory on some systems
+cd /
+rm -rf $tmpDir
+
+exit 0

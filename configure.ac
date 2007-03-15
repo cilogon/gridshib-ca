@@ -495,6 +495,7 @@ if test ${MODE} = "build" ; then
 
    dnl Generate development utilities in dev-utils
    DEV_UTILS="\
+	test/test-dist.sh \
 	dev-utils/make-release.pl"
    AC_CONFIG_FILES([${DEV_UTILS}])
 
@@ -516,8 +517,9 @@ if test ${MODE} = "build" ; then
 	AC_MSG_ERROR([Could not find Bouncy Castle source path.])
    fi
 
-   dnl Make dev-utils/*.pl executable
+   dnl Make dev-utils/*.pl and test/*.sh executable
    AC_CONFIG_COMMANDS([chmod-dev-utils], [chmod +x dev-utils/*.pl])
+   AC_CONFIG_COMMANDS([chmod-test], [chmod +x test/*.sh])
 
    AC_PATH_PROG(CVS, cvs)
    AC_PATH_PROG(MAKE, make)
