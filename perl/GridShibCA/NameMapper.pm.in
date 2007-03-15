@@ -41,15 +41,13 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::Authorization
+=head1 GridShibCA::NameMapper
 
-Authorization system interface.
+Interface to mapping Shibboleth authentication to X.509 DN.
 
 =cut
 
-package GridShibCA::Authorization;
-
-use FileHandle;
+package GridShibCA::NameMapper;
 
 use GridShibCA::Config;
 
@@ -59,7 +57,7 @@ use GridShibCA::Config;
 
 =item new()
 
-Create a new Authorization object.
+Create a new NameMapper object.
 
 B<Arguments:> None
 
@@ -72,14 +70,15 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{config} = GridShibCA::Config->new();
+    # Maximum number of replacements on names to prevent run away
+    $self->{replacementLimit} = 24;
     bless($self, $class);
     return $self;
 }
 
-=item authorizeUser()
+=item mapUser()
 
-Authorize whether a user can be issued a certificate.
-This implementation authorizes all users.
+Return the RFC 2253 formatted DN for the given user.
 
 B<Arguments:>
 
@@ -87,77 +86,157 @@ I<$user> - user id.
 
 I<$idp> - user idp as string
 
-B<Returns:> 1 if user authorized, 0 otherwise
+B<Returns:> RFC 2253-formatted DN as string, undef on error.
 
 =cut
 
-sub authorizeUser
+sub mapUser
 {
     my $self = shift;
     my $user = shift;
     my $idp = shift;
 
-    if (!defined($idp))
+    if (!defined($user) or !defined($idp))
     {
-	$self->_error("Could not determine Idp. Check system logs for reason.");
-	return 0;
+	$self->_error("Invalid argument to NameMapper->mapUser().");
+	return undef;
     }
 
-    my $authorizedIdpFilename =
-	$self->{config}->getParam("AuthorizedIdpsFile");
-    my $status = $self->_inFile($idp, $authorizedIdpFilename);
+    my $idpPolicy = $self->getIdpPolicy($idp);
 
-    if ($status == -1)
+    if (!defined($idpPolicy))
     {
-	return 0;
-    }
-    
-    if ($status == 0)
-    {
-	$self->_error("Idp unrecognized.");
-	return 0;
+	# error already set
+	return undef;
     }
 
-    return 1;
+    my $dn = $idpPolicy;
+
+    # Maximum number of replacements to revent run-away
+    my $numReplacements = $self->{replacementLimit};
+
+    # Replace all occurances of ${foo} in policy with $ENV{foo}
+    while ($dn =~ /\$\{(\w+)\}/)
+    {
+	my $envVar = $1;
+	my $value = $ENV{$envVar};
+
+	if (!defined($value))
+	{
+	    $self->_error("Error mapping name for Idp \"%s\":" .
+			  " Environment variable \"%s\" not defined." .
+			  " (Policy is %s)",
+			  $idp, $envVar, $idpPolicy);
+	    return undef;
+	}
+	$dn =~ s/\$\{$envVar\}/$value/;
+
+	# Prevent run-away replacement with limit on number of replacements
+	$numReplacements -= 1;
+	if ($numReplacements == 0)
+	{
+	    $self->_error("Recusion limit hit for expanding user name for Idp %s",
+			  $idp);
+	    last;
+	}
+    }
+
+    # And return string
+    return $dn;
 }
 
-=item authorizePortal()
+=item getIdpPolicy()
 
-Authorize whether a portal can receive a delegated credential.
+Given an Idp name, return the name mapping policy associated with it
+from the authorizedIdps file.
 
-B<Arguments:> Portal URL as string
+B<Arguments:>
 
-B<Returns:> One if authorized, zero otherwise
+I<$idp> - Idp id as a string
+
+B<Returns:> Policy as string, undef on error
 
 =cut
 
-sub authorizePortal
+sub getIdpPolicy
 {
     my $self = shift;
-    my $portalURL = shift;
+    my $idp = shift;
+    my $filename = $self->{config}->getParam("AuthorizedIdpsFile");
 
-    if (!defined($portalURL))
+    if (!defined($filename))
     {
-	$self->_error("portalURL undefined. Internal error.");
-	return 0;
+	$self->_error("AuthorizedIdpsFile is undefined.");
+	return undef;
+    }
+    my $fh = new FileHandle;
+    if (!$fh->open("<$filename"))
+    {
+	$self->_error("Could not open authorized Idp file (%s): %s",
+		      $filename, $!);
+	return undef;
     }
 
-    my $authorizedPortalsFilename =
-	$self->{config}->getParam("AuthorizedPortalsFile");
-    my $status = $self->_inFile($portalURL, $authorizedPortalsFilename);
+    my $policy = undef;
 
-    if ($status == -1)
+    while (<$fh>)
     {
-	return 0;
-    }
-    
-    if ($status == 0)
-    {
-	$self->_error("URL unrecognized.");
-	return 0;
+	my $line = $_;
+	chomp($line);
+
+	# Strip comments
+	$line =~ s/#.*$//;
+
+	# Ignore empty lines
+	if ($line =~ /^\s*$/)
+	{
+	    next;
+	}
+
+	# Get initial regex
+	my ($regex, $remainder) = split(/\s+/, $line, 2);
+
+	# Convert to perl regex form
+	$regex =~ s/\*/.+/g;
+	$regex = "^" . $regex . "\$";
+
+	if ($idp !~ /$regex/)
+	{
+	    # No match, go on to next line
+	    next;
+	}
+
+	if (!defined($remainder))
+	{
+	    $self->_error("Error parsing naming policy for Idp %s (Matched by %s in %s): No mapping policy provided (0.3.0 style file?)",
+			  $idp, $regex, $filename);
+	    return undef;
+	}
+
+	# Remainder should be double-quote delimited policy
+	if ($remainder =~ /^\"(.+)\"$/)
+	{
+	    # Success. We are done
+	    $policy = $1;
+	    last;
+	}
+	# Some sort of parsing failure, return an error
+	$self->_error("Error parsing naming policy for Idp %s (Matched by %s in %s): %s",
+		      $idp, $regex, $filename, $remainder);
+	return undef;
     }
 
-    return 1;
+    $fh->close();
+
+    # If we have falled through, policy will be undef
+    if (!defined($policy))
+    {
+	$self->_error("No match for Idp %s in policy mapping file (%s)",
+		      $idp, $filename);
+	return undef;
+    }
+
+    return $policy;
 }
 
 =item getError()
@@ -206,72 +285,6 @@ sub _error
     $self->{error} = sprintf($format, @_);
 }
 
-=item _inFile()
-
-Does the given string appear in the given file. File is expected to
-have one string per line and strings can contain an "*" which matches
-any portion of the given string. Each line may have extra text,
-separated with whitespace, after the initial string, which is ignored.
-
-Line in the file begining with a "#" are treated as comments and ignored.
-
-B<Arguments:>
-
-I<$string> - String to match
-
-I<$filename> - Filename
-
-B<Returns:> One if string matches a line in file, zero if not, -1 on error
-
-=cut
-
-sub _inFile
-{
-    my $self = shift;
-    my $string = shift;
-    my $filename = shift;
-
-    my $found = 0;
-
-    my $fh = new FileHandle;
-    if (!$fh->open("<$filename"))
-    {
-	$self->_error("Could not open authorized Idp file (%s): %s",
-		      $filename, $!);
-	return -1;
-    }
-    while (<$fh>)
-    {
-	my $line = $_;
-	chomp($line);
-
-	# Strip comments
-	$line =~ s/#.*$//;
-
-	# Ignore empty lines
-	if ($line =~ /^\s*$/)
-	{
-	    next;
-	}
-
-	# Get initial string
-	my ($regex, $remainder) = split(/\s+/, $line);
-
-	# Convert to perl regex form
-	$regex =~ s/\*/.+/g;
-	$regex = "^" . $regex . "\$";
-
-	if ($string =~ /$regex/)
-	{
-	    $found = 1;
-	    last;
-	}
-    }
-
-    $fh->close();
-
-    return $found;
-}
 
 =back
 

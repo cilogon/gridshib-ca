@@ -90,6 +90,11 @@ configure this with '--with-www-dir'.
 <pre>
 % make
 </pre>
+<li>It's a good idea to run the tests at this point to verify things
+look good at this point. This should exit without errors:
+<pre>
+% make test
+</pre>
 <li>As root, run "make install"
 <pre>
 # make install
@@ -202,6 +207,14 @@ it's normal to get some browser warnings/questions about trusting
 certificates, both for web sites and Java Web Start applications, as
 you go through the process.
 <ol>
+<li>From your build directory, run the post-install tests. You'll need
+	to do this as root or the user under which Apache runs, so that the
+	tests can read all the appropriate. This should go through the process
+	of issuing a certificate and test everything but your Shibboleth
+	configuration.
+<pre>
+# make test-post-install
+</pre>
 <li>Fire up your favorite browser and point it at
 https://hostname/@PACKAGE_FULLNAME@ replacing hostname with
 the name of the host on which you installed the GridShib-CA. <b>Be

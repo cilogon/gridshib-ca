@@ -50,6 +50,11 @@ specific the module loaded is given below.
 	syslog.</td>
 </tr>
 <tr>
+<td><a href="perl/GridShibCA/NameMapper.html">NameMapper</a></td>
+<td>nameMapperModule</td>
+<td>Maps from Shibboleth authentication/attributes to X.509 DN.</td>
+</tr>
+<tr>
 <td><a href="perl/GridShibCA/TokenGenerator.html">TokenGenerator</a></td>
 <td>tokenGeneratorModule</td>
 <td>Used to generate Tokens used to authenticate user requests</td>

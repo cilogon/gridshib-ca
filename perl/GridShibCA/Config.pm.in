@@ -70,6 +70,7 @@ my %config = (
     debug => "false",
     clientDebug => "false",
     useBundledCAs => "true",
+    redirectURL => "http://gridshib.globus.org",
     # Perl modules
     loggerModule => "GridShibCA::Logger",
     caModule => "GridShibCA::OpenSSLCA",
@@ -78,6 +79,7 @@ my %config = (
     commandModule => "GridShibCA::Command",
     certRegistryModule => "GridShibCA::CertRegistry",
     authorizationModule => "GridShibCA::Authorization",
+    nameMapperModule => "GridShibCA::NameMapper",
     # Configuration stuff
     GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
     JNLPTemplate => "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp",
@@ -151,8 +153,8 @@ sub new
 	$debug = 1;
     }
 
-    # Maximum recusion depth for configuration variable replacement
-    $self->{recursionLimit} = 10;
+    # Maximum number of replacements on configuration variables
+    $self->{replacementLimit} = 24;
     # Error string
     $self->{error} = "";
     bless($self, $class);
@@ -204,19 +206,27 @@ sub getParam
 	return undef;
     }
 
-    my $recursionDepth = 0;
+    # Maximum number of replacements to revent run-away
+    my $numReplacements = $self->{replacementLimit};
 
     # Expand any $(refs) in $value. Allowing for recursion
     while ($value =~ /\$\((\w+)\)/)
     {
-	my $replaceWith = $config{$1};
-	$value =~ s/\$\((\w+)\)/$replaceWith/g;
-
-	# Prevent run-away replacement with limit on recusion depth
-	$recursionDepth += 1;
-	if ($recursionDepth > $self->{recursionLimit})
+	my $name = $1;
+	my $replaceWith = $config{$name};
+	if (!defined($replaceWith))
 	{
-	    $self->_error("Recusion limit hit for expanding configuration parameter %s",
+	    $self->_error("Config parameter \"%s\": Undefined variable \"%s\"",
+			  $param, $name);
+	    return undef;
+	}
+	$value =~ s/\$\($name\)/$replaceWith/;
+
+	# Prevent run-away replacement with limit on number of replacements
+	$numReplacements -= 1;
+	if ($numReplacements == 0)
+	{
+	    $self->_error("Replacement limit hit for expanding configuration parameter %s",
 			  $value);
 	    last;
 	}
@@ -337,13 +347,7 @@ in F<gridshib-ca.conf>.
 sub getLogger
 {
     my $self = shift;
-    my $logger = $self->_newInstance($config{"loggerModule"}, @_);
-    if (!defined($logger))
-    {
-	$self->_error("Failed to load loggerModule:" . $config{"loggerModule"});
-	exit(1);
-    }
-    return $logger;
+    return $self->_newInstance($config{"loggerModule"}, @_);
 }
 
 
@@ -360,13 +364,7 @@ in F<gridshib-ca.conf>.
 sub getCA
 {
     my $self = shift;
-    my $ca = $self->_newInstance($config{"caModule"}, @_);
-    if (!defined($ca))
-    {
-	$self->_error("Failed to load caModule:" . $config{"caModule"});
-	exit(1);
-    }
-    return $ca;
+    return $self->_newInstance($config{"caModule"}, @_);
 }
 
 
@@ -384,13 +382,7 @@ in F<gridshib-ca.conf>.
 sub getCGI
 {
     my $self = shift;
-    my $cgi = $self->_newInstance($config{"cgiModule"}, @_);
-    if (!defined($cgi))
-    {
-	$self->_error("Failed to load cgiModule:" . $config{"cgiModule"});
-	exit(1);
-    }
-    return $cgi;
+    return $self->_newInstance($config{"cgiModule"}, @_);
 }
 
 
@@ -408,15 +400,7 @@ in F<gridshib-ca.conf>.
 sub getTokenGenerator
 {
     my $self = shift;
-    my $tokenGenerator = $self->_newInstance($config{"tokenGeneratorModule"},
-					     @_);
-    if (!defined($tokenGenerator))
-    {
-	$self->_error("Failed to load tokenGeneratorModule:" .
-		      $config{"tokenGeneratorModule"});
-	exit(1);
-    }
-    return $tokenGenerator;
+    return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
 }
 
 
@@ -433,14 +417,7 @@ in F<gridshib-ca.conf>.
 sub getCommand
 {
     my $self = shift;
-    my $command = $self->_newInstance($config{"commandModule"}, @_);
-    if (!defined($command))
-    {
-	$self->_error("Failed to load commandModule:" .
-		      $config{"commandModule"});
-	exit(1);
-    }
-    return $command;
+    return $self->_newInstance($config{"commandModule"}, @_);
 }
 
 
@@ -458,14 +435,7 @@ in F<gridshib-ca.conf>.
 sub getCertRegistry
 {
     my $self = shift;
-    my $certRegistry = $self->_newInstance($config{"certRegistryModule"}, @_);
-    if (!defined($certRegistry))
-    {
-	$self->_error("Failed to load certRegistryModule:" .
-		      $config{"certRegistryModule"});
-	exit(1);
-    }
-    return $certRegistry;
+    return $self->_newInstance($config{"certRegistryModule"}, @_);
 }
 
 
@@ -483,14 +453,25 @@ in F<gridshib-ca.conf>.
 sub getAuthorization
 {
     my $self = shift;
-    my $authorization = $self->_newInstance($config{"authorizationModule"}, @_);
-    if (!defined($authorization))
-    {
-	$self->_error("Failed to load authorizationModule:" .
-		      $config{"authorizationModule"});
-	exit(1);
-    }
-    return $authorization;
+    return $self->_newInstance($config{"authorizationModule"}, @_);
+}
+
+
+=item getNameMapper()
+
+Get an instance of the GridShibCA::NameMapper module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::NameMapper>.
+
+The exact module loaded is controlled by the nameMapperModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getNameMapper
+{
+    my $self = shift;
+    return $self->_newInstance($config{"nameMapperModule"}, @_);
 }
 
 =back
@@ -515,7 +496,7 @@ C<$class> Name of class to create
 
 C<@_> Arguments to pass to new() method
 
-B<Returns:> Instance, or undef on error 
+B<Returns:> Instance, dies on error
 
 =cut
 
@@ -526,7 +507,7 @@ sub _newInstance
     if (!defined($class))
     {
 	$self->_error("\$class undefined");
-	return undef;
+	exit(1);
     }
     my @args = @_;
 
@@ -534,8 +515,8 @@ sub _newInstance
     eval "use $class; \$instance = $class->new(\@args);";
     if ($@)
     {
-	$self->_error($@);
-	return undef;
+	$self->_error("Failure loading class $class: " . $@);
+	exit(1);
     }
     return $instance;
 }

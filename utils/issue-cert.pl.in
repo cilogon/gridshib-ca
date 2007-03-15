@@ -118,6 +118,13 @@ if (!defined($userId) or !defined($idp))
     errorExit($usage);
 }
 
+# Emaulate Shibboleth SP's user of environment variables
+$ENV{"REMOTE_USER"} = $userId;
+$ENV{"HTTP_SHIB_IDENTITY_PROVIDER"} = $idp;
+
+print "User: $userId\n";
+print "Idp: $idp\n";
+
 ######################################################################
 #
 # Instantiate CA
@@ -135,6 +142,8 @@ if (!defined($dn))
 {
     errorExit("Could not get DN for user: %s", $ca->getError());
 }
+
+print "DN: $dn\n";
 
 ######################################################################
 #

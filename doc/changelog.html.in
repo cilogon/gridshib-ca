@@ -12,12 +12,28 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
-<li>Use "DC" components for relative DN (Bug 4887).
+<li>Added test in the form of 'make test' and 'make test-post-install'
+<li>Integrate GridShib SAML Tools to bind simple attribute assertion to EEC
+<li>Handle creating DN from mix of atttributes (Bug <a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4889">4889</a>)
+<li>Use "DC" components for relative DN (Bug <a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4887">4887</a>).
+<li>Added 'redirectURL' option to configure file so that JWS
+	application can send browser to URL after successful credential
+	download.
 <li>Added 'useBundledCAs' option to gridshib-ca.conf to allow turning
-	off use of bundled CAs (Bug 4875).
+	off use of bundled CAs (using Java-provided default CAs instead).
+<li>Fallback to prompting user if CA that issued portal https
+	certificate is unrecognized.
+	(Bug <a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4875">4875</a>).
 <li>configure.ac: --with-gridshib-ca-conf-dir uses ${prefix} instead 
 of static '/usr/local/'
-<li>Bugs fixed: 4877, 4878
+<li>Added <a href="http://gridshib.globus.org/docs/gridshib-ca-0.3.0/https-cas.html">documentation
+		for adding CA to GridShibCA.jar</a>
+<li>Fixed bug
+<a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4973">4973</a>
+causing bad CA filenames.
+<li>Fixed bug
+<a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4877">4877</a>
+typos in configure.
 </ul>
 
 <b>Version 0.3.0-alpha:</b>

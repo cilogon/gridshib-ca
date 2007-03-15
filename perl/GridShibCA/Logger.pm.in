@@ -72,13 +72,6 @@ use Sys::Syslog;
 use File::Basename;
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
-
-# Syslog parameters
-$SYSLOG_ID = $config->getParam("SyslogId");
-$SYSLOG_OPTS = "pid";
-$SYSLOG_FACILITY = $config->getParam("SyslogFacility");
-
 
 =head2 Methods
 
@@ -98,6 +91,14 @@ sub new
 {
     my $class = shift;
     my $self = {};
+
+    my $config = GridShibCA::Config->new();
+
+    # Syslog parameters
+    my $SYSLOG_ID = $config->getParam("SyslogId");
+    my $SYSLOG_OPTS = "pid";
+    my $SYSLOG_FACILITY = $config->getParam("SyslogFacility");
+
     my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
     openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
     $self->{debug} = $config->getParamBoolean("debug");

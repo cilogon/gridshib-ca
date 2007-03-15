@@ -1,0 +1,72 @@
+#!/bin/sh
+######################################################################
+#
+# openssl-ca-test.sh
+#
+# Test the openssl-ca binary.
+#
+# $Id$
+#
+######################################################################
+
+# Exit on any error
+set -e
+
+######################################################################
+
+OPENSSL="@OPENSSL@"
+
+# Figure out the directory we are bring run from and that tells
+# us where the openssl-ca binary is
+OPENSSL_CA_DIR=`dirname $0`
+
+OPENSSL_CA=${OPENSSL_CA_DIR}/openssl-ca
+
+######################################################################
+#
+# Create a certificate request
+#
+
+echo "Generating certificate request..."
+
+certReq="/tmp/openssl-ca-test-req.$$"
+privKey="/tmp/openssl-ca-test-key.$$"
+
+RANDFILE="/tmp/openssl-ca-test-rand.$$"
+export RANDFILE
+
+$OPENSSL req \
+    -new \
+    -batch \
+    -nodes \
+    -newkey rsa:512 \
+    -out $certReq \
+    -keyout $privKey \
+    -subj "/C=US/O=Test/CN=Test User"
+
+######################################################################
+#
+# See if we can sign the certificate request
+#
+
+echo "Signing certificate request..."
+
+$OPENSSL_CA -subj "/C=US/O=Test/CN=Test User" \
+    -in $certReq \
+    -lifetime 1 \
+    -CA test/test-cert.pem \
+    -CAkey test/test-key.pem \
+    -CAserial test/test-serial \
+    -CAcreateserial
+
+######################################################################
+#
+# Success.
+#
+
+echo "Success."
+
+# Clean up
+rm -f $certReq $privKey $RANDFILE
+
+exit 0

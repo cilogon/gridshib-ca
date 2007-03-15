@@ -77,12 +77,30 @@ use GridShibCA::Config;
 use CGI;
 @ISA = ("CGI");
 
-my $config = GridShibCA::Config->new();
-$logger = $config->getLogger();
-
 =head2 Methods
 
 =over 4
+
+
+=item new()
+
+Create a new Authorization object.
+
+B<Arguments:> None
+
+B<Returns:> Authorization instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self{config} = GridShibCA::Config->new();
+    $self{logger} = $self->{config}->getLogger();
+    bless($self, $class);
+    return $self;
+}
 
 =item getCertificateRequest()
 
@@ -117,7 +135,7 @@ sub getUserId
     my $remote_user = $self->remote_user();
     if (!defined($remote_user))
     {
-	$logger->err("Cannot determine user identifier (REMOTE_USER undefined)")
+	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
 	return undef;
     }
     # Clean user name (from perlsec manual)
@@ -128,7 +146,7 @@ sub getUserId
     }
     else
     {
-	$logger->err("Illegal characters detected in REMOTE_USER ($remote_user)");
+	$self->{logger}->err("Illegal characters detected in REMOTE_USER ($remote_user)");
 	return undef;
     }
     return $userId;
@@ -149,7 +167,7 @@ sub getIdP
     my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
     if (!defined($idp))
     {
-	$logger->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
+	$self->{logger}->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
 	return undef;
     }
     # Clean Idp Id (from perlsec manual)
@@ -159,7 +177,7 @@ sub getIdP
     }
     else
     {
-	$logger->err("Illegal characters detected in IdP Id ($idp)");
+	$self->{logger}->err("Illegal characters detected in IdP Id ($idp)");
 	return undef;
     }
     return $idp;
@@ -256,7 +274,7 @@ sub getRequestedCredLifetime
     my $lifetime = $self->param("lifetime");
     if (!defined($lifetime) or ($lifetime eq "default"))
     {
-	$lifetime = $config->getParam("DefaultCredLifetime");
+	$lifetime = $self->{config}->getParam("DefaultCredLifetime");
     }
     elsif ($lifetime eq "specified")
     {
@@ -274,8 +292,8 @@ sub getRequestedCredLifetime
     }
     else
     {
-	$logger->err("Illegal characters detected in lifetime ($lifetime)");
-	return $config->getParam("DefaultCredLifetime");
+	$self->{logger}->err("Illegal characters detected in lifetime ($lifetime)");
+	return $self->{config}->getParam("DefaultCredLifetime");
     }
     return $lifetime;
 }
@@ -319,8 +337,8 @@ sub getHTMLFromFile
     my $htmlString = "";
     if (!open(HTMLFile, $filename))
     {
-	$logger->err("Could not open HTML file %s for reading: %s",
-		     $filename, $!);
+	$self->{logger}->err("Could not open HTML file %s for reading: %s",
+			     $filename, $!);
 	# Return empty string to avoid other errors
 	return "";
     }
@@ -345,7 +363,7 @@ B<Returns:> HTML as string, undef on error
 sub getHTMLFooter
 {
     my $self = shift;
-    return $self->getHTMLFromFile($config->getParam("HTMLFooter"));
+    return $self->getHTMLFromFile($self->{config}->getParam("HTMLFooter"));
 }
 
 
@@ -362,7 +380,7 @@ B<Returns:> HTML as string, undef on error
 sub getHTMLHeader
 {
     my $self = shift;
-    return $self->getHTMLFromFile($config->getParam("HTMLHeader"));
+    return $self->getHTMLFromFile($self->{config}->getParam("HTMLHeader"));
 }
 
 =back

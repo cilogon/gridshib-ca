@@ -86,8 +86,6 @@ use GridShibCA::CA;
 use Globus::MyProxyClient;
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
-my $logger = $config->getLogger();
 
 # new()
 # Create a new interface to the CA.
@@ -99,10 +97,12 @@ sub new
 {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
-    $self->{host} = $config->getParam("MyProxyHostname");
-    $self->{port} = $config->getParam("MyProxyPort");
-    $self->{cert} = $config->getParam("MyProxyClientCert");
-    $self->{key} = $config->getParam("MyProxyClientKey");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{host} = $self->{config}->getParam("MyProxyHostname");
+    $self->{port} = $self->{config}->getParam("MyProxyPort");
+    $self->{cert} = $self->{config}->getParam("MyProxyClientCert");
+    $self->{key} = $self->{config}->getParam("MyProxyClientKey");
     bless($self, $class);
     return $self;
 }
@@ -139,8 +139,8 @@ sub signRequest
     # This isn't used since we're authenticated with a certificate
     # and private key
     my $passphrase = "Dummy";
-    $logger->debug("MyProxy request: DN = %s lifetime = %d",
-		   $dn, $lifetime);
+    $self->{logger}->debug("MyProxy request: DN = %s lifetime = %d",
+			   $dn, $lifetime);
     my $cred = $client->getCred(
 	Username => $dn,
 	Passphrase => $passphrase,
@@ -185,8 +185,8 @@ sub _convertReqToDER {
     push(@args, "req");
     push(@args, "-inform", "PEM");
     push(@args, "-outform", "DER");
-    my $openssl = $config->getParam("OpenSSL");
-    my $cmd = $config->getCommand($openssl, @args);
+    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $cmd = $self->{config}->getCommand($openssl, @args);
     $cmd->setInput($reqPEM);
     if (!$cmd->exec())
     {
@@ -205,8 +205,8 @@ sub _convertCertToPEM {
     push(@args, "x509");
     push(@args, "-inform", "DER");
     push(@args, "-outform", "PEM");
-    my $openssl = $config->getParam("OpenSSL");
-    my $cmd = $config->getCommand($openssl, @args);
+    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $cmd = $self->{config}->getCommand($openssl, @args);
     $cmd->setInput($certDER);
     if (!$cmd->exec())
     {

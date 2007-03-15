@@ -76,7 +76,6 @@ Path to openssl binary to use
 package GridShibCA::TokenGenerator;
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
 
 =item  new()
 
@@ -98,10 +97,11 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{key} = $config->getParam("TokenKeyFile");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{key} = $self->{config}->getParam("TokenKeyFile");
     $self->{userId} = shift;
     $self->{remoteHost} = shift;
-    $self->{openssl} = $config->getParam("OpenSSL");
+    $self->{openssl} = $self->{config}->getParam("OpenSSL");
     $self->{cipher} = "aes-128-cbc";
     $self->{magic} = "GRIDSHIB-CA";
     # Maximum time skew of token in seconds
@@ -131,7 +131,7 @@ sub generate
 
     my @args = ($self->{cipher}, "-e", "-a", "-A",
 		"-pass", "file:" . $self->{key});
-    my $cmd = $config->getCommand($self->{openssl}, @args);
+    my $cmd = $self->{config}->getCommand($self->{openssl}, @args);
     $cmd->setInput($tokenString);
     if (!$cmd->exec())
     {
@@ -161,7 +161,7 @@ sub verify()
 
     my @args = ($self->{cipher}, "-d", "-a", "-A",
 		"-pass", "file:" . $self->{key});
-    my $cmd = $config->getCommand($self->{openssl}, @args);
+    my $cmd = $self->{config}->getCommand($self->{openssl}, @args);
     $cmd->setInput($encTokenString);
     if (!$cmd->exec())
     {

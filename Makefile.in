@@ -77,6 +77,7 @@ PERL_MODULE_SRCS = @PERL_MODULE_SRCS@
 DOC_SRCS = @DOC_SRCS@
 OPENSSL_CA_SRCS = @OPENSSL_CA_SRCS@
 CGI_DEMO_SRCS = @CGI_DEMO_SRCS@
+TEST_SRCS = @TEST_SRCS@
 
 # Groups of files
 CONF_FILES=@CONF_FILES@
@@ -89,7 +90,9 @@ CGI_BIN_DIR=@CGI_BIN_DIR@
 DOC_FILES=@DOC_FILES@
 HTML_FILES=@HTML_FILES@
 PERL_MODULES = @PERL_MODULES@
+REQUIRED_PERL_MODULES = @REQUIRED_PERL_MODULES@
 PERL_DIST_MODULES = @PERL_DIST_MODULES@
+TEST_SCRIPTS = @TEST_SCRIPTS@
 
 # Files to be distributed (will be added to through this file)
 DIST_FILES=\
@@ -101,7 +104,8 @@ DIST_FILES=\
 	$(PERL_MODULES_SRCS) \
 	$(DOC_SRCS) \
 	$(OPENSSL_CA_SRCS) \
-	$(CGI_DEMO_SRCS)
+	$(CGI_DEMO_SRCS) \
+	$(TEST_SRCS)
 
 # All files to be build by default
 BUILD_ALL =\
@@ -113,7 +117,8 @@ BUILD_ALL =\
 	$(CGI_BIN_SCRIPTS) \
 	$(CGI_DEMO_SCRIPTS) \
 	$(DEV_UTILS) \
-	$(DOC_FILES)
+	$(DOC_FILES) \
+	$(TEST_SCRIPTS)
 
 ######################################################################
 ######################################################################
@@ -231,10 +236,11 @@ install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 	@echo "Installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
+		echo "Installing $${file}" ;\
 		if test -f $(GRIDSHIB_CA_CONF_DIR)/$${f} ; then \
-			echo "Skipping install of $${file}" ; \
+			echo "  Avoiding overwriting existing file." ;\
+			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR)/$${f}.new ;\
 		else \
-			echo "Installing $${file}" ;\
 			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 		fi \
 	done
@@ -277,7 +283,12 @@ install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(CGI_BIN_SCRIPTS)
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
 	done
 
-install-demos: $(CGI_DEMO_SCRIPTS)
+
+$(CGI_BIN_DIR):
+	@echo "Creating $(CGI_BIN_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
+
+install-demos: $(CGI_DEMO_SCRIPTS) $(CGI_BIN_DIR)
 	@if test $(ENABLE_DEMOS) = "true"; then \
 		echo "Installing demo scripts to $(CGI_BIN_DIR)" ;\
 		for file in $(CGI_DEMO_SCRIPTS) ; do \
@@ -478,10 +489,10 @@ PERL_SCRIPTS= $(CGI_BIN_SCRIPTS) $(UTILS) $(DEV_UTILS)
 DIST_FILES += $(PERL_DIST_MODULES)
 DIST_FILES += $(PERL_MODULE_SRCS)
 
-check-perl: $(PERL_SCRIPTS) $(PERL_MODULES) $(PERL_DIST_MODULES)
-	@for script in $(PERL_SCRIPTS) ; do \
+check-perl: $(PERL_SCRIPTS) $(REQUIRED_PERL_MODULES) $(PERL_DIST_MODULES)
+	@for script in $^ ; do \
 		echo Checking $${script} ;\
-		$(PERL) -c -T -I./perl/ $${script} ;\
+		$(PERL) -c -T -I./perl/ $${script} || exit 1 ;\
 	done
 
 clean::
@@ -600,6 +611,24 @@ perl-script-doc: $(PERL_DOC_DIR) $(UTILS)
 
 realclean::
 	$(RM) -rf $(PERL_DOC_DIR)
+
+######################################################################
+#
+# Tests
+#
+
+test: chmod-tests check-perl test-openssl-ca
+
+test-openssl-ca: openssl-ca/openssl-ca-test.sh
+	openssl-ca/openssl-ca-test.sh
+
+test-post-install: test-cert-issue
+
+test-cert-issue:
+	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@openidp.org  urn:mace:inqueue:openidp.org
+
+chmod-tests: $(TEST_SCRIPTS)
+	chmod 755 $(TEST_SCRIPTS)
 
 ######################################################################
 ######################################################################

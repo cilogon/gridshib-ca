@@ -35,6 +35,10 @@ clientDebug = False
 # prompted if they want to trust the web site.
 useBundledCAs = True
 
+# URL to show to user after credential acquisition is successful.
+# Set to value NONE to disable.
+redirectURL = http://gridshib.globus.org
+
 ######################################################################
 #
 # Perl Modules
@@ -61,6 +65,9 @@ certRegistryModule = GridShibCA::CertRegistry
 
 # Perl module to authorize actions
 authorizationModule = GridShibCA::Authorization
+
+# Perl module to use to map Shibboleth id/attributes to X.509 DN
+nameMapperModule = GridShibCA::NameMapper
 
 ######################################################################
 #

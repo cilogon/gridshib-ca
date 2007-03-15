@@ -247,15 +247,20 @@ close(FH);
 #
 
 print "Setting ownership of created files.\n";
-@args=();
-push(@args, "@WWW_USER@");
-push(@args, $certFile, $keyFile, $hashFile, $policyFile, $serialFile);
-
-$cmd = $config->getCommand("chown", @args);
-
-if (!$cmd->exec())
+my $wwwUser = "@WWW_USER@";
+my ($login,$pass,$uid,$gid) = getpwnam($wwwUser);
+if (!defined($uid))
 {
-    print "Execution of chown failed: " . $cmd->getError();
+    print "Failure. Cannot determine uid for $wwwUser.";
+    exit(1);
+}
+my $status = chown($uid, $gid, 
+		   $certFile, $keyFile, $hashFile,
+		   $policyFile, $serialFile);
+
+if (!$status)
+{
+    print "chown() failed: " . $!;
     exit(1);
 }
 

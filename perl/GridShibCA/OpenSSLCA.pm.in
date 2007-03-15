@@ -102,7 +102,6 @@ use GridShibCA::CA;
 @ISA = ("GridShibCA::CA");
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
 
 =head2 Methods
 
@@ -126,11 +125,12 @@ sub new
 {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
-    $self->{caProg} = $config->getParam("OpenSSLCA");
-    $self->{cert} = $config->getParam("OpenSSLCACert");
-    $self->{key} = $config->getParam("OpenSSLCAKey");
-    $self->{serialFile} = $config->getParam("OpenSSLCASerial");
-    $self->{randFile} = $config->getParam("OpenSSLRandFile");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{caProg} = $self->{config}->getParam("OpenSSLCA");
+    $self->{cert} = $self->{config}->getParam("OpenSSLCACert");
+    $self->{key} = $self->{config}->getParam("OpenSSLCAKey");
+    $self->{serialFile} = $self->{config}->getParam("OpenSSLCASerial");
+    $self->{randFile} = $self->{config}->getParam("OpenSSLRandFile");
     bless($self, $class);
     return $self;
 }
@@ -183,7 +183,7 @@ sub signRequest
 
     my $DN = $self->getProtectedOpenSSLDN();
 
-    if ($config->getParamBoolean("IncludeSAMLInCert"))
+    if ($self->{config}->getParamBoolean("IncludeSAMLInCert"))
     {
 	$self->_debug("Including SAML in certificate");
 	my $samlExt = $self->getSAMLExt();
@@ -224,7 +224,7 @@ sub signRequest
 	push(@args, "-samlExt", $samlExtFilename);
     }
 
-    my $cmd = $config->getCommand($self->{caProg}, @args);
+    my $cmd = $self->{config}->getCommand($self->{caProg}, @args);
     $self->_debug("Executing: %s %s", $self->{caProg}, join(" ", @args));
     $cmd->setInput($certificateRequest);
     my $result = $cmd->exec();
@@ -269,7 +269,7 @@ sub getSAMLExt
 	return undef;
     }
 
-    # This function doesn't seem to have use failure modes
+    # This function doesn't seem to return failure nicely
     my $ssoResponse = MIME::Base64::decode($base64EncodedSAML);
 
     if (!defined($ssoResponse) or ($ssoResponse eq ""))
@@ -286,7 +286,7 @@ sub getSAMLExt
 
     # Ok, now call gridshib-saml-issuer to build SAML for includion
     # in certificate.
-    my $gridshibHome = $config->getParam("GridShibSAMLToolsPath");
+    my $gridshibHome = $self->{config}->getParam("GridShibSAMLToolsPath");
 
     if (! -d $gridshibHome )
     {
@@ -298,7 +298,7 @@ sub getSAMLExt
     # set.
     $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
 
-    my $javaHome = $config->getParam("JavaHome");
+    my $javaHome = $self->{config}->getParam("JavaHome");
 
     $ENV{"JAVA_HOME"} = $javaHome;
     
@@ -320,7 +320,7 @@ sub getSAMLExt
     # --ssoResponse expects a file: url
     push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
 
-    my $cmd = $config->getCommand($gridshibIssuer, @args);
+    my $cmd = $self->{config}->getCommand($gridshibIssuer, @args);
     $self->_debug("Executing: %s %s", $gridshibIssuer, join(" ", @args));
     if (!$cmd->exec())
     {

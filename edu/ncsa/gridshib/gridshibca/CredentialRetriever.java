@@ -48,6 +48,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
+import javax.jnlp.*;
 import java.net.URLEncoder;
 import java.security.KeyPairGenerator;
 import java.security.KeyPair;
@@ -85,6 +86,9 @@ public class CredentialRetriever {
 
     // URL from which to retrieve trusted CAs
     URL trustURL = null;
+
+    // URL to send browser to when we complete successfully
+    URL redirectURL = null;
 
     // Our shibboleth session cookie
     String shibSession = null;
@@ -149,7 +153,7 @@ public class CredentialRetriever {
 			}
 
             // Generate our keys
-            gui.displayMessage("Generating keys...");
+            gui.displayMessage("Generating cryptographic keys...");
             KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(keyAlg);
             keyGenerator.initialize(keySize);
 
@@ -167,7 +171,7 @@ public class CredentialRetriever {
 
             String requestPEM = PEM.encodePKCS10CertificationRequest(pkcs10);
 
-			gui.displayMessage("Connecting to " + credURL.toString());
+			gui.displayMessage("Connecting to GridShib-CA server...");
 
             // It appears that Java Web Start for Java 1.5 under MacOS 10.4 (at
             // least) sets up a CookieHandler that screws us up, so if this
@@ -271,6 +275,14 @@ public class CredentialRetriever {
             }
 
 			gui.displayMessage("Success.");
+
+
+            if (redirectURL != null)
+            {
+                gui.displayMessage("Opening " + redirectURL.toString());
+                gotoURL(redirectURL);
+            }
+
 		} catch (java.io.IOException e) {
 			gui.error("IO Error: " + e.getMessage());
 		} catch (java.lang.ArrayIndexOutOfBoundsException e) {
@@ -355,6 +367,16 @@ public class CredentialRetriever {
             {
                 useBundledCAs = Boolean.valueOf(value);
                 debug("useBundledCAs: " + useBundledCAs);
+            }
+            else if (var.equals("redirectURL"))
+            {
+                try {
+                    redirectURL = new URL(value);
+                } catch (java.net.MalformedURLException e) {
+                    throw new java.lang.IllegalArgumentException(
+                        "Error parsing redirect URL: " + value);
+                }
+                debug("Redirect URL: " + redirectURL.toString());
             }
             else
             {
@@ -455,6 +477,38 @@ public class CredentialRetriever {
             (SSLSocketFactory) SSLSocketFactory.getDefault();
 
         return defaultSSLSocketFactory;
+    }
+
+    /*
+     * Send web browser to give URL.
+     */
+    private void gotoURL(URL url)
+    {
+        String basicService = "javax.jnlp.BasicService";
+        BasicService bs = null;
+
+        try
+        {
+            // Lookup the javax.jnlp.BasicService object
+            bs = (BasicService) ServiceManager.lookup(basicService);
+        }
+        catch (UnavailableServiceException e)
+        {
+            gui.warning("Failed to redirect to " + url +
+                        ": could not load BasicService: " +
+                        e.getMessage());
+           return;
+        } 
+
+        if (bs.showDocument(url) == false)
+        {
+            // Redirect failed
+            gui.warning("Failed to redirect to " + url +
+                        ": showDocument() failed." +
+                        " (isOffline = " + bs.isOffline() +
+                        " isWebBrowserSupported = " +
+                        bs.isWebBrowserSupported() + ")");
+        }
     }
 
     /*

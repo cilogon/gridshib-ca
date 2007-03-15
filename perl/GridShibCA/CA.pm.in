@@ -58,7 +58,6 @@ and L<GridShibCA::MyProxyCA|GridShibCA::MyProxyCA>
 package GridShibCA::CA;
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
 
 =head2 Methods
 
@@ -84,10 +83,11 @@ sub new
     my $self = {};
     $self->{username} = shift;
     $self->{idp} = shift;
-    $self->{lifetime} = $config->getParam("DefaultCredLifetime");
-    $self->{relativeDN} = $config->getParam("RelativeDN");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{lifetime} = $self->{config}->getParam("DefaultCredLifetime");
+    $self->{relativeDN} = $self->{config}->getParam("RelativeDN");
     $self->{error} = undef;
-    $self->{logger} = $config->getLogger();
+    $self->{logger} = $self->{config}->getLogger();
     bless($self, $class);
     return $self;
 }
@@ -105,10 +105,14 @@ B<Returns:> DN as string, or undef on error
 sub getDN
 {
     my $self = shift;
-
-    my $CN = sprintf("CN=%s", $self->{username});
-    my $OU = sprintf("OU=%s", $self->{idp});
-    my $DN = sprintf("%s, %s, %s", $CN, $OU, $self->{relativeDN});
+    my $nameMapper = $self->{config}->getNameMapper();
+    my $userDN = $nameMapper->mapUser($self->{username}, $self->{idp});
+    if (!defined($userDN))
+    {
+	$self->_error($nameMapper->getError());
+	return undef;
+    }
+    my $DN = sprintf("%s, %s", $userDN, $self->{relativeDN});
 
     return $DN;
 }
@@ -130,6 +134,12 @@ sub getOpenSSLDN
 
     my $rfc2253DN = $self->getDN();
 
+    if (!defined($rfc2253DN))
+    {
+	# Error already set
+	return undef;
+    }
+	    
     my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
 
     return $DN;
@@ -177,7 +187,7 @@ sub getCADN
 {
     my $self = shift;
 
-    return $config->getParam("CADN");
+    return $self->{config}->getParam("CADN");
 }
 
 
@@ -216,7 +226,7 @@ sub getRelativeDN
 {
     my $self = shift;
 
-    return $config->getParam("RelativeDN");
+    return $self->{config}->getParam("RelativeDN");
 }
 
 
@@ -271,7 +281,7 @@ sub setCredLifetime
 {
     my $self = shift;
     my $lifetime = shift;
-    my $maxLifetime = $config->getParam("MaximumCredLifetime");
+    my $maxLifetime = $self->{config}->getParam("MaximumCredLifetime");
     if ($lifetime > $maxLifetime)
     {
 	$self->_error("Requested lifetime (%d) greater than maximum allowed (%d)",
@@ -335,8 +345,24 @@ sub convertRFC2253DNToOpenSSL
 	return undef;
     }
 
-    
-    my $DN = "/" . join("/", reverse(split(/, */, $rfc2253DN)));
+    my @fields = reverse(split(/, */, $rfc2253DN));
+
+    # Convert component names to uppercase for openssl
+    foreach my $field (@fields)
+    {
+	my ($component, $value) = split(/=/, $field, 2);
+	if (!defined($component) or !defined($value))
+	{
+	    $self->_error("Could not parse DN field \"%s\"", $field);
+	    return undef;
+	}
+
+	$component = uc($component);
+
+	$field = $component . "=" . $value;
+    }
+
+    my $DN = "/" . join("/", @fields);
 
     return $DN;
 }

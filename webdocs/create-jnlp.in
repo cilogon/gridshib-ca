@@ -187,6 +187,18 @@ if (!$useBundledCAs)
 
 ######################################################################
 #
+# Do we have a URL to show to the user when credential acquisition
+# is complete?
+
+my $redirectURL = $config->getParam("redirectURL");
+
+if ($redirectURL ne "NONE")
+{
+    push(@jwsArgs, "redirectURL=" . $redirectURL);
+}
+
+######################################################################
+#
 # Do we have trusted CAs to pass to client and did the client request
 # we do so?
 #

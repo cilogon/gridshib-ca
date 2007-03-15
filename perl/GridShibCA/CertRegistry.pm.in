@@ -69,7 +69,6 @@ use File::Spec;
 use FileHandle;
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
 
 =head2 Methods
 
@@ -89,6 +88,7 @@ sub new
 {
     my $class = shift;
     my $self = {};
+    $self->{config} = GridShibCA::Config->new();
     bless($self, $class);
     return $self;
 }
@@ -132,7 +132,7 @@ sub registerCert()
 	return 0;
     }
 
-    my $registryDir = $config->getParam("CertRegistryDir");
+    my $registryDir = $self->{config}->getParam("CertRegistryDir");
 
     if (! -d $registryDir)
     {

@@ -88,9 +88,6 @@ use GridShibCA::CertRegistry;
 @ISA = ("GridShibCA::CertRegistry");
 
 use GridShibCA::Config;
-my $config = GridShibCA::Config->new();
-
-my $logger = $config->getLogger();
 
 use DBI;
 use POSIX;
@@ -113,12 +110,14 @@ sub new
 {
     my $class = shift;
     my $self = $class->SUPER::new(@_);
-    $self->{DBName} = $config->getParam("myVocsDBName");
-    $self->{DBTable} = $config->getParam("myVocsDBTable");
-    $self->{DBHostname} = $config->getParam("myVocsDBHostname");
-    $self->{DBPort} = $config->getParam("myVocsDBPort");
-    $self->{DBUsername} = $config->getParam("myVocsDBUsername");
-    $self->{DBPassword} = $config->getParam("myVocsDBPassword");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{DBName} = $self->{config}->getParam("myVocsDBName");
+    $self->{DBTable} = $self->{config}->getParam("myVocsDBTable");
+    $self->{DBHostname} = $self->{config}->getParam("myVocsDBHostname");
+    $self->{DBPort} = $self->{config}->getParam("myVocsDBPort");
+    $self->{DBUsername} = $self->{config}->getParam("myVocsDBUsername");
+    $self->{DBPassword} = $self->{config}->getParam("myVocsDBPassword");
     bless($self, $class);
     return $self;
 }
@@ -158,7 +157,7 @@ sub registerCert()
 			 $self->{DBHostname},
 			 $self->{DBPort});
 
-    $logger->debug("myVocs database name: $DBname");
+    $self->{logger}->debug("myVocs database name: $DBname");
 
     my $DBconnection = DBI->connect($DBname,
 				    $self->{DBUsername},
@@ -252,7 +251,7 @@ sub _sendDBCommand
     my $DBconnection = shift;
     my $cmdStr = shift;
 
-    $logger->debug("Sending myVocs DB command: " . $cmdStr);
+    $self->{logger}->debug("Sending myVocs DB command: " . $cmdStr);
 
     my $cmd = $DBconnection->prepare($cmdStr);
 
