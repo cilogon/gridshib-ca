@@ -41,8 +41,7 @@ You need to configure Shibboleth so that you have a Shibboleth
 protected cgi-bin directory into which you will subsequently install
 the GridShib-CA cgi-bin scripts. You can find the directions for
 installing and configuring Shibboleth on the
-<a
-	 href="https://authdev.it.ohio-state.edu/twiki/bin/view/Shibboleth/WebHome">Shibboleth
+<a href="https://spaces.internet2.edu/display/SHIB/WebHome">Shibboleth
 	wiki</a>.
 <p>
 For the purposes of these installation directions it is
@@ -63,10 +62,10 @@ These directions assume you are installing GridShib-CA with version
 % cd @DIST_DIR@
 </pre>
 <li><a name="configure">Run "configure".</a> configure takes a number
-	of arguments, which can	be viewed by running "configure
-	--help". Assuming you are using the default paths configure should --
-	--handle most of the work for you, the only help you may need to --
-	--give it would be to specify the following:
+of arguments, which can be viewed by running "configure --help".
+Assuming you are using the default paths configure should handle most
+of the work for you, the only help you may need to give it would be to
+specify the following:
 <pre>
 --with-gridshib-ca-conf-dir=&lt;path&gt;
 </pre>
@@ -86,6 +85,7 @@ than "apache" you need to tell configure this with '-with-www-user'
 </pre>
 If your Apache root directory is not "/var/www/" then you need to tell
 configure this with '--with-www-dir'.
+<p>
 <li>Run "make"
 <pre>
 % make
@@ -160,24 +160,41 @@ A pound character (#) indicates a comment. Everything from the # to
 the end of the line is ignored.
 <p>
 A string such a <i>$(var)</i> is replaced with the variable as defined
-elsewhere in the file. Recursion is allowed to a depth of 10.
+elsewhere in the file. Recursion is allowed to a depth of 24.
 <p>
-<h3><a name="authorizedIdps.conf">authorizedIdps.conf</a></h3>
-This file controls which Shibboleth identity providers are trusted by
-the GridShib-CA. A user must have an identity asserted by an Idp
-specified as trusted by this file in order to use the GridShib-CA.
+<h3><a name="authorizedIdps.conf">authorizedIdps.conf</a></h3> This
+file controls which Shibboleth identity providers are trusted by the
+GridShib-CA and how DNs are formed for their users. A user must have
+an identity asserted by an Idp specified as trusted by this file in
+order to use the GridShib-CA.
 <p>
 The configuration installed by default will trust any IdP in InQueue.
 <p>
 The file has the general form as the following example:
 <pre>
-# Any idp in InQueue
-urn:mace:inqueue:*
+# Any idp in InQueue. Use the IdP id as the OU component and ePPN as the CN
+urn:mace:inqueue:* "cn=${REMOTE_USER}, ou=${HTTP_SHIB_IDENTITY_PROVIDER}"
 </pre>
 Each line of the file lists an Idp or set of Idps using a
 wildcard. An asterix (*) matches any characters, allowing for sets of
-Idps to be specified on a single line. A pound (#) indicates a comment
-- all text from a pound to the end of a line is ignored.
+Idps to be specified on a single line. Following the Idp name is
+whitespace, and following that is the double-quote delimited name
+policy. The name policy corresponds to the user-specific portion of
+the user's DN (i.e. everything but the relative DN used by the CA for
+all certificates) in RFC 2253 format. This policy may contain
+references to Shibboleth-specified environment variables formatted
+as <i>${variable-name}</i>. The exact variables you can use depend on
+your Shibboleth configuration (AAP.xml to be precise). Some common,
+default variables are:
+<dl>
+<dt>REMOTE_USER</dt>
+<dd>The user's eduPersonPrincipal name</dd>
+<dt>HTTP_SHIB_IDENTITY_PROVIDER</dt>
+<dd>The user's Shibboleth identity provider's identity</dd>
+</dl>
+<p>
+A pound (#) indicates a comment - all text from a pound to the end
+	of a line is ignored.
 <p>
 The script <a href="perl/check-config.html">check-config.pl</a> should
 be run after changing gridshib-ca.conf to check for errors in the file.
@@ -211,7 +228,9 @@ you go through the process.
 	to do this as root or the user under which Apache runs, so that the
 	tests can read all the appropriate. This should go through the process
 	of issuing a certificate and test everything but your Shibboleth
-	configuration.
+	configuration. Note that this will actually issue a certificate from
+	your CA, outputting the certificate and generated private key to
+	standard out.
 <pre>
 # make test-post-install
 </pre>
