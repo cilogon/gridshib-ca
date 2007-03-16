@@ -123,7 +123,7 @@ Return the DN for the user in OpenSSL format (e.g.
 /C=US/O=Example/CN=John Smith).
 
 B<Arguments:> None
- 
+
 B<Returns:> DN as string, or undef on error
 
 =cut
@@ -154,7 +154,7 @@ protected so that it can be passed to OpenSSL. E.g.:
 /C=US/O=Example/OU=https:\/\/someurl.edu\/foo/CN=John Smith).
 
 B<Arguments:> None
- 
+
 B<Returns:> DN as string, or undef on error
 
 =cut
@@ -173,7 +173,7 @@ sub getProtectedOpenSSLDN
     return $DN;
 }
 
-=item getCADN
+=item getCADN()
 
 Return the DN of the CA.
 
@@ -191,7 +191,7 @@ sub getCADN
 }
 
 
-=item getCAOpenSSLDN
+=item getCAOpenSSLDN()
 
 Return the CA DN in OpenSSL "oneline" format.
 
@@ -212,7 +212,7 @@ sub getCAOpenSSLDN
 
 
 
-=item getRelativeDN
+=item getRelativeDN()
 
 Return the Relative DN in RFC 2253 format.
 
@@ -230,7 +230,7 @@ sub getRelativeDN
 }
 
 
-=item getRelativeOpenSSLDN
+=item getRelativeOpenSSLDN()
 
 Return the Relative DN in OpenSSL "oneline" format.
 
@@ -267,7 +267,7 @@ sub signRequest
     return undef;
 }
 
-=item setCredLifetime
+=item setCredLifetime()
 
 Set the lifetime of signed credentials
 
@@ -292,7 +292,7 @@ sub setCredLifetime
     return 1;
 }
 
-=item getCredLifetime
+=item getCredLifetime()
 
 Get the lifetime of signed credentials.
 
@@ -324,7 +324,7 @@ sub getError
     return $self->{error}
 }
 
-=item convertRFC2253DNToOpenSSL
+=item convertRFC2253DNToOpenSSL()
 
 Convert a DN in RFC 2253 format to OpenSSL "oneline" format as used by
 the Globus Toolkit.
