@@ -230,7 +230,7 @@ These internal methods not intended for external use.
 
 =over 4
 
-=item _sendDBCommand
+=item _sendDBCommand()
 
 Prepare and send command to database.
 On error it calls calling _error()
@@ -274,7 +274,7 @@ sub _sendDBCommand
     return 1;
 }
 
-=item _myVocsTimeString
+=item _myVocsTimeString()
 
 Convert time in seconds to the string needed by the myVocs database
 (e.g. "2005-03-08 19:14:32")
