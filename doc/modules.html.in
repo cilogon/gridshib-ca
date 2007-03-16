@@ -21,7 +21,7 @@ specific the module loaded is given below.
 <tr>
 <td><a href="perl/GridShibCA/CA.html">CA</a></td>
 <td>caModule</td>
-<td>Default implementation is
+<td>Template. Default implementation is
 	currently <a href="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</a>.
 	A <a href="myproxy-ca.html">MyProxy-based CA</a> is also available
 	with <a href="perl/GridShibCA/MyProxyCA.html">MyProxyCA.pm</a>.
@@ -30,7 +30,8 @@ specific the module loaded is given below.
 <tr>
 <td><a href="perl/GridShibCA/CertRegistry.html">CertRegistry</a></td>
 <td>certRegistryModule</td>
-<td>Wrapper around Certificate Registry module</td>
+<td>Wrapper around Certificate Registry module. Other implementations
+	include <a href="perl/GridShibCA/myVocsDBCertRegistry.html">myVocsDBCertRegistry.pm</a></td>
 </tr>
 <tr>
 <td><a href="perl/GridShibCA/CGIinterface.html">CGIinterface</a></td>
