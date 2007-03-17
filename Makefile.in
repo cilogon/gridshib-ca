@@ -484,7 +484,7 @@ realclean::
 # Perl
 #
 
-PERL_SCRIPTS= $(CGI_BIN_SCRIPTS) $(UTILS) $(DEV_UTILS)
+PERL_SCRIPTS= $(CGI_BIN_SCRIPTS) $(UTILS)
 
 DIST_FILES += $(PERL_DIST_MODULES)
 DIST_FILES += $(PERL_MODULE_SRCS)
@@ -706,9 +706,9 @@ NMI_FILES = @NMI_FILES@
 
 nmi-test: dist $(DEV_UTILS)
 	@echo Uploading $(DIST_FILE)
-	@scp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
+	@rsync -auvp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
 	@echo Transferring NMI test files
-	@scp $(NMI_FILES) $(NMI_HOST):
+	@rsync -auvp $(NMI_FILES) $(NMI_HOST):
 	@echo Submitting NMI job
 	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
 	@echo Done.
