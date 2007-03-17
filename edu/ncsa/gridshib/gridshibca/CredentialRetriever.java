@@ -202,6 +202,7 @@ public class CredentialRetriever {
                 URLEncoder.encode(token, "UTF-8")
                 + "&" +
                 "lifetime=" + lifetime;
+            debug("PostData: " + postData);
             postWriter.write(postData);
             postWriter.flush();
             
