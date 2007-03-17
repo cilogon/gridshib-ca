@@ -1,4 +1,4 @@
-project = GridShib-CA
+project = GridShib
 component = GridShib-CA
 component_version = @PACKAGE_VERSION_STRING@
 description = GridShib-CA build and install test
@@ -7,5 +7,6 @@ inputs = gridshib-ca.ftp
 remote_task = @DIST_DIR@/nmi/gridshib-ca-nmitest.sh
 remote_task_args = @DIST_DIR@
 platforms = ia64_sles_8, ia64_sles_9, ppc_aix_5.2, ppc_macos_10.4, sun4u_sol_5.9, x86_64_rhas_3, x86_64_rhas_4, x86_deb_3.1, x86_fc_3, x86_fc_4, x86_rhas_3, x86_rhas_4
+prereqs = perl_5.8.5
 prereqs_sun4u_sol_5.9 = gcc-2.95.3
 notify = vwelch@ncsa.uiuc.edu

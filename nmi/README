@@ -12,4 +12,4 @@ To submit a test build:
 
 Then visit the the following URL to view the results:
 
-http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib-CA
+http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
