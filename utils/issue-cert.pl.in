@@ -163,12 +163,28 @@ if (!$authorization->authorizeUser($userId, $idp))
 # Generate certificate request
 #
 
-use Crypt::OpenSSL::PKCS10;
+use File::Temp;
 
-my $req = Crypt::OpenSSL::PKCS10->new();
-$req->set_subject("/C=US/O=Dummy/CN=Dummy");
-$req->sign();
-my $reqPEM = $req->get_pem_req();
+my $tempPrivKeyFile = new File::Temp();
+
+my @args = ();
+push(@args, "req");
+push(@args, "-new");
+push(@args, "-newkey", "rsa1024");
+push(@args, "-subj", "/C=US/O=Dummy/CN=Dummy");
+push(@args, "-nodes");
+push(@args, "-keyout", $tempPrivKeyFile->filename());
+
+my $openssl = $config->getParam("OpenSSL");
+my $cmd = $config->getCommand($openssl , @args);
+
+if (!$cmd->exec())
+{
+    print "Execution of $openssl failed: " . $cmd->getError();
+    exit(1);
+}
+
+my $reqPEM = $cmd->getOutput();
 
 ######################################################################
 #
@@ -211,7 +227,10 @@ if (defined($certRegistry))
 #
 
 print $certificate;
-print $req->get_pem_pk();
+while (<$tempPrivKeyFile>)
+{
+    print;
+}
 exit(0);
 
 ######################################################################
