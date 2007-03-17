@@ -129,6 +129,17 @@ sub mapUser
 			  $idp, $envVar, $idpPolicy);
 	    return undef;
 	}
+	# Clean environment value
+	if ($value =~ /^([-\/:\@\w.]+)$/)
+	{
+	    $value = $1;
+	}
+	else
+	{
+	    $self->_error("Invalid characters found in ENV{%s}: \"%s\"",
+			  $envVar, $value);
+	    return undef;
+	}
 	$dn =~ s/\$\{$envVar\}/$value/;
 
 	# Prevent run-away replacement with limit on number of replacements
