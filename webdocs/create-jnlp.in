@@ -192,7 +192,7 @@ if (!$useBundledCAs)
 
 my $redirectURL = $config->getParam("redirectURL");
 
-if ($redirectURL ne "NONE")
+if (!defined($redirectURL) or ($redirectURL ne "NONE"))
 {
     push(@jwsArgs, "redirectURL=" . $redirectURL);
 }
