@@ -88,7 +88,6 @@ sub errorExit
     }
 
     $logger->err("ERROR: %s", $string);
-
     exit(0);
 }
 
@@ -138,7 +137,7 @@ if (!defined($idp))
 	      "Could not determine Shibboleth identity provider for user");
 }
 
-$logger->info("CONNECTION:%s:%s:%s", $user, $remoteAddr, $idp);
+$logger->info("CONNECTION:%s:%s:\"%s\"", $user, $remoteAddr, $idp);
 
 ######################################################################
 #
