@@ -233,6 +233,13 @@ AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
 
 dnl ----------------------------------------------------------------------
+dnl check for required perl modules that should be on any reasonably
+dnl recent perl, but don't always seem to be
+AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 Sys::Syslog],
+	[AC_MSG_RESULT([All required perl modules found.])],
+	[AC_MSG_ERROR([One or more required perl modules not found. Old version of perl?])])
+
+dnl ----------------------------------------------------------------------
 dnl Stuff needed to build our openssl-based CA
 AC_PROG_CC
 AC_CHECK_LIB(crypto, CRYPTO_malloc)
