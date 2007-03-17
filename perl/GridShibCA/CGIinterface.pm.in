@@ -95,9 +95,9 @@ B<Returns:> Authorization instance
 sub new
 {
     my $class = shift;
-    my $self = {};
-    $self{config} = GridShibCA::Config->new();
-    $self{logger} = $self->{config}->getLogger();
+    my $self = $class->SUPER::new(@_);
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
     bless($self, $class);
     return $self;
 }
