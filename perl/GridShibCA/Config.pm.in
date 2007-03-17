@@ -518,6 +518,11 @@ sub _newInstance
 	$self->_error("Failure loading class $class: " . $@);
 	exit(1);
     }
+    if (!defined($instance))
+    {
+	$self->_error("Failure loading class $class: No instance returned.");
+	exit(1);
+    }
     return $instance;
 }
 
