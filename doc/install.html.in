@@ -32,7 +32,8 @@ with 2.0.54).<br>  You need to have HTTPS/SSL configured on the server
 README.QUICKSTART.SSL which should be included with your server.)
 <li><a href="http://shibboleth.internet2.edu/latest.html">Shibboleth
 		SP software</a> (Tested with 1.3)
-<li><a href="http://www.perl.org">Perl</a> (Tested with 5.8.x)
+<li><a href="http://www.perl.org">Perl</a> (Version 5.8.5 or later
+	should work, early versions might.)
 <li><a href="http://www.openssl.org">OpenSSL</a> Both the binary
 	and the development libraries and header files. (Tested with 0.9.7f)
 </ul> 
