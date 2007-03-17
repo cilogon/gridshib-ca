@@ -172,6 +172,12 @@ sub verify()
     my $tokenString = $cmd->getOutput();
     my ($magic, $userId, $remoteHost, $time) =
 	split(/:/, $tokenString);
+    if (!defined($magic) or !defined($userId) or
+	!defined($remoteHost) or !defined($time))
+    {
+	$self->_error("Failed to parse token \"%s\"", $tokenString);
+	return 0;
+    }
     if ($magic ne $self->{magic})
     {
 	$self->_error("Bad magic: %s != %s",
