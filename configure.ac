@@ -262,7 +262,8 @@ dnl ------------------------------------------------------------
 dnl Test scripts
 
 TEST_SCRIPTS="\
-	openssl-ca/openssl-ca-test.sh"
+	openssl-ca/openssl-ca-test.sh \
+	test/test-dist.sh"
 AC_SUBST(TEST_SCRIPTS)
 AC_SRC_FILES(TEST_SCRIPTS, TEST_SRCS)
 AC_SUBST(TEST_SRCS)
@@ -496,12 +497,16 @@ if test ${MODE} = "build" ; then
 
    dnl Generate development utilities and tests
    DEV_UTILS="\
-	dev-utils/make-release.pl \
-	nmi/gridshib-ca-cmdfile \
-	nmi/gridshib-ca.ftp \
-	test/test-dist.sh"
+	dev-utils/make-release.pl"
    AC_CONFIG_FILES([${DEV_UTILS}])
 
+   dnl Generated NMI build and test files
+   NMI_FILES="\
+   	nmi/gridshib-ca-cmdfile \
+	nmi/gridshib-ca.ftp"
+   AC_CONFIG_FILES([${NMI_FILES}])
+   AC_SUBST(NMI_FILES)
+	
    dnl Enable regeneration of configure from configure.ac and aclocal.m4
    CONFIGURE_DEP="configure.ac aclocal.m4"
 
