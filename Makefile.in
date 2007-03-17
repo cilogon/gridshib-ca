@@ -489,7 +489,7 @@ PERL_SCRIPTS= $(CGI_BIN_SCRIPTS) $(UTILS) $(DEV_UTILS)
 DIST_FILES += $(PERL_DIST_MODULES)
 DIST_FILES += $(PERL_MODULE_SRCS)
 
-check-perl: $(PERL_SCRIPTS) $(REQUIRED_PERL_MODULES) $(PERL_DIST_MODULES)
+check-perl: $(PERL_SCRIPTS) $(REQUIRED_PERL_MODULES)
 	@for script in $^ ; do \
 		echo Checking $${script} ;\
 		$(PERL) -c -T -I./perl/ $${script} || exit 1 ;\
@@ -701,3 +701,13 @@ install-doc: doc
 release: dist install-doc
 	@rsync -auv $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/
 
+NMI_HOST = grandcentral.cs.wisc.edu
+
+nmi-test: dist $(DEV_UTILS)
+	@echo Uploading $(DIST_FILE)
+	@scp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
+	@echo Transferring NMI test files
+	@scp nmi/gridshib-ca-cmdfile nmi/gridshib-ca.ftp $(NMI_HOST):
+	@echo Submitting NMI job
+	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
+	@echo Done.

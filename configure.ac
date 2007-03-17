@@ -74,6 +74,7 @@ DIST_EXTRA_FILES="\
 	Makefile.in \
 	install-sh \
 	LICENSE \
+	nmi/gridshib-ca-nmitest.sh \
 	test/test-cert.pem \
 	test/test-key.pem"
 AC_SUBST(DIST_EXTRA_FILES)
@@ -493,10 +494,12 @@ if test ${MODE} = "build" ; then
    AC_PATH_PROG(TAR, tar)
    AC_PATH_PROG(FIND, find)
 
-   dnl Generate development utilities in dev-utils
+   dnl Generate development utilities and tests
    DEV_UTILS="\
-	test/test-dist.sh \
-	dev-utils/make-release.pl"
+	dev-utils/make-release.pl \
+	nmi/gridshib-ca-cmdfile \
+	nmi/gridshib-ca.ftp \
+	test/test-dist.sh"
    AC_CONFIG_FILES([${DEV_UTILS}])
 
    dnl Enable regeneration of configure from configure.ac and aclocal.m4

@@ -1,0 +1,4 @@
+method = ftp
+ftp_root = http://
+ftp_target = gridshib.globus.org/downloads/nmi-testing/@DIST_TARBALL_NAME@
+untar = true
