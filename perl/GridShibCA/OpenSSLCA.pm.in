@@ -152,6 +152,7 @@ sub signRequest
 
     # If defined, has file containing SAML extension
     my $samlExtFilename = undef;
+    my $samlExtFile = undef;
 
     # Check for our key and certificate
     if (! -e $self->{caProg})
@@ -190,20 +191,16 @@ sub signRequest
 
 	if (defined($samlExt))
 	{
-	    $self->_debug("SAML extension: %s.", $samlExt);
+	    $self->_debug("SAML extension: %s", $samlExt);
 	    # Create temporary file and put extension in it
-	    # Don't automatically unlink the file when $samlExtFile
-	    # is not used as we need file later.
-	    my $samlExtFile = File::Temp::tempfile(UNLINK => 0);
+	    ($samlExtFile, $samlExtFilename) = File::Temp::tempfile();
 	    print $samlExtFile $samlExt;
-	    # Set filename to indicate success. Will be used later.
-	    $samlExtFilename = $samlExtFile->filename();
 	    close($samlExtFile);
 	}
 	else
 	{
 	    # We should have logged an error in getSAMLExt()
-	    $self->_debug("SAML extension creationed FAILED.");
+	    $self->_debug("SAML extension creation FAILED.");
 	}
     }
 
@@ -259,7 +256,6 @@ sub getSAMLExt
     my $self = shift;
 
     use File::Spec;
-    use MIME::Base64();
 
     my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
 
@@ -269,10 +265,9 @@ sub getSAMLExt
 	return undef;
     }
 
-    # This function doesn't seem to return failure nicely
-    my $ssoResponse = MIME::Base64::decode($base64EncodedSAML);
+    my $ssoResponse = $self->base64Decode($base64EncodedSAML);
 
-    if (!defined($ssoResponse) or ($ssoResponse eq ""))
+    if (!defined($ssoResponse))
     {
 	$self->_warn("Base64 decode of SSO Response failed.");
 	return undef;
@@ -344,6 +339,61 @@ sub getSAMLExt
     }
 
     return $saml;
+}
+
+=item base64Decode()
+
+Return, as a string, the decoded version of the based64-encoded string
+passed as argument.
+
+B<Arguments:> Base64-encoded string
+
+B<Returns:> Decoded string, undef on error
+
+=cut
+
+sub base64Decode
+{
+    my $self = shift;
+    my $encodedString = shift;
+
+    if (!defined($encodedString))
+    {
+	$self->_warn("base64Decode() called without argument.");
+	return undef;
+    }
+
+    my @args = ();
+    push(@args, "base64");
+    # -d == decode
+    push(@args, "-d");
+    # -a == ascii mode, -A == one-line
+    push(@args, "-a", "-A");
+
+    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $cmd = $self->{config}->getCommand($openssl, @args);
+    $cmd->setInput($encodedString);
+    my $result = $cmd->exec();
+    if (!$result)
+    {
+	$self->_warn("Error decoding base64 SAML assertion " .
+		     "(Exec of $openssl failed): %s",
+		     $cmd->getError());
+	return undef;
+    }
+    my $decodedString = $cmd->getOutput();
+
+    if (!defined($decodedString))
+    {
+	$self->_warn("Output from base64 decode of SAML assertion undefined.");
+	return undef;
+    }
+    if ($decodedString eq "")
+    {
+	$self->_warn("Got no output from base64 decode of SAML assertion.");
+	return undef;
+    }
+    return $decodedString;
 }
 
 =back
