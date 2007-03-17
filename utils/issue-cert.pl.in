@@ -165,7 +165,7 @@ if (!$authorization->authorizeUser($userId, $idp))
 
 use File::Temp;
 
-my $tempPrivKeyFile = new File::Temp();
+my ($privKeyFile, $privKeyFilename) = File::Temp::tempfile();
 
 my @args = ();
 push(@args, "req");
@@ -173,7 +173,7 @@ push(@args, "-new");
 push(@args, "-newkey", "rsa1024");
 push(@args, "-subj", "/C=US/O=Dummy/CN=Dummy");
 push(@args, "-nodes");
-push(@args, "-keyout", $tempPrivKeyFile->filename());
+push(@args, "-keyout", $privKeyFilename);
 
 my $openssl = $config->getParam("OpenSSL");
 my $cmd = $config->getCommand($openssl , @args);
@@ -227,10 +227,11 @@ if (defined($certRegistry))
 #
 
 print $certificate;
-while (<$tempPrivKeyFile>)
+while (<$privKeyFile>)
 {
     print;
 }
+close($privKeyFile);
 exit(0);
 
 ######################################################################

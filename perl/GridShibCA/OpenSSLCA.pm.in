@@ -194,7 +194,7 @@ sub signRequest
 	    # Create temporary file and put extension in it
 	    # Don't automatically unlink the file when $samlExtFile
 	    # is not used as we need file later.
-	    my $samlExtFile = new File::Temp(UNLINK => 0);
+	    my $samlExtFile = File::Temp::tempfile(UNLINK => 0);
 	    print $samlExtFile $samlExt;
 	    # Set filename to indicate success. Will be used later.
 	    $samlExtFilename = $samlExtFile->filename();
@@ -279,8 +279,8 @@ sub getSAMLExt
     }
 
     # Write to temporary file as required by gridshib-saml-issuer
-    my $ssoResponseFile = new File::Temp();
-    my $ssoResponseFilename = $ssoResponseFile->filename();
+    my ($ssoResponseFile, $ssoResponseFilename) =
+	File::Temp::tempfile(UNLINK => 1);
     print $ssoResponseFile $ssoResponse;
     close($ssoResponseFile);
 
