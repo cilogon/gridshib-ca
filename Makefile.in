@@ -704,7 +704,7 @@ release: dist install-doc
 NMI_HOST = grandcentral.cs.wisc.edu
 NMI_FILES = @NMI_FILES@
 
-nmi-test: dist $(DEV_UTILS)
+nmi-test: dist $(NMI_FILES)
 	@echo Uploading $(DIST_FILE)
 	@rsync -auvp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
 	@echo Transferring NMI test files
