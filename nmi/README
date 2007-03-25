@@ -13,3 +13,11 @@ To submit a test build:
 Then visit the the following URL to view the results:
 
 http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
+
+The following platforms are currently not included:
+ ppc_aix_5.2 - missing openssl
+ sun4u_sol_5.9 - missing openssl
+ x86_deb_3.1 - missing openssl
+ x86_rhas_3 - old version of perl
+ ia64_sles_8 = old version of openssl
+

@@ -23,6 +23,19 @@ set -e
 echo "GridShib-CA NMI TEST Script running..."
 date
 
+# Output a bunch of stuff for debugging
+echo ""
+echo "PATH:"
+echo ${PATH}
+echo ""
+echo "LD_LIBRARY_PATH:"
+echo ${LD_LIBRARY_PATH}
+echo ""
+PERL=`which perl`
+echo "perl: ${PERL}"
+OPENSSL=`which openssl`
+echo "openssl: ${OPENSSL}"
+
 dist_dirname=$1
 shift
 
@@ -30,6 +43,8 @@ if test X${dist_dirname} = X ; then
     echo "Usage: $0 <dist-dirname>"
     exit 1
 fi
+
+echo "Distribution directory: ${dist_dirname}"
 
 # CD into unpacked distribution directory.
 cd ${dist_dirname}
@@ -56,16 +71,23 @@ echo "Configure options: ${confOpts}"
 # Build and install, testing on the way
 #
 
-echo "Building and testing:"
+echo "Building:"
 make
+
+echo "Running 'make test':"
 make test
 
-echo "Installing and testing:"
+echo "Installing:"
 make install
+
+echo "Running create-openssl-ca.pl:"
 utils/create-openssl-ca.pl
+
+echo "Running 'make test-post-install':"
 make test-post-install
 
 echo "Success."
+date
 echo "GridShib-CA NMI Test Script done."
 
 exit 0
