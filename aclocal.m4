@@ -11,6 +11,38 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+dnl Checks for a version of OpenSSL. Uses openssl/opensslv.h
+dnl Usage: CHECK_OPENSSL_VERSION(version-hexstring,
+dnl				Action if =>,
+dnl				Action if <)
+dnl version-hexstring is the OpenSSL version as a hex value, e.g.
+dnl 0x0090607fL is 0.9.6g (07==g).
+dnl
+dnl Derived from:
+dnl   http://www.opensync.org/browser/plugins/sunbird/macros/neon.m4?rev=971
+dnl
+dnl Copyright (C) 1998-2004 Joe Orton <joe@manyfish.co.uk>
+dnl
+dnl This file is free software; you may copy and/or distribute it with
+dnl or without modifications, as long as this notice is preserved.
+dnl This software is distributed in the hope that it will be useful, but
+dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even
+dnl the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+dnl PURPOSE.
+
+AC_DEFUN([AC_CHECK_OPENSSL_VERSION], [
+AC_EGREP_CPP([good], [
+#include <openssl/opensslv.h>
+#if OPENSSL_VERSION_NUMBER >= $1
+good
+#endif
+], [$2], [$3]
+)])
+dnl set GLOBUS_LOCATION to the proper value for $GLOBUS_LOCATION
+dnl Checks (in order):
+dnl    --with-globus-location=<path>
+dnl    The environment variable $GLOBUS_LOCATION
+dnl
 AC_DEFUN([AC_GLOBUS_LOCATION],[dnl
    AC_MSG_CHECKING(for GLOBUS_LOCATION)
    AC_ARG_WITH(globus-location,
@@ -31,7 +63,7 @@ AC_DEFUN([AC_PROG_PERL_MODULES],[dnl
   ac_perl_modules="$1"
   # Make sure we have perl
   if test -z "$PERL"; then
-     AC_CHECK_PROG(PERL,perl,perl)
+     AC_PATH_PROG(PERL,perl)
   fi
 
   if test "x$PERL" != x; then

@@ -64,6 +64,18 @@ dnl Clean up a path, removing duplicate /'s
 AC_DEFUN([AC_CLEAN_PATH],
 [$1=`echo ${$1} | sed -e "s/\/\/*/\//g"`])dnl
 
+
+dnl ----------------------------------------------------------------------	
+dnl Find required binaries
+AC_PROG_INSTALL
+AC_PATH_PROG(PERL, perl)
+AC_PATH_PROG(POD2HTML, pod2html)
+AC_PATH_PROG(MKDIR, mkdir)
+AC_PATH_PROG(RMDIR, rmdir)
+AC_PATH_PROG(CP, cp)
+AC_PATH_PROG(TOUCH, touch)
+AC_PATH_PROG(RM, rm)
+
 dnl ------------------------------------------------------------
 dnl Different groups of files
 
@@ -220,18 +232,6 @@ dnl Extra documentation files to be installed
 EXTRA_DOC_FILES="doc/*.jpg"
 AC_SUBST(EXTRA_DOC_FILES)
 
-
-dnl ----------------------------------------------------------------------	
-dnl Find required binaries
-AC_PROG_INSTALL
-AC_PATH_PROG(PERL, perl)
-AC_PATH_PROG(POD2HTML, pod2html)
-AC_PATH_PROG(MKDIR, mkdir)
-AC_PATH_PROG(RMDIR, rmdir)
-AC_PATH_PROG(CP, cp)
-AC_PATH_PROG(TOUCH, touch)
-AC_PATH_PROG(RM, rm)
-
 dnl ----------------------------------------------------------------------
 dnl check for required perl modules that should be on any reasonably
 dnl recent perl, but don't always seem to be
@@ -251,10 +251,19 @@ AC_ARG_WITH(openssl-path,
 	[OPENSSL_PATH=$PATH])
 
 AC_PATH_PROG(OPENSSL, openssl, [FAILED], [$OPENSSL_PATH])
-
 if test ${OPENSSL} = "FAILED"; then
    AC_MSG_ERROR([Could not find openssl binary in path.])
 fi
+
+AC_CHECK_HEADER([openssl/opensslv.h],
+	[],
+	[AC_MSG_ERROR([OpenSSL header file not found.])])
+
+AC_MSG_CHECKING([for OpenSSL version > 0.9.7])
+AC_CHECK_OPENSSL_VERSION([0x00907000L],
+	[AC_MSG_RESULT([ok])],
+	[AC_MSG_ERROR([OpenSSL version is too old.])])
+
 
 BINARIES="${BINARIES} openssl-ca/openssl-ca"
 SUBDIRS="${SUBDIRS} openssl-ca"
