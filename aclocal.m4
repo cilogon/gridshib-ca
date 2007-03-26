@@ -59,6 +59,39 @@ AC_DEFUN([AC_GLOBUS_LOCATION],[dnl
 
      
      
+dnl -*- mode: autoconf -*-
+dnl Get fully qualified hostname
+dnl Usage: AC_HOSTNAME([variable_name],[if-failure])
+AC_DEFUN([AC_HOSTNAME],[dnl
+  tempHOSTNAME=""
+  AC_PATH_PROG(PROG_HOSTNAME,hostname)
+  if test -n "$PROG_HOSTNAME"; then
+    $PROG_HOSTNAME -f > /dev/null 2>&1
+    if test $? -eq 0; then
+      tempHOSTNAME=`$PROG_HOSTNAME -f`
+    fi
+  fi
+  if test -z "$tempHOSTNAME"; then
+     AC_PATH_PROG(PROG_UNAME,uname)
+     if test -n "$PROG_UNAME"; then
+	tempHOSTNAME=`$PROG_UNAME -n`
+     fi
+  fi
+  if test -z "$tempHOSTNAME"; then
+     :
+     $2
+  else
+     echo "$tempHOSTNAME" | grep "\." > /dev/null 2>&1
+     if test $? -eq 0 ; then
+       # Success
+       $1=$tempHOSTNAME
+     else
+       :
+       $2
+     fi
+  fi
+])dnl
+
 AC_DEFUN([AC_PROG_PERL_MODULES],[dnl
   ac_perl_modules="$1"
   # Make sure we have perl

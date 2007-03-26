@@ -6,7 +6,7 @@ AC_INIT(gridshib-ca, 0.4.0)
 
 # Status of this version: e.g. preview, alpha, bets
 # Can be empty string
-PACKAGE_RELEASE_STATUS="preview"
+PACKAGE_RELEASE_STATUS="rc4"
 
 AC_REVISION($Id$)
 
@@ -75,6 +75,15 @@ AC_PATH_PROG(RMDIR, rmdir)
 AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
+
+dnl ------------------------------------------------------------
+dnl Figure out our FQDN
+AC_ARG_WITH(hostname,
+	AC_HELP_STRING([--with-hostname],
+		[Specify the fully-qualified hostname]),
+	[HOSTNAME=$withval],
+	[AC_HOSTNAME([HOSTNAME],
+		[AC_MSG_ERROR([Could not determine fully-qualified hostname. Specify with --with-hostname=<name>])])])
 
 dnl ------------------------------------------------------------
 dnl Different groups of files
@@ -377,9 +386,9 @@ AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
 AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
 AC_ARG_WITH(www-hostname,
 	AC_HELP_STRING([--with-www-hostname],
-		[Specify the hostname used in the GridShib CA URL. (Default: <uname -n>)]),
+		[Specify the hostname used in the GridShib CA URL. (Default: local hostname)]),
 	[WWW_HOSTNAME=$withval],
-	[WWW_HOSTNAME=`uname -n`])
+	[WWW_HOSTNAME=$HOSTNAME])
 AC_MSG_RESULT(${WWW_HOSTNAME})
 AC_SUBST(WWW_HOSTNAME)
 
@@ -395,7 +404,7 @@ AC_SUBST(WWW_USER)
 dnl Figure out our base DN
 AC_MSG_CHECKING([for our base DN])
 BASE_DN=""
-hostnameComponents=`hostname | sed -e "s/\./ /g"`
+hostnameComponents=`echo $HOSTNAME | sed -e "s/\./ /g"`
 for component in $hostnameComponents ; do
     test -n "${BASE_DN}" && BASE_DN="${BASE_DN},"
     BASE_DN="${BASE_DN}DC=${component}"
