@@ -22,6 +22,7 @@ set -e
 
 echo "GridShib-CA NMI TEST Script running..."
 date
+hostname
 
 # Output a bunch of stuff for debugging
 echo ""
@@ -31,10 +32,12 @@ echo ""
 echo "LD_LIBRARY_PATH:"
 echo ${LD_LIBRARY_PATH}
 echo ""
+echo "Key binaries:"
 PERL=`which perl`
 echo "perl: ${PERL}"
 OPENSSL=`which openssl`
 echo "openssl: ${OPENSSL}"
+echo ""
 
 dist_dirname=$1
 shift
