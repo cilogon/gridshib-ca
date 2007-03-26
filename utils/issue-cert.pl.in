@@ -70,6 +70,30 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 =cut
 
 ######################################################################
+#
+# If we're running as root, switch to UID and GID of the WWW user
+#
+
+if ($> == 0)
+{
+    # Don't import all functions from POSIX as we get clash with tmpnam()
+    use POSIX ();
+    my $wwwUser = "@WWW_USER@";
+
+    my ($name,$passwd,$uid,$gid,
+	$quota,$comment,$gcos,$dir,$shell,$expire) = getpwnam($wwwUser);
+
+    if (!defined($name))
+    {
+	die "Could not get uid of www user ($wwwUser): $!";
+    }
+    
+    print "Running as $wwwUser (uid = $uid, gid = $gid)\n";
+    POSIX::setgid($gid);
+    POSIX::setuid($uid);
+}
+
+######################################################################
 
 use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
