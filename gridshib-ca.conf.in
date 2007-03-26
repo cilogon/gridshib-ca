@@ -37,7 +37,7 @@ useBundledCAs = True
 
 # URL to show to user after credential acquisition is successful.
 # Set to value NONE to disable.
-redirectURL = http://gridshib.globus.org
+redirectURL = NONE
 
 ######################################################################
 #
