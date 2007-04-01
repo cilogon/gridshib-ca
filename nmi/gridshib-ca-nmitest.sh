@@ -39,6 +39,9 @@ OPENSSL=`which openssl`
 echo "openssl: ${OPENSSL}"
 echo ""
 
+# OpenSSL on the NMI B&T platforms seems to require this
+export LIBS="-ldl"
+
 dist_dirname=$1
 shift
 
@@ -65,6 +68,19 @@ confOpts="${confOpts} --with-cgi-bin-dir=${tmpDir}/gridshib-ca-cgi/"
 confOpts="${confOpts} --with-gridshib-ca-html_dir=${tmpDir}/gridshib-ca-html/"
 # Make web user "us" so that chown() during installation work
 confOpts="${confOpts} --with-www-user=${USER}"
+
+uname > /dev/null 2>&1
+if test $? -eq 0 ; then
+    arch=`uname`
+else
+    arch="unknown"
+fi
+
+if test $arch -eq "SunOS"; then
+    # Specify FQDN
+    hostname=`hostname`
+    confOpts="${confOpts} --with-hostname=${hostname}.example.com"
+fi
 
 echo "Configure options: ${confOpts}"
 

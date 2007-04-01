@@ -30,12 +30,21 @@ dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even
 dnl the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 dnl PURPOSE.
 
+dnl Changed to use AC_RUN_IFELSE instead of AC_EGREP_CPP so that it honors
+dnl CFLAGS.
+
 AC_DEFUN([AC_CHECK_OPENSSL_VERSION], [
-AC_EGREP_CPP([good], [
+AC_RUN_IFELSE([
 #include <openssl/opensslv.h>
+int
+main()
+{
+int status = 1;
 #if OPENSSL_VERSION_NUMBER >= $1
-good
+status = 0;
 #endif
+return(status);
+}
 ], [$2], [$3]
 )])
 dnl set GLOBUS_LOCATION to the proper value for $GLOBUS_LOCATION

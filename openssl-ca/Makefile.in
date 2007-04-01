@@ -66,6 +66,8 @@ CC = @CC@
 #
 
 LDLIBS = @LIBS@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
 
 OBJ_FILES = openssl-ca.o apps.o app_rand.o
 

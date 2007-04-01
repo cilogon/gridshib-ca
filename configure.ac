@@ -251,7 +251,6 @@ AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::
 dnl ----------------------------------------------------------------------
 dnl Stuff needed to build our openssl-based CA
 AC_PROG_CC
-AC_CHECK_LIB(crypto, CRYPTO_malloc)
 
 AC_ARG_WITH(openssl-path,
 	AC_HELP_STRING([--with-openssl-path],
@@ -264,6 +263,22 @@ if test ${OPENSSL} = "FAILED"; then
    AC_MSG_ERROR([Could not find openssl binary in path.])
 fi
 
+opensslbindir=`dirname ${OPENSSL}`
+opensslbasedir=`dirname ${opensslbindir}`
+
+if test -d ${opensslbasedir}/include ; then
+   CFLAGS="${CFLAGS} -I${opensslbasedir}/include"
+   AC_MSG_RESULT([Adding -I${opensslbasedir}/include to CFLAGS])
+fi
+
+if test -d ${opensslbasedir}/lib ; then
+   LDFLAGS="${LDFLAGS} -L${opensslbasedir}/lib"
+   AC_MSG_RESULT([Adding -L${opensslbasedir}/lib to LDFLAGS])
+fi
+
+AC_CHECK_LIB(crypto, CRYPTO_malloc,
+        [],
+	[AC_MSG_ERROR([Could not find OpenSSL libraries (libcrypto)])])
 AC_CHECK_HEADER([openssl/opensslv.h],
 	[],
 	[AC_MSG_ERROR([OpenSSL header file not found.])])
