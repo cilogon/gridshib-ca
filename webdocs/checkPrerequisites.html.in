@@ -54,7 +54,7 @@ End If
 <td rowspan=2 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
 <td colspan=2>
 To download the credential to your desktop requires that you have
-<a href="http://java.sun.com/products/javawebstart/download.jsp">
+<a href="http://java.com/download/">Jave Runtime Environment (JRE) and
 Java Web Start</a> installed on your system.
 
 
