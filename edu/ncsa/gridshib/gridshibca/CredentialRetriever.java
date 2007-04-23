@@ -299,6 +299,8 @@ public class CredentialRetriever {
 
         gui.displayMessage("Press OK to close application.");
         gui.waitForOK();
+        // Timeout and exit in 10 seconds
+        //new Timeout(10000).start();
 	}
        
     // Parse commandline arguments. They should be of the form
@@ -612,5 +614,28 @@ public class CredentialRetriever {
         {
              gui.displayMessage("DEBUG: " + msg);  
         }
+    }
+}
+
+// Thread that kills us after timeout
+// Time is in milliseconds
+class Timeout extends Thread
+{
+    int timeout;
+
+    public Timeout(int time)
+    {   
+        timeout = time;
+    }
+
+    public synchronized void run()
+    {
+        try
+        {   
+            sleep(timeout);
+        }
+        catch (InterruptedException e)
+        {}
+        System.exit(0);
     }
 }
