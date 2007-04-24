@@ -617,7 +617,7 @@ realclean::
 # Tests
 #
 
-test: chmod-tests check-perl test-openssl-ca
+test: chmod-tests check-perl test-openssl-ca test-myproxy-mapapp
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
 	openssl-ca/openssl-ca-test.sh
@@ -626,6 +626,22 @@ test-post-install: test-cert-issue
 
 test-cert-issue:
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@openidp.org  urn:mace:inqueue:openidp.org
+
+test-myproxy-mapapp: utils/myproxy-mapapp.pl
+	@echo "Calling myproxy-mapapp.pl with good DN."
+	@if utils/myproxy-mapapp.pl "@OPENSSL_RELATIVE_DN@/Test User" ; then \
+		echo "Success." ;\
+	else \
+		echo "myproxy-mapapp.pl failed." ;\
+		exit 1 ;\
+	fi
+	@echo "Calling myproxy-mapapp.pl with bogus DN."
+	@if utils/myproxy-mapapp.pl "/C=Bogus/CN=DN" ; then \
+		echo "myproxy-appmapp.pl accepted bogus DN." ;\
+		exit 1 ;\
+	else \
+		echo "Success." ;\
+	fi
 
 chmod-tests: $(TEST_SCRIPTS)
 	chmod 755 $(TEST_SCRIPTS)
@@ -712,3 +728,5 @@ nmi-test: dist $(NMI_FILES)
 	@echo Submitting NMI job
 	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
 	@echo Done.
+	@echo URL: "http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
+
