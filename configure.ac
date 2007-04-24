@@ -6,7 +6,7 @@ AC_INIT(gridshib-ca, 0.4.0)
 
 # Status of this version: e.g. preview, alpha, bets
 # Can be empty string
-PACKAGE_RELEASE_STATUS="rc4"
+PACKAGE_RELEASE_STATUS="rc5"
 
 AC_REVISION($Id$)
 
