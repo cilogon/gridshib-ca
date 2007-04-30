@@ -112,7 +112,15 @@ sub getDN
 	$self->_error($nameMapper->getError());
 	return undef;
     }
-    my $DN = sprintf("%s, %s", $userDN, $self->{relativeDN});
+    my $DN = sprintf("%s,%s", $userDN, $self->{relativeDN});
+
+    # Do some clean up of DN
+
+    # Removing all whitespace before and after commas.
+    $DN =~ s/\s*,\s*/,/g;
+
+    # Convert any attribute types to uppercase.
+    $DN =~ s/(\w+)=/\U$1\E=/g;
 
     return $DN;
 }
