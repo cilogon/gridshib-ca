@@ -646,6 +646,10 @@ test-myproxy-mapapp: utils/myproxy-mapapp.pl
 chmod-tests: $(TEST_SCRIPTS)
 	chmod 755 $(TEST_SCRIPTS)
 
+test-dist: dist
+	@echo Testing distribution $(DIST_FILE)
+	@/bin/sh test/test-dist.sh $(DIST_FILE)
+
 ######################################################################
 ######################################################################
 #
