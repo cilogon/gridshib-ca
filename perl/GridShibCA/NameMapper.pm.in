@@ -239,7 +239,7 @@ sub getIdpPolicy
 
     $fh->close();
 
-    # If we have falled through, policy will be undef
+    # If we have fallen through, policy will be undef
     if (!defined($policy))
     {
 	$self->_error("No match for Idp %s in policy mapping file (%s)",
