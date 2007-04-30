@@ -13,10 +13,10 @@
 # CA's relative DN. For example, the following string would set a OU
 # component eequal to the IdP's id and then a CN equal to the user's
 # ePPN:
-# urn:mace:inqueue:*  "cn=${REMOTE_USER}, ou=${HTTP_SHIB_IDENTITY_PROVIDER}"
+# urn:mace:inqueue:*  "CN=${REMOTE_USER},OU=${HTTP_SHIB_IDENTITY_PROVIDER}"
 #
 # Any line starting with a "#" is treated as a comment and ignored.
 # A "*" matches any string.
 
 # Any idp in InQueue. Use the IdP id as the OU component and ePPN as the CN
-urn:mace:inqueue:* "cn=${REMOTE_USER}, ou=${HTTP_SHIB_IDENTITY_PROVIDER}"
+urn:mace:inqueue:* "CN=${REMOTE_USER},OU=${HTTP_SHIB_IDENTITY_PROVIDER}"
