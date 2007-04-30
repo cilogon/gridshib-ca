@@ -369,6 +369,13 @@ BIO_set_fp(in,stdin,BIO_NOCLOSE|BIO_FP_TEXT);
     }
 
     if ((x=X509_new()) == NULL) goto end;
+
+    if (X509_set_version(x, 2 /* v3 */) != 1)
+    {
+        BIO_printf(bio_err, "error setting certificate version\n");
+        goto end;
+    }
+        
     ci=x->cert_info;
 
     if (sno == NULL)

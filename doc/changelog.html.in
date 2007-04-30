@@ -12,6 +12,8 @@
 
 <b>Version @PACKAGE_VERSION_STRING@:</b>
 <ul>
+<li>Fixed OpenSSL CA so that it issues V3 certificates instead of V1
+	(Bug (<a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5254">5254</a>)
 <li>Added test in the form of 'make test' and 'make test-post-install'
 <li>Integrate GridShib SAML Tools to bind simple attribute assertion to EEC
 <li>Handle creating DN from mix of atttributes (Bug <a href="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4889">4889</a>)
