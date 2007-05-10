@@ -268,8 +268,14 @@ $(GRIDSHIB_CA_HTML_DIR):
 install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES) $(JARFILE)
 	@echo "Installing html to $(GRIDSHIB_CA_HTML_DIR)"
 	@for file in $(HTML_FILES) $(IMAGES) $(JARFILE) ; do \
+		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
+		if test -f $(GRIDSHIB_CA_HTML_DIR)/$${f} ; then \
+			echo "  Avoiding overwriting existing file." ;\
+			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR)/$${f}.new ;\
+		else \
+			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
+		fi \
 	done
 
 $(SHIB_PROTECTED_CGI_BIN_DIR):
