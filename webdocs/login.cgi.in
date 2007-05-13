@@ -117,6 +117,7 @@ if (!defined($user))
 }
 
 my $DN = undef;
+my $rfc2253DN = undef;
 
 if (defined($user))
 {
@@ -129,6 +130,11 @@ if (defined($user))
     if (!defined($DN))
     {
 	errorExit("Could not get DN for user: " . $ca->getError());
+    }
+    $rfc2253DN = $ca->getDN();
+    if (!defined($rfc2253DN))
+    {
+	errorExit("Could not get (rfc2253) DN for user: " . $ca->getError());
     }
 }
 
@@ -162,6 +168,10 @@ my $formattedDN = $DN;
 # Replace any spaces with non-breaking spaces
 $formattedDN =~ s/ /&nbsp;/g;
 
+my $formattedRFC2253DN = $rfc2253DN;
+# Replace any spaces with non-breaking spaces
+$formattedRFC2253DN =~ s/ /&nbsp;/g;
+
 ######################################################################
 
 my $htmlHeader = $cgi->getHTMLHeader();
@@ -188,10 +198,19 @@ my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
 
 print <<"EOF";
 <center>
-Welcome $user.
+<b>Welcome $user</b>
 <p>
-Your GridShib-CA X.509 identity is:<br>
+<hr>
+Your GridShib-CA X.509 identity from this CA will be:
+<p>
+Globus Grid-Mapfile Format:<br>
 $formattedDN
+<p>
+Standard RFC 2253 Format:<br>
+$formattedRFC2253DN
+<p>
+<hr>
+<b>Get your Grid Credential</b>
 <p>
 <form action=\"$shibProtectedCGIBinURL/create-jnlp\">
 Credential Lifetime:
@@ -228,6 +247,7 @@ print <<"EOF";
   <input type=\"submit\" value=\"Press here to generate and download Grid credential.\">
 </form>
 <p>
+<hr>
 When the Credential Retriever application completes, you may click on
 the following button to return to the main GridShib CA page or simply
 close this browser window.
