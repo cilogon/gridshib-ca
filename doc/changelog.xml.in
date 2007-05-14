@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="changelog">
+<?dbhtml filename="@DOC_DIR@/changelog.html" ?>
+
+<title>GridShib-CA ChangeLog</title>
+ 
+<sect1 id="version-@PACKAGE_VERSION@">
+<title>Current Version: @PACKAGE_VERSION@</title>
+<para>
+<itemizedlist>
+<listitem><para>Moved documentation to docbook</para></listitem>
+<listitem><para>Fixed OpenSSL CA so that it issues V3 certificates instead of V1
+	(Bug (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5254">5254</ulink>)</para></listitem>
+<listitem><para>Added test in the form of 'make test' and 'make test-post-install'</para></listitem>
+<listitem><para>Integrate GridShib SAML Tools to bind simple attribute assertion to EEC</para></listitem>
+<listitem><para>Handle creating DN from mix of atttributes (Bug <ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4889">4889</ulink>)</para></listitem>
+<listitem><para>Use "DC" components for relative DN (Bug <ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4887">4887</ulink>).</para></listitem>
+<listitem><para>Added 'redirectURL' option to configure file so that JWS
+	application can send browser to URL after successful credential
+	download.</para></listitem>
+<listitem><para>Added 'useBundledCAs' option to gridshib-ca.conf to allow turning
+	off use of bundled CAs (using Java-provided default CAs instead).</para></listitem>
+<listitem><para>Fallback to prompting user if CA that issued portal https
+	certificate is unrecognized.
+	(Bug <ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4875">4875</ulink>).</para></listitem>
+<listitem><para>configure.ac: --with-gridshib-ca-conf-dir uses ${prefix} instead 
+of static '/usr/local/'</para></listitem>
+<listitem><para>Added <ulink url="http://gridshib.globus.org/docs/gridshib-ca-0.3.0/https-cas.html">documentation
+		for adding CA to GridShibCA.jar</ulink></para></listitem>
+<listitem><para>Fixed bug
+<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4973">4973</ulink>
+causing bad CA filenames.</para></listitem>
+<listitem><para>Fixed bug
+<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=4877">4877</ulink>
+typos in configure.</para></listitem>
+</itemizedlist>
+</para>
+</sect1>
+
+<sect1 id="version-0.3.0-alpha">
+<title>Version 0.3.0 Alpha</title>
+<itemizedlist>
+<listitem><para>Added support for <ulink url="protal-delegation.html">delegation of
+		X509 credential to portal</ulink> (disabled by default).</para></listitem>
+<listitem><para>Run-time <ulink url="install.html#conf">configuration of trusted Idps
+		and portals</ulink> added.</para></listitem>
+<listitem><para>Cleaned up protocol between CredentialRetriever and GridShib-CA. Use
+	HTTP status code instead of own internal status header.</para></listitem>
+<listitem><para>CredentialRetriever now generating key pair on client side and
+	sending PKCS#10 certificate request to generateCred.pl.</para></listitem>
+<listitem><para>Now builds and installs own openssl-based ca (openssl-ca)
+	that allows setting of DN by GridShib CA</para></listitem>
+<listitem><para>Includes GridShibCA::MyProxyCA.pm, a pure perl MyProxy client to
+	allow <ulink url="myproxy-ca.html">outsourcing of CA functionality to
+		MyProxy</ulink>.</para></listitem>
+<listitem><para>Now uses a set of <ulink url="modules.html">PERL modules</ulink> to
+	accomplish basic tasks, which can be configured
+	using <ulink url="install.html#gridshib-ca.conf">gridshib-ca.conf</ulink>
+	file. </para></listitem>
+<listitem><para>Starting to use RFC 2253 format DNs internally.</para></listitem>
+<listitem><para>CredentialRetreiver.java: Circumvent JWS installing its own
+	SSLSocketFactory so that default SSLSocketFactory is used and our
+	list of trusted CAs is honored.</para></listitem>
+<listitem><para>Added debug support with debug and clientDebug parameters in
+	configuration file.</para></listitem>
+<listitem><para>Added support for requested lifetimes from user.</para></listitem>
+<listitem><para>Added support for updating user's trusted certificates directory</para></listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id = "version-0.2.0">
+<title>Version 0.2.0</title>
+<itemizedlist>
+<listitem><para>Changelog started Oct 7, 2006</para></listitem>
+</itemizedlist>
+</sect1>
+
+</chapter>

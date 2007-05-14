@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="license">
+<?dbhtml filename="@DOC_DIR@/license.html" ?>
+<title>GridShib-CA License</title>
+<para>
+This package is licensed under the University of Illinois license,
+with some exceptions in <link linkend="other-licenses">Other
+Licenses</link>.
+</para>
+<sect1 id="main-license">
+<title>University of Illinois License</title>
+<para>
+Copyright 2007 The Board of Trustees of the University of Illinois.
+All rights reserved.
+</para>
+<para>
+Developed by:
+</para>
+<para>
+<simplelist>
+<member>The GridShib Project</member>
+<member>National Center for Supercomputing Applications</member>
+<member>University of Illinois</member>
+<member><ulink
+	   url="http://gridshib.globus.org/">http://gridshib.globus.org</ulink></member>
+</simplelist>
+</para>
+<para>
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal with the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+</para>
+<para>
+<itemizedlist>
+<listitem>
+<para>
+  Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimers.
+</para>
+</listitem>
+<listitem>
+<para>
+  Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimers in the
+  documentation and/or other materials provided with the distribution.
+</para>
+</listitem>
+<listitem>
+<para>
+  Neither the names of the National Center for Supercomputing
+  Applications, the University of Illinois, nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this Software without specific prior written permission.
+</para>
+</listitem>
+</itemizedlist>
+</para>
+<para>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+</para>
+</sect1>
+<sect1 id="other-licenses">
+<title>Other Licenses</title>
+<para>
+Exceptions:
+</para>
+<para>
+<itemizedlist>
+<listitem><para>
+  This product includes cryptographic software written by Eric Young
+  (eay@cryptsoft.com). The openssl-ca code in openssl-ca/ is under the
+  OpenSSL license. See openssl-ca/LICENSE.
+</para></listitem>
+<listitem><para>
+  The Globus CoG kit files in org/globus/util are under the Apache2
+  License. See org/globus/util/LICENSE.txt
+</para></listitem>
+</itemizedlist>
+</para>
+</sect1>
+</chapter>

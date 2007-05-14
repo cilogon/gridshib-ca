@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="install">
+<?dbhtml filename="@DOC_DIR@/install.html" ?>
+<title>GridShib-CA Installation</title>
+
+<sect1 id="prerequisites">
+<title>Prerequisites</title>
+<para>
+The system on which you install the GridShib CA needs the following
+software installed:
+<itemizedlist>
+<listitem><para><ulink url="http://httpd.apache.org/">Apache HTTP
+Server</ulink> (Tested with 2.0.54). You need to have HTTPS/SSL
+configured on the server (the best documentation for this seems to be
+the file README.QUICKSTART.SSL which should be included with your
+server.)</para></listitem>
+<listitem><para><ulink
+url="http://shibboleth.internet2.edu/latest.html">Shibboleth SP
+software</ulink> (Tested with 1.3)</para></listitem>
+<listitem><para><ulink url="http://www.perl.org">Perl</ulink> (Version 5.8.5
+or later should work, early versions might.)</para></listitem>
+<listitem><para><ulink url="http://www.openssl.org">OpenSSL</ulink> Both the
+binary and the development libraries and header files. Version 0.9.7
+or later.</para></listitem>
+</itemizedlist></para></sect1>
+<sect1 id="shib-conf">
+<title>Shibboleth Configuration</title>
+<para>You need to configure Shibboleth so that you have a Shibboleth
+protected cgi-bin directory into which you will subsequently install
+the GridShib-CA cgi-bin scripts. You can find the directions for
+installing and configuring Shibboleth on the
+<ulink url="https://spaces.internet2.edu/display/SHIB/WebHome">Shibboleth
+	wiki</ulink>.</para>
+<para>For the purposes of these installation directions it is assumed
+that the URL for the Shibboleth-protected cgi-bin directory is
+/cgi-bin/shib-protected/, if not adjust accordingly.</para>
+</sect1>
+<sect1 id="downlaod">
+<title>Download GridShib-CA Software</title>
+<para>The source code for the GridShib-CA is available from: <ulink
+url="http://gridshib.globus.org/downloads/@DIST_TARBALL_NAME@">http://gridshib.globus.org/downloads/@DIST_TARBALL_NAME@</ulink></para>
+</sect1>
+<sect1 id="install">
+<title>Installation</title>
+<para>These directions assume you are installing GridShib-CA with
+version @PACKAGE_VERSION_STRING@. If not replace all instances of
+@PACKAGE_VERSION_STRING@ with the version you are actually
+installing.</para>
+<orderedlist>
+<listitem><para>Unpack the gridshib-ca tarball and cd into the resulting
+	directory. 
+<screen>
+% tar xfz @DIST_FILE_BASE@.tar.gz
+% cd @DIST_DIR@
+</screen>
+</para></listitem>
+<listitem><para>Run "configure". configure takes a number
+of arguments, which can be viewed by running "configure --help".
+Assuming you are using the default paths configure should handle most
+of the work for you, the only help you may need to give it would be to
+specify the following:
+<screen>
+--with-gridshib-ca-conf-dir=&lt;path&gt;
+</screen>
+The GridShib-CA configuration files, PERL modules,
+basically everything that is not served by directly by Apache is
+stored in this directory (which should not be accessible by HTTP).
+The default location
+is <emphasis>@GRIDSHIB_CA_CONF_DIR@</emphasis>, but this can be
+overridden using this configure option.
+<screen>
+--with-www-user=&lt;username&gt;
+</screen>
+If the username that your Apache HTTPD runs under is something other
+than "apache" you need to tell configure this with '-with-www-user'
+<screen>
+--with-www-dir=&lt;path&gt;
+</screen>
+If your Apache root directory is not "/var/www/" then you need to tell
+configure this with '--with-www-dir'.
+</para></listitem>
+<listitem><para>Run "make"
+<screen>
+% make
+</screen>
+</para></listitem>
+<listitem><para>It's a good idea to run the tests at this point to verify things
+look good at this point. This should exit without errors:
+<screen>
+% make test
+</screen>
+</para></listitem>
+<listitem><para>As root, run "make install"
+<screen>
+# make install
+</screen>
+</para></listitem>
+</orderedlist>
+</sect1>
+<sect1 id="ca-options">
+<title>Backend CA Options</title>
+<para>These directions assume you are using the OpenSSL-based CA that
+comes with the GridShib-CA, which is the easiest route. You can also
+use
+<link linkend="myproxy-ca">MyProxy as a backend CA for the
+GridShib-CA</link>.</para>
+<para>To install the OpenSSL-based CA, you need to install the CA
+certificate and private key for the GridShib CA. Running the script
+<ulink url="perl/create-openssl-ca.html">utils/create-openssl-ca.pl</ulink>
+will generate these automatically for you, creating a CA based on some
+defaults or the options you provided to configure.</para>
+<para>Now got to <ulink url="#test">Testing</ulink></para>
+</sect1>
+<sect1 id="conf">
+<title>Configuration Options</title>
+<para>The GridShib-CA has several configuration files that control its
+behavior. These files are all found in the <emphasis>gridshib-ca-conf-dir</emphasis>
+as provided to <ulink url="#configure">configure</ulink>.
+<itemizedlist>
+<listitem><para><ulink url="#gridshib-ca.conf">gridshib-ca.conf</ulink>: General
+	configuration
+</para></listitem>
+<listitem><para><ulink url="#authorizedIdps.conf">authorizedIdps.conf</ulink>: List of
+	Shibboleth IdPs trusted by the GridShib-CA
+</para></listitem>
+<listitem><para><ulink url="#authorizedPortals.con">authorizedPortals.conf</ulink>: List
+	of Portals authorized to <ulink url="portal-delegation.html">receive
+		delegations</ulink> from the GridShib-CA
+</para></listitem>
+</itemizedlist></para>
+<sect2 id="gridshib-ca.conf">
+<title>gridshib-ca.conf</title>
+<para>The GridShib-CA uses the file
+@GRIDSHIB_CA_CONF_DIR@/gridshib-ca.conf to control a number of
+configuration options, including:
+<itemizedlist>
+<listitem><para>What <ulink url="modules.html">PERL modules</ulink> are used to
+	accomplish tasks, allowing deployment modification of behavior;
+</para></listitem>
+<listitem><para>Syslog options to control how the GridShib-CA logs;
+</para></listitem>
+<listitem><para>Locations of files including the CA certificate, private key;
+</para></listitem>
+<listitem><para>Where issued certificates are stored.
+</para></listitem>
+</itemizedlist></para>
+<para>By default the values in the file should work without modification.
+The file is commented and self-documenting, so all the options are
+not described here. The general form of the file looks like the
+following:
+<screen>
+######################################################################
+#
+# Configuration files
+# 
+
+# GridShib CA configuration directory
+GridShibCAConfDir = /usr/local/gridshib-ca-0.2.1-test
+
+# JNLP file template
+JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
+
+# Symetric key file for tokens
+TokenKeyFile = $(GridShibCAConfDir)/token-key
+</screen></para>
+<para>A pound character (#) indicates a comment. Everything from the # to
+the end of the line is ignored.</para>
+<para>A string such a <emphasis>$(var)</emphasis> is replaced with the variable as defined
+elsewhere in the file. Recursion is allowed to a depth of 24.</para>
+</sect2>
+<sect2 id="authorizedIdps.conf">
+<title>authorizedIdps.conf</title>
+<para>This file controls which Shibboleth identity providers are
+trusted by the GridShib-CA and how DNs are formed for their users. A
+user must have an identity asserted by an Idp specified as trusted by
+this file in order to use the GridShib-CA.</para>
+<para>The configuration installed by default will trust any IdP in
+InQueue.</para>
+<para>The file has the general form as the following example:
+<screen>
+# Any idp in InQueue. Use the IdP id as the OU component and ePPN as the CN
+urn:mace:inqueue:* "cn=${REMOTE_USER}, ou=${HTTP_SHIB_IDENTITY_PROVIDER}"
+</screen></para>
+<para>Each line of the file lists an Idp or set of Idps using a
+wildcard. An asterix (*) matches any characters, allowing for sets of
+Idps to be specified on a single line. Following the Idp name is
+whitespace, and following that is the double-quote delimited name
+policy. The name policy corresponds to the user-specific portion of
+the user's DN (i.e. everything but the relative DN used by the CA for
+all certificates) in RFC 2253 format. This policy may contain
+references to Shibboleth-specified environment variables formatted
+as <emphasis>${variable-name}</emphasis>. The exact variables you can use depend on
+your Shibboleth configuration (AAP.xml to be precise). Some common,
+default variables are:
+<variablelist>
+<varlistentry><term>REMOTE_USER</term>
+<listitem><para>The user's eduPersonPrincipal
+name</para></listitem></varlistentry>
+<varlistentry><term>HTTP_SHIB_IDENTITY_PROVIDER</term>
+<listitem><para>The user's Shibboleth identity provider's
+identity</para></listitem></varlistentry>
+</variablelist>
+</para>
+<para>A pound (#) indicates a comment - all text from a pound to the
+end of a line is ignored.</para>
+<para>The
+script <ulink url="perl/check-config.html">check-config.pl</ulink>
+should be run after changing gridshib-ca.conf to check for errors in
+the file.</para>
+</sect2>
+<sect2 id="authorizedPortals.conf">
+<title>authorizedPortals.conf</title>
+<para>Starting with version 0.3.0, if so configured, the GridShib-CA
+allows for the
+<ulink url="portal-delegation.html">delegation of credentials directly to
+	other portals</ulink>. This file controls which portals are trusted to
+receive delegations.</para>
+<para>The configuration installed by default will only trust portals
+on the same system as the GridShib-CA.</para>
+<para>The file has the general form as the following example:
+<screen>
+# Any url on the local hsot
+https://myhost.somedomain.edu/*
+</screen></para>
+<para>Each line of the file lists a URL or set of URLs using a
+wildcard. An asterix (*) matches any characters, allowing for sets of
+URLs to be specified on a single line. A pound (#) indicates a comment
+- all text from a pound to the end of a line is ignored.</para>
+</sect2>
+</sect1>
+<sect1 id="test">
+<title>Testing</title>
+<para>Here are some steps to test your GridShib-CA installation. Note
+that it's normal to get some browser warnings/questions about trusting
+certificates, both for web sites and Java Web Start applications, as
+you go through the process.</para>
+<orderedlist>
+<listitem><para>From your build directory, run the post-install
+tests. You'll need to do this as root or the user under which Apache
+runs, so that the tests can read all the appropriate. This should go
+through the process of issuing a certificate and test everything but
+your Shibboleth configuration. Note that this will actually issue a
+certificate from your CA, outputting the certificate and generated
+private key to standard out.
+<screen>
+# make test-post-install
+</screen></para></listitem>
+<listitem><para>Fire up your favorite browser and point it at
+https://hostname/@PACKAGE_FULLNAME@ replacing hostname with the name
+of the host on which you installed the GridShib-CA. <emphasis>Be sure
+to use 'https'.</emphasis> If this didn't work then something is
+fundamentally broken. Each Apache isn't installed right or a 404 error
+indicates your installation didn't put the files in the right place
+and you need to go review the configure options, the most likely
+culprit being --with-www-dir.</para></listitem>
+<listitem><para>Click on the link entitled "make sure you have the system
+	properly configured".</para></listitem>
+<listitem><para>This should bring up a page that checks to see if you
+have Java Web Start installed.</para></listitem>
+<listitem><para> If that looks ok, then click on the "Check
+Prerequisites" button. This should launch a Java Web Start application
+on your local machine. If that looks good, then you should be ready to
+move on. Otherwise you have some issue with either Java Web Start not
+functioning or a basic installation problem.</para></listitem>
+<listitem><para>Click "OK" to close the test application.</para></listitem>
+<listitem><para>Now click on "Return to GridShib CA" at the bottom of
+the page.</para></listitem>
+<listitem><para>Now go for it and click on "Shibboleth logon to
+generate Grid credentials".</para></listitem>
+<listitem><para>At this point, assuming your Shibboleth SP is
+correctly configured, you should be set either to a WAYF site to
+select your home institution or directly to a Shibboleth IdP. If this
+doesn't work, your Shibboleth configuration is incorrect and you need
+to work on that. If you don't have Shibboleth Idp you can use,
+register
+at <ulink
+url="http://www.openidp.org">OpenIdp</ulink>.</para></listitem>
+<listitem><para>You should now see a welcome message and the DN that
+you will receive. Click "Press here to generate and download Grid
+credential."</para></listitem>
+<listitem><para>A Java Web Start application should now launch and
+download your grid credential. Once is successfully completes, click
+"OK" to close it.</para></listitem>
+<listitem><para>On the command line, you should now be able to see
+your grid credential by running grid-proxy-info. For example:
+<screen>
+% grid-proxy-info
+subject  : /C=US/O=NCSA-TEST/OU=User/CN=vwelch@openidp.org
+issuer   : /C=US/O=NCSA-TEST/OU=GridShib/CN=SP-CA
+identity : /C=US/O=NCSA-TEST/OU=User/CN=vwelch@openidp.org
+type     : end entity credential
+strength : 1024 bits
+path     : /tmp/x509up_u501
+timeleft : 11:58:12
+</screen></para></listitem>
+<listitem><para>If you got this far you are good to go.</para></listitem>
+</orderedlist>
+</sect1>
+<sect1 id="troubleshooting">
+<title>Troubleshooting</title>
+<para>Problems with the GridShib-CA can be tricky to diagnosis because they
+could be Apache, Shibboleth or GridShib-CA problems. The first step is
+to figure out with which of these components the problem
+lies. Checking the following logs is a good way to do that:
+<orderedlist>
+<listitem><para>Check your system logs (e.g. /var/log/messages) for
+messages. The GridShib-CA scripts will log errors
+here.</para></listitem>
+<listitem><para>Check your apache ssl_error_logs
+(e.g. /var/log/http/ssl_error_logs) for messages. Errors encountered
+by Apache will be logged here.</para></listitem>
+<listitem><para>Check your Shibboleth logs. Check
+log4j.appender.shibd_log.fileName in /etc/shibboleth/shid.logger for
+the location of this log.</para></listitem>
+</orderedlist></para>
+</sect1>
+</chapter>

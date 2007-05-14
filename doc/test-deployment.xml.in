@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="test-deployment">
+<?dbhtml filename="@DOC_DIR@/test-deployment.html" ?>
+<title>GridShib-CA Test Deployment</title>
+ 
+<para>A test deployment of the GridShib-CA which will issue
+credentials to any user who has an identity from any OpenIdp or
+ProtectNetwork. You can try out this deployment
+at <ulink
+url="https://computer.ncsa.uiuc.edu/">https://computer.ncsa.uiuc.edu</ulink></para>
+<para>Please note that the test GridShib-CA is not a well known CA, so
+you will need to install the GridShib-CA certificate to actually use
+generated credentials. You can find the GridShib-CA certificate (along
+with the signing policy file)
+here: <ulink
+url="/downloads/gridshib-ca-cert.tar">gridshib-ca-cert.tar</ulink>.</para>
+<para> Please note the GridShib-CA is not production, use of it's
+credentials for production purposes is not recommended and is at your
+own risk.</para>
+</chapter>
