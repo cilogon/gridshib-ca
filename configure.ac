@@ -2,11 +2,11 @@ dnl $Id$
 dnl See Copyright statement below.
 dnl See file 'LICENSE' for license.
 
-AC_INIT(gridshib-ca, 0.4.0)
+AC_INIT(gridshib-ca, 0.5.0)
 
 # Status of this version: e.g. preview, alpha, bets
 # Can be empty string
-PACKAGE_RELEASE_STATUS=""
+PACKAGE_RELEASE_STATUS="preview"
 
 AC_REVISION($Id$)
 
