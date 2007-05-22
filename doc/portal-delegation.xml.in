@@ -8,13 +8,12 @@
 
 <para>Since version 0.3.0 the GridShib-CA allows for the delegation of
 a Grid credential based on Shibboleth authentication of the user to a
-web portal that is not itself Shibboleth enabled. This functionality
-is highly experimental and disabled by default.</para>
-<para>Note that this functionality is disabled by default. To enabled
-this functionality the
+web portal that is not itself Shibboleth enabled.</para>
+<para>Note that this functionality is highly experimental and disabled
+by default. To enabled this functionality the
 parameter <emphasis>allowPortalDelegation</emphasis> must be set to
-"True". (See the <link linkend="gridshib-ca.conf">configuration directions
-in the installation guide</link> for details.)</para>
+"True". (See the <link linkend="gridshib-ca.conf">configuration
+directions in the installation guide</link> for details.)</para>
 <para>In addition to the user being authorized, the portal must also
 <link linkend="authorizedPortals.conf">be authorized to receive
 	credentials</link></para>
