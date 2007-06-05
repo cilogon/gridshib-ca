@@ -157,9 +157,9 @@ AC_SUBST(HTML_SRCS)
 dnl Files to be installed in configuration directory
 CONF_FILES="\
 	webdocs/CredentialRetriever.jnlp \
-	gridshib-ca.conf \
-	authorizedIdps.conf \
-	authorizedPortals.conf \
+	conf/gridshib-ca.conf \
+	conf/authorizedIdps.conf \
+	conf/authorizedPortals.conf \
 	${HTML_INCS}"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
