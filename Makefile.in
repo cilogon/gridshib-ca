@@ -167,6 +167,8 @@ clean::
 	rm -f $(BINARIES)
 
 realclean:: clean
+	rm -f *~
+	rm -f *.tmp
 
 build-dist: subdirs $(BUILD_ALL) chmod-utils
 	@echo Build complete. Run \"make install\" to install.
