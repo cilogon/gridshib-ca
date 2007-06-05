@@ -78,6 +78,7 @@ openssl-ca: $(OBJ_FILES)
 clean:
 	rm -f $(OBJ_FILES)
 
+realnclean: clean
 
 
 

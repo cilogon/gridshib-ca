@@ -157,8 +157,8 @@ FIND = @FIND@
 
 default: build-$(MODE)
 
+# Only clean up stuff that cannot be regenerated in distribution
 clean:: 
-	rm -f $(JAVA_CLASSES)
 	rm -f $(CONF_FILES)
 	rm -f $(UTILS)
 	rm -f $(HTML_FILES)
@@ -166,6 +166,7 @@ clean::
 	rm -f $(HTML_INCS)
 	rm -f $(BINARIES)
 
+# Clean up everything
 realclean:: clean
 	rm -f *~
 	rm -f *.tmp
@@ -192,6 +193,12 @@ clean::
 	@for subdir in $(SUBDIRS) ; do \
 		echo "Running 'make clean' in $${subdir}:" ; \
 		(cd $${subdir}; make clean) ; \
+	done
+
+realclean::
+	@for subdir in $(SUBDIRS) ; do \
+		echo "Running 'make realclean' in $${subdir}:" ; \
+		(cd $${subdir}; make realclean) ; \
 	done
 
 ######################################################################
@@ -409,7 +416,7 @@ class-files: build-mode $(JAVA_CLASSES)
 %.class : %.java
 	$(JAVAC) $(JAVAC_OPTS) $^
 
-clean::
+realclean::
 	rm -f $(JAVA_CLASSES)
 
 # Clean all BouncyCastle class files
@@ -478,10 +485,8 @@ $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 $(JARFILE): $(UNSIGNED_JARFILE)
 	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
 
-clean::
-	$(RM) -f $(JARFILE)
-
 realclean::
+	$(RM) -f $(JARFILE)
 	$(RM) -f $(UNSIGNED_JARFILE)
 
 ######################################################################
