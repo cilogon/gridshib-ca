@@ -245,7 +245,7 @@ public class CredentialRetriever {
 			outFile.createNewFile();
 			// Argh. small time window here where file could be opened()
             // unless umask is set correctly.
-			Util.setFilePermissions(targetFile, 0600);
+			Util.setFilePermissions(targetFile, 600);
 
 			FileWriter out = new FileWriter(outFile);
 
