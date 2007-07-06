@@ -185,7 +185,9 @@ JAVA_CLASSES="\
 	edu/ncsa/gridshib/gridshibca/PEM.class \
 	edu/ncsa/gridshib/gridshibca/UMask.class \
 	edu/ncsa/gridshib/gridshibca/UMaskException.class \
-	edu/ncsa/gridshib/gridshibca/Version.class"
+	edu/ncsa/gridshib/gridshibca/Version.class \
+	org/globus/util/ConfigUtil.class \
+	org/globus/util/Util.class"
 AC_SUBST(JAVA_CLASSES)
 
 dnl Jar file

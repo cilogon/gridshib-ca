@@ -478,7 +478,7 @@ $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 # class files has a "$" in it and I haven't figured out any other
 # way to do this and avoid getting it expanded.
 	@echo Creating $@ from local class files
-	$(JAR) cf $@ $^ org/globus/util/*.class
+	$(JAR) cf $@ $^
 	@ echo Adding BouncyCastle class files
 	@(pwd=`pwd` && cd $(BC_SOURCE) && jar uf $${pwd}/$@ `(cd $(BC_SOURCE) && $(FIND) org -name \*.class)`)
 

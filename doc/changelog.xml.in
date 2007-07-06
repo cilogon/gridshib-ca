@@ -12,6 +12,7 @@
 <listitem><para>'make clean' does not remove files that cannout be easily regenerated in distribution.
 (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5350">Bug 5350</ulink>)
 </para></listitem>
+<listitem><para>Use (modified) Java Cog source instead of class files. See org/globus/util/README</para></listitem>
 </itemizedlist>
 </para>
 </sect1>
