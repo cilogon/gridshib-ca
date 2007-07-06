@@ -61,7 +61,7 @@ Create a new NameMapper object.
 
 B<Arguments:> None
 
-B<Returns:> Authorization instance
+B<Returns:> NameMapper instance
 
 =cut
 
