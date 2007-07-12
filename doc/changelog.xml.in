@@ -13,6 +13,8 @@
 (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5350">Bug 5350</ulink>)
 </para></listitem>
 <listitem><para>Use (modified) Java Cog source instead of class files. See org/globus/util/README</para></listitem>
+<listitem><para>Split openssl configuration options into --with-openssl and --with-openssl-prefix to allow for binaries to be separate from libraries and includes.</para></listitem>
+<listitem><para>Fixed a number of minor issues with 'make test' and 'make test-dist'</para></listitem>
 </itemizedlist>
 </para>
 </sect1>

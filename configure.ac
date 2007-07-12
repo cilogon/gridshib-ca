@@ -96,6 +96,7 @@ AC_ARG_WITH(hostname,
 	[HOSTNAME=$withval],
 	[AC_HOSTNAME([HOSTNAME],
 		[AC_MSG_ERROR([Could not determine fully-qualified hostname. Specify with --with-hostname=<name>])])])
+AC_SUBST(HOSTNAME)
 
 dnl ------------------------------------------------------------
 dnl Different groups of files
@@ -284,28 +285,44 @@ dnl ----------------------------------------------------------------------
 dnl Stuff needed to build our openssl-based CA
 AC_PROG_CC
 
-AC_ARG_WITH(openssl-path,
-	AC_HELP_STRING([--with-openssl-path],
+
+AC_ARG_WITH(openssl,
+	AC_HELP_STRING([--with-openssl],
 		[Specify path to openssl binary (Default: None)]),
-	[OPENSSL_PATH=${withval}],
-	[OPENSSL_PATH=$PATH])
+	[OPENSSL=${withval}],
+	[OPENSSL="NONE"])
 
-AC_PATH_PROG(OPENSSL, openssl, [FAILED], [$OPENSSL_PATH])
-if test ${OPENSSL} = "FAILED"; then
-   AC_MSG_ERROR([Could not find openssl binary in path.])
+if test "X${OPENSSL}" = "XNONE" ; then
+   AC_PATH_PROG(OPENSSL, openssl, [FAILED])
+   if test ${OPENSSL} = "FAILED"; then
+      AC_MSG_ERROR([Could not find openssl binary in path.])
+   fi
+else
+   if test -x "${OPENSSL}" ; then
+      :
+   else
+      AC_MSG_ERROR([Could not find openssl binary: ${OPENSSL}])
+   fi
 fi
+AC_MSG_RESULT([Using openssl binary ${OPENSSL}])
 
-opensslbindir=`dirname ${OPENSSL}`
-opensslbasedir=`dirname ${opensslbindir}`
+AC_ARG_WITH(openssl-prefix,
+	AC_HELP_STRING([--with-openssl-prefix],
+		[Specify prefix for openssl include and lib (Default: None)]),
+	[OPENSSL_PREFIX=${withval}],
+	[OPENSSL_PREFIX="NONE"])
 
-if test -d ${opensslbasedir}/include ; then
-   CFLAGS="${CFLAGS} -I${opensslbasedir}/include"
-   AC_MSG_RESULT([Adding -I${opensslbasedir}/include to CFLAGS])
-fi
+if test "X${OPENSSL_PREFIX}" != "XNONE" ; then
+   AC_SUBST(OPENSSL_PREFIX)
+   if test -d ${OPENSSL_PREFIX}/include ; then
+      CFLAGS="${CFLAGS} -I${OPENSSL_PREFIX}/include"
+      AC_MSG_RESULT([Adding -I${OPENSSL_PREFIX}/include to CFLAGS])
+   fi
 
-if test -d ${opensslbasedir}/lib ; then
-   LDFLAGS="${LDFLAGS} -L${opensslbasedir}/lib"
-   AC_MSG_RESULT([Adding -L${opensslbasedir}/lib to LDFLAGS])
+   if test -d ${OPENSSL_PREFIX}/lib ; then
+      LDFLAGS="${LDFLAGS} -L${OPENSSL_PREFIX}/lib"
+      AC_MSG_RESULT([Adding -L${OPENSSL_PREFIX}/lib to LDFLAGS])
+   fi
 fi
 
 AC_CHECK_LIB(crypto, CRYPTO_malloc,
@@ -337,6 +354,7 @@ TEST_SCRIPTS="\
 	openssl-ca/openssl-ca-test.sh \
 	test/test-dist.sh"
 AC_SUBST(TEST_SCRIPTS)
+AC_CONFIG_FILES([$TEST_SCRIPTS])
 AC_SRC_FILES(TEST_SCRIPTS, TEST_SRCS)
 AC_SUBST(TEST_SRCS)
 
