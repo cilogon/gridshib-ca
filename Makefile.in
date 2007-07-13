@@ -762,7 +762,7 @@ install-doc: doc
 release: dist install-doc
 	@rsync -auv $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/
 
-NMI_HOST = grandcentral.cs.wisc.edu
+NMI_HOST = @NMI_HOST@
 NMI_FILES = @NMI_FILES@
 
 nmi-test: dist $(NMI_FILES)
@@ -773,5 +773,5 @@ nmi-test: dist $(NMI_FILES)
 	@echo Submitting NMI job
 	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
 	@echo Done.
-	@echo URL: "http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
+	@echo URL: "http://$(NMI_HOST)/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
 

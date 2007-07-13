@@ -596,7 +596,12 @@ if test ${MODE} = "build" ; then
 	nmi/gridshib-ca.ftp"
    AC_CONFIG_FILES([${NMI_FILES}])
    AC_SUBST(NMI_FILES)
-	
+
+   dnl Host to use for NMI Build and Test
+   dnl Old Host: grandcentral.cs.wisc.edu
+   NMI_HOST = nmi-s003.cs.wisc.edu
+   AC_SUBST(NMI_HOST)
+
    dnl Enable regeneration of configure from configure.ac and aclocal.m4
    CONFIGURE_DEP="configure.ac aclocal.m4"
 
