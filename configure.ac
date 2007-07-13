@@ -599,7 +599,7 @@ if test ${MODE} = "build" ; then
 
    dnl Host to use for NMI Build and Test
    dnl Old Host: grandcentral.cs.wisc.edu
-   NMI_HOST = nmi-s003.cs.wisc.edu
+   NMI_HOST="nmi-s003.cs.wisc.edu"
    AC_SUBST(NMI_HOST)
 
    dnl Enable regeneration of configure from configure.ac and aclocal.m4

@@ -773,5 +773,5 @@ nmi-test: dist $(NMI_FILES)
 	@echo Submitting NMI job
 	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
 	@echo Done.
-	@echo URL: "http://$(NMI_HOST)/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
+	@echo URL: "http://$(NMI_HOST)/nmi/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
 
