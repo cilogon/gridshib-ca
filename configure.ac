@@ -485,7 +485,7 @@ dnl Relative DN for certificates issued to users
 AC_MSG_CHECKING([for the CA relative DN])
 AC_ARG_WITH(relative-dn,
 	AC_HELP_STRING([--with-relative-dn=<rfc2253DN>],
-		[Specify the relative DN in RFC 2254 format (no extra whitespace)]),
+		[Specify the relative DN in RFC 2253 format (no extra whitespace)]),
 		[RELATIVE_DN=$withval],
 		[RELATIVE_DN="O=Shibboleth User,${BASE_DN}"])
 AC_MSG_RESULT(${RELATIVE_DN})
