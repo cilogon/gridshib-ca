@@ -9,12 +9,17 @@
 <title>Current Version: @PACKAGE_VERSION@</title>
 <para>
 <itemizedlist>
-<listitem><para>'make clean' does not remove files that cannout be easily regenerated in distribution.
+<listitem><para>'make clean' does not remove files that cannot be easily regenerated in distribution.
 (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5350">Bug 5350</ulink>)
 </para></listitem>
 <listitem><para>Use (modified) Java Cog source instead of class files. See org/globus/util/README</para></listitem>
-<listitem><para>Split openssl configuration options into --with-openssl and --with-openssl-prefix to allow for binaries to be separate from libraries and includes.</para></listitem>
+<listitem><para>Split openssl configuration (replacing --with-openssl-path) options into --with-openssl and --with-openssl-prefix to allow for binaries to be separate from libraries and includes.</para></listitem>
 <listitem><para>Fixed a number of minor issues with 'make test' and 'make test-dist'</para></listitem>
+<listitem><para>Moved configuration source into conf/ subdirectory</para></listitem>
+<listitem><para>Bug fix in CredentialRetriever.java:
+Util.setFilePermissions() does not take octal and passing it such
+causes underlying chmod call to silently fail. Fortunately since we
+are enforcing a umask setting there is no security hole.
 </itemizedlist>
 </para>
 </sect1>
