@@ -289,8 +289,8 @@ sub getSAMLExt
 	return undef;
     }
 
-    # Current version of gridshib-saml-issuer requires GRIDSHIB_HOME to be
-    # set.
+    # Current version (0.3.0) of gridshib-saml-issuer requires
+    # GRIDSHIB_HOME to be set.
     $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
 
     my $javaHome = $self->{config}->getParam("JavaHome");
@@ -314,8 +314,11 @@ sub getSAMLExt
     push(@args, "--user", $self->getDN());
     # --ssoResponse expects a file: url
     push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
-    # Prevent spurious output on error
-    push(@args, "--quiet");
+    if (!$self->{config}->getParamBoolean("debug"))
+    {
+	# Prevent spurious output on error
+	push(@args, "--quiet");
+    }
     
     my $cmd = $self->{config}->getCommand($gridshibIssuer, @args);
     $self->_debug("Executing: %s %s", $gridshibIssuer, join(" ", @args));

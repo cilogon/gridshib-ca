@@ -23,6 +23,7 @@ are enforcing a umask setting there is no security hole.</para></listitem>
 <listitem><para>Remove whitespace around configuration values
 (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5798">Bug 5798</ulink>)
 </para></listitem>
+<listitem><para>Made '--quiet' argument to GridShib-SAMLTools dependent on debug configuration option so that when debug is True better output is generated.</para></listitem>
 <listitem><para>check-config.pl now dumps all configuration values.</para></listitem>
 </itemizedlist>
 </para>
