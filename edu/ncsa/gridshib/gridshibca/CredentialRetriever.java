@@ -245,6 +245,10 @@ public class CredentialRetriever {
 			outFile.createNewFile();
 			// Argh. small time window here where file could be opened()
             // unless umask is set correctly.
+            //
+            // Note that umask value here is converted to a string as a decimal
+            // value. So don't pass a octal value, but the octal value as if it
+            // was a decimal.
 			Util.setFilePermissions(targetFile, 600);
 
 			FileWriter out = new FileWriter(outFile);
