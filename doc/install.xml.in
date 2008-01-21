@@ -116,7 +116,7 @@ defaults or the options you provided to configure.</para>
 <title>Configuration Options</title>
 <para>The GridShib-CA has several configuration files that control its
 behavior. These files are all found in the <emphasis>gridshib-ca-conf-dir</emphasis>
-as provided to <ulink url="#configure">configure</ulink>.
+as provided to <ulink url="#conf">configure</ulink>.
 <itemizedlist>
 <listitem><para><ulink url="#gridshib-ca.conf">gridshib-ca.conf</ulink>: General
 	configuration
