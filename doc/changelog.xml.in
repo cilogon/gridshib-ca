@@ -19,7 +19,7 @@
 <listitem><para>Bug fix in CredentialRetriever.java:
 Util.setFilePermissions() does not take octal and passing it such
 causes underlying chmod call to silently fail. Fortunately since we
-are enforcing a umask setting there is no security hole.
+are enforcing a umask setting there is no security hole.</para></listitem>
 </itemizedlist>
 </para>
 </sect1>
