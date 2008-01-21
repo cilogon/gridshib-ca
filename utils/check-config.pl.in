@@ -72,7 +72,9 @@ print "Checking configuration file: "
 
 my $config = GridShibCA::Config->new(debug => 1);
 
-print "Check complete.\n";
+print "Done reading configuration file. Dummping....\n";
+
+$config->dump();
 
 exit(0);
 
