@@ -740,7 +740,7 @@ create_SAML_extension(char *samlExtFilename)
     }
     
     ext = X509_EXTENSION_create_by_OBJ(
-        NULL,
+        NULL /* Create new extension */,
         oid_obj,
         0 /* not critical */,
         ext_DER_string);
