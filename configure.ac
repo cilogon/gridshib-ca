@@ -10,7 +10,7 @@ PACKAGE_RELEASE_STATUS="preview"
 
 AC_REVISION($Id$)
 
-COPYRIGHT="Copyright 2007 The Board of Trustees of the University of Illinois."
+COPYRIGHT="Copyright 2008 The Board of Trustees of the University of Illinois."
 AC_SUBST(COPYRIGHT)
 AC_COPYRIGHT(${COPYRIGHT})
 
