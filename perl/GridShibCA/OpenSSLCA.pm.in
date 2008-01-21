@@ -296,7 +296,15 @@ sub getSAMLExt
     my $javaHome = $self->{config}->getParam("JavaHome");
 
     $ENV{"JAVA_HOME"} = $javaHome;
-    
+
+    # We don't get a good error message if JAVA_HOME isn't right
+    # so do some simple checks.
+    if (! -d $javaHome )
+    {
+	$self->_warn("JavaHome path does not exist: $javaHome");
+	# Go ahead and try anyways
+    }
+
     # Get full path to gridshib-saml-issuer
     my $gridshibIssuer = File::Spec->catfile($gridshibHome,
 					     "bin",
