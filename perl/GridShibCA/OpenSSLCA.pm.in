@@ -322,6 +322,11 @@ sub getSAMLExt
     push(@args, "--user", $self->getDN());
     # --ssoResponse expects a file: url
     push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
+    # GS-ST 0.3.0 requires --sender-vouches for what we are doing
+    push(@args, "--sender-vouches");
+    # Request ASN1 header. This requires GS-ST 0.3.0.
+    push(@args, "--asn1");
+
     if (!$self->{config}->getParamBoolean("debug"))
     {
 	# Prevent spurious output on error

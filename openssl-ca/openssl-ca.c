@@ -75,7 +75,7 @@
 #define	POSTFIX	".srl"
 #define DEF_LIFETIME	8 * 60 * 60 /* 8 hours */
 
-#define SAML_EXT_OID "1.3.6.1.4.1.3536.1.1.1.10"
+#define SAML_EXT_OID "1.3.6.1.4.1.3536.1.1.1.12"
 
 static const char *x509_usage[]={
 "usage: x509 args\n",

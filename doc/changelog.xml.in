@@ -26,6 +26,7 @@ are enforcing a umask setting there is no security hole.</para></listitem>
 <listitem><para>Made '--quiet' argument to GridShib-SAMLTools dependent on debug configuration option so that when debug is True better output is generated.</para></listitem>
 <listitem><para>check-config.pl now dumps all configuration values.</para></listitem>
 <listitem><para>When running GridShib SAMLTools, check for existence of JAVA_HOME and log a warning if it doesn't exist.</para></listitem>
+<listitem><para>Updated to use GridShib SAML Tools 0.3.0 and invoke so that we get correctly formatted ASN.1 in the extension with the right OID.</para></listitem>
 </itemizedlist>
 </para>
 </sect1>
