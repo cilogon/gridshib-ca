@@ -483,6 +483,11 @@ $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
 	@(pwd=`pwd` && cd $(BC_SOURCE) && jar uf $${pwd}/$@ `(cd $(BC_SOURCE) && $(FIND) org -name \*.class)`)
 
 $(JARFILE): $(UNSIGNED_JARFILE)
+	@echo =========================================
+	@echo
+	@echo WARNING: Keystrokes will be echoed.
+	@echo 
+	@echo =========================================
 	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
 
 realclean::
@@ -656,11 +661,13 @@ realclean::
 #
 
 test: chmod-tests check-perl test-openssl-ca test-myproxy-mapapp
+	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
 	openssl-ca/openssl-ca-test.sh
 
 test-post-install: test-cert-issue
+	@echo "Post install tests successful."
 
 test-cert-issue:
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@openidp.org  urn:mace:inqueue:openidp.org
