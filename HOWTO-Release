@@ -1,0 +1,246 @@
+-*- mode: text -*-
+----------------------------------------------------------------------
+* Introduction
+
+This document describes how to produce a release and distribution
+of the GridShib-CA. Steps are meant to be sequentially (with some
+parallelism possible as noted).
+
+This document assumes you have configured your local working copy of
+the code with '--enable-build'.
+
+If this is your first time doing this and you don't have an account on
+the NMI Build and Test facility, request one before starting (see
+nmi/README for details). Go ahead and start after doing that, you
+won't need it for a while.
+
+You will need SSH access to cvs.globus.org to install the
+distribution, and update the documentation and website. Contact Globus
+Project administrators to get access.
+
+----------------------------------------------------------------------
+* Make sure documentation is up-to-date
+
+You have updated all the documentation in doc/ to reflect whatever
+changes you did right? Including the changelog in
+doc/changelog.xml.in? (The version number will be updated
+automatically, so don't worry about that.)
+
+If not, why not get that out of the way now why you are thinking about
+it...
+
+----------------------------------------------------------------------
+* Update version in configure.ac
+
+Set the version number by editing configure.ac and modifying two
+values, the first is the version number itself which is specified as
+the second argument to AC_INIT() - e.g. the following shows a version
+of 0.5.0:
+
+AC_INIT(gridshib-ca, 0.5.0)
+
+Second, specify the qualifier on the distribution to be made,
+e.g. 'alpha', 'beta', 'rc1', 'preview' by setting the value of
+PACKAGE_RELEASE_STATUS:
+
+PACKAGE_RELEASE_STATUS="preview"
+
+This value has no semantic meaning, but will appear concatenated with
+a dash to the version string on the distribution tarball and in
+version strings in the code. Typically values are "preview" which is
+used to mark a version as being non-complete, or rc1, rc2, etc. for
+release candidates that are made public. Usually I leave the value at
+"preview" unless I'm going to make a tarball public or I'm cutting a
+final release; for the latter I set it to the empty string, i.e.:
+
+PACKAGE_RELEASE_STATUS=""
+
+----------------------------------------------------------------------
+* Test locally by running 'make test'
+
+The most basic test is 'make test' - this will check all the perl
+syntax and run some simple tests on the back end CA code. Hopefully
+since you thought you were ready for release this will run without a
+hitch, but this will catch some problems early.
+
+----------------------------------------------------------------------
+* Create distribution by running 'make dist'
+
+This will generate a tarball from the code in the current working
+directory (i.e. it doesn't go into CVS). As a result of running this
+command, you should end up with a file such as
+"gridshib-ca-0-5-0-preview.tar.gz", where 0-5-0 and preview are based
+on the values you set in configure.ac in the first step above.
+
+----------------------------------------------------------------------
+* Test distribution by running 'make test-dist'
+
+This will unpack and install and test the newly created tarball in
+/tmp. It's not comprehensive, but it will catch a number of simple
+errors.
+
+Behind the scenes it's running test/test-dist.sh which is installing
+the code and then running 'make test-post-install'.
+
+----------------------------------------------------------------------
+* NMI Build and Test by running 'make nmi-test'
+
+This step basically does the distribution test in the previous step
+but uses the NMI Build and Test facility to do it across a range of
+platforms. You will need an account on the facility to accomplish this
+step. See nmi/README for details. 
+
+This step may take a while, while it is running you probably want to
+do the next step, manual deployment and testing, in parallel.
+
+When this completes, you'll get an email saying so. Hopefully you'll
+see the word "SUCCEEDED" in the subject and you're good to
+go. Otherwise you'll need to use the NMI B&T web interface to find the
+problem and fix it.
+
+----------------------------------------------------------------------
+* Deploy and test manually
+
+The automated tests cover a lot of the back end functionality, but
+don't cover the user interface through the web front
+end. Unfortunately, that has to be done manually at this point in
+time.
+
+You'll need to deploy the GridShib-CA into a Shibboleth SP deployment
+on a web server and then use a web browser to manually try certificate
+issuance. You'll need to see the directions in doc/install.html on how
+to do this. There are too many variables to cover here. What follows
+below are a set of steps that work assuming you have access to the
+GridShib-CA test system, computer.ncsa.uiuc.edu.
+
+% ./configure \
+        --with-globus-location=/usr/local/gt-4.0.1 \
+        --with-openssl-path=/usr/bin/
+% make
+% make test
+
+Then install as root and test:
+# make install
+# utils/create-openssl-ca.pl 
+# make test-post-install
+
+Now you should be able to point your browser at the installed
+GS-CA. The url would be, assuming version 0.5.0:
+https://computer.ncsa.uiuc.edu/gridshib-ca-0.5.0/
+
+Then use OpenIdp or some other Idp to get a credential and verify it
+is working properly.
+
+----------------------------------------------------------------------
+* Commit updated version and any fixes to CVS
+
+Now that you are certain you have good solid code to release, go ahead
+and check ALL your changes in the current working checkout into
+CVS. The distribution is made from your current checked-out repository
+so it needs to be in synch with what is in CVS or the subsequent tag
+step will not do what you want.
+
+(Yes, I agree building a distribution from a tag in CVS would be
+better in that it would forbid the possibility of a out-of-synch
+release.)
+
+----------------------------------------------------------------------
+* CVS tag the release code
+
+Now tag cvs for the release. The tag name convention is "v0_5_0",
+i.e. replace the dots in the version string with underscores and
+prepend a 'v'. E.g.:
+
+% cvs rtag v0_5_0 gridshib/gridshib-ca
+
+----------------------------------------------------------------------
+* Make the official distribution with 'make dist'
+
+If you made any changes that you had to check in, refresh the tarball
+by running 'make dist'.
+
+----------------------------------------------------------------------
+* Upload distribution to gridshib.globus.org website
+
+Upload the tarball to the gridshib.globus.org web server, hosted on
+cvs.globus.org:
+% scp gridshib-ca-0-5-0.tar.gz \
+      cvs.globus.org:/www/gridshib.globus.org/downloads
+
+On cvs.globus.org, in /www/gridshib.globus.org/downloads, set the
+permissions for the tarball such that other developers can administer
+it:
+
+ % chgrp gridshib gridshib-ca-0-5-0.tar.gz
+ % chmod g+w gridshib-ca-0-5-0.tar.gz
+
+----------------------------------------------------------------------
+* Upload documentation with 'make install-doc'
+
+Upload the documentation to the gridshib.globus.org website run
+running 'make install-doc'. You should then be able to point a web
+browser a gridshib.globus.org and view the documentation.
+
+Assuming version 0.5.0, the URL would be:
+http://gridshib.globus.org/docs/gridshib-ca-0.5.0/
+
+----------------------------------------------------------------------
+* Update links on gridshib.globus.org
+
+On cvs.globus.org, edit /www/gridshib.globus.org/download.html and
+update the links for the documentation and the tarball to point to the
+latest version of both. (Note you don't want to update the link for
+the deployment on computer until you update it in a couple of steps.)
+
+Pointer your web browser at the URL below and check your changes.
+
+http://gridshib.globus.org/download.html#gridshib-ca
+
+Edit /www/gridshib.globus.org/docs/gridshib-ca/redirect-parms.js and
+update it to redirect to the newly deployed version. This will cause
+links at the following URL to correctly redirect (though browsers seem
+to want to cache this value until death...):
+http://gridshib.globus.org/support.html
+
+----------------------------------------------------------------------
+* Close any open bugs in bugzilla.
+
+Browse over to http://bugzilla.mcs.anl.gov/globus/ and close any bugs
+resolved by the new release.
+
+----------------------------------------------------------------------
+* Deploy latest version on computer.ncsa.uiuc.edu
+
+Log onto computer.ncsa.uiuc.edu and deploy the new GS-CA version as
+you normally would. You want to edit gridshib-ca.conf to use the CA
+key and certificate in /usr/local/gridshib-ca by setting the following
+parameters as shown:
+
+# Certificate for OpenSSL-based CA
+OpenSSLCACert = /usr/local/gridshib-ca/gridshib-ca-cert.pem
+
+# Certificate for OpenSSL-based CA
+OpenSSLCAKey = /usr/local/gridshib-ca/gridshib-ca-key.pem
+
+# Serial number file for OpenSSL-based CA
+OpenSSLCASerial = /usr/local/gridshib-ca/serial
+
+# Where OpenSSL can store its random state
+OpenSSLRandFile = /usr/local/gridshib-ca/.rand
+
+Point your web browser at the address below (adjusting version as
+needed) and test out the new deployment:
+https://computer.ncsa.uiuc.edu/gridshib-ca-0.5.0/
+
+Edit /var/www/html/index.html and update the version number in the
+path for the latest stable deployment.
+
+On cvs.globus.org, edit /www/gridshib.globus.org/download.html and
+edit the link for the deployment on computer to point at the new
+version.
+
+----------------------------------------------------------------------
+
+That's it.
+
+$Id$
