@@ -22,7 +22,7 @@ MyProxy</ulink>).
 </para>
 <para>
 The procedure is as follows. These directions were written for version
-0.1.3 and later of the GridShib SAML Tools:
+0.3.0 of the GridShib SAML Tools:
 </para>
 <para>
 <orderedlist>
@@ -35,10 +35,10 @@ readable (and executable were appropriate) by the user under which
 apache runs. (The easiest way is to make the tree owned by that user.)
 </para></listitem>
   <listitem><para>Edit
-$GRIDSHIB_HOME/etc/gridshib/tools/gridshib-saml-issuer.properties and
+$GRIDSHIB_HOME/etc/gridshib-saml-issuer.properties and
 make the following changes:
   <orderedlist>
-    <listitem><para>Change the <emphasis>Format</emphasis> to
+    <listitem><para>Change the <emphasis>NameID.Format</emphasis> to
 urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</para></listitem>
     <listitem><para>Edit the attributes - i.e. lines starting with
 Attribute.* - you probably just want to comment them out, but if you
@@ -47,12 +47,12 @@ place to do it.</para></listitem>
     <listitem><para>Add the following lines, changing the path to point at
 your GridShib CA's certificate and private key.
     <screen>
-certLocation=file:/usr/local/gridshib-ca-0.4.0/gridshib-ca-cert.pem
-keyLocation=file:/usr/local/gridshib-ca-0.4.0/gridshib-ca-key.pem
+certLocation=file:/usr/local/@PACKAGE_FULLNAME@/gridshib-ca-cert.pem
+keyLocation=file:/usr/local/@PACKAGE_FULLNAME@/gridshib-ca-key.pem
     </screen></para></listitem>
     </orderedlist></para></listitem>
   <listitem><para>Now edit your gridshib-ca.conf file (by default this
-will be in /usr/local/gridshib-ca-0.4.0) and make the following
+will be in /usr/local/@PACKAGE_FULLNAME@) and make the following
 changes:
   <orderedlist>
     <listitem><para>Change <emphasis>IncludeSAMLInCert</emphasis> to
@@ -67,6 +67,6 @@ to the path in which you installed the GridShib SAML Tools
 <para> That should do it. Now when you get certificates back from the
 GridShib-CA, they will contain a SAML assertion. If you run
 'grid-proxy-info -text' you should see a X509v3 extension with an oid
-of 1.3.6.1.4.1.3536.1.1.1.10.</para>
+of 1.3.6.1.4.1.3536.1.1.1.12.</para>
 
 </chapter>
