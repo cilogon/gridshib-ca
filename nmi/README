@@ -7,25 +7,25 @@ haven't already.
 
 To submit a test build:
 
-  $ configure --enable-buid
+  $ configure --enable-build
   $ make nmi-test
 
 Then visit the the following URL to view the results:
 
-http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
+http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
 
 The following platforms are currently not included:
 
  x86_deb_3.1 - syslog console unwritable:
-http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=grandcentral.cs.wisc.edu&file=vwelch_grandcentral.cs.wisc.edu_1175441647_31770%2Fuserdir%2Fx86_deb_3.1%2Fremote_task.err&refresh=0&no_header=1&view=1
+http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175441647_31770%2Fuserdir%2Fx86_deb_3.1%2Fremote_task.err&refresh=0&no_header=1&view=1
 
  ia64_sles_9 - openssl 0.9.8e broken (setting subject name in req generation):
-    http://grandcentral.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=grandcentral.cs.wisc.edu&file=vwelch_grandcentral.cs.wisc.edu_1175440771_31046%2Fuserdir%2Fia64_sles_9%2Fremote_task.err&refresh=0&no_header=1&view=1
+    http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175440771_31046%2Fuserdir%2Fia64_sles_9%2Fremote_task.err&refresh=0&no_header=1&view=1
 
  ppc_aix_5.2 - seems to always be down
 
  i164_sles_8 - openssl problems:
-    http://grandcentral.cs.wisc.edu/nmi/index.php?page=results/viewFile&file_host=grandcentral.cs.wisc.edu&file=vwelch_grandcentral.cs.wisc.edu_1175450329_5281%2Fuserdir%2Fia64_sles_8%2Fremote_task.err&refresh=0&no_header=1&view=1
+    http://nmi-s003.cs.wisc.edu/nmi/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175450329_5281%2Fuserdir%2Fia64_sles_8%2Fremote_task.err&refresh=0&no_header=1&view=1
 
  sun4u_sol_5.9 - make insists on trying to link with non-existant 'cc':
-    http://grandcentral.cs.wisc.edu/nmi/index.php?page=results/viewFile&file_host=grandcentral.cs.wisc.edu&file=vwelch_grandcentral.cs.wisc.edu_1175450329_5281%2Fuserdir%2Fsun4u_sol_5.9%2Fremote_task.err&refresh=0&no_header=1&view=1
+    http://nmi-s003.cs.wisc.edu/nmi/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175450329_5281%2Fuserdir%2Fsun4u_sol_5.9%2Fremote_task.err&refresh=0&no_header=1&view=1
