@@ -6,7 +6,7 @@ AC_INIT(gridshib-ca, 0.5.0)
 
 # Status of this version, e.g. preview, alpha, beta
 # Set to empty string("") for unqualified (e.g. final) release
-PACKAGE_RELEASE_STATUS="preview"
+PACKAGE_RELEASE_STATUS=""
 
 AC_REVISION($Id$)
 
