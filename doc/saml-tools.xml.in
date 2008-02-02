@@ -38,6 +38,7 @@ apache runs. (The easiest way is to make the tree owned by that user.)
 $GRIDSHIB_HOME/etc/gridshib-saml-issuer.properties and
 make the following changes:
   <orderedlist>
+    <listitem><para>Set <emphasis>IdP.entityID</emphasis> to the URL that identifies your GridShib-CA installation. Typically this can be the URI which identifies the SP deployment in which the GridShib-CA is deployed.</para></listitem>
     <listitem><para>Change the <emphasis>NameID.Format</emphasis> to
 urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</para></listitem>
     <listitem><para>Edit the attributes - i.e. lines starting with
