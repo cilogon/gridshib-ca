@@ -1,38 +1,16 @@
-This directory contains all the certificates that are trusted by the JWS application to have signed
-the web server certificate from which it retrieves the credential. These certificates are loaded
-into resources/trustStore by createTrustStore.sh. Run "ant trustStore" to create or update the
-trustStore.
+This directory contains all the certificates that are trusted by the
+JWS application to have signed the web server certificate from which
+it retrieves the credential. These certificates are loaded into
+resources/trustStore. Run "make trustStore" to create or update this
+file.
 
-1c3f2ca8.0
-/DC=org/DC=DOEGrids/OU=Certificate Authorities/CN=DOEGrids CA 1
+To add a new certificate when doing a complete build, simply drop the
+pem-encoded file into this directory. Make sure it has a name that
+ends in a digit (e.g. 6349a761.0) and it will be automatically picked
+up by the build.
 
-4a6cd8b1.0
-/C=US/O=National Center for Supercomputing Applications/CN=Certification Authority
+To add a certificate to an existing jar file, please see the
+directions in doc/https-cas.html
 
-5aba75cb.0
-/C=US/O=National Computational Science Alliance/OU=Certification Authority
 
-6349a761.0
-/O=DOE Science Grid/OU=Certificate Authorities/CN=Certificate Manager
-
-85ca9edc.0
-/C=US/O=Pittsburgh Supercomputing Center/CN=PSC Kerberos Certification Authority
-
-9d8753eb.0
-/DC=net/DC=es/OU=Certificate Authorities/OU=DOE Science Grid/CN=pki1
-
-a7792cdb.0
-/C=US/O=NPACI/OU=SDSC/CN=Certificate Manager
-
-aa99c057.0
-/C=US/O=Pittsburgh Supercomputing Center/CN=PSC Root Certificate Authority
-
-b89793e4.0
-/C=US/O=NPACI/OU=SDSC/CN=Certificate Manager/0.9.2342.19200300.100.1.1=certman
-
-bc82f877.0
-/O=Grid/O=National Aeronautics and Space Administration/OU=Ames Research Center/CN=Certificate Manager
-
-d1b603c3.0
-/DC=net/DC=ES/O=ESnet/OU=Certificate Authorities/CN=ESnet Root CA 1
 

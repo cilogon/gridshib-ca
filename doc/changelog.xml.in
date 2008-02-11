@@ -10,6 +10,7 @@
 <para>
 <itemizedlist>
 <listitem><para>Documentation fix: Added setting of IdP.entityID for GS-SAMLTools integration (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5813">Bug 5813</ulink>)</para></listitem>
+<listitem><para>Added new NCSA CA certificates (f2e89fe3.0 and 9b95bbf2.0) to certificates/ directory for inclusion in trustStore</para></listitem>
 </itemizedlist>
 </para>
 </sect1>
