@@ -1,0 +1,89 @@
+-*- mode: text -*-
+----------------------------------------------------------------------
+* Introduction
+
+This document assumes you have a GS-CA release that has been tagged in
+CVS and now you want to make a maintainence branch so you can make a
+bugfix release.
+
+For the purposes of this document we'll say the release tag was
+'v0_5_0' and you are wanting to make a 'v0_5_1' release. Replace this
+in the examples as appropriate.
+
+You can also create a new tag instead of a release tag to create an
+arbitrary branch from any point. You might do this if you want to
+create a branch for an experimental feature.
+
+For a detailed discussion of branching see:
+http://kb.wisc.edu/middleware/page.php?id=4087
+
+
+----------------------------------------------------------------------
+* Create the branch tag
+
+First step is to create a branch tag from the release tag. A branch
+tag (which is specified by the '-b' argument) will always point to the
+head of the branch.
+
+$ cvs rtag -b -r v0_5_0 v0_5_0_BRANCH
+
+----------------------------------------------------------------------
+* Check out the branch
+
+Check out the branch. We'll do this into a directory with a name that
+shows this is this is a branch checkout.
+
+cvs checkout -d gridshib-ca-v0_5_0 -r v0_5_0_BRANCH gridshib/gridshib-ca
+
+----------------------------------------------------------------------
+* Update version in configure.ac
+
+First thing you probably want to do is update the version in
+configure.ac. See HOWTO-Release for details, but basically edit the
+version in AC_INIT() and the value of PACKAGE_RELEASE_STATUS.
+
+----------------------------------------------------------------------
+* Edit away and commit as normal
+
+Edit away as you normally would. Commit as normal and all your changes
+will go onto the branch.
+
+----------------------------------------------------------------------
+* Cutting the release
+
+Basically follow the directions in HOWTO-Release for cutting the new
+release, including tagging the release with 'cvs tag v0_5_1'.
+
+----------------------------------------------------------------------
+* Merging the changes back into the trunk
+
+Assuming you want to merge your changes back into the trunk, use the
+following steps. Also be sure and read:
+http://kb.wisc.edu/middleware/page.php?id=4087#merging
+
+1) In your branch checkout, tag the merge point:
+
+% cvs tag merge_v0_5_0_BRANCH
+
+2) Change back to your trunk checkout.
+
+3) Do the merge:
+
+% cvs update -j v0_5_0_BRANCH
+
+4) Deal with any conflicts. A command to list all files with conflicts
+follows.
+
+% cvs up -d | & grep '^C' | sed -e 's/^C //
+
+5) Make sure everything still work and commit.
+
+6) Tag the trunk where the merge occurred.
+
+% cvs tag from_v0_5_0_BRANCH
+
+----------------------------------------------------------------------
+
+That's it.
+
+$Id$
