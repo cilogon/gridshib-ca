@@ -96,14 +96,22 @@ if (!defined($cgi))
 	      . $config->getError());
 }
 
-my $user = $cgi->getUserId();
+my $shib = $config->getShibInterface();
+
+if (!defined($shib))
+{
+    errorExit("Could not initialize Shib interface: "
+	      . $config->getError());
+}
+
+my $user = $shib->getUserId();
 
 if (!defined($user))
 {
     errorExit("REMOTE_USER not defined.");
 }
 
-my $idp = $cgi->getIdP();
+my $idp = $shib->getIdP();
 
 my $remoteAddr = $cgi->remote_host();
 

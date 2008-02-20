@@ -108,6 +108,7 @@ DIST_EXTRA_FILES="\
 	Makefile.in \
 	install-sh \
 	LICENSE \
+	nmi/MIME-Base64-3.07.tar.gz \
 	nmi/gridshib-ca-nmitest.sh \
 	test/test-cert.pem \
 	test/test-key.pem"
@@ -208,6 +209,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/ShibInterface.pm \
 	perl/GridShibCA/TokenGenerator.pm"
 AC_SUBST(REQUIRED_PERL_MODULES)
 
@@ -275,11 +277,10 @@ PERL_DOC_DIR=${DOC_DIR}/perl
 AC_SUBST(PERL_DOC_DIR)
 
 dnl ----------------------------------------------------------------------
-dnl check for required perl modules that should be on any reasonably
-dnl recent perl, but don't always seem to be
-AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 Sys::Syslog],
+dnl check for required perl modules
+AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 MIME::Base64 Sys::Syslog],
 	[AC_MSG_RESULT([All required perl modules found.])],
-	[AC_MSG_ERROR([One or more required perl modules not found. Old version of perl?])])
+	[AC_MSG_ERROR([One or more required perl modules not found.])])
 
 dnl ----------------------------------------------------------------------
 dnl Stuff needed to build our openssl-based CA

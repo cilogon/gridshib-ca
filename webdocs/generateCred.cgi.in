@@ -115,7 +115,16 @@ if (!defined($cgi))
 	      . $config->getError());
 }
 
-$user = $cgi->getUserId();
+my $shib = $config->getShibInterface();
+
+if (!defined($shib))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not initialize Shib interface: "
+	      . $config->getError());
+}
+
+$user = $shib->getUserId();
 
 if (!defined($user))
 {
@@ -129,7 +138,7 @@ if (!defined($remoteAddr))
     errorExit($HTTP_INTERNAL_ERROR, "REMOTE_ADDR not defined.");
 }
 
-my $idp = $cgi->getIdP();
+my $idp = $shib->getIdP();
 
 if (!defined($idp))
 {

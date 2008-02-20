@@ -75,6 +75,7 @@ my %config = (
     loggerModule => "GridShibCA::Logger",
     caModule => "GridShibCA::OpenSSLCA",
     cgiModule => "GridShibCA::CGIinterface",
+    shibInterfaceModule => "GridShibCA::ShibInterface",
     tokenGeneratorModule => "GridShibCA::TokenGenerator",
     commandModule => "GridShibCA::Command",
     certRegistryModule => "GridShibCA::CertRegistry",
@@ -403,6 +404,22 @@ sub getTokenGenerator
     return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
 }
 
+=item getShibInterface()
+
+Get an instance of the GridShibCA::ShibInterface module by loading it
+and calling its new method with the given arguments.
+See L<GridShibCA::ShibInterface>.
+
+The exact module loaded is controlled by the shibInterfaceModule
+varibale in F<gridshib-ca.conf>.
+
+=cut
+
+sub getShibInterface
+{
+    my $self = shift;
+    return $self->_newInstance($config{"shibInterfaceModule"}, @_);
+}
 
 =item getCommand()
 

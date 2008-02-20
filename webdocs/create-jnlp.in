@@ -112,9 +112,16 @@ if (!defined($cgi))
 	      . $config->getError());
 }
 
+my $shib = $config->getShibInterface();
+if (!defined($shib))
+{
+    errorExit("Could not access ShibInterface: "
+	      . $config->getError());
+}
+
 my $url = $cgi->url();
 my $url_base = $cgi->url(-base=>1);
-my $shibsession = $cgi->getShibSession();
+my $shibsession = $shib->getShibSession();
 
 if (!defined($shibsession))
 {
@@ -122,7 +129,7 @@ if (!defined($shibsession))
 }
 push(@jwsArgs, $shibsession);
 
-my $user = $cgi->getUserId();
+my $user = $shib->getUserId();
 
 if (!defined($user))
 {

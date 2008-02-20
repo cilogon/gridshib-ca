@@ -54,6 +54,9 @@ caModule = GridShibCA::OpenSSLCA
 # Perl module to use for CGI interface
 cgiModule = GridShibCA::CGIinterface
 
+# Perl module to use for ShibInterface
+shibInterfaceModule = GridShibCA::ShibInterface
+
 # Perl module to generate tokens
 tokenGeneratorModule = GridShibCA::TokenGenerator
 

@@ -81,14 +81,6 @@ Path to file to store random state.
 
 Boolean - use GridShib SAML Tools to include SAML in issued certificates.
 
-=item JavaHome
-
-Path to JAVA_HOME. Needed to run GridShib SAML Tools.
-
-=item GridShibSAMLToolsPath
-
-Path to GridShib SAML Tools installation.
-
 =back
 
 =cut
@@ -187,7 +179,17 @@ sub signRequest
     if ($self->{config}->getParamBoolean("IncludeSAMLInCert"))
     {
 	$self->_debug("Including SAML in certificate");
-	my $samlExt = $self->getSAMLExt();
+
+	my $shib = $self->{config}->getShibInterface();
+
+	if (!defined($shib))
+	{
+	    $self->_error("Could not initialize Shib interface: "
+			  . $config->getError());
+	    return undef;
+	}
+
+	my $samlExt = $shib->getSAMLExt();
 
 	if (defined($samlExt))
 	{
@@ -199,8 +201,7 @@ sub signRequest
 	}
 	else
 	{
-	    # We should have logged an error in getSAMLExt()
-	    $self->_debug("SAML extension creation FAILED.");
+	    $self->_warn("SAML extension creation FAILED - get SAMLExt() returned undef.");
 	}
     }
 
@@ -239,179 +240,6 @@ sub signRequest
     }
     # Yes, return PEM-encoded certificate as string
     return $cmd->getOutput();
-}
-
-=item getSAMLExt()
-
-Return, as a string, a hunk of SAML for inclusion in the certificate.
-
-B<Arguments:> None
-
-B<Returns:> String containing SAML or undef on error
-
-=cut
-
-sub getSAMLExt
-{
-    my $self = shift;
-
-    use File::Spec;
-
-    my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
-
-    if (!defined($base64EncodedSAML))
-    {
-	$self->_warn("No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
-	return undef;
-    }
-
-    my $ssoResponse = $self->base64Decode($base64EncodedSAML);
-
-    if (!defined($ssoResponse))
-    {
-	$self->_warn("Base64 decode of SSO Response failed.");
-	return undef;
-    }
-
-    # Write to temporary file as required by gridshib-saml-issuer
-    my ($ssoResponseFile, $ssoResponseFilename) =
-	File::Temp::tempfile(UNLINK => 1);
-    print $ssoResponseFile $ssoResponse;
-    close($ssoResponseFile);
-
-    # Ok, now call gridshib-saml-issuer to build SAML for includion
-    # in certificate.
-    my $gridshibHome = $self->{config}->getParam("GridShibSAMLToolsPath");
-
-    if (! -d $gridshibHome )
-    {
-	$self->_warn("GridShibSAMLToolsPath does not exist: $gridshibHome");
-	return undef;
-    }
-
-    # Current version (0.3.0) of gridshib-saml-issuer requires
-    # GRIDSHIB_HOME to be set.
-    $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
-
-    my $javaHome = $self->{config}->getParam("JavaHome");
-
-    $ENV{"JAVA_HOME"} = $javaHome;
-
-    # We don't get a good error message if JAVA_HOME isn't right
-    # so do some simple checks.
-    if (! -d $javaHome )
-    {
-	$self->_warn("JavaHome path does not exist: $javaHome");
-	# Go ahead and try anyways
-    }
-
-    # Get full path to gridshib-saml-issuer
-    my $gridshibIssuer = File::Spec->catfile($gridshibHome,
-					     "bin",
-					     "gridshib-saml-issuer");
-
-    if ( ! -f $gridshibIssuer )
-    {
-	$self->_warn("gridshib-saml-issuer does not exist ($gridshibIssuer)");
-	return undef;
-    }
-
-    my $status;
-    my @args = ();
-
-    push(@args, "--user", $self->getDN());
-    # --ssoResponse expects a file: url
-    push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
-    # GS-ST 0.3.0 requires --sender-vouches for what we are doing
-    push(@args, "--sender-vouches");
-    # Request ASN1 header. This requires GS-ST 0.3.0.
-    push(@args, "--asn1");
-
-    if (!$self->{config}->getParamBoolean("debug"))
-    {
-	# Prevent spurious output on error
-	push(@args, "--quiet");
-    }
-    
-    my $cmd = $self->{config}->getCommand($gridshibIssuer, @args);
-    $self->_debug("Executing: %s %s", $gridshibIssuer, join(" ", @args));
-    if (!$cmd->exec())
-    {
-	# Verison 0.1.3 of gridshib-saml-issuer doesn't return non-zero
-	# on exit, so we won't catch failures unfortunately.
-	$self->_warn("Error executing %s: %s",
-		     $gridshibIssuer,
-		     $cmd->getError());
-	return undef;
-    }
-    my $saml = $cmd->getOutput();
-    
-    # Remove any CR's to make sure we have a single line of SAML
-    # This will also strip any CR at line's end.
-    $saml =~ s/\n//g;
-
-    if ($saml eq "")
-    {
-	$self->_warn("SAML assertion empty.");
-	return undef;
-    }
-
-    return $saml;
-}
-
-=item base64Decode()
-
-Return, as a string, the decoded version of the based64-encoded string
-passed as argument.
-
-B<Arguments:> Base64-encoded string
-
-B<Returns:> Decoded string, undef on error
-
-=cut
-
-sub base64Decode
-{
-    my $self = shift;
-    my $encodedString = shift;
-
-    if (!defined($encodedString))
-    {
-	$self->_warn("base64Decode() called without argument.");
-	return undef;
-    }
-
-    my @args = ();
-    push(@args, "base64");
-    # -d == decode
-    push(@args, "-d");
-    # -a == ascii mode, -A == one-line
-    push(@args, "-a", "-A");
-
-    my $openssl = $self->{config}->getParam("OpenSSL");
-    my $cmd = $self->{config}->getCommand($openssl, @args);
-    $cmd->setInput($encodedString);
-    my $result = $cmd->exec();
-    if (!$result)
-    {
-	$self->_warn("Error decoding base64 SAML assertion " .
-		     "(Exec of $openssl failed): %s",
-		     $cmd->getError());
-	return undef;
-    }
-    my $decodedString = $cmd->getOutput();
-
-    if (!defined($decodedString))
-    {
-	$self->_warn("Output from base64 decode of SAML assertion undefined.");
-	return undef;
-    }
-    if ($decodedString eq "")
-    {
-	$self->_warn("Got no output from base64 decode of SAML assertion.");
-	return undef;
-    }
-    return $decodedString;
 }
 
 =back

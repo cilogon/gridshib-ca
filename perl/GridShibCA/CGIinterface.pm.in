@@ -84,11 +84,11 @@ use CGI;
 
 =item new()
 
-Create a new Authorization object.
+Create a new CGIinterface object.
 
 B<Arguments:> None
 
-B<Returns:> Authorization instance
+B<Returns:> CGIinterface instance
 
 =cut
 
@@ -116,98 +116,6 @@ sub getCertificateRequest
 {
     my $self = shift;
     return $self->param('certificateRequest');
-}
-
-=item getUserId()
-
-Return the user id as reported by Shibboleth through REMOTE_USER.
-Clean the user id so it can pass taint checking.
-
-B<Arguments:> None
-
-B<Returns:> User id as string, or under if unknown
-
-=cut
-
-sub getUserId
-{
-    my $self = shift;
-    my $remote_user = $self->remote_user();
-    if (!defined($remote_user))
-    {
-	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
-	return undef;
-    }
-    # Clean user name (from perlsec manual)
-    my $userId = undef;
-    if ($remote_user =~ /^([-\@\w.]+)$/)
-    {
-	$userId = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in REMOTE_USER ($remote_user)");
-	return undef;
-    }
-    return $userId;
-}
-
-=item getIdP()
-
-Returns the Shibboleth identity provider
-
-B<Arguments:> None
-
-B<Returns:> IdP as string, or undef if unknown
-
-=cut
-
-sub getIdP
-{
-    my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
-    if (!defined($idp))
-    {
-	$self->{logger}->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
-	return undef;
-    }
-    # Clean Idp Id (from perlsec manual)
-    if ($idp =~ /^([-\/:\@\w.]+)$/)
-    {
-	$idp = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in IdP Id ($idp)");
-	return undef;
-    }
-    return $idp;
-}
-
-=item getShibSession()
-
-Returns the Shibboleth session cookie as a "variable=value" string.
-
-B<Arguments:> None
-
-B<Returns:> Shibboleth session or undef if cannot be found
-
-=cut
-
-sub getShibSession
-{
-    use CGI::Cookie;
-
-    my %cookies = fetch CGI::Cookie;
-    my $shibsession = undef;
-    foreach my $key (keys %cookies)
-    {
-	if ($key =~ /_shibsession_/)
-	{
-	    $shibsession = $key . "=" . $cookies{$key}->value;
-	    last;
-	}
-    }
-    return $shibsession;
 }
 
 =item getToken()
