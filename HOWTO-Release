@@ -151,7 +151,7 @@ Now tag cvs for the release. The tag name convention is "v0_5_0",
 i.e. replace the dots in the version string with underscores and
 prepend a 'v'. E.g.:
 
-% cvs rtag v0_5_0 gridshib/gridshib-ca
+% cvs tag v0_5_0
 
 ----------------------------------------------------------------------
 * Make the official distribution with 'make dist'
