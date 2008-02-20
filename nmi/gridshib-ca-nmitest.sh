@@ -23,6 +23,7 @@ set -e
 echo "GridShib-CA NMI TEST Script running..."
 date
 hostname
+uname
 
 # Output a bunch of stuff for debugging
 echo ""
@@ -40,7 +41,9 @@ echo "openssl: ${OPENSSL}"
 echo ""
 
 # OpenSSL on the NMI B&T platforms seems to require this
-export LIBS="-ldl"
+# (Don't use 'export FOO=BAR' form here as it's portable.)
+LIBS="-ldl"
+export LIBS
 
 dist_dirname=$1
 shift
@@ -55,6 +58,52 @@ echo "Distribution directory: ${dist_dirname}"
 # CD into unpacked distribution directory.
 cd ${dist_dirname}
 
+######################################################################
+#
+# Build Perl Modules
+#
+
+perlModules="MIME-Base64-3.07"
+
+perlPrefix=`pwd`/perllib
+
+echo "Creating perl install dir: ${perlPrefix}"
+test -d ${perlPrefix} || mkdir ${perlPrefix}
+
+for module in $perlModules; do
+    echo "Building perl module $module"
+    tarball="nmi/${module}.tar.gz"
+    tar xfz $tarball
+    (cd $module && \
+	perl Makefile.PL PREFIX="${perlPrefix}" LIB="${perlPrefix}" && \
+	make && \
+	make test && \
+	make install \
+	)
+    echo "Done installing $module"
+done    
+
+######################################################################
+#
+# Set PERLLIB
+#
+
+# Use PERL5LIB instead of PERLLIB as it will automatically cause perl
+# to include any architecture-specific subdirectories.
+echo "Setting PERL5LIB to include our perl modules..."
+perllib=${perlPrefix}
+# Figure out if we setting PERL5LIB or augmenting it
+if test X${PERL5LIB} = X; then
+    # Setting
+    PERL5LIB=${perllib}
+else
+    # Prepending to it
+    PERL5LIB=${perllib}:${PERL5LIB}
+fi
+export PERL5LIB
+echo "PERL5LIB is ${PERL5LIB}"
+
+######################################################################
 #
 # configure
 #
@@ -66,7 +115,7 @@ confOpts="${confOpts} --with-gridshib-ca-conf-dir=${tmpDir}/gridshib-ca/"
 confOpts="${confOpts} --with-shib-protected-cgi-bin-dir=${tmpDir}/gridshib-ca-shib-cgi/"
 confOpts="${confOpts} --with-cgi-bin-dir=${tmpDir}/gridshib-ca-cgi/"
 confOpts="${confOpts} --with-gridshib-ca-html_dir=${tmpDir}/gridshib-ca-html/"
-# Make web user "us" so that chown() during installation work
+# Make web user "us" so that chown() during installation works
 confOpts="${confOpts} --with-www-user=${USER}"
 
 uname > /dev/null 2>&1
@@ -76,7 +125,7 @@ else
     arch="unknown"
 fi
 
-if test $arch -eq "SunOS"; then
+if test $arch = "SunOS"; then
     # Specify FQDN
     hostname=`hostname`
     confOpts="${confOpts} --with-hostname=${hostname}.example.com"

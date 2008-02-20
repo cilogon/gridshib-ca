@@ -14,6 +14,22 @@ Then visit the the following URL to view the results:
 
 http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
 
+====Prereqs===
+
+To list available prereqs, use nmi-list-prereqs. You can supply an
+argument which gives the prefix of the prereqs you are interested
+in. E.g.:
+
+% nmi-list-prereqs perl
+..
+
+====Platforms===
+
+To show all the available platforms, log onto the NMI submit node
+(currently nmi-s003) and run:
+
+% condor_status -format '%s\n' nmi_platform | sort | uniq
+
 The following platforms are currently not included:
 
  x86_deb_3.1 - syslog console unwritable:
@@ -21,6 +37,7 @@ http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=nmi-
 
  ia64_sles_9 - openssl 0.9.8e broken (setting subject name in req generation):
     http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175440771_31046%2Fuserdir%2Fia64_sles_9%2Fremote_task.err&refresh=0&no_header=1&view=1
+ UPDATE: 2/19/2008 This seems to be fixed.
 
  ppc_aix_5.2 - seems to always be down
 
@@ -29,3 +46,18 @@ http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results/viewFile&file_host=nmi-
 
  sun4u_sol_5.9 - make insists on trying to link with non-existant 'cc':
     http://nmi-s003.cs.wisc.edu/nmi/index.php?page=results/viewFile&file_host=nmi-s003.cs.wisc.edu&file=vwelch_nmi-s003.cs.wisc.edu_1175450329_5281%2Fuserdir%2Fsun4u_sol_5.9%2Fremote_task.err&refresh=0&no_header=1&view=1
+
+ x86_macos_10.4
+WARNING: no machines were found that matched your requirement of: '(nmi_platform == "x86_macos_10.4" &&  Arch != "" &&  OpSys != "" &&  Memory >= 0) && (has_perl_5_8_5 =!= Undefined) && (has_openssl_0_9_8e =!= Undefined)' at /nmi/bin/nmi_submit line 922.
+
+x86_rhas_5
+WARNING: no machines were found that matched your requirement of: '(nmi_platform == "x86_rhas_5" &&  Arch != "" &&  OpSys != "" &&  Memory >= 0) && (has_perl_5_8_5 =!= Undefined) && (has_openssl_0_9_8e =!= Undefined)' at /nmi/bin/nmi_submit line 922.
+
+x86_freebsd_6  - couldn't find working cc/gcc
+configure: error: C compiler cannot create executables
+
+sun4u_sol_5.10
+configure: error: OpenSSL header file not found.
+
+x86_ubuntu_5.10
+configure: error: Could not find OpenSSL libraries (libcrypto)
