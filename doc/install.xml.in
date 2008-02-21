@@ -135,9 +135,9 @@ as provided to <ulink url="#conf">configure</ulink>.
 @GRIDSHIB_CA_CONF_DIR@/gridshib-ca.conf to control a number of
 configuration options, including:
 <itemizedlist>
-<listitem><para>What <ulink url="modules.html">PERL modules</ulink> are used to
-	accomplish tasks, allowing deployment modification of behavior;
-</para></listitem>
+<listitem><para>What <ulink url="perl-modules.html">PERL
+modules</ulink> are used to accomplish tasks, allowing deployment
+modification of behavior; </para></listitem>
 <listitem><para>Syslog options to control how the GridShib-CA logs;
 </para></listitem>
 <listitem><para>Locations of files including the CA certificate, private key;
