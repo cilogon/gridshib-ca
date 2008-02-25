@@ -81,6 +81,7 @@ my %config = (
     certRegistryModule => "GridShibCA::CertRegistry",
     authorizationModule => "GridShibCA::Authorization",
     nameMapperModule => "GridShibCA::NameMapper",
+    samlExtensionModule => "GridShibCA::SAMLExtension",
     # Configuration stuff
     GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
     JNLPTemplate => "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp",
@@ -491,6 +492,22 @@ sub getNameMapper
     return $self->_newInstance($config{"nameMapperModule"}, @_);
 }
 
+=item getSAMLExtension()
+
+Get an instance of the GridShibCA::SAMLExtension module by loading it
+and calling its new method with the given arguments.  See
+L<GridShibCA::SAMLExtension>.
+
+The exact module loaded is controlled by the samlExtensionModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getSAMLExtension
+{
+    my $self = shift;
+    return $self->_newInstance($config{"samlExtensionModule"}, @_);
+}
 =back
 
 =cut

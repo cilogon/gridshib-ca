@@ -19,7 +19,8 @@ server.)</para></listitem>
 url="http://shibboleth.internet2.edu/latest.html">Shibboleth SP
 software</ulink> (Tested with 1.3)</para></listitem>
 <listitem><para><ulink url="http://www.perl.org">Perl</ulink> (Version 5.8.5
-or later should work, early versions might.)</para></listitem>
+or later should work, earlier versions might.)</para></listitem>
+<listitem><para><ulink url="http://search.cpan.org/dist/MIME-Base64/">MIME:Base64 perl module</ulink> - if you have perl 5.8.8 or later, this is already included. Otherwise you might need to install it (e.g. with 'cpan install MIME::Base64'). The configure script will automatically check for it.</para></listitem>
 <listitem><para><ulink url="http://www.openssl.org">OpenSSL</ulink> Both the
 binary and the development libraries and header files. Version 0.9.7
 or later.</para></listitem>

@@ -72,6 +72,9 @@ authorizationModule = GridShibCA::Authorization
 # Perl module to use to map Shibboleth id/attributes to X.509 DN
 nameMapperModule = GridShibCA::NameMapper
 
+# Perl module to use to generate SAML extension
+samlExtensionModule = GridShibCA::SAMLExtension
+
 ######################################################################
 #
 # Configuration files

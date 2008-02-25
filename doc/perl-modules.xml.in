@@ -61,6 +61,16 @@ specific the module loaded is given below.
 <entry>Maps from Shibboleth authentication/attributes to X.509 DN.</entry>
 </row>
 <row>
+  <entry><ulink url="perl/GridShibCA/SAMLExtension.html">SAMLExtension</ulink></entry>
+  <entry>samlExtensionModule</entry>
+  <entry>Creates SAML Extension for embedding in certificate.</entry>
+</row>
+<row>
+  <entry><ulink url="perl/GridShibCA/ShibInterface.html">ShibInterface</ulink></entry>
+  <entry>shibInterfaceModule</entry>
+  <entry>Provides interface to Shibboleth-provided information.</entry>
+</row>
+<row>
 <entry><ulink url="perl/GridShibCA/TokenGenerator.html">TokenGenerator</ulink></entry>
 <entry>tokenGeneratorModule</entry>
 <entry>Used to generate Tokens used to authenticate user requests</entry>

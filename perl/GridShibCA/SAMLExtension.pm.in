@@ -1,0 +1,247 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# GridShib CA interface for generating SAML extension to include in
+# the certificate.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::SAMLExtension
+
+GridShib-CA interface for generating SAML extension to include in the
+certificate. This implementation is basically a wrapper around the
+GridShib SAML Tools.
+
+=head2 Configuration Parameters
+
+This class uses the following values from F<gridshib-ca.conf>:
+
+=over 4
+
+=item GridShibSAMLToolsPath
+
+Path to GridShib SAML Tools installation.
+
+=item JavaHome
+
+Path to JAVA_HOME. Needed to run GridShib SAML Tools.
+
+=back
+
+=cut
+
+package GridShibCA::SAMLExtension;
+use GridShibCA::Config;
+
+use File::Spec;
+use File::Temp;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new SAMLExtension object.
+
+B<Arguments:> None
+
+B<Returns:> SAMLExtension instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    bless($self, $class);
+    return $self;
+}
+
+
+=item generateSAML()
+
+Create a SAML extension for inclusion in certificate. Includes an
+ASN.1 header so it can be easily feed to openssl.
+
+B<Arguments:> 
+
+C<$DN> - user's distinguished name
+
+B<Returns:> SAML extension as string or undef on error.
+
+=cut
+
+sub generateSAML
+{
+    my $self = shift;
+    my $DN = shift;
+
+    my $shib = $self->{config}->getShibInterface();
+
+    if (!defined($shib))
+    {
+	$self->_warn("Could not initialize Shib interface: "
+		     . $config->getError());
+	return undef;
+    }
+
+    my $ssoResponse = $shib->getSSOResponse();
+
+    if (!defined($ssoResponse))
+    {
+	$self->_warn("Failed to get SSOResponse. Proceeding without it.");
+    }
+    
+    # Write to temporary file as required by gridshib-saml-issuer
+    my ($ssoResponseFile, $ssoResponseFilename) =
+	File::Temp::tempfile(UNLINK => 1);
+    print $ssoResponseFile $ssoResponse;
+    close($ssoResponseFile);
+
+    # Ok, now call gridshib-saml-issuer to build SAML for includion
+    # in certificate.
+    my $gridshibHome = $self->{config}->getParam("GridShibSAMLToolsPath");
+
+    if (! -d $gridshibHome )
+    {
+	$self->_warn("GridShibSAMLToolsPath does not exist: $gridshibHome");
+	return undef;
+    }
+
+    # Current version (0.3.0) of gridshib-saml-issuer requires
+    # GRIDSHIB_HOME to be set.
+    $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
+
+    my $javaHome = $self->{config}->getParam("JavaHome");
+
+    $ENV{"JAVA_HOME"} = $javaHome;
+
+    # We don't get a good error message if JAVA_HOME isn't right
+    # so do some simple checks.
+    if (! -d $javaHome )
+    {
+	$self->{logger}->err("JavaHome path does not exist: " . $javaHome);
+	# Go ahead and try anyways
+    }
+
+    # Get full path to gridshib-saml-issuer
+    my $gridshibIssuer = File::Spec->catfile($gridshibHome,
+					     "bin",
+					     "gridshib-saml-issuer");
+
+    if ( ! -f $gridshibIssuer )
+    {
+	$self->{logger}->err("gridshib-saml-issuer does not exist: " .
+			     $gridshibIssuer);
+	return undef;
+    }
+
+    my $status;
+    my @args = ();
+
+    push(@args, "--user", $DN);
+    if (defined($ssoResponse))
+    {
+	# --ssoResponse expects a file: url
+	push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
+    }
+    # GS-ST 0.3.0 requires --sender-vouches for what we are doing
+    push(@args, "--sender-vouches");
+    # Request ASN1 header. This requires GS-ST 0.3.0.
+    push(@args, "--asn1");
+
+    if (!$self->{config}->getParamBoolean("debug"))
+    {
+	# Prevent spurious output on error
+	push(@args, "--quiet");
+    }
+    
+    my $cmd = $self->{config}->getCommand($gridshibIssuer, @args);
+    $self->{logger}->debug("Executing: %s %s",
+			   $gridshibIssuer,
+			   join(" ", @args));
+    if (!$cmd->exec())
+    {
+	# Old versions (<=0.1.3) of gridshib-saml-issuer doesn't
+	# return non-zero on exit, so we won't catch failures with
+	# those versions unfortunately, but we shouldn't be using them
+	# anyways as they are woefully out of date.
+	$self->{logger}->err("Error executing %s: %s",
+			     $gridshibIssuer,
+			     $cmd->getError());
+	return undef;
+    }
+    my $saml = $cmd->getOutput();
+    
+    # Remove any CR's to make sure we have a single line of SAML
+    # This will also strip any CR at line's end.
+    $saml =~ s/\n//g;
+
+    if ($saml eq "")
+    {
+	$self->{logger}->err("SAML assertion empty.");
+	return undef;
+    }
+
+    return $saml;
+}
+
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

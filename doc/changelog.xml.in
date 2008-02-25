@@ -9,6 +9,10 @@
 <title>Current Version: @PACKAGE_VERSION@</title>
 <para>
 <itemizedlist>
+<listitem><para>Added ShibInterface perl module, taking methods from CGIInterface module.</para></listitem>
+<listitem><para>Added SAMLExtension perl module, basically wrapping GridShib-SAMLTools</para></listitem>
+<listitem><para>If we don't find a SSOResponse when creating a SAML Extension, proceed without it but log a warning.</para></listitem>
+<listitem><para>Use Mime::Base64 module instead of our own. Older versions of perl (e.g. 5.8.5 will need to have this installed.)</para></listitem>
 <listitem><para>Documentation fix: Added setting of IdP.entityID for GS-SAMLTools integration (<ulink url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=5813">Bug 5813</ulink>)</para></listitem>
 <listitem><para>Added new NCSA CA certificates (f2e89fe3.0 and 9b95bbf2.0) to certificates/ directory for inclusion in trustStore</para></listitem>
 </itemizedlist>

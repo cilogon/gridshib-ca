@@ -209,6 +209,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibInterface.pm \
 	perl/GridShibCA/TokenGenerator.pm"
 AC_SUBST(REQUIRED_PERL_MODULES)

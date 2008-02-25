@@ -49,22 +49,6 @@
 
 GridShib-CA interface to Shibboleth functionality.
 
-=head2 Configuration Parameters
-
-This class uses the following values from F<gridshib-ca.conf>:
-
-=over 4
-
-=item GridShibSAMLToolsPath
-
-Path to GridShib SAML Tools installation. Used if IncludeSAMLInCert is
-True.
-
-=item JavaHome
-
-Path to JAVA_HOME. Needed to run GridShib SAML Tools. Used if
-IncludeSAMLInCert is True.
-
 =cut
 
 package GridShibCA::ShibInterface;
@@ -108,7 +92,15 @@ B<Returns:> User id as string, or under if unknown
 sub getUserId
 {
     my $self = shift;
-    my $remote_user = $self->remote_user();
+
+    my $cgi = $self->{config}->getCGI();
+    if (!defined($cgi))
+    {
+	$self->{logger}->err("Could not instantiate CGI inteface.");
+	return undef;
+    }
+	
+    my $remote_user = $cgi->remote_user();
     if (!defined($remote_user))
     {
 	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
@@ -187,21 +179,20 @@ sub getShibSession
 }
 
 
-=item getSAMLExt()
+=item getSSOResponse()
 
-Return, as a string, a hunk of SAML for inclusion in the certificate.
+Return, as a string, the SSO Response, if provided by Shibboleth.
 
 B<Arguments:> None
 
-B<Returns:> String containing SAML or undef on error
+B<Returns:> String containing SSO Response or undef on error
 
 =cut
 
-sub getSAMLExt
+sub getSSOResponse
 {
     my $self = shift;
 
-    use File::Spec;
     use MIME::Base64;
 
     my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
@@ -221,94 +212,7 @@ sub getSAMLExt
 	return undef;
     }
 
-    # Write to temporary file as required by gridshib-saml-issuer
-    my ($ssoResponseFile, $ssoResponseFilename) =
-	File::Temp::tempfile(UNLINK => 1);
-    print $ssoResponseFile $ssoResponse;
-    close($ssoResponseFile);
-
-    # Ok, now call gridshib-saml-issuer to build SAML for includion
-    # in certificate.
-    my $gridshibHome = $self->{config}->getParam("GridShibSAMLToolsPath");
-
-    if (! -d $gridshibHome )
-    {
-	$self->_warn("GridShibSAMLToolsPath does not exist: $gridshibHome");
-	return undef;
-    }
-
-    # Current version (0.3.0) of gridshib-saml-issuer requires
-    # GRIDSHIB_HOME to be set.
-    $ENV{"GRIDSHIB_HOME"} = $gridshibHome;
-
-    my $javaHome = $self->{config}->getParam("JavaHome");
-
-    $ENV{"JAVA_HOME"} = $javaHome;
-
-    # We don't get a good error message if JAVA_HOME isn't right
-    # so do some simple checks.
-    if (! -d $javaHome )
-    {
-	$self->{logger}->err("JavaHome path does not exist: $javaHome");
-	# Go ahead and try anyways
-    }
-
-    # Get full path to gridshib-saml-issuer
-    my $gridshibIssuer = File::Spec->catfile($gridshibHome,
-					     "bin",
-					     "gridshib-saml-issuer");
-
-    if ( ! -f $gridshibIssuer )
-    {
-	$self->{logger}->err("gridshib-saml-issuer does not exist ($gridshibIssuer)");
-	return undef;
-    }
-
-    my $status;
-    my @args = ();
-
-    push(@args, "--user", $self->getDN());
-    # --ssoResponse expects a file: url
-    push(@args, "--ssoResponse", "file:" . $ssoResponseFilename);
-    # GS-ST 0.3.0 requires --sender-vouches for what we are doing
-    push(@args, "--sender-vouches");
-    # Request ASN1 header. This requires GS-ST 0.3.0.
-    push(@args, "--asn1");
-
-    if (!$self->{config}->getParamBoolean("debug"))
-    {
-	# Prevent spurious output on error
-	push(@args, "--quiet");
-    }
-    
-    my $cmd = $self->{config}->getCommand($gridshibIssuer, @args);
-    $self->{logger}->debug("Executing: %s %s",
-			   $gridshibIssuer,
-			   join(" ", @args));
-    if (!$cmd->exec())
-    {
-	# Old versions (<=0.1.3) of gridshib-saml-issuer doesn't
-	# return non-zero on exit, so we won't catch failures with
-	# those version unfortunately, but we shouldn't be using them
-	# anyways as they are woefully out of date.
-	$self->{logger}->err("Error executing %s: %s",
-			     $gridshibIssuer,
-			     $cmd->getError());
-	return undef;
-    }
-    my $saml = $cmd->getOutput();
-    
-    # Remove any CR's to make sure we have a single line of SAML
-    # This will also strip any CR at line's end.
-    $saml =~ s/\n//g;
-
-    if ($saml eq "")
-    {
-	$self->{logger}->err("SAML assertion empty.");
-	return undef;
-    }
-
-    return $saml;
+    return $ssoResponse;
 }
 
 =back

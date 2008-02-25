@@ -180,16 +180,7 @@ sub signRequest
     {
 	$self->_debug("Including SAML in certificate");
 
-	my $shib = $self->{config}->getShibInterface();
-
-	if (!defined($shib))
-	{
-	    $self->_error("Could not initialize Shib interface: "
-			  . $config->getError());
-	    return undef;
-	}
-
-	my $samlExt = $shib->getSAMLExt();
+	my $samlExt = $self->_getSAMLExt();
 
 	if (defined($samlExt))
 	{
@@ -198,10 +189,6 @@ sub signRequest
 	    ($samlExtFile, $samlExtFilename) = File::Temp::tempfile();
 	    print $samlExtFile $samlExt;
 	    close($samlExtFile);
-	}
-	else
-	{
-	    $self->_warn("SAML extension creation FAILED - get SAMLExt() returned undef.");
 	}
     }
 
@@ -240,6 +227,54 @@ sub signRequest
     }
     # Yes, return PEM-encoded certificate as string
     return $cmd->getOutput();
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _getSAMLExt()
+
+Create a SAML extension for inclusion in certificate. Includes an
+ASN.1 header so it can be easily feed to openssl.
+
+B<Arguments:> None
+
+B<Returns:> SAML extension as string or undef on error.
+
+=cut
+
+sub _getSAMLExt
+{
+    my $self = shift;
+
+    my $samlExtensionModule = $self->{config}->getSAMLExtension();
+
+    if (!defined($samlExtensionModule))
+    {
+	$self->_warn("Could not initialize SAMLExtension module: "
+		     . $config->getError());
+	return undef;
+    }
+
+    my $saml = $samlExtensionModule->generateSAML($self->getDN());
+
+    if (!defined($saml))
+    {
+	# Detailed error should have been logged by SAMLExtension
+	$self->_warn("SAML generation failed.");
+	return undef;
+    }
+
+    return $saml;
 }
 
 =back
