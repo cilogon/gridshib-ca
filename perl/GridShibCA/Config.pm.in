@@ -508,6 +508,7 @@ sub getSAMLExtension
     my $self = shift;
     return $self->_newInstance($config{"samlExtensionModule"}, @_);
 }
+
 =back
 
 =cut
@@ -612,7 +613,7 @@ sub _readConfig
 
 =item _trimWhitespace()
 
-Trim leading and trailing whitespace froma string.
+Trim leading and trailing whitespace from a string.
 
 B<Arguments:> String to be trimmed
 
