@@ -132,6 +132,8 @@ B<Returns:> IdP as string, or undef if unknown
 
 sub getIdP
 {
+    my $self = shift;
+
     my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
     if (!defined($idp))
     {
@@ -163,6 +165,8 @@ B<Returns:> Shibboleth session or undef if cannot be found
 
 sub getShibSession
 {
+    my $self = shift;
+
     use CGI::Cookie;
 
     my %cookies = fetch CGI::Cookie;
