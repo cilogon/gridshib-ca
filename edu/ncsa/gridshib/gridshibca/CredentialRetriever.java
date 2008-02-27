@@ -46,6 +46,7 @@ import java.lang.String;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.HttpURLConnection;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import javax.jnlp.*;
@@ -145,11 +146,20 @@ public class CredentialRetriever {
                 throw new Exception("Error checking umask: " + e.getMessage());
             }
             
-			// URL must be https
+			// URL must be https (unless we are in debug mode)
 			String protocol = credURL.getProtocol();
 			if (!protocol.equals("https"))
 			{
-				throw new Exception("Credential URL is not secure (is '" + protocol + "' rather than 'https'). Service is misconfigured.");
+                if (debug)
+                {
+                    debug("Allowing non-https url for credential retrieval since we are in debug mode.");
+                }
+                else
+                {
+                    throw new Exception("Credential URL is not secure (is '"
+                                        + protocol +
+                                        "' rather than 'https'). Service is misconfigured.");
+                }
 			}
 
             // Generate our keys
@@ -189,7 +199,7 @@ public class CredentialRetriever {
                 // Class doesn't exist, don't need to do anything
             }
 
-            HttpsURLConnection conn = openHttpsURL(credURL);
+            HttpURLConnection conn = openURL(credURL);
             
             // Write our POST data
             OutputStreamWriter postWriter =
@@ -298,7 +308,7 @@ public class CredentialRetriever {
         } catch (java.lang.IllegalArgumentException e) {
             gui.error("Error parsing JWS arguments. Client/server version mismatch? Error: " + e.getMessage());
 		} catch (Exception e) {
-			gui.error(e.getMessage());
+			gui.error("Unhandled error: " + e.getMessage());
 		}
 
         gui.displayMessage("Press OK to close application.");
@@ -407,19 +417,25 @@ public class CredentialRetriever {
         }
     }
 
-    // Open and configure a HTTPS connection given a URL
-    private HttpsURLConnection openHttpsURL(URL url)
+    // Open and configure a connection given a URL
+    private HttpURLConnection openURL(URL url)
         throws IOException
     {
+        HttpURLConnection conn;
+
         debug("Setting up connection to URL: " + url);
 
-        HttpsURLConnection conn =
-            (HttpsURLConnection) url.openConnection();
-        if (mySSLSocketFactory != null)
+        conn = (HttpURLConnection) url.openConnection();
+
+        if (url.getProtocol().equals("https") &&
+            (mySSLSocketFactory != null))
         {
+            HttpsURLConnection sconn =  (HttpsURLConnection) conn;
+
             debug("Using my list of bundled CAs.");
-            conn.setSSLSocketFactory(mySSLSocketFactory);
+            sconn.setSSLSocketFactory(mySSLSocketFactory);
         }
+
         conn.setDoOutput(true);
         conn.setRequestProperty("Cookie", shibSession);
         return conn;
@@ -530,7 +546,7 @@ public class CredentialRetriever {
         debug("Trusted CAs URL: " + trustedCAsURL);
         File trustedCAPath = getUserCADir();
         debug("Writing trusted CAs to " + trustedCAPath);
-        HttpsURLConnection conn = openHttpsURL(trustedCAsURL);
+        URLConnection conn = openURL(trustedCAsURL);
 
         BufferedReader trustedCAStream =
             new BufferedReader(
