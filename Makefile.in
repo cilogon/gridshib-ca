@@ -277,12 +277,7 @@ install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES) $(JARFILE)
 	@for file in $(HTML_FILES) $(IMAGES) $(JARFILE) ; do \
 		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
-		if test -f $(GRIDSHIB_CA_HTML_DIR)/$${f} ; then \
-			echo "  Avoiding overwriting existing file." ;\
-			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR)/$${f}.new ;\
-		else \
-			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
-		fi \
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
 
 $(SHIB_PROTECTED_CGI_BIN_DIR):
@@ -751,15 +746,15 @@ TEST_HOST=computer.ncsa.uiuc.edu
 
 rsync-test: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-test
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-test
 
 rsync-test2: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-test2
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-test2
 
 rsync-myproxy: $(DIST_FILES)
 	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca-myproxy
+	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-myproxy
 
 install-doc: doc
 	@echo Rsyncing docs to gridshib.globus.org
