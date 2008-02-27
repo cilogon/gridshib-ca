@@ -68,7 +68,9 @@ specific the module loaded is given below.
 <row>
   <entry><ulink url="perl/GridShibCA/ShibInterface.html">ShibInterface</ulink></entry>
   <entry>shibInterfaceModule</entry>
-  <entry>Provides interface to Shibboleth-provided information.</entry>
+  <entry>Provides interface to Shibboleth-provided information. For
+  running without Shibboleth (e.g. for testing), see the <ulink
+  url="perl/GridShibCA/FakeShib.html">FakeShib</ulink> module.</entry>
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/TokenGenerator.html">TokenGenerator</ulink></entry>

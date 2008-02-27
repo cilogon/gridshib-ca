@@ -1,0 +1,208 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# GridShib CA interface for Shibboleth.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::FakeShib
+
+B<DO NOT USE THIS MODULE IN A PRODUCTION DEPLOYMENT.>
+
+Fake Shib is a implementation of the
+L<GridShibCA::ShibInterface|GridShibCA::ShibInterface> module that
+provides a fake Shibboleth interface for use in testing the
+GridShib-CA when real Shibboleth is not available or not desired. It
+is intended for use in development and testing.
+
+This module always returns constant values which are meant to be
+obviouly bogus so even if accidentially deployed in production, the
+resulting credentials will not match even the most liberal access
+control policies. See the documentation for the individual methods as
+to what is returned.
+
+This modules logs copious warnings to make sure you are aware it is
+being used.
+
+To use this module for testing, you need to do the following. First,
+edit F<gridshib-ca.conf> and change the value of
+C<shibInterfaceModule> such that it will invoke
+C<GridShibCA::FakeShib>, i.e. the relevant line should look like:
+
+C<shibInterfaceModule = GridShibCA::FakeShib>
+
+Then edit F<authorizedIdps.conf> and add a line authorizing the
+"FakeShib IdP" to use the GridShib CA:
+
+C<urn:gridshib:FakeShib:DoNotTrust "CN=FakeShibUser,OU=FakeShib,O=GridShib">
+
+This will then allow you to run the GridShib-CA without having
+Shibboleth available. Again, B<this module is intented for testing
+only>.
+
+=cut
+
+package GridShibCA::FakeShib;
+use GridShibCA::Config;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new FakeShib object.
+
+B<Arguments:> None
+
+B<Returns:> FakeShib instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{logger}->info("WARNING: FakeShib instantiated. Faking Shibboleth authentication. You better not be using this in a production environment.");
+    # These are the fake values we will return
+    $self->{userId} = "FakeShibUser";
+    $self->{idpId} = "urn:gridshib:FakeShib:DoNotTrust";
+    # Note the _sibsession_ prefix here is required.
+    $self->{shibSession} = "_shibsession_=FakeShibSession";
+    $self->{ssoResponse} = "<saml>FakeShibSSOResponse</saml>";
+    bless($self, $class);
+    return $self;
+}
+
+=item getUserId()
+
+Return the string "FakeShibUser"
+
+B<Arguments:> None
+
+B<Returns:> The string "FakeShibUser"
+
+=cut
+
+sub getUserId
+{
+    my $self = shift;
+    $self->{logger}->info("FakeShib: Returning userId: " .
+			  $self->{userId});
+    return $self->{userId};
+}
+
+=item getIdP()
+
+Returns the fake Shibboleth identity provider Id
+"urn:gridshib:FakeShib:DoNotTrust".
+
+B<Arguments:> None
+
+B<Returns:> The string "urn:gridshib:FakeShib:DoNotTrust"
+
+=cut
+
+sub getIdP
+{
+    my $self = shift;
+    $self->{logger}->info("FakeShib: Returning idpId: " .
+			  $self->{idpId});
+    return $self->{idpId};
+}
+
+=item getShibSession()
+
+Returns a fake Shibboleth session cookie in the form of the string
+"_shibsession_=FakeShibSession".
+
+B<Arguments:> None
+
+B<Returns:> The string "_shibsession_=FakeShibSession"
+
+=cut
+
+sub getShibSession
+{
+    my $self = shift;
+    $self->{logger}->info("FakeShib: Returning ShibSession: " .
+			  $self->{shibSession});
+    return $self->{shibSession};
+}
+
+
+=item getSSOResponse()
+
+Returns fake SSOResponse of the form "<saml>FakeShibSSOResponse</saml>".
+
+B<Arguments:> None
+
+B<Returns:> The string "<saml>FakeShibSSOResponse</saml>"
+
+=cut
+
+sub getSSOResponse
+{
+    my $self = shift;
+    $self->{logger}->info("FakeShib: Returning fake SSOResponse: " .
+			  $self->{ssoResponse});
+    return $self->{ssoResponse};
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
