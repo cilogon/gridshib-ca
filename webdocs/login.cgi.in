@@ -91,8 +91,6 @@ if (!defined($logger))
     die "Could not get Logger: " . $config->getError();
 }
 
-######################################################################
-
 $cgi = $config->getCGI();
 
 if (!defined($cgi))
@@ -101,8 +99,18 @@ if (!defined($cgi))
 	      . $config->getError());
 }
 
-my $user = $cgi->getUserId();
-my $idp = $cgi->getIdP();
+######################################################################
+
+my $shib = $config->getShibInterface();
+
+if (!defined($shib))
+{
+    errorExit("Could not access Shibboleth interface: "
+	      . $config->getError());
+}
+
+my $user = $shib->getUserId();
+my $idp = $shib->getIdP();
 
 if (!defined($user))
 {
