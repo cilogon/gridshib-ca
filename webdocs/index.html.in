@@ -65,10 +65,16 @@ which are easy to use and known to work with the GridShib-CA.
 <td bgcolor="#0303C0" rowspan=2 align=center><b>Go</b></td>
 <td colspan=2 align=center>
 <table width=100%>
-<tr><td width=50% align=center>
-<!--
-<b>Login via a Federation</b>
--->
+<tr>
+  <td colspan=2 width=100% align=center>
+    <form action="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+      <input type="submit" value="Click here to login and get credential"/>
+    </form>
+  </td>
+</tr>
+<tr>
+<td width=50% align=center>
+<b>Login via a Specific Federation</b>
 <br>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
 <input type="hidden" name="target"
@@ -85,7 +91,7 @@ which are easy to use and known to work with the GridShib-CA.
 -->
 </td>
 <td align=center>
-<b>Login via a Public Identity Provider</b>
+<b>Login via a Specific Identity Provider</b>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
 <input type="hidden" name="target"
 			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
@@ -101,7 +107,7 @@ which are easy to use and known to work with the GridShib-CA.
 			 value="https://idp.protectnetwork.org/protectnetwork-idp">
 <input type="submit" value="Login via ProtectNetwork">
 </form>
-</td><tr>
+</td></tr>
 <tr><td colspan=2 align=center>
 <!--
 		This assumes you have a myVocs session established in your
