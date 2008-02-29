@@ -92,11 +92,9 @@ which are easy to use and known to work with the GridShib-CA.
 </td>
 <td align=center>
 <b>Login via a Specific Identity Provider</b>
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
+<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/openidp">
 <input type="hidden" name="target"
 			 value="@LOGIN_URL@">
-<input type="hidden" name="providerId"
-			 value="urn:mace:inqueue:shib13.openidp.org">
 <input type="submit" value="Login via OpenIdp">
 </form>
 
