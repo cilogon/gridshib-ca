@@ -589,8 +589,7 @@ if test ${MODE} = "build" ; then
    AC_PATH_PROG(FIND, find)
 
    dnl Generate development utilities and tests
-   DEV_UTILS="\
-	dev-utils/make-release.pl"
+   DEV_UTILS=""
    AC_CONFIG_FILES([${DEV_UTILS}])
 
    dnl Generated NMI build and test files
