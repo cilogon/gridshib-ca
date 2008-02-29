@@ -67,7 +67,7 @@ which are easy to use and known to work with the GridShib-CA.
 <table width=100%>
 <tr>
   <td colspan=2 width=100% align=center>
-    <form action="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+    <form action="@LOGIN_URL@">
       <input type="submit" value="Click here to login and get credential"/>
     </form>
   </td>
@@ -78,14 +78,14 @@ which are easy to use and known to work with the GridShib-CA.
 <br>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
 <input type="hidden" name="target"
-			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+			 value="@LOGIN_URL@">
 <input type="submit" value="Login via InQueue">
 </form>
 <!--
 		The GridShib-CA isn't in InCommon yet
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
 <input type="hidden" name="target"
-			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+			 value="@LOGIN_URL@">
 <input type="submit" value="Login via InCommon">
 </form>
 -->
@@ -94,7 +94,7 @@ which are easy to use and known to work with the GridShib-CA.
 <b>Login via a Specific Identity Provider</b>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
 <input type="hidden" name="target"
-			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+			 value="@LOGIN_URL@">
 <input type="hidden" name="providerId"
 			 value="urn:mace:inqueue:shib13.openidp.org">
 <input type="submit" value="Login via OpenIdp">
@@ -102,7 +102,7 @@ which are easy to use and known to work with the GridShib-CA.
 
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
 <input type="hidden" name="target"
-			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+			 value="@LOGIN_URL@">
 <input type="hidden" name="providerId"
 			 value="https://idp.protectnetwork.org/protectnetwork-idp">
 <input type="submit" value="Login via ProtectNetwork">
@@ -116,7 +116,7 @@ which are easy to use and known to work with the GridShib-CA.
 <b>Login via Other Mechanisms</b>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/myvocs">
 <input type="hidden" name="target"
-			 value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi">
+			 value="@LOGIN_URL@">
 <input type="submit" value="Login via myVocs">
 </form>
 </td></tr>

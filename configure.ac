@@ -431,6 +431,16 @@ AC_CLEAN_PATH(SHIB_PROTECTED_CGI_BIN_DIR)
 AC_SUBST(SHIB_PROTECTED_CGI_BIN_DIR)
 AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_DIR})
 
+AC_MSG_CHECKING([for protocol for Shibboleth-protected CGI-BIN directory])
+default=https
+AC_ARG_WITH(shib-protected-protocol,
+	AC_HELP_STRING([--with-shib-protected-protocol],
+		[Specify the protocol to use for the Shibboleth protected cgi-bin directory. By default is 'https' and should only be changed to 'http' for test deployments.]),
+	[SHIB_PROTECTED_PROTOCOL=$withval],
+	[SHIB_PROTECTED_PROTOCOL=$default])
+AC_SUBST(SHIB_PROTECTED_PROTOCOL)
+AC_MSG_RESULT(${SHIB_PROTECTED_PROTOCOL})
+
 AC_MSG_CHECKING([for URL to GridSHIB-CA])
 default=/${GRIDSHIB_CA_DIR_NAME}/
 AC_ARG_WITH(gridshib-ca-url,
@@ -656,6 +666,15 @@ AC_SUBST(PERL_CGI_BIN_ARGS)
 dnl ------------------------------------------------------------
 dnl Make utils/*.pl executable
 AC_CONFIG_COMMANDS([chmod-utils], [chmod +x utils/*.pl])
+
+dnl ------------------------------------------------------------
+dnl URLs for comment targets
+
+SHIB_PROTECTED_FULL_URL=${SHIB_PROTECTED_PROTOCOL}://${WWW_HOSTNAME}${SHIB_PROTECTED_CGI_BIN_URL}
+AC_SUBST(SHIB_PROTECTED_FULL_URL)
+
+LOGIN_URL=${SHIB_PROTECTED_FULL_URL}/login.cgi
+AC_SUBST(LOGIN_URL)
 
 dnl ------------------------------------------------------------
 dnl Makefiles
