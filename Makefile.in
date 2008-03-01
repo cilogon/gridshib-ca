@@ -171,7 +171,7 @@ realclean:: clean
 	rm -f *~
 	rm -f *.tmp
 
-build-dist: subdirs $(BUILD_ALL) chmod-utils
+build-dist: subdirs $(BUILD_ALL)
 	@echo Build complete. Run \"make install\" to install.
 
 ######################################################################
@@ -200,14 +200,6 @@ realclean::
 		echo "Running 'make realclean' in $${subdir}:" ; \
 		(cd $${subdir}; make realclean) ; \
 	done
-
-######################################################################
-#
-# Make utilities executable
-#
-
-chmod-utils: $(UTILS)
-	chmod 755 $(UTILS)
 
 ######################################################################
 ######################################################################
@@ -644,6 +636,9 @@ $(DIST_FILE): $(DIST_FILES)
 	$(RM) -rf $(DIST_DIR)
 	ls -l $(DIST_FILE)
 
+# Allow for building all distribution files, but not distibution itself
+dist-files: $(FIST_FILES)
+
 clean::
 	$(RM) -rf $(DIST_DIR)
 
@@ -655,7 +650,7 @@ realclean::
 # Tests
 #
 
-test: chmod-tests check-perl test-openssl-ca test-myproxy-mapapp
+test: check-perl test-openssl-ca test-myproxy-mapapp
 	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
@@ -682,9 +677,6 @@ test-myproxy-mapapp: utils/myproxy-mapapp.pl
 	else \
 		echo "Success." ;\
 	fi
-
-chmod-tests: $(TEST_SCRIPTS)
-	chmod 755 $(TEST_SCRIPTS)
 
 test-dist: dist test/test-dist.sh
 	@echo Testing distribution $(DIST_FILE)
@@ -731,49 +723,7 @@ aclocal:
 	@$(CONFIG_STATUS) --file=$@:$<
 
 ######################################################################
-######################################################################
-#
-# Allow me to rsync from development host to test host and gridshib
-# web site. No one else needs to worry about this section. - Von
+# Include development portion of Makefile if we are in development
+# mode. Otherwise this will be empty.
 
-# -a Archive mode
-# -u Update mode: newer files only
-# -v Verbose
-# -R use relative path names
-
-RSYNC=rsync -auvR 
-TEST_HOST=computer.ncsa.uiuc.edu
-
-rsync-test: $(DIST_FILES)
-	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-test
-
-rsync-test2: $(DIST_FILES)
-	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-test2
-
-rsync-myproxy: $(DIST_FILES)
-	@echo Rsyncing to $(TEST_HOST)
-	@$(RSYNC) $(DIST_FILES) $(TEST_HOST):~/gridshib-ca/gridshib-ca-myproxy
-
-install-doc: doc
-	@echo Rsyncing docs to gridshib.globus.org
-	@chmod -R ag+r $(DOC_DIR)
-	@rsync -auvp $(DOC_FILES) $(DOC_IMAGES) $(PERL_DOC_DIR) welch@cvs.globus.org:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
-
-release: dist install-doc
-	@rsync -auv $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/
-
-NMI_HOST = @NMI_HOST@
-NMI_FILES = @NMI_FILES@
-
-nmi-test: dist $(NMI_FILES)
-	@echo Uploading $(DIST_FILE)
-	@rsync -auvp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
-	@echo Transferring NMI test files
-	@rsync -auvp $(NMI_FILES) $(NMI_HOST):
-	@echo Submitting NMI job
-	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
-	@echo Done.
-	@echo URL: "http://$(NMI_HOST)/nmi/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
-
+@MAKEFILE_DEV_INCLUDE@

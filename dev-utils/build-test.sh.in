@@ -1,0 +1,45 @@
+#!/bin/sh
+######################################################################
+#
+# This script is run by deploy-test.sh on the GridShib-CA test system
+# to build and deploy the test GridShib-CA.
+#
+# $Id$
+#
+######################################################################
+#
+# Exit on any error
+
+set -e
+
+######################################################################
+
+conf_opts=""
+conf_opts="${conf_opts} --with-gridshib-ca-dir-name=gridshib-ca-test"
+conf_opts="${conf_opts} --enable-demos"
+conf_opts="${conf_opts} --with-globus-location=/usr/local/gt-4.0.1"
+conf_opts="${conf_opts} --with-openssl-path=/usr/bin/"
+
+echo "Running configure..."
+echo "Options are: $conf_opts"
+
+./configure ${conf_opts}
+
+######################################################################
+
+echo "Making..."
+make
+
+echo "Running tests..."
+make test
+
+echo "Installing..."
+sudo make install
+
+echo "Running post-install tests..."
+sudo make test-post-install
+
+################################################################################
+
+echo "Build and install complete."
+exit 0

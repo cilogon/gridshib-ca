@@ -1,0 +1,69 @@
+# -*- mode: Makefile -*-
+######################################################################
+#
+# Included Makefile for development/build mode
+#
+######################################################################
+#
+# Name of test host
+
+TEST_HOST=computer.ncsa.uiuc.edu
+
+# Path on test host to use for building
+TMP_DIR=/tmp/gridshib-ca-test-deploy
+
+######################################################################
+#
+# rsync binary and options
+#
+# -a Archive mode
+# -u Update mode: newer files only
+# -v Verbose
+# -R use relative path names
+
+RSYNC=rsync -auvR 
+
+######################################################################
+#
+# Deploy GridShib-CA on test host
+#
+
+deploy-test: $(DIST_FILES) dev-utils/build-test.sh
+	@echo "Syncing distribution files to ${TEST_HOST}:${TMP_DIR}..."
+	@$(RSYNC) $(DIST_FILES) dev-utils/build-test.sh ${TEST_HOST}:${TMP_DIR}
+	@echo "Launching build..."
+	@ssh $(TEST_HOST) "(cd ${TMP_DIR}; dev-utils/build-test.sh)"
+	@echo "Success."
+
+
+######################################################################
+#
+# Install documentation on gridshib.globus.org
+#
+
+install-doc: doc
+	@echo Rsyncing docs to gridshib.globus.org
+	@chmod -R ag+r $(DOC_DIR)
+	@rsync -auvp $(DOC_FILES) $(DOC_IMAGES) $(PERL_DOC_DIR) welch@cvs.globus.org:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
+
+release: dist install-doc
+	@rsync -auv $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/
+
+######################################################################
+#
+# Run NMI tests
+#
+
+NMI_HOST = @NMI_HOST@
+NMI_FILES = @NMI_FILES@
+
+nmi-test: dist $(NMI_FILES)
+	@echo Uploading $(DIST_FILE)
+	@rsync -auvp $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/nmi-testing/
+	@echo Transferring NMI test files
+	@rsync -auvp $(NMI_FILES) $(NMI_HOST):
+	@echo Submitting NMI job
+	@ssh $(NMI_HOST) /nmi/bin/nmi_submit gridshib-ca-cmdfile
+	@echo Done.
+	@echo URL: "http://$(NMI_HOST)/nmi/index.php?page=results%2Foverview&opt_project=GridShib&rows=100"
+

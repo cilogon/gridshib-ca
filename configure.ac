@@ -169,13 +169,17 @@ AC_SRC_FILES(CONF_FILES, CONF_SRCS)
 AC_SUBST(CONF_SRCS)
 
 dnl Utilities
-UTILS="\
-	utils/create-openssl-ca.pl \
-	utils/check-config.pl \
-	utils/issue-cert.pl \
-	utils/myproxy-mapapp.pl"
+dnl Each AC_CONFIG_FILES must be separate so chmod works.
+UTILS=""
+UTILS="$UTILS utils/create-openssl-ca.pl"
+AC_CONFIG_FILES([utils/create-openssl-ca.pl], [chmod +x utils/create-openssl-ca.pl])
+UTILS="$UTILS utils/check-config.pl"
+AC_CONFIG_FILES([utils/check-config.pl], [chmod +x utils/check-config.pl])
+UTILS="$UTILS utils/issue-cert.pl"
+AC_CONFIG_FILES([utils/issue-cert.pl], [chmod +x utils/issue-cert.pl])
+UTILS="$UTILS utils/myproxy-mapapp.pl"
+AC_CONFIG_FILES([utils/myproxy-mapapp.pl], [chmod +x utils/myproxy-mapapp.pl])
 AC_SUBST(UTILS)
-AC_CONFIG_FILES([$UTILS])
 AC_SRC_FILES(UTILS, UTIL_SRCS)
 AC_SUBST(UTIL_SRCS)
 
@@ -352,12 +356,14 @@ AC_SUBST(OPENSSL_CA_SRCS)
 
 dnl ------------------------------------------------------------
 dnl Test scripts
-
-TEST_SCRIPTS="\
-	openssl-ca/openssl-ca-test.sh \
-	test/test-dist.sh"
+dnl Each AC_CONFIG_FILES must be separate so chmod works.
+TEST_SCRIPTS=""
+TEST_SCRIPTS="$TEST_SCRIPTS openssl-ca/openssl-ca-test.sh"
+AC_CONFIG_FILES([openssl-ca/openssl-ca-test.sh], [chmod +x openssl-ca/openssl-ca-test.sh])
+TEST_SCRIPTS="$TEST_SCRIPTS test/test-dist.sh"
+AC_CONFIG_FILES([test/test-dist.sh], [chmod +x test/test-dist.sh])
 AC_SUBST(TEST_SCRIPTS)
-AC_CONFIG_FILES([$TEST_SCRIPTS])
+
 AC_SRC_FILES(TEST_SCRIPTS, TEST_SRCS)
 AC_SUBST(TEST_SRCS)
 
@@ -585,7 +591,14 @@ dnl Configure dependancies
 CONFIGURE_DEP=""
 AC_SUBST(CONFIGURE_DEP)
 
+MAKEFILE_DEV_INCLUDE=""
+AC_SUBST(MAKEFILE_DEV_INCLUDE)
+
 if test ${MODE} = "build" ; then
+
+   dnl Include Makefile include file in Makefile
+   AC_CONFIG_FILES([dev-utils/Makefile-inc])
+   MAKEFILE_DEV_INCLUDE="include dev-utils/Makefile-inc"
 
    dnl Enable building of java
    AC_CONFIG_FILES([edu/ncsa/gridshib/gridshibca/Version])
@@ -599,8 +612,11 @@ if test ${MODE} = "build" ; then
    AC_PATH_PROG(FIND, find)
 
    dnl Generate development utilities and tests
-   DEV_UTILS=""
-   AC_CONFIG_FILES([${DEV_UTILS}])
+   dnl Each AC_CONFIG_FILES() must be seperate for chmod to work.
+   DEV_UTILS="$DEV_UTILS dev-utils/build-test.sh"
+   AC_CONFIG_FILES([dev-utils/build-test.sh], [chmod +x dev-utils/build-test.sh])
+   DEV_UTILS="$DEV_UTILS dev-utils/deploy-test.sh"
+   AC_CONFIG_FILES([dev-utils/deploy-test.sh], [chmod +x dev-utils/deploy-test.sh])
 
    dnl Generated NMI build and test files
    NMI_FILES="\
@@ -632,10 +648,6 @@ if test ${MODE} = "build" ; then
 	AC_MSG_ERROR([Could not find Bouncy Castle source path.])
    fi
 
-   dnl Make dev-utils/*.pl and test/*.sh executable
-   AC_CONFIG_COMMANDS([chmod-dev-utils], [chmod +x dev-utils/*.pl])
-   AC_CONFIG_COMMANDS([chmod-test], [chmod +x test/*.sh])
-
    AC_PATH_PROG(CVS, cvs)
    AC_PATH_PROG(MAKE, make)
 
@@ -664,11 +676,7 @@ PERL_CGI_BIN_ARGS="-T -w ${PERL_ARGS}"
 AC_SUBST(PERL_CGI_BIN_ARGS)
 
 dnl ------------------------------------------------------------
-dnl Make utils/*.pl executable
-AC_CONFIG_COMMANDS([chmod-utils], [chmod +x utils/*.pl])
-
-dnl ------------------------------------------------------------
-dnl URLs for comment targets
+dnl URLs for common targets
 
 SHIB_PROTECTED_FULL_URL=${SHIB_PROTECTED_PROTOCOL}://${WWW_HOSTNAME}${SHIB_PROTECTED_CGI_BIN_URL}
 AC_SUBST(SHIB_PROTECTED_FULL_URL)
