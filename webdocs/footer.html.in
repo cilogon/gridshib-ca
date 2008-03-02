@@ -1,8 +1,6 @@
 <!-- footer.html -->
-<center>
-<hr>
-@COPYRIGHT@
-</center>
+<hr id="copyright-bar"/>
+<p class="copyright">@COPYRIGHT@</p>
 </body>
 <!-- End footer.html -->
 

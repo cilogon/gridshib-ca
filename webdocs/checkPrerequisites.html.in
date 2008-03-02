@@ -2,6 +2,7 @@
 <head>
 <!-- $Id$ -->
 <title>GridShib CA: Rerequisite Check</title>
+<link rel="stylesheet" type="text/css" href="@CSS_URL@" />
 </head>
 @HTML_HEADER@
 <!---------------------------------------------------------------------->
@@ -48,53 +49,56 @@ End If
 </SCRIPT>
 <!---------------------------------------------------------------------->
 
-<table width=100% cellpadding=5>
-<tr><td><p><p><p></td></tr>
+<table id="check-prereq-table" width="100%">
 <tr>
-<td rowspan=2 bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
-<td colspan=2>
+<td id="prereq-report-header" class="subheader">Prerequisites</td>
+<td id="prereq-report-text" colspan="2">
+<p class="prereq-report-text">
 To download the credential to your desktop requires that you have
 <a href="http://java.com/download/">Jave Runtime Environment (JRE) and
 Java Web Start</a> installed on your system.
-
+</p>
 
 <script language="JavaScript">
 if (javawsInstalled)
 {
-    document.write("<br>(You appear to have Java Web Start installed on	your system.)")
+    document.write("<p class=\"prereq-report-text\">(You appear to have Java Web Start installed on your system.)</p>")
 }
 else
 {
-    document.write("<br>You do not appear to have Java Web Start	installed on your system. Please use the preceding link to install Java Web Start.");
+    document.write("<p class=\"prereq-report-text\">You do not appear to have Java Web Start installed on your system. Please use the preceding link to install Java Web Start.</p>");
 }
-</SCRIPT>
-</td>
-</tr>
-<tr>
-<td colspan=2>On Unix variant systems, your umask must be set to 077 (or more
+</script>
+<p class="prereq-report-text">
+On Unix variant systems, your umask must be set to 077 (or more
 restrictive). This prevents your web browser from creating
 world-readable files that would cause the GridShib CA to be insecure
 on multi-user systems.
 <a href="http://gridshib.globus.org/faq.html#gridshib-ca">
 More information about the GridShib CA and umasks.</a>
+</p>
 </td>
 </tr>
-<tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#0303C0" align=center><b>Check Prerequisites</b></td>
-<td colspan=2 align=center>
-<form action="GridShibCATester.jnlp">
-<input type="submit" value="Check Prerequisites">
+<td id="check-prereq-header" class="subheader">Check Prerequisites</td>
+<td id="check-prereq" colspan="2">
+  <form action="GridShibCATester.jnlp">
+    <p>
+      <input type="submit" value="Check Prerequisites"/>
+    </p>
 </form>
-If clicking on the button fails to launch the GridShib CA Testing
-application after a minute then you do not have Java Web Start
-correctly installed.
+<p id="check-prereq-text">
+  If clicking on the button fails to launch the GridShib CA Testing
+  application after a minute then you do not have Java Web Start
+  correctly installed.
+</p>
 </td></tr>
-<tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#30A030" align=center><b>Back to GridShib CA</b></td>
-<td colspan=2 align=center>
-<a href="index.html">Return to GridShib CA</a>
+<td id="back-header" class="subheader">Back to GridShib CA</td>
+<td id="back-text" colspan="2">
+  <p>
+    <a href="index.html">Return to GridShib CA</a>
+  </p>
 </td></tr>
 </table>
 @HTML_FOOTER@

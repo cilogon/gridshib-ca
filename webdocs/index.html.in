@@ -1,47 +1,53 @@
-<html>
+<html xnlns="http://www.w3.org/1999.xhtml">
 <head>
 <!-- $Id$ -->
 <title>GridShib CA</title>
+<link rel="stylesheet" type="text/css" href="@CSS_URL@" />
 </head>
 @HTML_HEADER@
-<table width=100% cellpadding=5>
+<table id="index-table" width="100%">
 <tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#30A030" align=center><b>About</b></td>
-<td colspan=2>
+<td id="about-header" class="subheader" width="15%">About</td>
+<td id="about-text" colspan=2>
+<p class="about-text">
 This is the GridShib-CA (version @PACKAGE_VERSION_STRING@). This software
 allows you to acquire a short-lived (<1 day) Grid Credential through
 your web browser and Shibboleth. After successfully authenticating, a
 credential will be installed and is suitable for use with Grid Tools
 such as GT4.
-<p>
+</p>
+<p class="about-text">
 Note that as with all Grid credentials this GridShib CA must be
 trusted by any resources you use and the identity from the Credentials
 (aka the Distinguished Name or DN) must be authorized (in the
 grid-mapfile).
-<p>
+</p>
+<p class="about-text">
 For further documentation and the latest release please see 
 <a href="http://gridshib.globus.org">http://gridshib.globus.org</a>.
 Full documentation regarding this release can be found at
 <a href="http://gridshib.globus.org/docs/@DOC_INSTALL_DIR@">
 http://gridshib.globus.org/docs/@DOC_INSTALL_DIR@</a>
-
+</p>
 </td>
 </tr>
-<tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#A0A0A0" align=center><b>Prerequisites</b></td>
-<td>
+<td id="prereq-header" class="subheader">Prerequisites</td>
+<td id="prereq-text">
+<p class="prereq-text">
 Prior to using the GridShib CA on a new client system,
 please <a href="checkPrerequisites.html">make sure you have the client
 system properly configured</a>. Failing to do so may cause you
 headaches as well as being insecure.
-<p>
+</p>
+<p class="prereq-text">
 The GridShib-CA will work for for any Institution with a Shibboleth
 server in InQueue that will release an identity to the
 GridShib-CA. You can find the list of institutions that are part of 
 InQueue <a href="http://inqueue.internet2.edu/who/">here</a>.
-<p>
+</p>
+<p class="prereq-text">
 If your institution doesn't have a Shibboleth Identity
 provider <a href="http://inqueue.internet2.edu/who/">in InQueue</a>
 <!-- or
@@ -52,35 +58,39 @@ register with a public identity provider such
 as <a href="http://www.openidp.org">OpenIdp</a> or
 <a href="http://www.protectnetwork.com">ProtectNetwork</a>, both of
 which are easy to use and known to work with the GridShib-CA.
+</p>
 </td>
-<td align=center>
+<td id="idp-logos" width="25%">
 <a href="http://www.openidp.org">
-<img src="openidp-logo-small.png" Align="middle"></a>
+<img id="openidp-img" src="openidp-logo-small.png" align="middle"
+     alt="OpenIdP.org"/>
+</a>
 <a href="http://www.protectnetwork.com">
-<img src="protectnetwork.png" Align="middle"></a>
+<img id="protectnetwork-img" src="protectnetwork.png" align="middle"
+     alt="Protectnetwork.com"/>
+</a>
 </td>
 </tr>
-<tr><td><p><p><p></td></tr>
 <tr>
-<td bgcolor="#0303C0" rowspan=2 align=center><b>Go</b></td>
-<td colspan=2 align=center>
-<table width=100%>
-<tr>
-  <td colspan=2 width=100% align=center>
-    <form action="@LOGIN_URL@">
+<td id="login-header" class="subheader" rowspan="4">Go</td>
+<td class="login-idp" id="default-idp" colspan="2">
+  <form action="@LOGIN_URL@">
+    <p>
       <input type="submit" value="Click here to login and get credential"/>
-    </form>
-  </td>
+    </p>
+  </form>
+</td>
 </tr>
 <tr>
-<td width=50% align=center>
-<b>Login via a Specific Federation</b>
-<br>
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
-<input type="hidden" name="target"
-			 value="@LOGIN_URL@">
-<input type="submit" value="Login via InQueue">
-</form>
+<td class="login-idp" id="inqueue-login" width="50%">
+  <p>Login via a Specific Federation</p>
+  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
+    <p>
+      <input type="hidden" name="target" value="@LOGIN_URL@"/>
+      <input type="submit" value="Login via InQueue"/>
+    </p>
+  </form>
+</td>
 <!--
 		The GridShib-CA isn't in InCommon yet
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
@@ -89,42 +99,43 @@ which are easy to use and known to work with the GridShib-CA.
 <input type="submit" value="Login via InCommon">
 </form>
 -->
-</td>
-<td align=center>
-<b>Login via a Specific Identity Provider</b>
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/openidp">
-<input type="hidden" name="target"
-			 value="@LOGIN_URL@">
-<input type="submit" value="Login via OpenIdp">
-</form>
-
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
-<input type="hidden" name="target"
-			 value="@LOGIN_URL@">
-<input type="hidden" name="providerId"
-			 value="https://idp.protectnetwork.org/protectnetwork-idp">
-<input type="submit" value="Login via ProtectNetwork">
-</form>
+<td class="login-idp" id="idp-login">
+  <p>Login via a Specific Identity Provider</p>
+  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/openidp">
+    <p>
+      <input type="hidden" name="target" value="@LOGIN_URL@"/>
+      <input type="submit" value="Login via OpenIdp"/>
+    </p>
+  </form>
+  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
+    <p>
+      <input type="hidden" name="target" value="@LOGIN_URL@"/>
+      <input type="hidden" name="providerId"
+	     value="https://idp.protectnetwork.org/protectnetwork-idp"/>
+      <input type="submit" value="Login via ProtectNetwork"/>
+    </p>
+  </form>
 </td></tr>
-<tr><td colspan=2 align=center>
+<tr><td class="login-idp" id="myvocs-login" colspan=2>
 <!--
-		This assumes you have a myVocs session established in your
-		Shibboleth configuration.
+    This assumes you have a myVocs session established in your
+    Shibboleth configuration.
  -->
-<b>Login via Other Mechanisms</b>
+<p>Login via Other Mechanisms</p>
 <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/myvocs">
-<input type="hidden" name="target"
-			 value="@LOGIN_URL@">
-<input type="submit" value="Login via myVocs">
+  <p>
+    <input type="hidden" name="target" value="@LOGIN_URL@"/>
+    <input type="submit" value="Login via myVocs"/>
+  </p>
 </form>
 </td></tr>
-</table>
-</td></tr>
-<tr><td colspan=2>
-After clicking on a link you will then be redirected back to that
-site to authenticate and then you will be returned to the GridShib CA.
-If you have any problems, please send email
-to <a href="mailto:gridshib-users@globus.org">gridshib-users@globus.org</a>
+<tr><td id="login-text" colspan="2">
+  <p>
+    After clicking on a link you will then be redirected back to that
+    site to authenticate and then you will be returned to the GridShib CA.
+    If you have any problems, please send email
+    to <a href="mailto:gridshib-users@globus.org">gridshib-users@globus.org</a>
+  </p>
 </td></tr>
 </table>
 @HTML_FOOTER@

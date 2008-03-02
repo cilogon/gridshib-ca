@@ -1,19 +1,22 @@
 <!-- header.html -->
 <body>
-<table width=100%>
-              <tr>
-                <td id="gtlogo" width=20%><a href="http://www.globus.org/toolkit/"><img src="@GRIDSHIB_CA_URL@/globustoolkit.gif" width="160" alt="The Globus Toolkit" /></a></td>
-                <td id="head" width=80%>
-									<center>
-										<h1>GridShib CA</h1>
-										(Version @PACKAGE_VERSION_STRING@)<br>
-										<a href="http://gridshib.globus.org">GridShib Home Page</a>
-								</center>
-								</td>
-                <td id="shiblogo"><a href="http://shibboleth.internet2.edu/"><img src="@GRIDSHIB_CA_URL@/Shibboleth-logo_RGB.jpg" width="160" alt="Shibboleth" /></a></td>
-              </tr>
-<tr><td><p><p><p></td></tr>
-<tr>
+<table id="header" width="100%">
+  <tr>
+    <td class="header" id="left-head" width="20%">
+      <img id="gt-logo" src="@GRIDSHIB_CA_URL@/globustoolkit.gif" alt="Globus Toolkit logo"/>
+    </td>
+    <td class="header" id="head" width="80%">
+      <center>
+	<h1 id="title">GridShib CA</h1>
+	<p id="version">(Version @PACKAGE_VERSION_STRING@)</p>
+	<p id="home-page-link">
+	  <a href="http://gridshib.globus.org">GridShib Home Page</a>
+	</p>
+      </center>
+    </td>
+    <td class="header" id="right-head" width="20%">
+      <img id="shib-logo" src="@GRIDSHIB_CA_URL@/Shibboleth-logo_RGB.jpg" width="160" alt="Shibboleth Project logo"/>
+    </td>
+  </tr>
 </table>
 <!-- End header.html -->
-

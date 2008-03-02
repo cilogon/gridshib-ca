@@ -150,6 +150,7 @@ AC_SUBST(CGI_BIN_SRCS)
 dnl Files to be installed in unprotected html directory
 HTML_FILES="webdocs/index.html \
 	webdocs/checkPrerequisites.html \
+	webdocs/GridShibCA.css \
 	webdocs/GridShibCATester.jnlp"
 AC_SUBST(HTML_FILES)
 AC_CONFIG_FILES([$HTML_FILES])
@@ -475,6 +476,15 @@ AC_ARG_WITH(www-hostname,
 	[WWW_HOSTNAME=$HOSTNAME])
 AC_MSG_RESULT(${WWW_HOSTNAME})
 AC_SUBST(WWW_HOSTNAME)
+
+AC_MSG_CHECKING([for CSS URL to use])
+AC_ARG_WITH(css-url,
+	AC_HELP_STRING([--with-css-url],
+		[Specify the URL for the CSS file to use. (Default: <gridshib-ca-dir-name>/GridShibCA.css]),
+	[CSS_URL=$withval],
+	[CSS_URL=${GRIDSHIB_CA_URL}/GridShibCA.css])
+AC_SUBST(CSS_URL)
+AC_MSG_RESULT(${CSS_URL})
 
 AC_MSG_CHECKING([for owner of www files])
 AC_ARG_WITH(www-user,

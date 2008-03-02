@@ -176,6 +176,13 @@ build-dist: subdirs $(BUILD_ALL)
 
 ######################################################################
 #
+# Various extra dependencies
+#
+
+webdocs/checkPrerequisites.html webdocs/index.html: $(HTML_INCS)
+
+######################################################################
+#
 # Handle subdirectories
 #
 
