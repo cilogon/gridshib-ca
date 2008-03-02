@@ -615,8 +615,6 @@ if test ${MODE} = "build" ; then
    dnl Each AC_CONFIG_FILES() must be seperate for chmod to work.
    DEV_UTILS="$DEV_UTILS dev-utils/build-test.sh"
    AC_CONFIG_FILES([dev-utils/build-test.sh], [chmod +x dev-utils/build-test.sh])
-   DEV_UTILS="$DEV_UTILS dev-utils/deploy-test.sh"
-   AC_CONFIG_FILES([dev-utils/deploy-test.sh], [chmod +x dev-utils/deploy-test.sh])
 
    dnl Generated NMI build and test files
    NMI_FILES="\
