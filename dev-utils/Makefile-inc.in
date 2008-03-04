@@ -46,8 +46,12 @@ install-doc: doc
 	@chmod -R ag+r $(DOC_DIR)
 	@rsync -auvp $(DOC_FILES) $(DOC_IMAGES) $(PERL_DOC_DIR) welch@cvs.globus.org:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
 
-release: dist install-doc
-	@rsync -auv $(DIST_FILE) welch@cvs.globus.org:gridshib.globus.org/downloads/
+install-dist: dist
+	@echo Rsyncing $(DIST_FILE) to gridshib.globus.org
+	@chmod g+rw $(DIST_FILE)
+	@chmod o+r $(DIST_FILE)
+	@rsync -auv $(DIST_FILE) cvs.globus.org:/www/gridshib.globus.org/downloads/
+	@ssh gridshib.globus.org chgrp gridshib /www/gridshib.globus.org/downloads/$(DIST_FILE)
 
 ######################################################################
 #
