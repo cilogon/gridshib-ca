@@ -12,7 +12,11 @@ To submit a test build:
 
 Then visit the the following URL to view the results:
 
-http://nmi-s003.cs.wisc.edu/pavlo/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
+Http://nmi-s003.cs.wisc.edu/nmi/index.php?page=results%2Foverview&opt_project=GridShib&rows=100
+
+(Note, the internal B&T URLs seem to change occassionally, if the
+above link doesn't work, go back to http://nmi.cs.wisc.edu/ and then
+to 'Run Results' and search under Project of 'GridShib'.)
 
 ====Prereqs===
 
