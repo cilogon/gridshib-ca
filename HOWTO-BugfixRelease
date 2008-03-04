@@ -76,7 +76,7 @@ follows.
 
 % cvs up -d | & grep '^C' | sed -e 's/^C //
 
-5) Make sure everything still work and commit.
+5) Make sure everything still works and commit.
 
 6) Tag the trunk where the merge occurred.
 

@@ -19,7 +19,7 @@ distribution, and update the documentation and website. Contact Globus
 Project administrators to get access.
 
 ----------------------------------------------------------------------
-* Make sure documentation is up-to-date
+* Make sure documentation is up-to-date and without broken links
 
 You have updated all the documentation in doc/ to reflect whatever
 changes you did right? Including the changelog in
@@ -28,6 +28,16 @@ automatically, so don't worry about that.)
 
 If not, why not get that out of the way now why you are thinking about
 it...
+
+Upload the documentation to the gridshib.globus.org website run
+running 'make install-doc'. You should then be able to point a web
+browser a gridshib.globus.org and view the documentation.
+
+Assuming version 0.5.0, the URL would be:
+http://gridshib.globus.org/docs/gridshib-ca-0.5.0/
+
+Check all the documentation links with something like the W3C Link
+Checker (http://validator.w3.org/checklink).
 
 ----------------------------------------------------------------------
 * Update version in configure.ac
@@ -96,7 +106,7 @@ do the next step, manual deployment and testing, in parallel.
 When this completes, you'll get an email saying so. Hopefully you'll
 see the word "SUCCEEDED" in the subject and you're good to
 go. Otherwise you'll need to use the NMI B&T web interface to find the
-problem and fix it.
+problem and fix it. For details, see nmi/README.
 
 ----------------------------------------------------------------------
 * Deploy and test manually
@@ -132,16 +142,24 @@ Then use OpenIdp or some other Idp to get a credential and verify it
 is working properly.
 
 ----------------------------------------------------------------------
-* Commit updated version and any fixes to CVS
+* Update version in configure.ac to reflect its the final release
+
+Edit configure.ac and set PACKAGE_RELEASE_STATUS to "" to indicate
+this is an unqualified release.
+
+PACKAGE_RELEASE_STATUS=""
+
+----------------------------------------------------------------------
+* Commit all changes to CVS
 
 Now that you are certain you have good solid code to release, go ahead
 and check ALL your changes in the current working checkout into
 CVS. The distribution is made from your current checked-out repository
-so it needs to be in synch with what is in CVS or the subsequent tag
+so it needs to be in sync with what is in CVS or the subsequent tag
 step will not do what you want.
 
 (Yes, I agree building a distribution from a tag in CVS would be
-better in that it would forbid the possibility of a out-of-synch
+better in that it would forbid the possibility of a out-of-sync
 release.)
 
 ----------------------------------------------------------------------
@@ -230,6 +248,11 @@ OpenSSLCASerial = /usr/local/gridshib-ca/serial
 
 # Where OpenSSL can store its random state
 OpenSSLRandFile = /usr/local/gridshib-ca/.rand
+
+At this point the post-install test from the build directory should
+succeed:
+
+# make test-post-install
 
 Point your web browser at the address below (adjusting version as
 needed) and test out the new deployment:
