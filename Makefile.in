@@ -644,7 +644,7 @@ $(DIST_FILE): $(DIST_FILES)
 	ls -l $(DIST_FILE)
 
 # Allow for building all distribution files, but not distibution itself
-dist-files: $(FIST_FILES)
+dist-files: $(DIST_FILES)
 
 clean::
 	$(RM) -rf $(DIST_DIR)
