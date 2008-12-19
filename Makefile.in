@@ -552,7 +552,7 @@ docbook: doc/index.html
 doc:: docbook
 
 doc/index.html: $(DOCBOOK_FILES)
-	$(XSLTPROC) $(XSLTPROC_OPTS) $(XSLT_STYLE_SHEET) $<
+	$(XSLTPROC) $(XSLTPROC_OPTS) $(XSLT_STYLE_SHEET) doc/index.xml
 
 doc-clean:: 
 	$(RM) -rf $(DOC_FILES)
