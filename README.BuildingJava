@@ -1,0 +1,83 @@
+-*- mode: text -*-
+----------------------------------------------------------------------
+README.BuildingJava
+
+If you want to rebuild the GridShibCA jars from scratch you will need
+to do a few things first to prepare for this:
+
+1) Download the BouncyCastle JCE
+2) Make sure you have the JNLP Developer's Kit
+3) Have a credential to sign the jar file
+
+----------------------------------------------------------------------
+
+1) Download the BouncyCastle JCE
+
+Note that you need a copy of this source dedicated to the GridShib-CA
+(i.e. nothing else is using it). The reason for this is that the
+GridShib-CA make process builds just the source it needs and then
+includes the class files in its jar. If you use the BouncyCastle
+source for something else, you will end up with GridShib-CA jars that
+are much bigger than they need to be. (If you do use it, use can use
+'make bc-clean' from the gridshib-ca directory to remove all the
+compiled files and make it suitable for the gridshib-ca to use.)
+
+Go to the BouncyCastle web site and find the latest releases:
+
+http://www.bouncycastle.org/latest_releases.html
+
+Look for the source for the "JCE with provider and lightweight API "
+for the particular JDK you have installed, e.g.:
+
+http://www.bouncycastle.org/download/bcprov-jdk16-141.tar.gz
+
+Unpack this file somewhere:
+
+% cd /some/path
+% wget http://www.bouncycastle.org/download/bcprov-jdk16-141.tar.gz
+% tar xvfz bcprov-jdk16-141.tar.gz
+% cd bcprov-jdk16-141
+% unzip src.zip
+
+Pass this path into the GridShib-CA configuration step. E.g.:
+
+% cd gridshib-ca
+% ./configure [other options] --enable-build --with-bc-source-path=/some/path/bcprov-jdk16-141/
+
+----------------------------------------------------------------------
+
+2) Make sure you have the JNLP Developer's Pack
+
+Per
+http://java.sun.com/javase/technologies/desktop/javawebstart/download-jnlp.html:
+
+"There is no longer a separate JNLP Developer's Pack for Java Web
+Start versions 1.5.0 and beyond. The jardiff tool, jnlp-servlet.jar
+file, and jnlp.jar file can be found in the samples directory of the
+JDK. "
+
+What you need for the GridShib-CA is the jnlp.jar file. This should be
+included in the "sample/jnlp/servlet/" directory under the JDK
+install.
+
+% ls ${JAVA_HOME}/sample/jnlp/servlet/
+GNUmakefile  jardiff.jar  jnlp.jar  jnlp-servlet.jar  README  src
+
+Add this directory to your CLASSPATH:
+
+export CLASSPATH=${CLASSPATH}:${JAVA_HOME}/sample/jnlp/servlet/jnlp.jar
+
+Special note for MacOSX: Instead of jnlp.jar, use javaws.jar, which
+seems to be at ${JAVA_HOME}/lib/javaws.jar
+
+----------------------------------------------------------------------
+
+3) Have a credential to sign the jar file
+
+You will need a credential in PKCS12 format to sign the jar. Details
+on how to create this PKCS12 file can be found under "Adding CA
+Certificates for the Web Server" in the GridShib-CA documentation:
+
+http://gridshib.globus.org/docs/gridshib-ca/
+
+----------------------------------------------------------------------
