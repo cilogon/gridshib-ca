@@ -646,7 +646,7 @@ if test ${MODE} = "build" ; then
 
    AC_MSG_CHECKING([for Bouncy Castle source directory])
    AC_ARG_WITH(bc-source-path,
-	AC_HELP_STRING([--with-bc-source-path],
+	AC_HELP_STRING([--with-bc-source-path=<path>],
 		[Provide the path to the Bouncy Castle source]),
 	[BC_SOURCE=$withval],
 	[BC_SOURCE="FAILED"])
@@ -663,6 +663,19 @@ if test ${MODE} = "build" ; then
 
    XSLT_STYLE_SHEET="/sw/share/xml/xsl/docbook-xsl/html/chunk.xsl"
    AC_SUBST(XSLT_STYLE_SHEET)
+
+   JARSIGNER_OPTS=""
+   
+   AC_ARG_WITH(jarsigner-keystore,
+	AC_HELP_STRING([--with-jarsigner-keystore=<url>],
+		[Provide url to keystore to use for signing jar.]),
+	[JARSIGNER_OPTS="${JARSIGNER_OPTS} -keystore $withval"])
+   AC_ARG_WITH(jarsigner-password,
+	AC_HELP_STRING([--with-jarsigner-password=<password>],
+		[Provide password for jarsigner private key (meant for testing, do not provide high-value passwords).]),
+	[JARSIGNER_OPTS="${JARSIGNER_OPTS} -storepass $withval"])
+
+   AC_SUBST(JARSIGNER_OPTS)
 fi
 
 dnl ------------------------------------------------------------

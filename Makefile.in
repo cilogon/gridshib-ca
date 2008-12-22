@@ -465,6 +465,9 @@ UNSIGNED_JARFILE=$(JARFILE:.jar=.unsigned.jar)
 # Other files to include in jar
 JAR_INCS=$(TRUST_STORE)
 
+# Extra options for jarsigner
+JARSIGNER_OPTS=@JARSIGNER_OPTS@
+
 jar: build-mode $(JARFILE)
 
 $(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
@@ -482,7 +485,7 @@ $(JARFILE): $(UNSIGNED_JARFILE)
 	@echo WARNING: Keystrokes will be echoed.
 	@echo 
 	@echo =========================================
-	$(JARSIGNER) -storetype pkcs12 -signedjar $@ $^ default
+	$(JARSIGNER) $(JARSIGNER_OPTS) -storetype pkcs12 -signedjar $@ $^ default
 
 realclean::
 	$(RM) -f $(JARFILE)
