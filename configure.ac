@@ -661,7 +661,20 @@ if test ${MODE} = "build" ; then
 
    AC_PATH_PROG(XSLTPROC, xsltproc)
 
-   XSLT_STYLE_SHEET="/sw/share/xml/xsl/docbook-xsl/html/chunk.xsl"
+   AC_MSG_CHECKING([for XSLT stylesheet])
+   AC_ARG_WITH(xsl-path,
+	AC_HELP_STRING([--with-xsl-path=<path>],
+		[Provide the base path for xsltproc transformations (e.g. /usr/local/share/xml/xsl/)]),
+	[XSL_PATH=$withval],
+	[XSL_PATH="/usr/local/share/xml/xsl/"])
+   AC_MSG_RESULT([${XSL_PATH}])
+		
+   XSLT_STYLE_SHEET="${XSL_PATH}/docbook-xsl/html/chunk.xsl"
+   if test -f ${XSLT_STYLE_SHEET} ; then
+         AC_MSG_RESULT([${XSLT_STYLE_SHEET}])
+   else
+	AC_MSG_ERROR([Could not find XSLT style sheet (${XSLT_STYLE_SHEET}).])
+   fi			
    AC_SUBST(XSLT_STYLE_SHEET)
 
    JARSIGNER_OPTS=""
