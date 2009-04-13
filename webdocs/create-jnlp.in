@@ -112,6 +112,19 @@ if (!defined($cgi))
 	      . $config->getError());
 }
 
+# Protect against CSRF GET attacks
+if (!$cgi->CSRFCheck())
+{
+    errorExit("CSRF check failed. Did you try to relaunch the credential downloader? You must go back and re-load the previous page.");
+}
+
+# Overwrite CSRF cookie with expired, content-free version
+$expiredCSRFCookie = $cgi->expiredCSRFCookie();
+if (!$expiredCSRFCookie)
+{
+    errorExit("Error creating expired CSRF cookie.");
+}
+
 my $shib = $config->getShibInterface();
 if (!defined($shib))
 {
@@ -255,7 +268,8 @@ for my $arg (@jwsArgs)
 
 open(INPUT, $JNLPtemplate) || errorExit("Could not open JNLP template file \"$JNLPtemplate\": $!");
 
-print $cgi->header("Application/X-Java-Jnlp-File");
+print $cgi->header(-type=>"Application/X-Java-Jnlp-File",
+		   -cookie=>$expiredCSRFCookie);
 
 while (<INPUT>) {
     s/\$\$arguments/$arguments/;

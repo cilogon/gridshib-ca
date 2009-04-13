@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+	  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+	  <!ENTITY https-cas SYSTEM "https-cas.xml">
+	  <!ENTITY install SYSTEM "install.xml">
+	  <!ENTITY perl-modules SYSTEM "perl-modules.xml">
+	  <!ENTITY process-flow SYSTEM "process-flow.xml">
+	  <!ENTITY portal-delegation SYSTEM "portal-delegation.xml">
+	  <!ENTITY saml-tools SYSTEM "saml-tools.xml">
+	  <!ENTITY myproxy-ca SYSTEM "myproxy-ca.xml">
+]>
+ 
+<book id="gridshib-ca-admin" lang="en">
+<!-- Please remark the "lang" attribute here -->
+ 
+<?dbhtml filename="@DOC_DIR@/admin/index.html" ?>
+
+<bookinfo>
+<title>GridShib-CA Administration Documentation</title>
+<releaseinfo>Version @PACKAGE_VERSION_STRING@</releaseinfo>
+</bookinfo>
+ 
+&install;
+&myproxy-ca;
+&saml-tools;
+&https-cas;
+&perl-modules;
+&process-flow;
+&portal-delegation;
+
+
+<para>
+  Other GridShib-CA documentation:
+  <itemizedlist>
+    <listitem><para><ulink url="../">GridShib-CA Overview</ulink></para></listitem>
+  </itemizedlist>
+</para>
+
+</book>
+

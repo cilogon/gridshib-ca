@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
  
 <chapter id="myproxy-ca">
-<?dbhtml filename="@DOC_DIR@/myproxy-ca.html" ?>
+<?dbhtml filename="@DOC_DIR@/admin/myproxy-ca.html" ?>
 <title>Using MyProxy as the Backend CA</title>
  
-<para>This page has directions for configuring the GridShib-CA to use
-a <ulink url="http://myproxy.ncsa.uiuc.edu">MyProxy</ulink>-based CA.
-It has been tested with MyProxy version 3.5. The MyProxy server can be
-running either on the same host as the GridShib-CA or a remote
-host.</para>
+<para>
+  This page has directions for configuring the GridShib-CA to use a
+  <ulink url="http://myproxy.ncsa.uiuc.edu">MyProxy</ulink>-based CA.
+  The MyProxy server can be running either on the same host as the
+  GridShib-CA or a remote host.
+</para>
 <para>If you elect to use a MyProxy CA instead of the default OpenSSL CA, it
 is assumed you have some experience with Grid certificate
 management and have access to a PKI infrastructure and know how to get
@@ -19,6 +20,14 @@ GridShib-CA and anything else.  These directions assume a MyProxy
 server dedicated to a GridShib-CA.  It's possible in theory to use it
 for other things, but you'll need to figure out how to tweak the
 configuration yourself.</para>
+<note>
+  <para>
+    You should use MyProxy version 4.4 or later, as earlier versions
+    have problems handling certain Shibboleth identities (see <ulink
+    url="http://bugzilla.globus.org/bugzilla/show_bug.cgi?id=6560">Bug
+    6560</ulink>).
+  </para>
+</note>
 <sect1 id="myproxy-ca-prerequisites">
 <title>Prerequisites</title>
 <itemizedlist>

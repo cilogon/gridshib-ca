@@ -91,7 +91,6 @@ static const char *x509_usage[]={
 " -CAcreateserial - create serial number file if it does not exist\n",
 " -CAserial arg   - serial file\n",
 " -set_serial     - serial number to use\n",
-" -md2/-md5/-sha1/-mdc2 - digest to use\n",
 " -samlExt        - file with SAML extension to add\n",
 " -extfile        - configuration file with X509V3 extensions to add\n",
 " -clrext         - delete extensions before signing and input certificate\n",
@@ -237,11 +236,6 @@ chtype = MBSTRING_UTF8;
         {
             if (--argc < 1) goto bad;
             samlExtFile = *(++argv);
-        }
-        else if ((md_alg=EVP_get_digestbyname(*argv + 1)))
-        {
-            /* ok */
-            digest=md_alg;
         }
         else
         {

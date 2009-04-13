@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
  
 <chapter id="https-cas">
-<?dbhtml filename="@DOC_DIR@/https-cas.html" ?>
+<?dbhtml filename="@DOC_DIR@/admin/https-cas.html" ?>
 
 <title>Adding CA Certificates for the Web Server</title>
  
 <para> 
-The GridShib CA Jar file (GridShibCA.jar) contains a set of CA
-certificates that it uses to validate the https connection back to the
-web server from which it was launched. If the CA certificate used to
-sign your web server's certificate is not in the shipped jar, your
-users will either see an error like the following (or with version
-0.4.0 or later of the GridShib-CA be prompted to proceed):
+The GridShib CA Jar file (GridShibCA-&lt;version&gt;.jar) contains a
+set of CA certificates that it uses to validate the https connection
+back to the web server from which it was launched. If the CA
+certificate used to sign your web server's certificate is not in the
+shipped jar, your users will either see an error like the following
+(or with version 0.4.0 or later of the GridShib-CA be prompted to
+proceed):
 </para>
 <screen>Fatal Error: IO Error: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target</screen>
 <para>To correct this, you will need to add the CA for your web server
@@ -88,13 +89,18 @@ need to use a unique argument to -alias for each CA certificate.
 </para>
 </sect1>
 <sect1 id="update-jar">
-<title>Update GridShibCA.jar</title>
-<para>Now update the GridShibCA.jar file with the updated trust
-store. Note that when you do this, you will break the signature on the
-jar (which we address in the subsequent step).</para>
+<title>Update GridShibCA jar</title>
+<para>Now update the GridShibCA jar file with the updated trust
+store.</para>
+<note>When you do this, you will break the signature on the
+jar (which we address in the subsequent step).</note>
+<note>The version
+number of the GridShib CA distribution is embedded in the jar
+filename, you will need to adjust it accordingly in the directions
+below.</note>
 <screen>
-% mv GridShibCA.jar GridShibCA.jar.modified
-% jar uf GridShibCA.jar.modified resources/trustStore
+% mv GridShibCA-0-5-1.jar GridShibCA-0-5-1.jar.modified
+% jar uf GridShibCA-0-5-1.jar.modified resources/trustStore
 </screen>
 </sect1>
 <sect1 id="sign">
@@ -104,13 +110,13 @@ Now resign the jar with the PKCS12 store you created in step two.
 Use the password you created in step two (the "Export Password").
 </para>
 <screen>
-% jarsigner -keystore mycred.pkcs12 -storetype pkcs12 -signedjar GridShibCA.jar GridShibCA.jar.modified default
+% jarsigner -keystore mycred.pkcs12 -storetype pkcs12 -signedjar GridShibCA-0-5-1.jar GridShibCA-0-5-1.jar.modified default
 Enter Passphrase for keystore:
 </screen>
 </sect1>
 <sect1 id="install">
 <title>Install new jar file</title>
-<para>Now install your new GridShibCA.jar.</para>
+<para>Now install your new GridShibCA jar.</para>
 <screen>
 % make install
 </screen>

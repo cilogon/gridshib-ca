@@ -181,13 +181,31 @@ my $formattedRFC2253DN = $rfc2253DN;
 $formattedRFC2253DN =~ s/ /&nbsp;/g;
 
 ######################################################################
+#
+# Create CSRF protection
+
+my $CSRFCookie = $cgi->createCSRFCookie();
+
+if (!defined($CSRFCookie))
+{
+    errorExit("Error creating CSRF cookie. Please see server logs.");
+}
+
+my $CSRFElement = $cgi->getCSRFFormElement();
+
+if (!defined($CSRFElement))
+{
+    errorExit("Error creating CSRF element. Please see server logs.");
+}
+
+######################################################################
 
 my $htmlHeader = $cgi->getHTMLHeader();
 my $htmlFooter = $cgi->getHTMLFooter();
 
-print <<"EOF";
-Content-type: text/html
+print $cgi->header(-cookie=>$CSRFCookie);
 
+print <<"EOF";
 <html>
 <head>
   <title>GridShib CA Welcome</title>
@@ -206,6 +224,13 @@ my $defaultLifetime = $config->getParam("DefaultCredLifetime") / 3600;
 my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
 
 print <<"EOF";
+<!--
+ Break out of any iFrame to prevent clickjacking.
+ See Bug 6649: https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6649
+-->
+<script type="text/javascript">
+if (window.top !== window.self) { window.top.location.href = window.self.location.href; }
+</script>
 <p id="welcome" class="login">Welcome $user</p>
 <hr class="login-hr"/>
 <p id="dn-preamble" class="login">
@@ -225,7 +250,7 @@ $formattedRFC2253DN
 </p>
 <hr class="login-hr"/>
 <p class="login">Get your Grid Credential</p>
-<form id="create-jnlp" action=\"$shibProtectedCGIBinURL/create-jnlp\">
+<form id="create-jnlp" method="POST" action=\"$shibProtectedCGIBinURL/create-jnlp\">
 <p class="login">
 Credential Lifetime:
 <input type="radio" name="lifetime" value="default" checked />
@@ -238,6 +263,11 @@ Credential Lifetime:
 <br/>
 EOF
     ;
+
+#
+# Print our CSRF protection element
+#
+print $CSRFElement . "\n";
 
 #
 # Do we have trusted CAs to pass to client?

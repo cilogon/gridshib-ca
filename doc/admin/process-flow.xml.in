@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
  
 <chapter id="process-flow">
-<?dbhtml filename="@DOC_DIR@/process-flow.html" ?>
+<?dbhtml filename="@DOC_DIR@/admin/process-flow.html" ?>
 
 <title>GridShib-CA Process Flow</title>
  
@@ -24,11 +24,16 @@ login.cgi. This will cause Shibboleth authentication. The main job of
 login.cgi is to ensure that the user's shibboleth identity is
 accessible and valid. User is directed to click a submit button to
 retrieve their credentials, which invokes the create-jnlp CGI script.
+Additionally, login.cgi sets a cookie and a form element to provide
+for CSRF protection as described in <ulink
+url="http://www.freedom-to-tinker.com/sites/default/files/csrf.pdf">Cross-Site
+Request Forgeries: Exploitation and Prevention</ulink>.
 </para></listitem>
-<listitem><para> The create-jnlp script creates the JNLP file to
-launch the Java Web Start application. The JNLP file contains the
-following arguments for the CredentialRetrieve Java
-app:
+<listitem><para> The create-jnlp script checks the CSRF element and
+cookie that should have been set by login.cgi and make sure they
+match. It then creates the JNLP file to launch the Java Web Start
+application. The JNLP file contains the following arguments for the
+CredentialRetrieve Java app:
 <orderedlist inheritnum="inherit">
   <listitem><para>the URL for the generateCred.pl script (step
 6)</para></listitem>
@@ -48,7 +53,7 @@ its bundled CAs to validate its https connections (steps 2,3,6 and
 </orderedlist></para></listitem>
 <listitem><para>The web browser saves the jnlp file to disk and
 launches Java Web Start, passing it the jnlp file.</para></listitem>
-<listitem><para>Java Web Start downloads the GridShib.jar file as
+<listitem><para>Java Web Start downloads the GridShib jar file as
 directed by the JNLP file, and launches the CredentialRetriever class
 from the jar, passing it the Shibboleth Session, Token and URL from
 the JNLP file as arguments.</para></listitem>

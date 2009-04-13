@@ -1,13 +1,10 @@
 -*- mode: text -*-
 ----------------------------------------------------------------------
-README.BuildingJava
+README.Developing
 
-If you want to rebuild the GridShibCA jars from scratch you will need
-to do a few things first to prepare for this:
-
-1) Download the BouncyCastle JCE
-2) Make sure you have the JNLP Developer's Kit
-3) Have a credential to sign the jar file
+This file discusses extra steps you need to do if you want to do
+GridShib-CA development or build distributions. This includes
+compiling the jar files and docbook-based documentation.
 
 ----------------------------------------------------------------------
 
@@ -81,3 +78,55 @@ Certificates for the Web Server" in the GridShib-CA documentation:
 http://gridshib.globus.org/docs/gridshib-ca/
 
 ----------------------------------------------------------------------
+
+4) Have xsltproc installed for documentation generation
+
+You will need to have a functional xsltproc and docbook grammar sheets
+installed to make a GridShib-CA distribution.
+
+How to install xsltproc is system-specific, please use google to find
+some directions or this link is a good starting place (you may be able
+to use fink, apt-get or some easier package option):
+
+http://www.sagehill.net/docbookxsl/InstallingAProcessor.html
+
+Now you will need the docbook grammar and transformation files. From
+the DocBook sourceforge project, download the latest "docbook-xls"
+package (the "docbook-xls-ns" and "docbook-xls-doc" packages won't
+work):
+
+http://sourceforge.net/project/showfiles.php?group_id=21935
+
+And install on your local system:
+
+# mkdir -p /usr/local/share/xml/xsl/
+# cd /usr/local/share/xml/xsl/
+# tar xvfz /tmp/docbook-xsl-1.74.0.tar.gz 
+# ln -s docbook-xsl-1.74.0/ docbook-xsl
+
+By default, the GridShib-CA configure script will look for the style
+sheet under /usr/local/share/xml/xsl/. If you use a different path,
+pass that path to configure when you run it:
+
+configure --enable-build --with-xsl-path=/some/other/path/xml/xsl/
+
+----------------------------------------------------------------------
+
+5) Install automake
+
+If you don't have autoconf installed, i.e. you don't have the commands
+'aclocal' and 'autoconf', you will need to install it:
+
+http://www.gnu.org/software/autoconf/
+
+----------------------------------------------------------------------
+
+6) Run bootstrap
+
+After checking out the gridshib-ca code from CVS, you'll need to run
+the script bootstrap.sh (top-level directory) once to use autoconf to
+generate the 'configure' script.
+
+----------------------------------------------------------------------
+
+$Id$

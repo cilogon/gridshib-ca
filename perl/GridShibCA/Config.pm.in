@@ -70,7 +70,7 @@ my %config = (
     debug => "false",
     clientDebug => "false",
     useBundledCAs => "true",
-    redirectURL => "http://gridshib.globus.org",
+    redirectURL => "NONE",
     # Perl modules
     loggerModule => "GridShibCA::Logger",
     caModule => "GridShibCA::OpenSSLCA",

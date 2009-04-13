@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="readme">
+<?dbhtml filename="@DOC_DIR@/readme.html" ?>
+<title>GridShib Certification Authority</title>
+
+<sect1 id="welcome">
+  <title>Welcome to Gridshib</title>
+  <para>
+    GridShib is a project to allow interoperability
+    between <trademark class="registered">Globus Toolkit</trademark>
+    and <trademark class="registered">Shibboleth</trademark>. Visit the
+    GridShib web site
+    (<ulink url="http://gridshib.globus.org/"/>)
+    for more information about the GridShib Project.
+  </para>
+  <para>
+    GridShib distributes four software components:
+    <itemizedlist>
+      <listitem><para>GridShib for Globus Toolkit</para></listitem>
+      <listitem><para>GridShib for Shibboleth</para></listitem>
+      <listitem><para>GridShib Certificate Authority</para></listitem>
+      <listitem><para>GridShib SAML Tools</para></listitem>	
+    </itemizedlist>
+  </para>
+  <para>
+    These software components help bridge the gap between SAML
+    federations based on Shibboleth and Grid federations based on
+    Globus Toolkit.  Visit
+    the <ulink url="http://gridshib.globus.org/docs/gridshib/deploy-scenarios.html">GridShib
+      Deployment Scenarios</ulink> to see how the various GridShib
+    components might be used.
+  </para>
+</sect1>
+
+<sect1 id="about">
+  <title>About the GridShib-CA</title>
+  <para>
+    The GridShib-CA allows a user to authenticate using Shibboleth,
+    and then creates and installs a short-lived Grid credential based
+    on that authentication on the user's local system.  This
+    credential is suitable for use with Grid Tools such as GT4.
+  </para>
+  <para>
+    To use the GridShib CA you need to have
+    <ulink url="http://java.sun.com/products/javawebstart/download.jsp">
+      Java Web Start</ulink> installed on your system. A demonstration
+    deployment of the GridShib-CA exists - see
+    the <link linkend="test-deployment">section describing the test
+      deployment</link> for details.
+  </para>
+</sect1>
+
+<sect1 id="download">
+  <title>Download</title>
+  <para>
+    You can download the GridShib CA (GS-CA) software distribution
+    from
+    the <ulink url="http://gridshib.globus.org/download.html">GridShib
+    Downloads</ulink> page:
+    <ulink url="http://gridshib.globus.org/download.html#gridshib-ca"/>
+  </para>
+  <para>
+    Please review the licensing terms of
+    the <link linkend="license">GridShib CA License</link> before
+    using this software.  Portions of the GridShib CA are licensed
+    under the Apache License, Version 2.0.  Additional licensing
+    information will be found on
+    the <ulink url="http://gridshib.globus.org/download.html">GridShib
+    Downloads</ulink> page.
+  </para>
+</sect1>
+
+<sect1 id="documentation">
+  <title>Documentation</title>
+  <para>
+    Available documentation for the GridShib CA (GS-CA) includes the
+    following:
+    <itemizedlist>
+      <listitem>
+	<para>
+	  <link linkend="gridshib-ca">Overview</link>: 
+	  This document is an introduction to the GS-CA.
+	</para>
+      </listitem>
+      <listitem>
+	<para>
+	  <ulink url="admin/index.html">GS-CA Installation and
+	    Administration</ulink>: This document shows how to install
+	    the GS-CA.
+	</para>
+      </listitem>
+    </itemizedlist>
+  </para>
+  <para>
+    To illustrate how the GridShib CA is used in conjunction with
+    GridShib SAML Tools and GridShib for GT, a comprehensive <emphasis>Quick
+    Start</emphasis> is provided:
+    <itemizedlist>
+      <listitem>
+	<para>
+	  <ulink url="http://gridshib.globus.org/docs/gridshib/quick-start.html">GridShib
+	    Quick Start</ulink>: The Quick Start provides step-by-step
+	    instructions for various deployment and configuration
+	    options for all GridShib components.
+	</para>
+      </listitem>
+    </itemizedlist>
+  </para>
+</sect1>
+</chapter>

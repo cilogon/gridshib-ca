@@ -48,16 +48,11 @@ GridShib-CA. You can find the list of institutions that are part of
 InQueue <a href="http://inqueue.internet2.edu/who/">here</a>.
 </p>
 <p class="prereq-text">
-If your institution doesn't have a Shibboleth Identity
-provider <a href="http://inqueue.internet2.edu/who/">in InQueue</a>
-<!-- or
-<a href="http://www.incommonfederation.org/participants.cfm">in
-InCommon</a>
---> (or it doesn't release your identity to us), we suggest you
-register with a public identity provider such
-as <a href="http://www.openidp.org">OpenIdp</a> or
-<a href="http://www.protectnetwork.com">ProtectNetwork</a>, both of
-which are easy to use and known to work with the GridShib-CA.
+To use the GridShib-CA you will need to be served by an identity
+provider. If your home insitution does not provide an identity
+provider included in the list blow, you can register with <a
+href="http://www.protectnetwork.com">ProtectNetwork</a>, which is easy
+to use and registration takes just a few minutes.
 </p>
 </td>
 <td id="idp-logos" width="25%">
@@ -82,52 +77,42 @@ which are easy to use and known to work with the GridShib-CA.
 </td>
 </tr>
 <tr>
-<td class="login-idp" id="inqueue-login" width="50%">
-  <p>Login via a Specific Federation</p>
-  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InQueue">
-    <p>
-      <input type="hidden" name="target" value="@LOGIN_URL@"/>
-      <input type="submit" value="Login via InQueue"/>
-    </p>
-  </form>
-</td>
-<!--
-		The GridShib-CA isn't in InCommon yet
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
-<input type="hidden" name="target"
-			 value="@LOGIN_URL@">
-<input type="submit" value="Login via InCommon">
-</form>
--->
 <td class="login-idp" id="idp-login">
-  <p>Login via a Specific Identity Provider</p>
-  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/openidp">
-    <p>
-      <input type="hidden" name="target" value="@LOGIN_URL@"/>
-      <input type="submit" value="Login via OpenIdp"/>
-    </p>
-  </form>
-  <form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
-    <p>
-      <input type="hidden" name="target" value="@LOGIN_URL@"/>
-      <input type="hidden" name="providerId"
-	     value="https://idp.protectnetwork.org/protectnetwork-idp"/>
-      <input type="submit" value="Login via ProtectNetwork"/>
-    </p>
-  </form>
-</td></tr>
-<tr><td class="login-idp" id="myvocs-login" colspan=2>
-<!--
-    This assumes you have a myVocs session established in your
-    Shibboleth configuration.
- -->
-<p>Login via Other Mechanisms</p>
-<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/myvocs">
-  <p>
-    <input type="hidden" name="target" value="@LOGIN_URL@"/>
-    <input type="submit" value="Login via myVocs"/>
-  </p>
-</form>
+<td colspan="2">
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+	<p>
+	  <b>Login via ProtectNetwork</b>
+	</p>
+	<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
+	  <p>
+	    <input type="hidden" name="target"
+		   value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi" />
+	    <input type="hidden" name="providerId"
+		   value="https://idp.protectnetwork.org/protectnetwork-idp" />
+	    <input type="submit" value="Login via ProtectNetwork" />
+	  </p>
+	</form>
+      </td>
+      <td align="center">
+	<form action="https://@WWW_HOSTNAME@/Shibboleth.sso/WAYF/InCommon">
+	  <p>
+	    <b>Login via Other Mechanisms</b>
+	  </p>
+	  <p>
+	    Select your Identity Provider:<br/>
+	    <select name="providerId">
+	      <option value="urn:mace:incommon:uiuc.edu">U. of Illinois - Urbana-Champaign</option>
+	    </select>
+	    <input type="submit" value="Login" />
+	    <input type="hidden" name="target"
+		   value="https://@WWW_HOSTNAME@@SHIB_PROTECTED_CGI_BIN_URL@/login.cgi" />
+	  </p>
+	</form>
+      </td>
+    </tr>
+  </table>
 </td></tr>
 <tr><td id="login-text" colspan="2">
   <p>

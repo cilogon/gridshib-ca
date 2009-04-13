@@ -6,7 +6,6 @@
       <vendor>Von Welch</vendor>
       <homepage href="http://gridshib.globus.org"/>
       <description>Test client system for proper configuration for running GridShib CA.</description>
-      <offline-allowed/> 
     </information> 
  <security>
       <all-permissions/>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="saml-tools">
+<?dbhtml filename="@DOC_DIR@/admin/saml-tools.html" ?>
+<title>Integrating GridShib-SAML-Tools</title>
+ 
+<para>
+You can integrate
+the <ulink
+url="http://gridshib.globus.org/download.html#saml-tools">GridShib
+SAML Tools</ulink> with the GridShib CA in order to include a SAML
+assertion in the certificates issued by the GridShib-CA. By default
+this will include the SAML SSO Response provided by Shibboleth though
+you can configure it to include other attributes as well.
+</para>
+<para>
+Note that this functionality only works with the
+<ulink url="perl/GridShibCA/OpenSSLCA.html">OpenSSL version of the
+GridShib CA</ulink> (as opposed to
+the <ulink url="perl/GridShibCA/MyProxyCA.html">version using
+MyProxy</ulink>).
+</para>
+<para>
+The procedure is as follows. These directions were written for version
+0.3.0 of the GridShib SAML Tools:
+</para>
+<para>
+<orderedlist>
+  <listitem><para>Install
+the <ulink url="http://gridshib.globus.org/download.html#saml-tools">
+GridShib SAML Tools</ulink>.
+</para></listitem>
+  <listitem><para>Make sure $GRIDSHIB_HOME and all of its contents are
+readable (and executable were appropriate) by the user under which
+apache runs. (The easiest way is to make the tree owned by that user.)
+</para></listitem>
+  <listitem><para>Edit
+$GRIDSHIB_HOME/etc/gridshib-saml-issuer.properties and
+make the following changes:
+  <orderedlist>
+    <listitem><para>Set <emphasis>IdP.entityID</emphasis> to the URL that identifies your GridShib-CA installation. Typically this can be the URI which identifies the SP deployment in which the GridShib-CA is deployed.</para></listitem>
+    <listitem><para>Change the <emphasis>NameID.Format</emphasis> to
+urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</para></listitem>
+    <listitem><para>Edit the attributes - i.e. lines starting with
+Attribute.* - you probably just want to comment them out, but if you
+want to include Attributes for all certificates you issue, this is the
+place to do it.</para></listitem>
+    <listitem><para>Add the following lines, changing the path to point at
+your GridShib CA's certificate and private key.
+    <screen>
+certLocation=file:/usr/local/@PACKAGE_FULLNAME@/gridshib-ca-cert.pem
+keyLocation=file:/usr/local/@PACKAGE_FULLNAME@/gridshib-ca-key.pem
+    </screen></para></listitem>
+    </orderedlist></para></listitem>
+  <listitem><para>Now edit your gridshib-ca.conf file (by default this
+will be in /usr/local/@PACKAGE_FULLNAME@) and make the following
+changes:
+  <orderedlist>
+    <listitem><para>Change <emphasis>IncludeSAMLInCert</emphasis> to
+"True"</para></listitem>
+    <listitem><para>Change <emphasis>JavaHome</emphasis> to the path
+for your JAVA_HOME.</para></listitem>
+    <listitem><para>Change <emphasis>GridShibSAMLToolsPath</emphasis>
+to the path in which you installed the GridShib SAML Tools
+(a.k.a. GRIDSHIB_HOME).</para></listitem>
+  </orderedlist></para></listitem>
+</orderedlist></para>
+<para> That should do it. Now when you get certificates back from the
+GridShib-CA, they will contain a SAML assertion. If you run
+'grid-proxy-info -text' you should see a X509v3 extension with an oid
+of 1.3.6.1.4.1.3536.1.1.1.12.</para>
+
+</chapter>

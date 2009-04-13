@@ -71,7 +71,7 @@ HTML_INCS = @HTML_INCS@
 # Source files
 CGI_BIN_SRCS = @CGI_BIN_SRCS@
 HTML_SRCS = @HTML_SRCS@
-CONF_SRCS = @CONF_SRCS@
+CONF_SRCS = @CONF_SRCS@ @OVERWRITE_CONF_SRCS@
 UTIL_SRCS = @UTIL_SRCS@
 PERL_MODULE_SRCS = @PERL_MODULE_SRCS@
 OPENSSL_CA_SRCS = @OPENSSL_CA_SRCS@
@@ -80,6 +80,7 @@ TEST_SRCS = @TEST_SRCS@
 
 # Groups of files
 CONF_FILES=@CONF_FILES@
+OVERWRITE_CONF_FILES=@OVERWRITE_CONF_FILES@
 UTILS=@UTILS@
 DEV_UTILS=@DEV_UTILS@
 BINARIES=@BINARIES@
@@ -107,6 +108,7 @@ DIST_FILES=\
 # All files to be build by default
 BUILD_ALL =\
 	$(CONF_FILES) \
+	$(OVERWRITE_CONF_FILES) \
 	$(UTILS) \
 	$(BINARIES) \
 	$(PERL_MODULES) \
@@ -160,6 +162,7 @@ default: build-$(MODE)
 # Only clean up stuff that cannot be regenerated in distribution
 clean:: 
 	rm -f $(CONF_FILES)
+	rm -f $(OVERWRITE_CONF_FILES)
 	rm -f $(UTILS)
 	rm -f $(HTML_FILES)
 	rm -f $(CGI_BIN_SCRIPTS)
@@ -227,6 +230,7 @@ INSTALL_ALL=install-conf \
 	install-binaries \
 	install-perl \
 	install-html \
+	install-jar \
 	install-cgi \
 	install-token-key \
 	install-demos
@@ -238,7 +242,7 @@ $(GRIDSHIB_CA_CONF_DIR):
 	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 
-install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
+install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES) $(OVERWRITE_CONF_FILES)
 	@echo "Installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
@@ -249,6 +253,10 @@ install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 		else \
 			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 		fi \
+	done
+	@for file in $(OVERWRITE_CONF_FILES) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
@@ -271,13 +279,17 @@ $(GRIDSHIB_CA_HTML_DIR):
 	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
 
-install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES) $(JARFILE)
+install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES)
 	@echo "Installing html to $(GRIDSHIB_CA_HTML_DIR)"
-	@for file in $(HTML_FILES) $(IMAGES) $(JARFILE) ; do \
+	@for file in $(HTML_FILES) $(IMAGES) ; do \
 		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
+
+install-jar:  $(JARFILE)
+	@echo "Installing $(JARFILE) to $(GRIDSHIB_CA_HTML_DIR)"
+	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JARFILE) $(GRIDSHIB_CA_HTML_DIR)/$(JARFILE)
 
 $(SHIB_PROTECTED_CGI_BIN_DIR):
 	@echo "Creating $(SHIB_PROTECTED_CGI_BIN_DIR)"
@@ -532,6 +544,9 @@ DOCBOOK_SRCS = @DOCBOOK_SRCS@
 # Documentation images
 DOC_IMAGES = @DOC_IMAGES@
 
+# Doc files to be installed
+DOC_INSTALL_FILES = @DOC_INSTALL_FILES@
+
 DIST_FILES += $(DOC_FILES)
 DIST_FILES += $(DOCBOOK_FILES)
 DIST_FILES += $(DOCBOOK_SRCS)
@@ -550,12 +565,15 @@ XSLTPROC_OPTS=\
 		--stringparam section.autolabel 1 \
 		--stringparam generate.toc.book toc
 
-docbook: doc/index.html
+docbook: doc/index.html doc/admin/index.html
 
 doc:: docbook
 
 doc/index.html: $(DOCBOOK_FILES)
 	$(XSLTPROC) $(XSLTPROC_OPTS) $(XSLT_STYLE_SHEET) doc/index.xml
+
+doc/admin/index.html: $(DOCBOOK_FILES)
+	$(XSLTPROC) $(XSLTPROC_OPTS) $(XSLT_STYLE_SHEET) doc/admin/index.xml
 
 doc-clean:: 
 	$(RM) -rf $(DOC_FILES)
@@ -587,6 +605,10 @@ doc-clean::
 
 POD2HTML_ROOT=/docs/$(DOC_INSTALL_DIR)/perl
 
+# Program to cleanup pod2html output
+# Currently this removes the xml header
+CLEAN_POD2HTML=dev-utils/clean-pod2html.sh
+
 perl-module-doc: $(PERL_DOC_DIR) $(PERL_MODULES)
 	@$(INSTALL) -d -m 0755 $(PERL_DOC_DIR)/GridShibCA
 	@for script in $(PERL_MODULES) ; do \
@@ -596,6 +618,7 @@ perl-module-doc: $(PERL_DOC_DIR) $(PERL_MODULES)
 	  if test $${script} -nt $${out} ; then \
 	    echo "Generating docs for $${t}" ;\
 	    $(POD2HTML) --infile=$${script} --outfile=$${out} --title=$${t} --noindex --htmlroot=$(POD2HTML_ROOT) ;\
+            $(CLEAN_POD2HTML) $${out} ;\
 	  fi ;\
 	done
 
@@ -607,6 +630,7 @@ perl-script-doc: $(PERL_DOC_DIR) $(UTILS)
 	  if test $${script} -nt $${out} ; then \
 	    echo "Generating docs for $${t}" ;\
 	    $(POD2HTML) --infile=$${script} --outfile=$${out} --title=$${t} --noindex --htmlroot=$(POD2HTML_ROOT) ;\
+            $(CLEAN_POD2HTML) $${out} ;\
 	  fi ;\
 	done
 
@@ -660,7 +684,7 @@ realclean::
 # Tests
 #
 
-test: check-perl test-openssl-ca test-myproxy-mapapp
+test: subdirs chmod-tests chmod-utils check-perl test-openssl-ca test-myproxy-mapapp
 	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
@@ -670,7 +694,7 @@ test-post-install: test-cert-issue
 	@echo "Post install tests successful."
 
 test-cert-issue:
-	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@openidp.org  urn:mace:inqueue:openidp.org
+	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@fakeidp.org  urn:mace:incommon:fakeidp
 
 test-myproxy-mapapp: utils/myproxy-mapapp.pl
 	@echo "Calling myproxy-mapapp.pl with good DN."

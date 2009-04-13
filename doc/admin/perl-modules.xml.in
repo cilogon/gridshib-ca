@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ 
+<chapter id="perl-modules">
+<?dbhtml filename="@DOC_DIR@/admin/perl-modules.html" ?>
+<title>GridShib-CA Perl Modules</title>
+ 
+<para>
+Starting with version 0.3.0 the GridShib-CA used a number of PERL
+modules to implement run-time behavior. While the GridShib-CA deploys
+a set of modules by default, they can be changed using
+the <ulink url="install.html#gridshib-ca.conf">gridshib-ca.conf</ulink>
+configuration file. A list of modules and the parameter used to
+specific the module loaded is given below.
+</para>
+<table tocentry="0">
+<title>GridShib-CA Perl Modules</title>
+<tgroup cols="3">
+<thead>
+<row>
+<entry>Module</entry>
+<entry>Configuration parameter</entry>
+<entry>Notes</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry><ulink url="perl/GridShibCA/CA.html">CA</ulink></entry>
+<entry>caModule</entry>
+<entry>Template. Default implementation is
+	currently <ulink url="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</ulink>.
+	A <ulink url="myproxy-ca.html">MyProxy-based CA</ulink> is also available
+	with <ulink url="perl/GridShibCA/MyProxyCA.html">MyProxyCA.pm</ulink>.
+</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/CertRegistry.html">CertRegistry</ulink></entry>
+<entry>certRegistryModule</entry>
+<entry>Wrapper around Certificate Registry module. Other implementations
+	include <ulink url="perl/GridShibCA/myVocsDBCertRegistry.html">myVocsDBCertRegistry.pm</ulink></entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/CGIinterface.html">CGIinterface</ulink></entry>
+<entry>cgiModule</entry>
+<entry>Wrapper around PERL CGI module</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/Command.html">Command</ulink></entry>
+<entry>commandModule</entry>
+<entry>Interface to executing system commands, controlling their input
+	and getting their output</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/Logger.html">Logger</ulink></entry>
+<entry>loggerModule</entry>
+<entry>Interface to logging mechanism. Default implementation uses
+	syslog.</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/NameMapper.html">NameMapper</ulink></entry>
+<entry>nameMapperModule</entry>
+<entry>Maps from Shibboleth authentication/attributes to X.509 DN.</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/TokenGenerator.html">TokenGenerator</ulink></entry>
+<entry>tokenGeneratorModule</entry>
+<entry>Used to generate Tokens used to authenticate user requests</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+</chapter>

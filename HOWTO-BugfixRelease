@@ -63,7 +63,7 @@ http://kb.wisc.edu/middleware/page.php?id=4087#merging
 
 1) In your branch checkout, tag the merge point:
 
-% cvs tag merge_v0_5_0_BRANCH
+% cvs tag -F merge_v0_5_BRANCH
 
 2) Change back to your trunk checkout.
 
@@ -74,7 +74,7 @@ http://kb.wisc.edu/middleware/page.php?id=4087#merging
 4) Deal with any conflicts. A command to list all files with conflicts
 follows.
 
-% cvs up -d | & grep '^C' | sed -e 's/^C //
+% grep -R "<<<<<<<" * | uniq
 
 5) Make sure everything still works and commit.
 

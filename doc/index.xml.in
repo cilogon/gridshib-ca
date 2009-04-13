@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 	  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+	  <!ENTITY readme SYSTEM "readme.xml">
 	  <!ENTITY changelog SYSTEM "changelog.xml">
 	  <!ENTITY faq SYSTEM "faq.xml">
-	  <!ENTITY https-cas SYSTEM "https-cas.xml">
-	  <!ENTITY install SYSTEM "install.xml">
-	  <!ENTITY introduction SYSTEM "introduction.xml">
 	  <!ENTITY license SYSTEM "license.xml">
-	  <!ENTITY perl-modules SYSTEM "perl-modules.xml">
-	  <!ENTITY process-flow SYSTEM "process-flow.xml">
-	  <!ENTITY portal-delegation SYSTEM "portal-delegation.xml">
-	  <!ENTITY saml-tools SYSTEM "saml-tools.xml">
 	  <!ENTITY test-deployment SYSTEM "test-deployment.xml">
-	  <!ENTITY myproxy-ca SYSTEM "myproxy-ca.xml">
 ]>
  
 <book id="gridshib-ca" lang="en">
@@ -21,21 +14,21 @@
 <?dbhtml filename="@DOC_DIR@/index.html" ?>
 
 <bookinfo>
-<title>GridShib-CA Documentation</title>
+<title>GridShib-CA Overview Documentation</title>
 <releaseinfo>Version @PACKAGE_VERSION_STRING@</releaseinfo>
 </bookinfo>
  
-&introduction;
+&readme;
 &test-deployment;
-&install;
-&myproxy-ca;
 &faq;
-&saml-tools;
-&https-cas;
 &license;
 &changelog;
-&perl-modules;
-&process-flow;
-&portal-delegation;
+
+<para>
+  Other GridShib-CA documentation:
+  <itemizedlist>
+    <listitem><para><ulink url="admin/index.html">GridShib-CA Installation and Administration</ulink></para></listitem>
+  </itemizedlist>
+</para>
 </book>
 

@@ -98,6 +98,12 @@ sub new
     my $self = $class->SUPER::new(@_);
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
+    # Name to use for cookie and form firld for CSRF protection
+    $self->{CSRFTokenName} = "CSRFProtection";
+    # Our CSRF token (will be set by getCSRFToken() when needed)
+    $self->{CSRFToken} = undef;
+    # Length of CSRF token in alphanumeric characters
+    $self->{CSRFTokenLen} = 40;
     bless($self, $class);
     return $self;
 }
@@ -132,6 +138,168 @@ sub getToken
 {
     my $self = shift;
     return $self->param("token");
+}
+
+
+=item createCSRFCookie()
+
+Create and return a cookie suitable for protection against CSRF attacks.
+
+B<Arguments:> None
+
+B<Returns:> Cookie object, undef on error.
+
+=cut
+
+sub createCSRFCookie
+{
+    my $self = shift;
+
+    my $token = $self->getCSRFToken();
+    if (!defined($token))
+    {
+	return undef;
+    }
+    my $cookie = $self->cookie(-name=>$self->{CSRFTokenName},
+			       -value=>$token,
+			       -secure=>1);
+    if (!defined($cookie))
+    {
+	$self->{logger}->err("Failed to create CSRF cookie.");
+	return undef;
+    }
+    return $cookie;
+}
+
+=item expiredCSRFCookie()
+
+Create an expired CSRF protection cookie.
+
+B<Arguments:> None
+
+B<Returns:> Cookie object, or undef on error.
+
+=cut
+
+sub expiredCSRFCookie
+{
+    my $self = shift;
+
+    my $cookie = $self->cookie(-name=>$self->{CSRFTokenName},
+			       -value=>"Expired!",
+			       # Delete
+			       -expires=>"-1d");
+
+    if (!defined($cookie))
+    {
+	$self->{logger}->err("Failed to create expired CSRF cookie.");
+	return undef;
+    }
+    return $cookie;
+}
+
+=item getCSRFFormElement
+
+Return a form element with our CSRF protection.
+
+B<Arguments:> None
+
+B<Returns:> Form element as string, undef on error.
+
+=cut
+
+sub getCSRFFormElement
+{
+    my $self = shift;
+
+    my $token = $self->getCSRFToken();
+    if (!defined($token))
+    {
+	return undef;
+    }
+    my $name = $self->{CSRFTokenName};
+
+    my $element = sprintf("<input type=\"hidden\" name=\"%s\" value=\"%s\" />",
+			  $name, $token);
+    return $element;
+}
+
+=item getCSRFToken
+
+Return a token for use in CSDRF prevention.
+
+B<Arguments:> None
+
+B<Returns:> Token as string, undef on error
+
+=cut
+
+sub getCSRFToken
+{
+    my $self = shift;
+
+    if (!defined($self->{CSRFToken}))
+    {
+	my @chars = ( "A" .. "Z", "a" .. "z", 0 .. 9 );
+	$self->{CSRFToken} = "";
+	# Simple varible works better then self reference in for loop
+	my $len = $self->{CSRFTokenLen};
+	for (1 .. $len)
+	{
+	    $self->{CSRFToken} .= @chars[int(rand(@chars))];
+	}
+    }
+
+    return $self->{CSRFToken};
+}
+
+=item CSRFCheck()
+
+Check against CSRF attacks. This means checking for a matching form value
+and cookie to make sure user came to us via the form.
+
+B<Arguments:> None
+
+B<Returns:> 1 on success, 0 on error
+
+=cut
+
+sub CSRFCheck
+{
+    my $self = shift;
+
+    my $method = $self->request_method();
+    if (!defined($method))
+    {
+	$self->{logger}->err("CSRF check failed: could not determine request method.");
+	return 0;
+    }
+    if ($method ne "POST")
+    {
+	$self->{logger}->err("CSRF check failed: wrong method \"%s\"", $method);
+	return 0;
+    }
+
+    my $name = $self->{CSRFTokenName};
+
+    my $formValue = $self->param($name);
+    if (!defined($formValue))
+    {
+	$self->{logger}->err("Failed to retrieve CSRF form value.");
+	return 0;
+    }
+    my $cookieValue = $self->cookie($name);
+    if (!defined($cookieValue))
+    {
+	$self->{logger}->err("Failed to retrieve CSRF cookie value.");
+	return 0;
+    }
+    if ($formValue ne $cookieValue)
+    {
+	$self->{logger}->err("CSRF check failed. Cookie value (%s) != form value value (%s).", $cookieValue, $formValue);
+	return 0;
+    }
+    return 1;
 }
 
 =item getPortalURL()

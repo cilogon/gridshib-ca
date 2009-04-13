@@ -1,0 +1,155 @@
+#!/bin/sh
+######################################################################
+#
+# $Id$
+#
+# Test a credential issued by the GS-CA deployment on computer.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+#
+# Binaries and key paths
+
+globusLocation="@GLOBUS_LOCATION@"
+
+gridProxyInfo="grid-proxy-info"
+gridProxyInit="grid-proxy-init"
+openssl="openssl"
+
+######################################################################
+#
+# Our trusted CA path and expected CA DN
+
+trustedCertificatesDir=`dirname $0`/certificates/
+
+expectedIssuer="/DC=edu/DC=uiuc/DC=ncsa/DC=computer/O=Certificate Authority/CN=GridShib CA"
+
+######################################################################
+
+CHECK_SAML=1
+
+usage() {
+cat <<EOF
+Usage: $0
+ -h     Display help and exit.
+ -S     Do not check for embedded SAML.
+EOF
+}
+
+while getopts hS arg
+do
+  case $arg in
+    h) usage; exit 0 ;;
+    S) CHECK_SAML=0 ;;
+  esac
+done
+
+shift `expr $OPTIND - 1`
+
+######################################################################
+
+uid=`id -u`
+credFile=/tmp/x509up_u${uid}
+
+if test -f $credFile ; then
+    echo "Credential file exists: ${credFile}"
+else
+    echo "Credential file does not exist: ${credFile}"
+    exit 1
+fi
+
+type=`${gridProxyInfo} -file ${credFile} -type`
+if test "${type}" = "end entity credential" ; then
+    echo "Credential type good."
+else
+    echo "Credential type \"${type}\" unexpected."
+    exit 1
+fi
+
+issuer=`${gridProxyInfo} -file ${credFile} -issuer`
+if test "${issuer}" = "${expectedIssuer}" ; then
+    echo "Issuer good."
+else
+    echo "Credential issuer does not match expected."
+    echo "Issuer: ${issuer}"
+    echo "Expected Issuer: ${expectedIssuer}"
+    exit 1
+fi
+
+strength=`${gridProxyInfo} -file ${credFile} -strength`
+${gridProxyInfo} -file ${credFile} -exists -bits 1024
+if test $? -eq 0 ; then
+    echo "Key length (${strength}) good."
+else
+    echo "Key length (${strength}) too weak."
+    exit 1
+fi
+
+timeleft=`${gridProxyInfo} -file ${credFile} -timeleft`
+${gridProxyInfo} -file ${credFile} -exists -valid 1:00
+if test $? -eq 0 ; then
+    echo "Time left (${timeleft}) good."
+else
+    echo "Time left (${timeleft}) too short."
+    exit 1
+fi
+
+export X509_CERT_DIR=${trustedCertificatesDir}
+${gridProxyInit} -cert ${credFile} -key ${credFile} -out ${credFile}.out \
+    -verify -debug -valid 1:00
+if test $? -eq 0 ; then
+    echo "Successfully verified proxy creation from credential"
+else
+    echo "Proxy creation failed."
+    exit 1
+fi
+
+if test $CHECK_SAML -eq 1 ; then
+    ${openssl} x509 -in ${credFile} -noout -text | grep "urn:oasis:names:tc:SAML:1.0:assertion" > /dev/null
+    if test $? -eq 0 ; then
+	echo "Embedded SAML found."
+    else
+	echo "Failed to find embedded SAML."
+	exit 1
+    fi
+fi
+
+echo "Success."
+exit 0
