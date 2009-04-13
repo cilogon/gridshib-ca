@@ -684,7 +684,7 @@ realclean::
 # Tests
 #
 
-test: subdirs chmod-tests chmod-utils check-perl test-openssl-ca test-myproxy-mapapp
+test: subdirs check-perl test-openssl-ca test-myproxy-mapapp
 	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
