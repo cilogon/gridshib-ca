@@ -10,7 +10,7 @@
 TEST_HOST=computer.ncsa.uiuc.edu
 
 # Path on test host to use for building
-TMP_DIR=/tmp/gridshib-ca-test-deploy
+TMP_DIR=/tmp/gridshib-ca-test-deploy-@PACKAGE_VERSION_STRING@
 
 ######################################################################
 #
