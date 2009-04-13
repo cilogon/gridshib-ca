@@ -69,7 +69,7 @@ http://kb.wisc.edu/middleware/page.php?id=4087#merging
 
 3) Do the merge:
 
-% cvs update -j v0_5_0_BRANCH
+% cvs update -j v0_5_BRANCH
 
 4) Deal with any conflicts. A command to list all files with conflicts
 follows.
@@ -80,7 +80,7 @@ follows.
 
 6) Tag the trunk where the merge occurred.
 
-% cvs tag from_v0_5_0_BRANCH
+% cvs tag from_v0_5_BRANCH
 
 ----------------------------------------------------------------------
 
