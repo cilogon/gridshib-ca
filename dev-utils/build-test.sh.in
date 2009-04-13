@@ -1,8 +1,8 @@
 #!/bin/sh
 ######################################################################
 #
-# This script is run by deploy-test.sh on the GridShib-CA test system
-# to build and deploy the test GridShib-CA.
+# This script is run by the deploy-test make target on the GridShib-CA
+# test system to build and deploy the test GridShib-CA.
 #
 # $Id$
 #
@@ -14,11 +14,12 @@ set -e
 
 ######################################################################
 
-conf_opts=""
-conf_opts="${conf_opts} --with-gridshib-ca-dir-name=gridshib-ca-test"
-conf_opts="${conf_opts} --enable-demos"
-conf_opts="${conf_opts} --with-globus-location=/usr/local/gt-4.0.1"
-conf_opts="${conf_opts} --with-openssl-path=/usr/bin/"
+conf_opts="\
+--with-gridshib-ca-dir-name=gridshib-ca-test-@PACKAGE_VERSION_STRING@ \
+--with-globus-location=/usr/local/globus \
+--with-openssl-path=/usr/bin/ \
+--with-www-user=www-data \
+"
 
 echo "Running configure..."
 echo "Options are: $conf_opts"
@@ -35,6 +36,9 @@ make test
 
 echo "Installing..."
 sudo make install
+
+echo "Create CA credentials..."
+sudo utils/create-openssl-ca.pl
 
 echo "Running post-install tests..."
 sudo make test-post-install
