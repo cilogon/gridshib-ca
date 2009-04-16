@@ -681,10 +681,6 @@ if test ${MODE} = "build" ; then
 	AC_MSG_ERROR([Could not find Bouncy Castle source path.])
    fi
 
-   dnl Make dev-utils/*.pl and test/*.sh executable
-   AC_CONFIG_COMMANDS([chmod-dev-utils], [chmod +x dev-utils/*.pl dev-utils/*.sh])
-   AC_CONFIG_COMMANDS([chmod-test], [chmod +x test/*.sh])
-
    AC_PATH_PROG(CVS, cvs)
    AC_PATH_PROG(MAKE, make)
 
