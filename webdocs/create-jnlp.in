@@ -269,7 +269,8 @@ for my $arg (@jwsArgs)
 open(INPUT, $JNLPtemplate) || errorExit("Could not open JNLP template file \"$JNLPtemplate\": $!");
 
 print $cgi->header(-type=>"Application/X-Java-Jnlp-File",
-		   -cookie=>$expiredCSRFCookie);
+		   -cookie=>$expiredCSRFCookie,
+		   -attachment=>"launch.jnlp");
 
 while (<INPUT>) {
     s/\$\$arguments/$arguments/;
