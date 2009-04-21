@@ -60,7 +60,26 @@ umask(0077);
 
 my $config = GridShibCA::Config->new();
 
-my $JNLPtemplate = $config->getParam("JNLPTemplate");
+
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this
+    die "Could not initialize Logger: " . $config->getError();
+}
+
+my $errorHandler = $config->getHTMLError();
+
+if (!defined($errorHandler))
+{
+    $logger->err("Failed to load HTMLError module: " . $config->getError());
+    die "Failed to load HTMLError module: " . $config->getError();
+}
+
+######################################################################
+
+my $JNLPtemplate = $config->getTemplate("CredentialRetriever.jnlp");
 my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
 
 # Arguments to pass to JWS application
@@ -73,34 +92,6 @@ if ($config->getParamBoolean("clientDebug"))
 }
 
 ######################################################################
-
-sub errorExit($)
-{
-  my $error_string = shift;
-
-  print $cgi->header("text/plain");
-
-  print "ERROR: " . $error_string . "\n";
-  
-  $logger->err("ERROR: %s", $error_string);
-
-  exit(1);
-}
-
-######################################################################
-#
-# Initialize Logging
-#
-
-$logger = $config->getLogger();
-
-if (!defined($logger))
-{
-    # No good way to report this error
-    die "Could not get Logger: " . $config->getError();
-}
-
-######################################################################
 #
 # Main code
 #
@@ -108,8 +99,8 @@ if (!defined($logger))
 $cgi = $config->getCGI();
 if (!defined($cgi))
 {
-    errorExit("Could not access CGI interface: "
-	      . $config->getError());
+    $errorHandler->HTMLErrorExit("Could not access CGI interface: %s",
+				 $config->getError());
 }
 
 # Protect against CSRF GET attacks
@@ -138,7 +129,7 @@ my $shibsession = $shib->getShibSession();
 
 if (!defined($shibsession))
 {
-    errorExit("Could not determine Shibboleth session Id.");
+    $errorHandler->HTMLErrorExit("Could not determine Shibboleth session Id.");
 }
 push(@jwsArgs, $shibsession);
 
@@ -146,7 +137,7 @@ my $user = $shib->getUserId();
 
 if (!defined($user))
 {
-    errorExit("REMOTE_USER not defined.");
+    $errorHandler->HTMLErrorExit("REMOTE_USER not defined.");
 }
 
 my $remoteAddr = $cgi->remote_host();
@@ -161,12 +152,13 @@ $logger->debug("Requested lifetime: $requestedLifetime");
 my $maxLifetime = $config->getParam("MaximumCredLifetime");
 if ($requestedLifetime > $maxLifetime)
 {
-    errorExit("Requested lifetime ($requestedLifetime) greater than allowed ($maxLifetime).");
+    $errorHandler->HTMLErrorExit("Requested lifetime (%s) greater than allowed (%s).",
+				 $requestedLifetime, $maxLifetime );
 }
 
 if ($requestedLifetime == 0)
 {
-    errorExit("Requested credential with zero lifetime.");
+    $errorHandler->HTMLErrorExit("Requested credential with zero lifetime.");
 }
 
 push(@jwsArgs, "lifetime=" . $requestedLifetime);
@@ -179,15 +171,16 @@ push(@jwsArgs, "lifetime=" . $requestedLifetime);
 my $tokenGenerator = $config->getTokenGenerator($user, $remoteAddr);
 if (!defined($tokenGenerator))
 {
-    errorExit("Could not initialize token generator: "
-	      . $config->getError());
+    $errorHandler->HTMLErrorExit("Could not initialize token generator: %s",
+				 $config->getError());
 }
 
 my $tokenString = $tokenGenerator->generate();
 
 if (!defined($tokenString))
 {
-    errorExit("Could not generate token: " . $tokenGenerator->getError());
+    $errorHandler->HTMLErrorExit("Could not generate token: %s",
+				 $tokenGenerator->getError());
 }
 
 push(@jwsArgs, "token=" . $tokenString);
@@ -239,14 +232,7 @@ if (defined($trustedCADirectory) &&
 
 ######################################################################
 #
-# Log this
-#
-
-$logger->info("JWSLAUNCH:%s:%s", $user, $remoteAddr);
-
-######################################################################
-#
-# Create returned text
+# Figure out our code base
 #
 
 my $GridShibCAURL = $config->getParam("GridShibCAURL");
@@ -256,8 +242,21 @@ my $code_base = $url_base . $GridShibCAURL;
 # Since JAR file is signed, this is a reasonable work around.
 $code_base =~ s/https:/http:/;
 
+$JNLPtemplate->addMapping("code_base", $code_base);
+
+######################################################################
+#
+# Figure out URL for generateCred.cgi
+#
+
 my $genCredURL = $url_base . $ShibProtectedCGIBinURL . "/generateCred.cgi";
 push(@jwsArgs, "url=" . $genCredURL);
+
+
+######################################################################
+#
+# Create returned text
+#
 
 # Build string of arguments
 my $arguments = "";
@@ -266,18 +265,26 @@ for my $arg (@jwsArgs)
     $arguments .= "\t<argument>$arg</argument>\n";
 }
 
-open(INPUT, $JNLPtemplate) || errorExit("Could not open JNLP template file \"$JNLPtemplate\": $!");
+$JNLPtemplate->addMapping("arguments", $arguments);
+
+my $jnlp = $JNLPtemplate->getText();
+
+if (!defined($jnlp))
+{
+    $errorHandler->HTMLErrorExit("Could not generate JNLP file: %s",
+				 $JNLPtemplate->getError());
+}
+
+# Success. Log and return JNLP file.
+
+$logger->info("JWSLAUNCH:%s:%s", $user, $remoteAddr);
 
 print $cgi->header(-type=>"Application/X-Java-Jnlp-File",
 		   -cookie=>$expiredCSRFCookie,
 		   -attachment=>"launch.jnlp");
+print $jnlp;
 
-while (<INPUT>) {
-    s/\$\$arguments/$arguments/;
-    s/\$\$code_base/$code_base/;
-    print;
-}
-close(INPUT);
+exit(0);
 
 # The following triggers PERL mode in emaces.
 ### Local Variables: ***

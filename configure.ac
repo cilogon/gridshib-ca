@@ -157,6 +157,12 @@ AC_CONFIG_FILES([$HTML_FILES])
 AC_SRC_FILES(HTML_FILES, HTML_SRCS)
 AC_SUBST(HTML_SRCS)
 
+TEMPLATE_FILES="\
+	templates/CredentialRetriever.jnlp \
+	templates/error.html \
+	templates/login.html"
+AC_SUBST(TEMPLATE_FILES)
+
 dnl Configuration files that should not be overwritten by installation.
 CONF_FILES="\
 	conf/gridshib-ca.conf \
@@ -218,11 +224,14 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/CGIinterface.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
+	perl/GridShibCA/HTMLError.pm \
+	perl/GridShibCA/HTMLTemplate.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
 	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibInterface.pm \
+	perl/GridShibCA/Template.pm \
 	perl/GridShibCA/TokenGenerator.pm"
 AC_SUBST(REQUIRED_PERL_MODULES)
 
@@ -296,10 +305,16 @@ DOC_INSTALL_FILES=`echo ${DOC_FILES} ${DOC_IMAGES} ${PERL_DOC_DIR} | sed "s/doc\
 AC_SUBST(DOC_INSTALL_FILES)
 
 dnl ----------------------------------------------------------------------
-dnl check for required perl modules
+dnl check for required perl modules that should be on any reasonably
+dnl recent perl, but don't always seem to be
 AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 MIME::Base64 Sys::Syslog],
-	[AC_MSG_RESULT([All required perl modules found.])],
-	[AC_MSG_ERROR([One or more required perl modules not found.])])
+	[AC_MSG_RESULT([All standard perl modules found.])],
+	[AC_MSG_ERROR([One or more required standard perl modules not found. Old version of perl?])])
+
+dnl Check for extra perl modules we need
+AC_PROG_PERL_MODULES([Text::Template],
+	[AC_MSG_RESULT([Required extra perl modules found.])],
+	[AC_MSG_ERROR([One or more required extra perl modules not found.])])
 
 dnl ----------------------------------------------------------------------
 dnl Stuff needed to build our openssl-based CA
@@ -722,6 +737,10 @@ dnl Installed path of the configuration file
 GRIDSHIB_CA_CONFIG_FILE=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca.conf
 AC_CLEAN_PATH(GRIDSHIB_CA_CONFIG_FILE)
 AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)
+
+dnl Path to template directory
+TEMPLATE_DIR=${GRIDSHIB_CA_CONF_DIR}/templates
+AC_SUBST(TEMPLATE_DIR)
 
 dnl ------------------------------------------------------------
 dnl PERL arguments

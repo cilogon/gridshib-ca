@@ -50,6 +50,16 @@ specific the module loaded is given below.
 	and getting their output</entry>
 </row>
 <row>
+<entry><ulink url="perl/GridShibCA/HTMLError.html">HTMLError</ulink></entry>
+<entry>htmlErrorModule</entry>
+<entry>Module for outputing errors in either HTML or as HTTP errors.</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/HTMLTemplate.html">HTMLTemplate</ulink></entry>
+<entry>htmlTemplateModule</entry>
+<entry>Module for outputing HTML from templates.</entry>
+</row>
+<row>
 <entry><ulink url="perl/GridShibCA/Logger.html">Logger</ulink></entry>
 <entry>loggerModule</entry>
 <entry>Interface to logging mechanism. Default implementation uses
@@ -71,6 +81,11 @@ specific the module loaded is given below.
   <entry>Provides interface to Shibboleth-provided information. For
   running without Shibboleth (e.g. for testing), see the <ulink
   url="perl/GridShibCA/FakeShib.html">FakeShib</ulink> module.</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/Template.html">Template</ulink></entry>
+<entry>templateModule</entry>
+<entry>Module for outputing text from templates.</entry>
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/TokenGenerator.html">TokenGenerator</ulink></entry>

@@ -54,47 +54,13 @@ use GridShibCA::Config;
 $ENV{PATH} = "/bin";
 umask (0077);
 
+######################################################################
+#
+# Initialize config instance, logger and errorHandler
+#
+
 my $config = GridShibCA::Config->new();
 
-######################################################################
-#
-# HTTP Status codes returned in case of error
-#
-
-my $HTTP_BAD_REQUEST = 400;
-my $HTTP_UNAUTHORIZED = 401;
-my $HTTP_INTERNAL_ERROR = 500;
-
-######################################################################
-
-sub errorExit
-{
-    # HTTP status code
-    my $status = shift;
-    # Error message
-    my $format = shift;
-    my $string = sprintf($format, @_);
-
-    print $cgi->header(
-	-status=>sprintf("%d %s", $status, $string),
-	-type=>"text/plain");
-
-    print "ERROR: $string\n";
-
-    my $referer = $cgi->referer();
-    if (defined($referer))
-    {
-	$string .= sprintf(" (referer=%s)", $referer);
-    }
-
-    $logger->err("ERROR: %s", $string);
-    exit(0);
-}
-
-######################################################################
-#
-# Initialize Logging
-#
 
 $logger = $config->getLogger();
 
@@ -104,15 +70,23 @@ if (!defined($logger))
     die "Could not initialize Logger: " . $config->getError();
 }
 
+my $errorHandler = $config->getHTMLError();
+
+if (!defined($errorHandler))
+{
+    $logger->err("Failed to load HTMLError module: " . $config->getError());
+    die "Failed to load HTMLError module: " . $config->getError();
+}
+
 ######################################################################
 
 $cgi = $config->getCGI();
 
 if (!defined($cgi))
 {
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "Could not initialize CGI interface: "
-	      . $config->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "Could not initialize CGI interface: %s",
+				 $config->getError());
 }
 
 my $shib = $config->getShibInterface();
@@ -128,22 +102,24 @@ $user = $shib->getUserId();
 
 if (!defined($user))
 {
-    errorExit($HTTP_UNAUTHORIZED, "REMOTE_USER not defined.");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_UNAUTHORIZED,
+				 "REMOTE_USER not defined.");
 }
 
 my $remoteAddr = $cgi->remote_host();
 
 if (!defined($remoteAddr))
 {
-    errorExit($HTTP_INTERNAL_ERROR, "REMOTE_ADDR not defined.");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "REMOTE_ADDR not defined.");
 }
 
 my $idp = $shib->getIdP();
 
 if (!defined($idp))
 {
-    errorExit($HTTP_INTERNAL_ERROR, 
-	      "Could not determine Shibboleth identity provider for user");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR, 
+				 "Could not determine Shibboleth identity provider for user");
 }
 
 $logger->info("CONNECTION:%s:%s:\"%s\"", $user, $remoteAddr, $idp);
@@ -157,18 +133,21 @@ my $certificateRequest = $cgi->getCertificateRequest();
 
 if (!defined($certificateRequest))
 {
-    errorExit($HTTP_BAD_REQUEST, "Certificate request missing");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
+				 "Certificate request missing");
 }
 if ($certificateRequest eq "")
 {
-    errorExit($HTTP_BAD_REQUEST, "Certificate request empty");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
+				 "Certificate request empty");
 }
 
 my $token = $cgi->getToken();
 
 if (!defined($token))
 {
-    errorExit($HTTP_BAD_REQUEST, "Token missing from request");
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
+				 "Token missing from request");
 }
 
 my $portalURL = $cgi->getPortalURL();
@@ -187,15 +166,16 @@ my $tokenGenerator = $config->getTokenGenerator($user,
 
 if (!defined($tokenGenerator))
 {
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "Could not initialize token generator: "
-	      . $config->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "Could not initialize token generator: %s",
+				 $config->getError());
 }
 
 if (!$tokenGenerator->verify($token))
 {
-    errorExit($HTTP_BAD_REQUEST, "Error verifying token: "
-	      . $tokenGenerator->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
+				 "Error verifying token: %s",
+				 $tokenGenerator->getError());
 }
 
 ######################################################################
@@ -206,15 +186,16 @@ if (!$tokenGenerator->verify($token))
 my $ca = $config->getCA($user, $idp);
 if (!defined($ca))
 {
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "Could not instantiate CA interface "
-	      . $config->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "Could not instantiate CA interface: %s",
+				 $config->getError());
 }
 my $DN = $ca->getDN();
 if (!defined($DN))
 {
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "Couldn't determine DN for user: " . $ca->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "Couldn't determine DN for user: %s",
+				 $ca->getError());
 }
 
 ######################################################################
@@ -226,24 +207,24 @@ my $authorization = $config->getAuthorization();
 
 if (!$authorization->authorizeUser($user, $idp))
 {
-    errorExit($HTTP_UNAUTHORIZED,
-	      "Authorization failed: User %s (Idp %s): %s",
-	      $user, $idp, $authorization->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_UNAUTHORIZED,
+				 "Authorization failed: User %s (Idp %s): %s",
+				 $user, $idp, $authorization->getError());
 }
 
 if (defined($portalURL))
 {
     if (!$config->getParamBoolean("allowPortalDelegation"))
     {
-	errorExit($HTTP_UNAUTHORIZED,
-		  "Portal delegation disabled.");
+	$errorHandler->HTTPErrorExit($errorHandler->HTTP_UNAUTHORIZED,
+				     "Portal delegation disabled.");
     }
 
     if (!$authorization->authorizePortal($portalURL))
     {
-	errorExit($HTTP_UNAUTHORIZED,
-		  "Authorization failed: Portal (%s) not authorized: %s",
-		  $portalURL, $authorization->getError());
+	$errorHandler->HTTPErrorExit($errorHandler->HTTP_UNAUTHORIZED,
+				     "Authorization failed: Portal (%s) not authorized: %s",
+				     $portalURL, $authorization->getError());
     }
 }
 
@@ -257,9 +238,9 @@ if ($requestedLifetime)
     $logger->debug("Requesting lifetime of %d", $requestedLifetime);
     if (!$ca->setCredLifetime($requestedLifetime))
     {
-	errorExit($HTTP_UNAUTHORIZED,
-		  "Error with requested lifetime: %s",
-		  $ca->getError());
+	$errorHandler->HTTPErrorExit($errorHandler->HTTP_UNAUTHORIZED,
+				     "Error with requested lifetime: %s",
+				     $ca->getError());
     }
 }
 
@@ -267,8 +248,9 @@ my $certificate = $ca->signRequest($certificateRequest);
 
 if (!defined($certificate))
 {
-    errorExit($HTTP_INTERNAL_ERROR,
-	      "Error signing certificate request: " . $ca->getError());
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				 "Error signing certificate request: %s",
+				 $ca->getError());
 }
 
 # XXX Add serial number to logging
@@ -285,9 +267,9 @@ if (defined($certRegistry))
 				     $certificate,
 				     $ca->getCredLifetime()))
     {
-	errorExit($HTTP_INTERNAL_ERROR,
-		  "Error registering certificate: %s",
-		  $certRegistry->getError());
+	$errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
+				     "Error registering certificate: %s",
+				     $certRegistry->getError());
     }
 }
 
@@ -301,34 +283,32 @@ if (!defined($portalURL))
 }
 else
 {
-    # We are outputting a form to allow certificate to be posted
-    # to a portal
+    # Output form to allow certificate to be posted to a portal
     my $portalData = $cgi->getPortalData();
-    my $htmlHeader = $cgi->getHTMLHeader();
-    my $htmlFooter = $cgi->getHTMLFooter();
-    print $cgi->header();
-    print <<"EOF";
-<html>
-<head>
-  <title>GridShib CA Welcome</title>
-  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
-  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-</head>
-$htmlHeader
 
-<center>
-<form action="$portalURL" method=post>
-<input name="status" type="hidden" value="success">
-<input name="certificate" type="hidden" value="$certificate">
-<input name="portalData" type="hidden" value="$portalData">
-Your certificate is ready to be returned to the portal.
-<p>
-<input value="Click here finish delegation and return to the portal" type="submit">
-</form>
 
-$htmlFooter
-</html>
-EOF
+    my $template = $config->getHTMLTemplate("portal-output.html");
+
+    if (!defined($template))
+    {
+	$errorHandler->HTMLErrorExit(GridShibCA::HTMLTemplate::getError());
+    }
+
+    $template->addMappings({
+	Certificate => $certificate,
+	PortalData => $portalData,
+	PortalURL => $portalURL
+			   });
+
+    my $html = $template->getHTML();
+
+    if (!defined($html))
+    {
+	$errorHandler->HTMLErrorExit($template->getError());
+    }
+
+    print $html;
+
 }
 
 ######################################################################

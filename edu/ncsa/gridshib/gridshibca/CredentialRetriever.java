@@ -131,6 +131,7 @@ public class CredentialRetriever {
                 mySSLSocketFactory = getMySSLSocketFactory();
             }
 
+            /*
             UMask umask = new UMask();
 
             try
@@ -145,7 +146,8 @@ public class CredentialRetriever {
             {
                 throw new Exception("Error checking umask: " + e.getMessage());
             }
-            
+            */
+
 			// URL must be https (unless we are in debug mode)
 			String protocol = credURL.getProtocol();
 			if (!protocol.equals("https"))

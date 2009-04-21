@@ -75,6 +75,15 @@ nameMapperModule = GridShibCA::NameMapper
 # Perl module to use to generate SAML extension
 samlExtensionModule = GridShibCA::SAMLExtension
 
+# Perl module to produce text from templates
+templateModule = GridShibCA:Template
+
+# Perl module to produce HTML from templates
+htmlTemplateModule = GridShibCA::HTMLTemplate
+
+# Perl module to produce HTML error mesages
+htmlErrorModule = GridShibCA::HTMLError
+
 ######################################################################
 #
 # Configuration files
@@ -82,9 +91,6 @@ samlExtensionModule = GridShibCA::SAMLExtension
 
 # GridShib CA configuration directory
 GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
-
-# JNLP file template
-JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
 
 # Symetric key file for tokens
 TokenKeyFile = $(GridShibCAConfDir)/token-key
@@ -239,3 +245,14 @@ GlobusLocation = @GLOBUS_LOCATION@
 
 # OpenSSL-CA program to use
 OpenSSLCA = $(GridShibCAConfDir)/openssl-ca
+
+######################################################################
+#
+# HTML Template configuration
+#
+
+# Directory where templates are stored
+TemplateDirectory = $(GridShibCAConfDir)/templates
+
+# Contact address for this deployment
+ContactAddress = ContactAddressNotConfigured

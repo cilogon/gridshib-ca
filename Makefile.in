@@ -91,6 +91,7 @@ HTML_FILES=@HTML_FILES@
 PERL_MODULES = @PERL_MODULES@
 REQUIRED_PERL_MODULES = @REQUIRED_PERL_MODULES@
 PERL_DIST_MODULES = @PERL_DIST_MODULES@
+TEMPLATE_FILES = @TEMPLATE_FILES@
 TEST_SCRIPTS = @TEST_SCRIPTS@
 
 # Files to be distributed (will be added to through this file)
@@ -103,6 +104,7 @@ DIST_FILES=\
 	$(PERL_MODULES_SRCS) \
 	$(OPENSSL_CA_SRCS) \
 	$(CGI_DEMO_SRCS) \
+	$(TEMPLATE_FILES) \
 	$(TEST_SRCS)
 
 # All files to be build by default
@@ -219,6 +221,7 @@ realclean::
 
 # Installation directories
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
+TEMPLATE_DIR=@TEMPLATE_DIR@
 SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
 GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
 GRIDSHIB_CA_DOC_DIR=@GRIDSHIB_CA_DOC_DIR@
@@ -233,6 +236,7 @@ INSTALL_ALL=install-conf \
 	install-jar \
 	install-cgi \
 	install-token-key \
+	install-templates \
 	install-demos
 
 install: $(INSTALL_ALL)
@@ -290,6 +294,23 @@ install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES)
 install-jar:  $(JARFILE)
 	@echo "Installing $(JARFILE) to $(GRIDSHIB_CA_HTML_DIR)"
 	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JARFILE) $(GRIDSHIB_CA_HTML_DIR)/$(JARFILE)
+
+$(TEMPLATE_DIR): $(GRIDSHIB_CA_CONF_DIR)
+	@echo "Creating $(TEMPLATE_DIR)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(TEMPLATE_DIR)
+
+install-templates: $(TEMPLATE_DIR)
+	@echo "Installing templates to $(TEMPLATE_DIR)"
+	@for file in $(TEMPLATE_FILES) ; do \
+		f=`basename $${file}` ;\
+		echo "Installing $${file}" ;\
+		if test -f $(TEMPLATE_DIR)/$${f} ; then \
+			echo "  Avoiding overwriting existing file." ;\
+			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR)/$${f}.new ;\
+		else \
+			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR) ;\
+		fi \
+	done
 
 $(SHIB_PROTECTED_CGI_BIN_DIR):
 	@echo "Creating $(SHIB_PROTECTED_CGI_BIN_DIR)"

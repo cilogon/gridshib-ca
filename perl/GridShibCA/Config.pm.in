@@ -82,9 +82,11 @@ my %config = (
     authorizationModule => "GridShibCA::Authorization",
     nameMapperModule => "GridShibCA::NameMapper",
     samlExtensionModule => "GridShibCA::SAMLExtension",
+    htmlErrorModule => "GridShibCA::HTMLError",
+    templateModule => "GridShibCA::Template",
+    htmlTemplateModule => "GridShibCA::HTMLTemplate",
     # Configuration stuff
     GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
-    JNLPTemplate => "@GRIDSHIB_CA_CONF_DIR@/CredentialRetriever.jnlp",
     TokenKeyFile =>"\$(GridShibCAConfDir)/token-key",
     HTMLHeader =>"\$(GridShibCAConfDir)/header.html",
     HTMLFooter =>"\$(GridShibCAConfDir)/footer.html",
@@ -129,6 +131,9 @@ my %config = (
     OpenSSL =>"@OPENSSL@",
     GlobusLocation =>"@GLOBUS_LOCATION@",
     OpenSSLCA =>"\$(GridShibCAConfDir)/openssl-ca",
+    # HTMLTemplate variables
+    TemplateDirectory => "\$(GridShibCAConfDir)/templates/",
+    ContactAddress => "ContactAddressNotCofigured"
     );
 
 =head2 Methods
@@ -507,6 +512,57 @@ sub getSAMLExtension
 {
     my $self = shift;
     return $self->_newInstance($config{"samlExtensionModule"}, @_);
+}
+
+=item getHTMLError()
+
+Get an instance of the GridShibCA::Error module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::HTMLError>.
+
+The exact module loaded is controlled by the htmlErrorModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getHTMLError
+{
+    my $self = shift;
+    return $self->_newInstance($config{"htmlErrorModule"}, @_);
+}
+
+=item getTemplate()
+
+Get an instance of the GridShibCA::Template module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::Template>.
+
+The exact module loaded is controlled by the templateModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getTemplate
+{
+    my $self = shift;
+    return $self->_newInstance($config{"templateModule"}, @_);
+}
+
+=item getHTMLTemplate()
+
+Get an instance of the GridShibCA::HTMLTemplate module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::HTMLTemplate>.
+
+The exact module loaded is controlled by the htmlTemplateModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getHTMLTemplate
+{
+    my $self = shift;
+    return $self->_newInstance($config{"htmlTemplateModule"}, @_);
 }
 
 =back

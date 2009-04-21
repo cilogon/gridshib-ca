@@ -1,0 +1,282 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::Template
+
+Generate ouput from a template file and runtime variables.
+
+Based on Text::Template - see its documentation. Briefly template
+files have strings such as "{$variable}" which are filled in at
+runtime with values and then the result is output.
+
+=cut
+
+package GridShibCA::Template;
+
+use GridShibCA::Config;
+
+use File::Spec;
+use Text::Template;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new Template object.
+
+B<Arguments:> Template file name
+
+B<Returns:> Template instance, undef on error setting ERROR
+
+=cut
+
+# Error string set by constructor
+my $ERROR = undef;
+
+sub new
+{
+    my $class = shift;
+    my $filename = shift;
+    if (!defined($filename))
+    {
+	$ERROR = "Missing argument";
+	return undef;
+    }
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new();
+    my $templateDir = $self->{config}->getParam("TemplateDirectory");
+    $self->{templateFile} = File::Spec->catfile($templateDir, $filename);
+    # Read HTML template from file.
+    # We need to use UNTAINT here to clean file for later evaluation
+    # Note this means files must be trustworthy.
+    $self->{template} = Text::Template->new(TYPE => 'FILE',
+					    SOURCE => $self->{templateFile},
+					    UNTAINT => 1);
+    if (!$self->{template})
+    {
+	$ERROR = "Couldn't construct template: $Text::Template::ERROR";
+	return undef;
+    }
+    # Default initial hash values
+    $self->{hash} = {
+	Version => "@PACKAGE_VERSION_STRING@",
+	ContactAddress => $self->{config}->getParam("ContactAddress"),
+	ShibbolethProtectedCGIBinURL =>
+	    $self->{config}->getParam("ShibbolethProtectedCGIBinURL")
+    };
+    bless($self, $class);
+    return $self;
+}
+
+=item addMapping()
+
+Add a variable to value mapping.
+
+B<Arguments:>
+
+I<$variableName> - name of variable to map
+
+I<$variableValue> - value of mapped variable
+
+B<Returns:> Nothing
+
+=cut
+
+sub addMapping
+{
+    my $self = shift;
+    my $var = shift;
+    my $value = shift;
+
+    $self->{hash}->{$var} = $value;
+}
+
+=item addMappings()
+
+Add hash of variable/value pairs.
+
+B<Arguments:>
+
+I<$hash> - hash of variable/value mappings.
+
+B<Returns:> Nothing
+
+=cut
+
+sub addMappings
+{
+    my $self = shift;
+    my $hash = shift;
+    if (defined($hash))
+    {
+	while ( my ($key, $value) = each(%{$hash}) ) {
+	    $self->{hash}->{$key} = $value;
+	}
+    }
+}
+
+=item getText()
+
+Return Text with variable substitution.
+
+B<Arguments:> None
+
+B<Returns:> Text as string, undef on error (get getError())
+
+=cut
+
+sub getText
+{
+    my $self = shift;
+
+    my $template = $self->{template};
+
+    my $text = $template->fill_in(
+	HASH => $self->{hash},
+	BROKEN => \&_broken,
+	BROKEN_ARG => $self->{templateFile}
+	);
+
+    if (!defined($text))
+    {
+	$self->_error("Couldn't fill in template: $Text::Template::ERROR");
+	return undef;
+    }
+
+    return $text;
+}
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Error string
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    if (defined($self))
+    {
+	return $self->{error}
+    }
+    else
+    {
+	return $ERROR;
+    }
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
+}
+
+
+=item _broken()
+
+Handle broken code in a HTML template
+
+B<Arguments:> Hash with arg, text, error and lineno values.
+  arg should contain the filename from BROKEN_ARG. Others as set
+  by Text::Template.
+
+B<Returns:> Test to place into template.
+
+=cut
+
+sub _broken
+{
+    my %hash = @_;
+    return sprintf("<p>HTML Template error: File %s line %d: %s : %s</p>",
+		   $hash{arg},
+		   $hash{lineno},
+		   $hash{error},
+		   $hash{text});
+}
+
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

@@ -49,41 +49,14 @@
 
 use GridShibCA::Config;
 
-sub errorExit
-{
-    my $format = shift;
-    my $string = sprintf($format, @_);
-
-    print <<"EOF";
-Content-type: text/html
-
-<html>
-<head>
-<title>GridShib CA Error</title>
-</head>
-<body>
-$string
-</body>
-</html>
-EOF
-;
-
-    my $referer = $cgi->referer();
-    if (defined($referer))
-    {
-	$string .= sprintf(" (referer=%s)", $referer);
-    }
-
-    $logger->err($string);
-
-    exit(1);
-}
-
 ######################################################################
+#
+# Initialize config instance, logger and errorHandler
+#
 
 my $config = GridShibCA::Config->new();
 
-$logger = $config->getLogger();
+my $logger = $config->getLogger();
 
 if (!defined($logger))
 {
@@ -91,12 +64,25 @@ if (!defined($logger))
     die "Could not get Logger: " . $config->getError();
 }
 
+my $errorHandler = $config->getHTMLError();
+
+if (!defined($errorHandler))
+{
+    $logger->err("Failed to load HTMLError module: " . $config->getError());
+    die "Failed to load HTMLError module: " . $config->getError();
+}
+
+######################################################################
+#
+# Get user identiier and IdP id from Shibboleth
+#
+
 $cgi = $config->getCGI();
 
 if (!defined($cgi))
 {
-    errorExit("Could not access CGI interface: "
-	      . $config->getError());
+    $errorHandler->HTMLErrorExit("Could not access CGI interface: %s",
+				 $config->getError());
 }
 
 ######################################################################
@@ -116,11 +102,12 @@ if (!defined($user))
 {
     if (defined($idp))
     {
-	errorExit("Origin sie ($idp) is not releasing identity to GridShibCA.");
+	$errorHandler->HTMLErrorExit("Origin site (%s) is not releasing identity to GridShibCA.",
+	    $idp);
     }
     else
     {
-	errorExit("Cannot identify origin site or user. It appears this script is not Shibboleth protected.");
+	$errorHandler->HTMLErrorExit("Cannot identify origin site or user. It appears this script is not Shibboleth protected.");
     }
 }
 
@@ -132,17 +119,20 @@ if (defined($user))
     my $ca = $config->getCA($user, $idp);
     if (!defined($ca))
     {
-	errorExit("Could not instantiate CA: " . $config->getError());
+	$errorHandler->HTMLErrorExit("Could not instantiate CA: %s",
+				     $config->getError());
     }
     $DN = $ca->getOpenSSLDN();
     if (!defined($DN))
     {
-	errorExit("Could not get DN for user: " . $ca->getError());
+	$errorHandler->HTMLErrorExit("Could not get DN for user: %s",
+				     $ca->getError());
     }
     $rfc2253DN = $ca->getDN();
     if (!defined($rfc2253DN))
     {
-	errorExit("Could not get (rfc2253) DN for user: " . $ca->getError());
+	$errorHandler->HTMLErrorExit("Could not get (rfc2253) DN for user: %s",
+				     $ca->getError());
     }
 }
 
@@ -155,16 +145,16 @@ my $authorization = $config->getAuthorization();
 
 if (!$authorization->authorizeUser($user, $idp))
 {
-    errorExit("Authorization failed: User %s (Idp %s): %s",
-	      $user, $idp, $authorization->getError());
+    $errorHandler->HTMLErrorExit("Authorization failed: User %s (Idp %s): %s",
+				 $user, $idp, $authorization->getError());
 }
 
 if (defined($portalURL))
 {
     if (!$authorization->authorizePortal($portalURL))
     {
-	errorExit("Authorization failed: Portal (%s) not authorized: %s",
-		  $portalURL, $authorization->getError());
+	$errorHandler->HTMLErrorExit("Authorization failed: Portal (%s) not authorized: %s",
+				     $portalURL, $authorization->getError());
     }
 }
 
@@ -200,112 +190,73 @@ if (!defined($CSRFElement))
 
 ######################################################################
 
-my $htmlHeader = $cgi->getHTMLHeader();
-my $htmlFooter = $cgi->getHTMLFooter();
-
-print $cgi->header(-cookie=>$CSRFCookie);
-
-print <<"EOF";
-<html>
-<head>
-  <title>GridShib CA Welcome</title>
-  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
-  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
-</head>
-$htmlHeader
-EOF
-
 my $shibProtectedCGIBinURL =
     $config->getParam("ShibbolethProtectedCGIBinURL");
 my $gridShibCAURL = $config->getParam("GridShibCAURL");
 
+#
+# Sort out credential lifetime values
+#
+
 my $defaultLifetime = $config->getParam("DefaultCredLifetime") / 3600;
 my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
 
-print <<"EOF";
-<!--
- Break out of any iFrame to prevent clickjacking.
- See Bug 6649: https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6649
--->
-<script type="text/javascript">
-if (window.top !== window.self) { window.top.location.href = window.self.location.href; }
-</script>
-<p id="welcome" class="login">Welcome $user</p>
-<hr class="login-hr"/>
-<p id="dn-preamble" class="login">
-Your GridShib-CA X.509 identity from this CA will be:
-</p>
-<p id="globus-dn-preamble" class="login">
-Globus Grid-Mapfile Format:
-</p>
-<p id="globus-dn" class="login">
-$formattedDN
-</p>
-<p id="rfc2253-dn-preamble" class="login">
-Standard RFC 2253 Format:
-</p>
-<p id="rfc2253-dn" class="login">
-$formattedRFC2253DN
-</p>
-<hr class="login-hr"/>
-<p class="login">Get your Grid Credential</p>
-<form id="create-jnlp" method="POST" action=\"$shibProtectedCGIBinURL/create-jnlp\">
-<p class="login">
-Credential Lifetime:
-<input type="radio" name="lifetime" value="default" checked />
-    Default ($defaultLifetime hours)
-<input type="radio" name="lifetime" value="specified" />
-  Other:
-<input type="text" name="specifiedLifetime" value="$defaultLifetime" size="4"/>
-  Hours ($maximumLifetime max)
-<input type="hidden" name="lifetimeUnit" value="hours"/>
-<br/>
-EOF
-    ;
-
-#
-# Print our CSRF protection element
-#
-print $CSRFElement . "\n";
-
+######################################################################
 #
 # Do we have trusted CAs to pass to client?
 #
 
 my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+my $trustedCAsAvailable = 0;
 
-if (defined($trustedCADirectory) &&
-    (-x $trustedCADirectory) &&
-    (-d $trustedCADirectory))
+if (defined($trustedCADirectory))
 {
-    print <<"EOF";
-<input type=checkbox name="installTrustedCAs" value="true" checked />
-Update my trusted CAs
-<br/>
-EOF
-;
+    if ((-x $trustedCADirectory) &&
+	(-r $trustedCADirectory) &&
+	(-d $trustedCADirectory))
+    {
+	$trustedCAsAvailable = 1;
+    }
+    else
+    {
+	$logger->err("TrustedCADirectory ($trustedCADirectory) invalid (check permissions).");
+	$trustedCAsAvailable = 0;
+    }
+}
+    
+######################################################################
+#
+# Generate and display HTML
+#
+
+my $template = $config->getHTMLTemplate("login.html");
+
+if (!defined($template))
+{
+    $errorHandler->HTMLErrorExit($config->getError());
 }
 
-print <<"EOF";
-  <input type=\"submit\" value=\"Press here to generate and download Grid credential.\" \>
-</p>
-</form>
-<p>
-<hr class="login-hr">
-<p class="login">
-When the Credential Retriever application completes, you may click on
-the following button to return to the main GridShib CA page or simply
-close this browser window.
-</p>
-<form id="back" action="$gridShibCAURL">
-<p class="login">
-<input type="submit" value="Return to GridShib CA main page" />
-</p>
-</form>
-$htmlFooter
-</html>
-EOF
+$template->addMappings({
+    UserId => $user,
+    FormattedDN => $formattedDN,
+    FormattedRFC2253DN => $formattedRFC2253DN,
+    DefaultLifetime => $defaultLifetime,
+    MaximumLifetime => $maximumLifetime,
+    TrustedCAsAvailable => $trustedCAsAvailable,
+    CSRFElement => $CSRFElement
+		       });
+
+my $html = $template->getHTML();
+
+if (!defined($html))
+{
+    $errorHandler->HTMLErrorExit($template->getError());
+}
+
+print $cgi->header(-cookie=>$CSRFCookie);
+print $html;
+
+exit(0);
 
 ### Local Variables: ***
 ### mode:perl ***

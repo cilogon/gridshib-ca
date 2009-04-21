@@ -1,0 +1,250 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::HTMLError
+
+Output a error message. Either in using HTML error template or in plain text.
+
+=cut
+
+package GridShibCA::HTMLError;
+
+use GridShibCA::Config;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new HTMLError object.
+
+B<Arguments:> None
+
+B<Returns:> HTMLError instance, undef on error setting ERROR
+
+=cut
+
+# Error string set by constructor
+my $ERROR = undef;
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    if (!defined($self->{logger}))
+    {
+	$ERROR = $config->getError();
+	return undef;
+    }
+    bless($self, $class);
+    return $self;
+}
+
+=item HTMLErrorExit()
+
+Output an HTML error message and exit. Uses error.html template.
+
+B<Arguments:>
+
+I<$format> - Format string to present (as per sprintf)
+
+I<$args> - any arguments needed by the format string
+
+B<Returns:> Nothing
+
+=cut
+
+sub HTMLErrorExit
+{
+    my $self = shift;
+    my $format = shift;
+    my $string = sprintf($format, @_);
+
+    # For convienence
+    my $config = $self->{config};
+    my $logger = $self->{logger};
+
+    $logger->err($string);
+
+    my $template = $config->getHTMLTemplate("error.html");
+
+    if (!defined($template))
+    {
+	my $error = sprintf("HTML Template creation failure: %s",
+			    GridShibCA::HTMLTemplate::getError());
+	$logger->err($error);
+	# Nothing good we can do here.
+	die $error;
+    }
+
+    $template->addMappings({
+	Error => $string
+			   });
+
+    my $html = $template->getHTML();
+
+    if (!defined($html))
+    {
+	my $error = sprintf("HTML Template creation failure: %s",
+			    GridShibCA::HTMLTemplate::getError());
+	$logger->err($error);
+	# Nothing good we can do here.
+	die $error;
+    }
+
+    print $html;
+
+    exit(1);
+}
+
+
+=item HTTPErrorExit()
+
+Output an plain text error message (with a HTTP header and error code) and
+exit. This is how we return error messages to calling applications, as
+opposed to browsers.
+
+B<Arguments:>
+
+I<$status> - HTTP status code.
+
+I<$format> - Format string to present (as per sprintf)
+
+I<$args> - any arguments needed by the format string
+
+B<Returns:> Nothing
+
+=cut
+
+sub HTTPErrorExit
+{
+    my $self = shift;
+    my $status = shift;
+    my $format = shift;
+    my $string = sprintf($format, @_);
+
+    # For convienence
+    my $config = $self->{config};
+    my $logger = $self->{logger};
+
+    $logger->err("ERROR: %s", $string);
+
+    $cgi = $config->getCGI();
+
+    if (!defined($cgi))
+    {
+	$logger->err("Could not access CGI module: %s",
+		     $conig->getError());
+	exit(1);
+    }
+    
+    print $cgi->header(
+	-status=>sprintf("%d %s", $status, $string),
+	-type=>"text/plain");
+
+    print "ERROR: $string\n";
+
+    # If we know our referer, add that
+    my $referer = $cgi->referer();
+    if (defined($referer))
+    {
+	$string .= sprintf(" (referer=%s)", $referer);
+    }
+
+    exit(0);
+}
+
+=back
+
+=cut
+
+
+=head2 HTTP Error Code Constants
+
+=over
+
+=item HTTP_BAD_REQUEST
+
+=cut
+
+sub HTTP_BAD_REQUEST
+{
+    return 400;
+}
+
+=item HTTP_UNAUTHORIZED
+
+=cut
+
+sub HTTP_UNAUTHORIZED
+{
+    return 401;
+}
+
+=item HTTP_INTERNAL_ERROR
+
+=cut
+
+sub HTTP_INTERNAL_ERROR
+{
+    return 500;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################
