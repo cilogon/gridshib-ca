@@ -87,6 +87,7 @@ AC_PATH_PROG(RMDIR, rmdir)
 AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
+AC_PATH_PROG(ENV, env)
 
 dnl ------------------------------------------------------------
 dnl Figure out our FQDN
@@ -307,7 +308,7 @@ AC_SUBST(DOC_INSTALL_FILES)
 dnl ----------------------------------------------------------------------
 dnl check for required perl modules that should be on any reasonably
 dnl recent perl, but don't always seem to be
-AC_PROG_PERL_MODULES([CGI File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 MIME::Base64 Sys::Syslog],
+AC_PROG_PERL_MODULES([CGI Config::General File::Basename FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 MIME::Base64 Sys::Syslog],
 	[AC_MSG_RESULT([All standard perl modules found.])],
 	[AC_MSG_ERROR([One or more required standard perl modules not found. Old version of perl?])])
 

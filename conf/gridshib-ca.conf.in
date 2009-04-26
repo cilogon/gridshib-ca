@@ -8,6 +8,9 @@
 # Use @GRIDSHIB_CA_CONF_DIR@/check-config.pl
 # to validate file after changing.
 
+# Format version of this configuration file
+ConfigVersion = 2
+
 ######################################################################
 #
 # General Configuration
@@ -39,50 +42,50 @@ useBundledCAs = True
 # Set to value NONE to disable.
 redirectURL = NONE
 
-######################################################################
-#
-# Perl Modules
-# These control what PERL modules the GridShib-CA uses. These can
-# be changed to install local modules.
+<Modules>
+  # Perl Modules
+  # These control what PERL modules the GridShib-CA uses. These can
+  # be changed to install local modules.
 
-# Perl module to use for logging
-loggerModule = GridShibCA::Logger
+  # Perl module to use for logging
+  Logger = GridShibCA::Logger
 
-# Perl module to use for CA
-caModule = GridShibCA::OpenSSLCA
+  # Perl module to use for CA
+  CA = GridShibCA::OpenSSLCA
 
-# Perl module to use for CGI interface
-cgiModule = GridShibCA::CGIinterface
+  # Perl module to use for CGI interface
+  CGI = GridShibCA::CGIinterface
 
-# Perl module to use for ShibInterface
-shibInterfaceModule = GridShibCA::ShibInterface
+  # Perl module to use for ShibInterface
+  ShibInterface = GridShibCA::ShibInterface
 
-# Perl module to generate tokens
-tokenGeneratorModule = GridShibCA::TokenGenerator
+  # Perl module to generate tokens
+  TokenGenerator = GridShibCA::TokenGenerator
 
-# Perl module to invoke commands
-commandModule = GridShibCA::Command
+  # Perl module to invoke commands
+  Command = GridShibCA::Command
 
-# Perl module to registry issued certificates
-certRegistryModule = GridShibCA::CertRegistry
+  # Perl module to registry issued certificates
+  CertRegistry = GridShibCA::CertRegistry
 
-# Perl module to authorize actions
-authorizationModule = GridShibCA::Authorization
+  # Perl module to authorize actions
+  Authorization = GridShibCA::Authorization
 
-# Perl module to use to map Shibboleth id/attributes to X.509 DN
-nameMapperModule = GridShibCA::NameMapper
+  # Perl module to use to map Shibboleth id/attributes to X.509 DN
+  NameMapper = GridShibCA::NameMapper
 
-# Perl module to use to generate SAML extension
-samlExtensionModule = GridShibCA::SAMLExtension
+  # Perl module to use to generate SAML extension
+  SAMLExtension = GridShibCA::SAMLExtension
 
-# Perl module to produce text from templates
-templateModule = GridShibCA:Template
+  # Perl module to produce text from templates
+  Template = GridShibCA::Template
 
-# Perl module to produce HTML from templates
-htmlTemplateModule = GridShibCA::HTMLTemplate
+  # Perl module to produce HTML from templates
+  HTMLTemplate = GridShibCA::HTMLTemplate
 
-# Perl module to produce HTML error mesages
-htmlErrorModule = GridShibCA::HTMLError
+  # Perl module to produce HTML error mesages
+  HTMLError = GridShibCA::HTMLError
+</Modules>
 
 ######################################################################
 #
@@ -93,13 +96,13 @@ htmlErrorModule = GridShibCA::HTMLError
 GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 
 # Symetric key file for tokens
-TokenKeyFile = $(GridShibCAConfDir)/token-key
+TokenKeyFile = ${GridShibCAConfDir}/token-key
 
 # HTML header to include on web pages
-HTMLHeader = $(GridShibCAConfDir)/header.html
+HTMLHeader = ${GridShibCAConfDir}/header.html
 
 # HTML footer to include on web pages
-HTMLFooter = $(GridShibCAConfDir)/footer.html
+HTMLFooter = ${GridShibCAConfDir}/footer.html
 
 ######################################################################
 #
@@ -139,16 +142,16 @@ MaximumCredLifetime = 604800
 #
 
 # Certificate for OpenSSL-based CA
-OpenSSLCACert = $(GridShibCAConfDir)/gridshib-ca-cert.pem
+OpenSSLCACert = ${GridShibCAConfDir}/gridshib-ca-cert.pem
 
 # Certificate for OpenSSL-based CA
-OpenSSLCAKey = $(GridShibCAConfDir)/gridshib-ca-key.pem
+OpenSSLCAKey = ${GridShibCAConfDir}/gridshib-ca-key.pem
 
 # Serial number file for OpenSSL-based CA
-OpenSSLCASerial = $(GridShibCAConfDir)/serial
+OpenSSLCASerial = ${GridShibCAConfDir}/serial
 
 # Where OpenSSL can store its random state
-OpenSSLRandFile = $(GridShibCAConfDir)/.rand
+OpenSSLRandFile = ${GridShibCAConfDir}/.rand
 
 ######################################################################
 #
@@ -176,10 +179,10 @@ MyProxyHostname = localhost
 MyProxyPort = 7512
 
 # Certificate to use to authenticate to MyProxy server
-MyProxyClientCert = $(GridShibCAConfDir)/myproxy-client-cert.pem
+MyProxyClientCert = ${GridShibCAConfDir}/myproxy-client-cert.pem
 
 # Key to use to authenticate to MyProxy server
-MyProxyClientKey = $(GridShibCAConfDir)/myproxy-client-key.pem
+MyProxyClientKey = ${GridShibCAConfDir}/myproxy-client-key.pem
 
 ######################################################################
 #
@@ -198,7 +201,7 @@ SyslogFacility = @SYSLOG_FACILITY@
 #
 
 # Directory to store issued certificates in
-CertRegistryDir = $(GridShibCAConfDir)/certs/
+CertRegistryDir = ${GridShibCAConfDir}/certs/
 
 ######################################################################
 #
@@ -227,10 +230,10 @@ myVocsDBPassword = dummy
 #
 
 # Authorized Idps
-AuthorizedIdpsFile = $(GridShibCAConfDir)/authorizedIdps.conf
+AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf
 
 # Authorized Portals
-AuthorizedPortalsFile = $(GridShibCAConfDir)/authorizedPortals.conf
+AuthorizedPortalsFile = ${GridShibCAConfDir}/authorizedPortals.conf
 
 ######################################################################
 #
@@ -244,7 +247,7 @@ OpenSSL = @OPENSSL@
 GlobusLocation = @GLOBUS_LOCATION@
 
 # OpenSSL-CA program to use
-OpenSSLCA = $(GridShibCAConfDir)/openssl-ca
+OpenSSLCA = ${GridShibCAConfDir}/openssl-ca
 
 ######################################################################
 #
@@ -252,7 +255,7 @@ OpenSSLCA = $(GridShibCAConfDir)/openssl-ca
 #
 
 # Directory where templates are stored
-TemplateDirectory = $(GridShibCAConfDir)/templates
+TemplateDirectory = ${GridShibCAConfDir}/templates
 
 # Contact address for this deployment
 ContactAddress = ContactAddressNotConfigured

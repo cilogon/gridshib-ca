@@ -135,6 +135,7 @@ OPENSSL = @OPENSSL@
 RM = @RM@
 XSLTPROC = @XSLTPROC@
 CONFIG_STATUS = ./config.status
+ENV = @ENV@
 
 ######################################################################
 #
@@ -705,7 +706,10 @@ realclean::
 # Tests
 #
 
-test: subdirs check-perl test-openssl-ca test-myproxy-mapapp
+# Command to run perl scripts so they can get to modules in build directory
+PERL_TEST=${ENV} PERLLIB=./perl/
+
+test: subdirs check-perl test-openssl-ca test-myproxy-mapapp test-config
 	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
@@ -713,6 +717,9 @@ test-openssl-ca: openssl-ca/openssl-ca-test.sh
 
 test-post-install: test-cert-issue
 	@echo "Post install tests successful."
+
+test-config: ${PERL_MODULES} utils/check-config.pl conf/gridshib-ca.conf
+	$(PERL_TEST) utils/check-config.pl conf/gridshib-ca.conf
 
 test-cert-issue:
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@fakeidp.org  urn:mace:incommon:fakeidp

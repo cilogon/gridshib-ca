@@ -9,6 +9,7 @@
 <title>Current Version: @PACKAGE_VERSION@</title>
 <para>
 <itemizedlist>
+<listitem><para>Now using Config::General to parse configuration (<ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6527">Bug 6527</ulink>. No longer have coded-in default. Configuration file format has changed.</para></listitem>
 <listitem><para>Added ShibInterface perl module, taking methods from CGIInterface module.</para></listitem>
 <listitem><para>Added SAMLExtension perl module, basically wrapping GridShib-SAMLTools</para></listitem>
 <listitem><para>If we don't find a SSOResponse when creating a SAML Extension, proceed without it but log a warning.</para></listitem>

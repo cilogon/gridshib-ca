@@ -91,14 +91,10 @@ url="http://gridshib.globus.org/downloads/@DIST_TARBALL_NAME@">http://gridshib.g
 	</listitem>
 	<listitem>
 	  <para>
-	    Copy gridshib-ca.conf from your old configuration
-	    directory to the new configuration directory (by default
-	    this is
-	    /usr/local/gridshib-ca-@PACKAGE_VERSION_STRING@). You
-	    should look at the new file before you overwrite it and
-	    see if any configuration options have been added and what
-	    their defaults are. If you want to change their defaults,
-	    add them to your configuration file with their new values.
+	    Copy over any changes you made from your exisint
+	    gridshib-ca.conf to the new one (note that as of the 0.6.0
+	    release the formate has changed).  By default this is file
+	    is in /usr/local/gridshib-ca-@PACKAGE_VERSION_STRING@.
 	  </para>
 	</listitem>
 	<listitem>
@@ -306,13 +302,19 @@ GridShibCAConfDir = /usr/local/gridshib-ca-0.2.1-test
 # JNLP file template
 JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
 
-# Symetric key file for tokens
-TokenKeyFile = $(GridShibCAConfDir)/token-key
+&lt;Modules&gt;
+  # Logger Module
+  Logger = GridShibCA::Logger
+&lt;/Modules&gt;
 </screen></para>
 <para>A pound character (#) indicates a comment. Everything from the # to
 the end of the line is ignored.</para>
 <para>A string such a <emphasis>$(var)</emphasis> is replaced with the variable as defined
 elsewhere in the file. Recursion is allowed to a depth of 24.</para>
+<para>Sections such as the <emphasis>&lt;Modules&gt;</emphasis>
+section shown, group together related options and are significant - an
+option expected to be within a section must be found within the
+section.</para>
 </sect2>
 <sect2 id="authorizedIdps.conf">
 <title>authorizedIdps.conf</title>

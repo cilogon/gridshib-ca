@@ -53,88 +53,13 @@ on that configuration.
 
 package GridShibCA::Config;
 
-# Have we read out configuration yet?
-my $initialized = 0;
+use Config::General;
 
-# Are we in debug mode?
-my $debug = 0;
+# Configuration file to read
+my $configFilename = "@GRIDSHIB_CA_CONFIG_FILE@";
 
-# Configuration file to read?
-my $configFile = "@GRIDSHIB_CA_CONFIG_FILE@";
-
-# Default configuration
-my %config = (
-    # General configuration
-    allowPortalDelegation => "false",
-    TrustedCADirectory => "/etc/grid-security/certificates",
-    debug => "false",
-    clientDebug => "false",
-    useBundledCAs => "true",
-    redirectURL => "NONE",
-    # Perl modules
-    loggerModule => "GridShibCA::Logger",
-    caModule => "GridShibCA::OpenSSLCA",
-    cgiModule => "GridShibCA::CGIinterface",
-    shibInterfaceModule => "GridShibCA::ShibInterface",
-    tokenGeneratorModule => "GridShibCA::TokenGenerator",
-    commandModule => "GridShibCA::Command",
-    certRegistryModule => "GridShibCA::CertRegistry",
-    authorizationModule => "GridShibCA::Authorization",
-    nameMapperModule => "GridShibCA::NameMapper",
-    samlExtensionModule => "GridShibCA::SAMLExtension",
-    htmlErrorModule => "GridShibCA::HTMLError",
-    templateModule => "GridShibCA::Template",
-    htmlTemplateModule => "GridShibCA::HTMLTemplate",
-    # Configuration stuff
-    GridShibCAConfDir => "@GRIDSHIB_CA_CONF_DIR@",
-    TokenKeyFile =>"\$(GridShibCAConfDir)/token-key",
-    HTMLHeader =>"\$(GridShibCAConfDir)/header.html",
-    HTMLFooter =>"\$(GridShibCAConfDir)/footer.html",
-    # URLs
-    WWWHostname =>"@WWW_HOSTNAME@",
-    GridShibCAURL =>"@GRIDSHIB_CA_URL@",
-    ShibbolethProtectedCGIBinURL =>"@SHIB_PROTECTED_CGI_BIN_URL@",
-    # CA Parameters
-    RelativeDN =>"@RELATIVE_DN@",
-    DefaultCredLifetime => 43200,  # in seconds, 12 hours
-    MaximumCredLifetime => 7 * 24 * 60 * 60, # in seconds, 7 days
-    # CA Parameters specific to the OpenSSL-based CA
-    OpenSSLCACert =>"\$(GridShibCAConfDir)/gridshib-ca-cert.pem",
-    OpenSSLCAKey =>"\$(GridShibCAConfDir)/gridshib-ca-key.pem",
-    OpenSSLCASerial =>"\$(GridShibCAConfDir)/serial",
-    OpenSSLRandFile =>"\$(GridShibCAConfDir)/.rand",
-    # Parameters related to inclusion of SAML in certificate
-    IncludeSAMLInCert => "false",
-    JavaHome => "/usr/local/java",
-    GridShibSAMLToolsPath => "/usr/local/gridshib-saml-tool-0_1_3/",
-    # MyProxy client parameters
-    MyProxyHostname =>"localhost",
-    MyProxyPort =>"7512",
-    MyProxyClientCert =>"\$(GridShibCAConfDir)/myproxy-client-cert.pem",
-    MyProxyClientKey =>"\$(GridShibCAConfDir)/myproxy-client-key.pem",
-    # Logging parameters
-    SyslogId =>"@SYSLOG_ID@",
-    SyslogFacility =>"@SYSLOG_FACILITY@",
-    # Registry parameters
-    CertRegistryDir => "\$(GridShibCAConfDir)/certs/",
-    # myVocsDBCertRegistry parameters
-    myVocsDBName => "sympa",
-    myVocsDBTable => "GridShib_Name_Mapping",
-    myVocsDBHostname => "localhost",
-    myVocsDBPort => "9999",
-    myVocsDBUsername => "dummy",
-    myVocsDBPassword => "dummy",
-    # Authorization parameters
-    AuthorizedIdpsFile => "\$(GridShibCAConfDir)/authorizedIdps.conf",
-    AuthorizedPortalsFile => "\$(GridShibCAConfDir)/authorizedPortals.conf",
-    # Binares
-    OpenSSL =>"@OPENSSL@",
-    GlobusLocation =>"@GLOBUS_LOCATION@",
-    OpenSSLCA =>"\$(GridShibCAConfDir)/openssl-ca",
-    # HTMLTemplate variables
-    TemplateDirectory => "\$(GridShibCAConfDir)/templates/",
-    ContactAddress => "ContactAddressNotCofigured"
-    );
+# Actual Config::General object, will be set first time Config object is created
+my $config = undef;
 
 =head2 Methods
 
@@ -144,7 +69,8 @@ my %config = (
 
 Create a new Config object.
 
-B<Arguments:> None
+B<Arguments:>
+    Debug - Turn on debugging if True
 
 B<Returns:> Config instance
 
@@ -154,26 +80,31 @@ sub new
 {
     my $class = shift;
     my %args = @_;
+
     my $self = {};
+    bless($self, $class);
+
     if (defined($args{debug}) && $args{debug})
     {
-	$debug = 1;
+	$self->{debug} = 1;
+	$self->_debug("Debugging enabled");
     }
 
     # Maximum number of replacements on configuration variables
     $self->{replacementLimit} = 24;
     # Error string
-    $self->{error} = "";
-    bless($self, $class);
-    if (!$initialized)
+    $self->{error} = undef;
+
+    if (!defined($config))
     {
-	$self->_readConfig($configFile);
-	$initialized = 1;
+	$self->_initConfig();
     }
+    $self->{config} = $config;
+
     return $self;
 }
 
-=item getFilename()
+=item getConfigFilename()
 
 Return the filename of the configuration file.
 
@@ -183,15 +114,32 @@ B<Returns:> Filename as string.
 
 =cut
 
-sub getFilename
+sub getConfigFilename
 {
-    return $configFile;
+    return $configFilename;
+}
+
+
+=item setConfigFilename()
+
+Set filename of the configuration file.
+
+B<Arguments:> Filename as string
+
+B<Returns:> Nothing.
+
+=cut
+
+sub setConfigFilename
+{
+    my $class = shift;
+    my $filename = shift;
+    $configFilename = $filename;
 }
 
 =item getParam()
 
-Return a configuration parameter. Handles substituion of $(variable) in that
-parameters (to a recursion depth of 10).
+Return a configuration parameter from the default section.
 
 B<Arguments:>
  Parameter name as string
@@ -205,53 +153,19 @@ sub getParam
 {
     my $self = shift;
     my $param = shift;
-    my $value = $config{$param};
 
-    if (!defined($value))
-    {
-	$self->_error("Unknown parameter \"%s\"", $param);
-	return undef;
-    }
-
-    # Maximum number of replacements to revent run-away
-    my $numReplacements = $self->{replacementLimit};
-
-    # Expand any $(refs) in $value. Allowing for recursion
-    while ($value =~ /\$\((\w+)\)/)
-    {
-	my $name = $1;
-	my $replaceWith = $config{$name};
-	if (!defined($replaceWith))
-	{
-	    $self->_error("Config parameter \"%s\": Undefined variable \"%s\"",
-			  $param, $name);
-	    return undef;
-	}
-	$value =~ s/\$\($name\)/$replaceWith/;
-
-	# Prevent run-away replacement with limit on number of replacements
-	$numReplacements -= 1;
-	if ($numReplacements == 0)
-	{
-	    $self->_error("Replacement limit hit for expanding configuration parameter %s",
-			  $value);
-	    last;
-	}
-    }
-
-    return $value;
+    return $self->getSectionParam(undef, $param);
 }
-
 
 =item getParamBoolean()
 
-Return a configuration parameter cast as a boolean (1 or 0). Uses getParam().
+Return a boolean configuration parameter from the default section.
 
 B<Arguments:>
  Parameter name as string
 
 B<Returns:>
-1 or 0, undef if not defined or if non-boolean value
+Value as boolean, undef if not defined or not boolean.
 
 =cut
 
@@ -259,37 +173,60 @@ sub getParamBoolean
 {
     my $self = shift;
     my $param = shift;
-    my $value = $self->getParam($param);
-    my $bool = undef;
 
-    if (!defined($value))
+    # Config::General handles this for us, so we just use normal method
+    return $self->getParam($param);
+}
+
+=item getSectionParam()
+
+Return a configuration parameter from the given section.
+
+B<Arguments:>
+
+C<$section> Section name as string.
+
+C<$param> Parameter name as string.
+
+B<Returns:>
+Value as string, undef if not defined
+
+=cut
+
+sub getSectionParam
+{
+    my $self = shift;
+    my $section = shift;
+    my $param = shift;
+
+    my $config = $self->{config};
+
+    if (defined($section))
     {
-	# Error message should already be set
+	if (!$config->exists($section) ||
+	    !$config->is_hash($section))
+	{
+	    $self->_error("Request for parameter \"%s\" in non-existant section \"%s\"",
+			  $param, $section);
+	    return undef;
+	}
+
+	# Section now becomes the object we get value from.
+	$config = $config->obj($section);
+    }
+    if (!$config->exists($param))
+    {
+	my $string = sprintf("Unknown parameter \"%s\"", $param);
+	if (defined($section))
+	{
+	    $string .= sprintf(" in section \"%s\"", $section);
+	}
+	$self->_error($string);
 	return undef;
-    }
+    }	
 
-    $value = lc($value);
-
-    if (($value eq "true") ||
-	($value eq "yes") ||
-	($value eq "1"))
-    {
-	$bool = 1;
-    }
-    elsif (($value eq "false") ||
-	   ($value eq "no") ||
-	   ($value eq "0"))
-    {
-	$bool = 0;
-    }
-    else
-    {
-	$self->_error("Bad boolean value \"%s\" for \"%s\"",
-		      $value, $param);
-	$bool = undef;
-    }
-
-    return $bool;
+    my $value = $config->value($param);
+    return $value;
 }
 
 =item dump()
@@ -305,7 +242,9 @@ B<Returns:> Nothing
 sub dump
 {
     my $self = shift;
-    for $key (keys(%config))
+    my $config = $self->{config};
+
+    for $key ($config->keys())
     {
 	print $key . "=\"" . $self->getParam($key) . "\"\n";
     }
@@ -354,7 +293,7 @@ in F<gridshib-ca.conf>.
 sub getLogger
 {
     my $self = shift;
-    return $self->_newInstance($config{"loggerModule"}, @_);
+    return $self->_newModule("Logger", @_);
 }
 
 
@@ -371,7 +310,7 @@ in F<gridshib-ca.conf>.
 sub getCA
 {
     my $self = shift;
-    return $self->_newInstance($config{"caModule"}, @_);
+    return $self->_newModule("CA", @_);
 }
 
 
@@ -389,7 +328,7 @@ in F<gridshib-ca.conf>.
 sub getCGI
 {
     my $self = shift;
-    return $self->_newInstance($config{"cgiModule"}, @_);
+    return $self->_newModule("CGI", @_);
 }
 
 
@@ -407,7 +346,7 @@ in F<gridshib-ca.conf>.
 sub getTokenGenerator
 {
     my $self = shift;
-    return $self->_newInstance($config{"tokenGeneratorModule"}, @_);
+    return $self->_newModule("TokenGenerator", @_);
 }
 
 =item getShibInterface()
@@ -424,7 +363,7 @@ varibale in F<gridshib-ca.conf>.
 sub getShibInterface
 {
     my $self = shift;
-    return $self->_newInstance($config{"shibInterfaceModule"}, @_);
+    return $self->_newModule("ShibInterface", @_);
 }
 
 =item getCommand()
@@ -440,7 +379,7 @@ in F<gridshib-ca.conf>.
 sub getCommand
 {
     my $self = shift;
-    return $self->_newInstance($config{"commandModule"}, @_);
+    return $self->_newModule("Command", @_);
 }
 
 
@@ -458,7 +397,7 @@ in F<gridshib-ca.conf>.
 sub getCertRegistry
 {
     my $self = shift;
-    return $self->_newInstance($config{"certRegistryModule"}, @_);
+    return $self->_newModule("CertRegistry", @_);
 }
 
 
@@ -476,7 +415,7 @@ in F<gridshib-ca.conf>.
 sub getAuthorization
 {
     my $self = shift;
-    return $self->_newInstance($config{"authorizationModule"}, @_);
+    return $self->_newModule("Authorization", @_);
 }
 
 
@@ -494,7 +433,7 @@ in F<gridshib-ca.conf>.
 sub getNameMapper
 {
     my $self = shift;
-    return $self->_newInstance($config{"nameMapperModule"}, @_);
+    return $self->_newModule("NameMapper", @_);
 }
 
 =item getSAMLExtension()
@@ -511,7 +450,7 @@ in F<gridshib-ca.conf>.
 sub getSAMLExtension
 {
     my $self = shift;
-    return $self->_newInstance($config{"samlExtensionModule"}, @_);
+    return $self->_newModule("SAMLExtension", @_);
 }
 
 =item getHTMLError()
@@ -528,7 +467,7 @@ in F<gridshib-ca.conf>.
 sub getHTMLError
 {
     my $self = shift;
-    return $self->_newInstance($config{"htmlErrorModule"}, @_);
+    return $self->_newModule("HTMLError", @_);
 }
 
 =item getTemplate()
@@ -545,7 +484,7 @@ in F<gridshib-ca.conf>.
 sub getTemplate
 {
     my $self = shift;
-    return $self->_newInstance($config{"templateModule"}, @_);
+    return $self->_newModule("Template", @_);
 }
 
 =item getHTMLTemplate()
@@ -562,7 +501,7 @@ in F<gridshib-ca.conf>.
 sub getHTMLTemplate
 {
     my $self = shift;
-    return $self->_newInstance($config{"htmlTemplateModule"}, @_);
+    return $self->_newModule("HTMLTemplate", @_);
 }
 
 =back
@@ -576,6 +515,97 @@ sub getHTMLTemplate
 These internal methods not intended for external use.
 
 =over 4
+
+
+=item  _initConfig()
+
+Initialize our configuration the first time we are called.
+
+B<Arguments:> None
+
+B<Returns:> Instance, dies on error
+
+=cut
+
+sub _initConfig
+{
+    my $self = shift;
+    $self->_debug("Initializing configuration from %s", $configFilename);
+    my %options = (
+	-ConfigFile => $configFilename,
+	# Allow for variable substitution in values
+	-InterPolateVars => 1,
+	# Allow for OO type access to values
+	-ExtendedAccess => 1,
+	# Automatically parse booleans
+	-AutoTrue => 1,
+	);
+    if ($self->{debug})
+    {
+	# Complain about duplicates values
+	$options{"-AllowMultiOptions"} = 0;
+    }
+    else
+    {
+	# Just use last option given
+	$options{"-MergeDuplicateOptions"} = 1;
+    }
+    $config = new Config::General(%options);
+    if (!defined($config))
+    {
+	$self->_error("Failed to parse configuration file %s",
+		      $configFilename);
+	exit(1);
+    }
+    # Make sure we recognize the configuration version number
+    if (!$config->exists("ConfigVersion"))
+    {
+	$self->_error("Missing 'ConfigVersion' parameter in configuration file (%s): Old style configuration?",
+		      $configFilename);
+	exit(1);
+    }
+    else
+    {
+	my $configVersion = $config->value("ConfigVersion");
+	if ($configVersion != 2)
+	{
+	    $self->_error("Unrecognized ConfigVersion (%s) in configuration file (%s).",
+			  $config->{ConfigVersion}, $configFilename);
+	    exit(1);
+	}
+    }
+}
+
+
+=item  _newModule()
+
+Given a configuration variable name, return an instance of the
+module referenced by that variable name.
+
+B<Arguments:>
+
+C<$class> Name of configuration variable
+
+C<@_> Arguments to pass to new() method
+
+B<Returns:> Instance, dies on error
+
+=cut
+
+sub _newModule
+{
+    my $self = shift;
+    my $configVariable = shift;
+
+    my $className = $self->getSectionParam("Modules", $configVariable);
+    if (!defined($className))
+    {
+	$self->_error("Undefined module \"%s\"", $configVariable);
+	return undef;
+    }
+    return $self->_newInstance($className, @_);
+}
+
 
 =item  _newInstance()
 
@@ -617,75 +647,6 @@ sub _newInstance
     return $instance;
 }
 
-=item _readConfig()
-
-Read our configuration file.
-
-B<Arguments:> Filename
-
-B<Returns:> Nothing
-
-=cut
-
-sub _readConfig
-{
-    use FileHandle;
-
-    my $self= shift;
-    my $filename = shift;
-    $self->_debug("Parsing $filename");
-
-    my $fh = new FileHandle;
-    if (!$fh->open("<" . $filename))
-    {
-	$self->_error("Could not open configuration file ($filename): $!");
-	return;
-    }
-    while (<$fh>)
-    {
-	# Strip comments
-	s/#.*$//;
-	# Ignore blank lines
-	next if (/^\s*$/);
-	# Parameters should be of the form "var = value"
-	if (/^\s*(\w+)\s*=(.*)$/)
-	{
-	    my $var = $self->_trimWhitespace($1);
-	    my $value = $self->_trimWhitespace($2);
-	    if (!defined($config{$var}))
-	    {
-		$self->_debug("Unrecognized variable $var on line $.");
-	    }
-	    $config{$var} = $value;
-	}
-	else
-	{
-	    $self->_debug("Could not parse line $.: $_");
-	    next;
-	}
-    }
-    $fh->close();
-}
-
-=item _trimWhitespace()
-
-Trim leading and trailing whitespace from a string.
-
-B<Arguments:> String to be trimmed
-
-B<Returns:> Trimmed string.
-
-=cut
-
-sub _trimWhitespace
-{
-    my $self = shift;
-    my $string = shift;
-    $string =~ s/^\s+//;
-    $string =~ s/\s+$//;
-    return $string;
-}
-
 =item _debug()
 
 Handle a debug message. Does nothing if we're not in debugging mode.
@@ -699,13 +660,13 @@ B<Returns:> Nothing
 sub _debug
 {
     my $self = shift;
-    my $format = shift;
-    my @args = @_;
 
-    if ($debug)
+    if ($self->{debug})
     {
+	my $format = shift;
+	my @args = @_;
 	chomp($format);
-	print sprintf($format, @args) . "\n";
+	print sprintf($format, @_) . "\n";
     }
 }
 
@@ -724,7 +685,11 @@ sub _error
 {
     my $self = shift;
     my $format = shift;
-    
+
+    if (!defined($self->{error}))
+    {
+	$self->{error} = "";
+    }
     chomp($format);
     my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
 			 @_);
@@ -733,7 +698,7 @@ sub _error
     # Don't use our Logger module as that could create a deadlock as the
     # Logger class tries to load its configuration using this module
     # Instead we'll print to STDERR, which should end up in the web
-    # server error logs, and then die.
+    # server error logs.
     printf(STDERR $string);
 }
 
