@@ -222,6 +222,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Authorization.pm \
 	perl/GridShibCA/CA.pm \
 	perl/GridShibCA/CertRegistry.pm \
+	perl/GridShibCA/Constants.pm \
 	perl/GridShibCA/CGIinterface.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \

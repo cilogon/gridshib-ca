@@ -53,10 +53,12 @@ on that configuration.
 
 package GridShibCA::Config;
 
+use GridShibCA::Constants;
+
 use Config::General;
 
 # Configuration file to read
-my $configFilename = "@GRIDSHIB_CA_CONFIG_FILE@";
+my $configFilename = $GridShibCA::Constants::CONFIG_FILE;
 
 # Actual Config::General object, will be set first time Config object is created
 my $config = undef;
