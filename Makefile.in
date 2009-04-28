@@ -740,10 +740,6 @@ test-myproxy-mapapp: utils/myproxy-mapapp.pl
 		echo "Success." ;\
 	fi
 
-test-dist: dist test/test-dist.sh
-	@echo Testing distribution $(DIST_FILE)
-	@/bin/sh test/test-dist.sh $(DIST_FILE)
-
 ######################################################################
 ######################################################################
 #
