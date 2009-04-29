@@ -24,8 +24,13 @@ specific the module loaded is given below.
 </thead>
 <tbody>
 <row>
+<entry><ulink url="perl/GridShibCA/Authorization.html">Authorization</ulink></entry>
+<entry>Authorization</entry>
+<entry>Authorizes user.</entry>
+</row>
+<row>
 <entry><ulink url="perl/GridShibCA/CA.html">CA</ulink></entry>
-<entry>caModule</entry>
+<entry>CA</entry>
 <entry>Template. Default implementation is
 	currently <ulink url="perl/GridShibCA/OpenSSLCA.html">OpenSSLCA.pm</ulink>.
 	A <ulink url="myproxy-ca.html">MyProxy-based CA</ulink> is also available
@@ -40,8 +45,13 @@ specific the module loaded is given below.
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/CGIinterface.html">CGIinterface</ulink></entry>
-<entry>cgiModule</entry>
+<entry>CGI</entry>
 <entry>Wrapper around PERL CGI module</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/CGISession.html">CGISession</ulink></entry>
+<entry>CGISession</entry>
+<entry>Wrapper around PERL CGI::Session module</entry>
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/Command.html">Command</ulink></entry>
@@ -51,19 +61,32 @@ specific the module loaded is given below.
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/Logger.html">Logger</ulink></entry>
-<entry>loggerModule</entry>
+<entry>Logger</entry>
 <entry>Interface to logging mechanism. Default implementation uses
 	syslog.</entry>
 </row>
 <row>
 <entry><ulink url="perl/GridShibCA/NameMapper.html">NameMapper</ulink></entry>
-<entry>nameMapperModule</entry>
+<entry>NameMapper</entry>
 <entry>Maps from Shibboleth authentication/attributes to X.509 DN.</entry>
 </row>
 <row>
+<entry><ulink url="perl/GridShibCA/SAMLExtension.html">SAMLExtension</ulink></entry>
+<entry>SAMLExtension</entry>
+<entry>Module to generate SAML extension for certificate.</entry>
+</row>
+<row>
 <entry><ulink url="perl/GridShibCA/TokenGenerator.html">TokenGenerator</ulink></entry>
-<entry>tokenGeneratorModule</entry>
+<entry>TokenGenerator</entry>
 <entry>Used to generate Tokens used to authenticate user requests</entry>
+</row>
+<row>
+<entry><ulink url="perl/GridShibCA/WebSignOn.html">WebSignOn</ulink></entry>
+<entry>WebSignOn</entry>
+<entry>Template. Default is <ulink
+url="perl/GridShibCA/ShibSignOn.html">ShibSignOn</ulink>. Other option
+is <ulink
+url="perl/GridShibCA/FakeSignOn.html">FakeSignOn</ulink>.</entry>
 </row>
 </tbody>
 </tgroup>

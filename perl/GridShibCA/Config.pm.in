@@ -72,7 +72,8 @@ my $config = undef;
 Create a new Config object.
 
 B<Arguments:>
-    Debug - Turn on debugging if True
+
+C<$debug> Turn on debugging if True
 
 B<Returns:> Config instance
 
@@ -333,6 +334,23 @@ sub getCGI
     return $self->_newModule("CGI", @_);
 }
 
+=item getCGISession()
+
+Get an instance of the GridShibCA::CGISession module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::CGISession>.
+
+The exact module loaded is controlled by the cgiModule variable
+in F<gridshib-ca.conf>.
+
+=cut
+
+sub getCGISession
+{
+    my $self = shift;
+    return $self->_newModule("CGISession", @_);
+}
+
 
 =item getTokenGenerator()
 
@@ -362,10 +380,10 @@ varibale in F<gridshib-ca.conf>.
 
 =cut
 
-sub getShibInterface
+sub getWebSignOn
 {
     my $self = shift;
-    return $self->_newModule("ShibInterface", @_);
+    return $self->_newModule("WebSignOn", @_);
 }
 
 =item getCommand()

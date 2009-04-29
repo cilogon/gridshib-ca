@@ -45,43 +45,21 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::ShibInterface
+=head1 GridShibCA::ShibSignOn
 
 GridShib-CA interface to Shibboleth functionality.
 
 =cut
 
-package GridShibCA::ShibInterface;
-use GridShibCA::Config;
+package GridShibCA::ShibSignOn;
 
-=head2 Methods
+# Inherit WebSignOn
+use GridShibCA::WebSignOn;
+@ISA = ("GridShibCA::WebSignOn");
 
-=over 4
-
-=item new()
-
-Create a new ShibInterface object.
-
-B<Arguments:> None
-
-B<Returns:> ShibInterface instance
-
-=cut
-
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    $self->{config} = GridShibCA::Config->new();
-    $self->{logger} = $self->{config}->getLogger();
-    bless($self, $class);
-    return $self;
-}
-
-=item getUserId()
+=item _userId()
 
 Return the user id as reported by Shibboleth through REMOTE_USER.
-Clean the user id so it can pass taint checking.
 
 B<Arguments:> None
 
@@ -89,7 +67,7 @@ B<Returns:> User id as string, or under if unknown
 
 =cut
 
-sub getUserId
+sub _userId
 {
     my $self = shift;
 
@@ -106,21 +84,10 @@ sub getUserId
 	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
 	return undef;
     }
-    # Clean user name (from perlsec manual)
-    my $userId = undef;
-    if ($remote_user =~ /^([-\@\w.]+)$/)
-    {
-	$userId = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in REMOTE_USER ($remote_user)");
-	return undef;
-    }
-    return $userId;
+    return $remote_user;
 }
 
-=item getIdP()
+=item _idPId()
 
 Returns the Shibboleth identity provider
 
@@ -130,7 +97,7 @@ B<Returns:> IdP as string, or undef if unknown
 
 =cut
 
-sub getIdP
+sub _idPId()
 {
     my $self = shift;
 
@@ -138,16 +105,6 @@ sub getIdP
     if (!defined($idp))
     {
 	$self->{logger}->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
-	return undef;
-    }
-    # Clean Idp Id (from perlsec manual)
-    if ($idp =~ /^([-\/:\@\w.]+)$/)
-    {
-	$idp = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in IdP Id ($idp)");
 	return undef;
     }
     return $idp;

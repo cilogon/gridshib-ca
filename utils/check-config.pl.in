@@ -97,8 +97,9 @@ print "Done reading configuration file. Dumping....\n";
 $config->dump();
 
 print "Attempting to load all modules...\n";
+
 my @modules = ( 
-    "Logger", "CA", "CGI", "TokenGenerator", "ShibInterface",
+    "Logger", "CA", "CGI", "CGISession", "TokenGenerator", "WebSignOn",
     "Command", "CertRegistry", "Authorization", "NameMapper",
     "SAMLExtension", "HTMLError", "Template", "HTMLTemplate"
     );

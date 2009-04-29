@@ -1,7 +1,11 @@
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
+# GridShib CA interface for Shibboleth.
+#
+######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
 # All rights reserved.
 
@@ -41,16 +45,14 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::Authorization
+=head1 GridShibCA::WebSignOn
 
-Authorization system interface.
+Template for GridShib-CA interface to the web sign-on system
+(e.g. Shibboleth).
 
 =cut
 
-package GridShibCA::Authorization;
-
-use FileHandle;
-
+package GridShibCA::WebSignOn;
 use GridShibCA::Config;
 
 =head2 Methods
@@ -59,11 +61,11 @@ use GridShibCA::Config;
 
 =item new()
 
-Create a new Authorization object.
+Create a new WebSignOn object.
 
 B<Arguments:> None
 
-B<Returns:> Authorization instance
+B<Returns:> WebSignOn instance
 
 =cut
 
@@ -72,83 +74,47 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+
+    $self->{userId} = $self->_cleanUserId();
+    $self->{IdPId} = $self->_cleanIdPId();
+
     bless($self, $class);
     return $self;
 }
 
-=item authorize()
+=item getUserId()
 
-Authorize whether a user can be issued a certificate.
-This implementation authorizes all users.
-
-B<Arguments:>
-
-C<$webSignOn> - WebSignOn instance.
-
-B<Returns:> 1 if user authorized, 0 otherwise
-
-=cut
-
-sub authorize
-{
-    my $self = shift;
-    my $webSignOn = shift;
-
-    if (!defined($webSignOn))
-    {
-	$self->_error("Authorization module received undefined WebSignOn object.");
-	return 0;
-    }
-    my $userId = $webSignOn->getUserId();
-    if (!defined($userId) or ($userId eq ""))
-    {
-	$self->_error("Authorization module got undefined UserId.");
-	reutnr 0;
-    }
-    my $idp = $webSignOn->getIdp();
-    if (!defined($idp) or ($idp eq ""))
-    {
-	$self->_error("Authorization module got undefined IdP.");
-    }
-
-    my $authorizedIdpFilename =
-	$self->{config}->getParam("AuthorizedIdpsFile");
-    my $status = $self->_inFile($idp, $authorizedIdpFilename);
-
-    if ($status == -1)
-    {
-	return 0;
-    }
-    
-    if ($status == 0)
-    {
-	$self->_error("Idp unrecognized.");
-	return 0;
-    }
-
-    return 1;
-}
-
-
-=item getError()
-
-Return the last error message as a string.
+Return the clean, untainted user id as reported by sign-on system.
 
 B<Arguments:> None
 
-B<Returns:> Error string
+B<Returns:> User id as string, or undef if unknown
 
 =cut
 
-sub getError
+sub getUserId
 {
     my $self = shift;
-    return $self->{error}
+    return $self->_cleanUserId();
 }
 
-=back
+=item getIdP()
+
+Returns the clean, untainted identity provider identifier.
+
+B<Arguments:> None
+
+B<Returns:> IdP as string, or undef if unknown
 
 =cut
+
+sub getIdP
+{
+    my $self = shift;
+    return $self->_cleanIdPId();
+}
+
 
 ######################################################################
 
@@ -159,89 +125,111 @@ These internal methods not intended for external use.
 =over 4
 
 
-=item _error()
+=item _userId()
 
-Handle a error message.
+Returns an unchecked, tainted UserId. Should be overriden by child
+class.
 
-B<Arguments:> As to sprintf()
+B<Arguments:> None
 
-B<Returns:> Nothing
-
-=cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
-}
-
-=item _inFile()
-
-Does the given string appear in the given file. File is expected to
-have one string per line and strings can contain an "*" which matches
-any portion of the given string. Each line may have extra text,
-separated with whitespace, after the initial string, which is ignored.
-
-Line in the file begining with a "#" are treated as comments and ignored.
-
-B<Arguments:>
-
-I<$string> - String to match
-
-I<$filename> - Filename
-
-B<Returns:> One if string matches a line in file, zero if not, -1 on error
+B<Returns:> UserId, undef on error
 
 =cut
 
-sub _inFile
+sub _userId()
 {
     my $self = shift;
-    my $string = shift;
-    my $filename = shift;
-
-    my $found = 0;
-
-    my $fh = new FileHandle;
-    if (!$fh->open("<$filename"))
-    {
-	$self->_error("Could not open authorized Idp file (%s): %s",
-		      $filename, $!);
-	return -1;
-    }
-    while (<$fh>)
-    {
-	my $line = $_;
-	chomp($line);
-
-	# Strip comments
-	$line =~ s/#.*$//;
-
-	# Ignore empty lines
-	if ($line =~ /^\s*$/)
-	{
-	    next;
-	}
-
-	# Get initial string
-	my ($regex, $remainder) = split(/\s+/, $line);
-
-	# Convert to perl regex form
-	$regex =~ s/\*/.+/g;
-	$regex = "^" . $regex . "\$";
-
-	if ($string =~ /$regex/)
-	{
-	    $found = 1;
-	    last;
-	}
-    }
-
-    $fh->close();
-
-    return $found;
+    return undef;
 }
+
+=item _cleanUserId()
+
+Returns an checked, untainted version of the UserId
+
+B<Arguments:> None
+
+B<Returns:> Clean UserId, undef on error
+
+=cut
+
+sub _cleanUserId
+{
+    my $self = shift;
+    my $userId = $self->_userId();
+    
+    if (!defined($userId))
+    {
+	return undef;
+    }
+
+    # Clean user name (from perlsec manual)
+    if ($userId =~ /^([-\@\w.]+)$/)
+    {
+	$userId = $1;
+    }
+    else
+    {
+	$self->{logger}->err("Illegal characters detected in UserId (%s))",
+	    $userId);
+	return undef;
+    }
+
+    return $userId;
+}
+
+
+
+=item _idpId()
+
+Returns an unchecked, tainted IdpId. Should be overridden by child class.
+
+B<Arguments:> None
+
+B<Returns:> Clean IdPId, undef on error
+
+=cut
+
+sub _idpId
+{
+    my $self = shift;
+    return undef;
+}
+
+=item _cleanIdpId()
+
+Returns an checked, untainted version of the passed IdpId
+
+B<Arguments:> None
+
+B<Returns:> Clean IdPId, undef on error
+
+=cut
+
+sub _cleanIdPId
+{
+    my $self = shift;
+
+    my $idpId = $self->_idpId();
+    if (!defined($idpId))
+    {
+	return undef;
+    }
+
+    # Clean Idp Id (from perlsec manual)
+    if ($idp =~ /^([-\/:\@\w.]+)$/)
+    {
+	$idp = $1;
+    }
+    else
+    {
+	$self->{logger}->err("Illegal characters detected in IdP Id (%s)",
+			     $idp);
+	return undef;
+    }
+    return $idp;
+}
+
+
 
 =back
 
@@ -254,7 +242,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 # Return true for import/use
 1;
 
+######################################################################
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
-######################################################################

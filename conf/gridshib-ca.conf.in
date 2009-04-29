@@ -47,29 +47,32 @@ redirectURL = NONE
   # These control what PERL modules the GridShib-CA uses. These can
   # be changed to install local modules.
 
-  # Perl module to use for logging
-  Logger = GridShibCA::Logger
+  # Perl module to authorize actions
+  Authorization = GridShibCA::Authorization
 
   # Perl module to use for CA
   CA = GridShibCA::OpenSSLCA
 
+  # Perl module for registering issued certificates
+  CertRegistry = GridShibCA::CertRegistry
+
   # Perl module to use for CGI interface
   CGI = GridShibCA::CGIinterface
 
-  # Perl module to use for ShibInterface
-  ShibInterface = GridShibCA::ShibInterface
+  # Perl module to use for CGI interface
+  CGISession = GridShibCA::CGISession
 
-  # Perl module to generate tokens
-  TokenGenerator = GridShibCA::TokenGenerator
-
-  # Perl module to invoke commands
+  # Perl module to execute processes
   Command = GridShibCA::Command
 
-  # Perl module to registry issued certificates
-  CertRegistry = GridShibCA::CertRegistry
+  # Perl module to produce HTML error mesages
+  HTMLError = GridShibCA::HTMLError
 
-  # Perl module to authorize actions
-  Authorization = GridShibCA::Authorization
+  # Perl module to produce HTML from templates
+  HTMLTemplate = GridShibCA::HTMLTemplate
+
+  # Perl module to use for logging
+  Logger = GridShibCA::Logger
 
   # Perl module to use to map Shibboleth id/attributes to X.509 DN
   NameMapper = GridShibCA::NameMapper
@@ -77,14 +80,15 @@ redirectURL = NONE
   # Perl module to use to generate SAML extension
   SAMLExtension = GridShibCA::SAMLExtension
 
+  # Perl module to use for ShibInterface
+  WebSignOn = GridShibCA::ShibSignOn
+
   # Perl module to produce text from templates
   Template = GridShibCA::Template
 
-  # Perl module to produce HTML from templates
-  HTMLTemplate = GridShibCA::HTMLTemplate
+  # Perl module to generate tokens
+  TokenGenerator = GridShibCA::TokenGenerator
 
-  # Perl module to produce HTML error mesages
-  HTMLError = GridShibCA::HTMLError
 </Modules>
 
 ######################################################################

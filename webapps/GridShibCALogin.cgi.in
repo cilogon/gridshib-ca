@@ -1,0 +1,273 @@
+#!@PERL@ @PERL_CGI_BIN_ARGS@
+######################################################################
+#
+# $Id$
+#
+# This script serves as a welcome mat for users. It should be Shibboleth
+# protected and it makes sure that REMOTE_USER is available before
+# providing a link to invoke the "create-jnlp" script.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+use GridShibCA::Config;
+
+######################################################################
+#
+# Initialize config instance, logger and errorHandler
+#
+
+my $config = GridShibCA::Config->new();
+
+my $logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this error
+    die "Could not get Logger: " . $config->getError();
+}
+
+my $errorHandler = $config->getHTMLError();
+
+if (!defined($errorHandler))
+{
+    $logger->err("Failed to load HTMLError module: " . $config->getError());
+    die "Failed to load HTMLError module: " . $config->getError();
+}
+
+my $webSignOn = $config->getWebSignOn();
+if (!defined($webSignOn))
+{
+    $logger->err("Failed to load WebSignOn module: " . $config->getError());
+    # XXX Handle error here
+    die;
+}
+
+my $authorization = $config->getAuthorization();
+if (!defined($authorization))
+{
+    $logger->err("Failed to load Authorization module: " . $config->getError());
+    # XXX Handle error here
+    die;
+}
+
+if (!$authorization->authorize($webSignOn))
+{
+    $logger->err("Authorization failed for user \"%s\" from \"%s\"",
+		 $webSignOn->getUserId(),
+		 $webSignOn->getIdPId());
+    # XXX Handle error here
+    die;
+}
+
+my $shib = $config->getShibInterface();
+
+if (!defined($shib))
+{
+    errorExit("Could not access Shibboleth interface: "
+	      . $config->getError());
+}
+
+my $user = $shib->getUserId();
+my $idp = $shib->getIdP();
+
+if (!defined($user))
+{
+    if (defined($idp))
+    {
+	$errorHandler->HTMLErrorExit("Origin site (%s) is not releasing identity to GridShibCA.",
+	    $idp);
+    }
+    else
+    {
+	$errorHandler->HTMLErrorExit("Cannot identify origin site or user. It appears this script is not Shibboleth protected.");
+    }
+}
+
+my $DN = undef;
+my $rfc2253DN = undef;
+
+if (defined($user))
+{
+    my $ca = $config->getCA($user, $idp);
+    if (!defined($ca))
+    {
+	$errorHandler->HTMLErrorExit("Could not instantiate CA: %s",
+				     $config->getError());
+    }
+    $DN = $ca->getOpenSSLDN();
+    if (!defined($DN))
+    {
+	$errorHandler->HTMLErrorExit("Could not get DN for user: %s",
+				     $ca->getError());
+    }
+    $rfc2253DN = $ca->getDN();
+    if (!defined($rfc2253DN))
+    {
+	$errorHandler->HTMLErrorExit("Could not get (rfc2253) DN for user: %s",
+				     $ca->getError());
+    }
+}
+
+######################################################################
+#
+# Check user authoriztion
+#
+
+my $authorization = $config->getAuthorization();
+
+if (!$authorization->authorizeUser($user, $idp))
+{
+    $errorHandler->HTMLErrorExit("Authorization failed: User %s (Idp %s): %s",
+				 $user, $idp, $authorization->getError());
+}
+
+if (defined($portalURL))
+{
+    if (!$authorization->authorizePortal($portalURL))
+    {
+	$errorHandler->HTMLErrorExit("Authorization failed: Portal (%s) not authorized: %s",
+				     $portalURL, $authorization->getError());
+    }
+}
+
+######################################################################
+#
+# Make a html-friendly version of DN
+
+my $formattedDN = $DN;
+# Replace any spaces with non-breaking spaces
+$formattedDN =~ s/ /&nbsp;/g;
+
+my $formattedRFC2253DN = $rfc2253DN;
+# Replace any spaces with non-breaking spaces
+$formattedRFC2253DN =~ s/ /&nbsp;/g;
+
+######################################################################
+#
+# Create CSRF protection
+
+my $CSRFCookie = $cgi->createCSRFCookie();
+
+if (!defined($CSRFCookie))
+{
+    errorExit("Error creating CSRF cookie. Please see server logs.");
+}
+
+my $CSRFElement = $cgi->getCSRFFormElement();
+
+if (!defined($CSRFElement))
+{
+    errorExit("Error creating CSRF element. Please see server logs.");
+}
+
+######################################################################
+
+my $shibProtectedCGIBinURL =
+    $config->getParam("ShibbolethProtectedCGIBinURL");
+my $gridShibCAURL = $config->getParam("GridShibCAURL");
+
+#
+# Sort out credential lifetime values
+#
+
+my $defaultLifetime = $config->getParam("DefaultCredLifetime") / 3600;
+my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
+
+######################################################################
+#
+# Do we have trusted CAs to pass to client?
+#
+
+my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+my $trustedCAsAvailable = 0;
+
+if (defined($trustedCADirectory))
+{
+    if ((-x $trustedCADirectory) &&
+	(-r $trustedCADirectory) &&
+	(-d $trustedCADirectory))
+    {
+	$trustedCAsAvailable = 1;
+    }
+    else
+    {
+	$logger->err("TrustedCADirectory ($trustedCADirectory) invalid (check permissions).");
+	$trustedCAsAvailable = 0;
+    }
+}
+    
+######################################################################
+#
+# Generate and display HTML
+#
+
+my $template = $config->getHTMLTemplate("login.html");
+
+if (!defined($template))
+{
+    $errorHandler->HTMLErrorExit($config->getError());
+}
+
+$template->addMappings({
+    UserId => $user,
+    FormattedDN => $formattedDN,
+    FormattedRFC2253DN => $formattedRFC2253DN,
+    DefaultLifetime => $defaultLifetime,
+    MaximumLifetime => $maximumLifetime,
+    TrustedCAsAvailable => $trustedCAsAvailable,
+    CSRFElement => $CSRFElement
+		       });
+
+my $html = $template->getHTML();
+
+if (!defined($html))
+{
+    $errorHandler->HTMLErrorExit($template->getError());
+}
+
+print $cgi->header(-cookie=>$CSRFCookie);
+print $html;
+
+exit(0);
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***

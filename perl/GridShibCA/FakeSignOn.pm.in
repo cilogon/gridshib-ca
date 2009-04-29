@@ -45,15 +45,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::FakeShib
+=head1 GridShibCA::FakeSignOn
 
 B<DO NOT USE THIS MODULE IN A PRODUCTION DEPLOYMENT.>
 
-Fake Shib is a implementation of the
-L<GridShibCA::ShibInterface|GridShibCA::ShibInterface> module that
-provides a fake Shibboleth interface for use in testing the
-GridShib-CA when real Shibboleth is not available or not desired. It
-is intended for use in development and testing.
+FakeSignOn is a implementation of the
+L<GridShibCA::WebSignOn|GridShibCA::WebSignOn> module that provides a
+fake web sign-on interface for use in testing the GridShib-CA when a
+real signon is not available or not desired. It is intended for use in
+development and testing.
 
 This module always returns constant values which are meant to be
 obviouly bogus so even if accidentially deployed in production, the
@@ -65,79 +65,55 @@ This modules logs copious warnings to make sure you are aware it is
 being used.
 
 To use this module for testing, you need to do the following. First,
-edit F<gridshib-ca.conf> and change the value of
-C<shibInterfaceModule> such that it will invoke
-C<GridShibCA::FakeShib>, i.e. the relevant line should look like:
+edit F<gridshib-ca.conf> and change the value of C<WebSignOn> such
+that it will invoke C<GridShibCA::FakeSignOn>, i.e. the relevant line
+should look like:
 
-C<shibInterfaceModule = GridShibCA::FakeShib>
+C<WebSignOn = GridShibCA::FakeSignOn>
 
 Then edit F<authorizedIdps.conf> and add a line authorizing the
 "FakeShib IdP" to use the GridShib CA:
 
-C<urn:gridshib:FakeShib:DoNotTrust "CN=FakeShibUser,OU=FakeShib,O=GridShib">
+C<urn:gridshib:FakeSignOn:DoNotTrust "CN=FakeUser,OU=FakeIdp,O=GridShib">
 
-This will then allow you to run the GridShib-CA without having
-Shibboleth available. Again, B<this module is intented for testing
+This will then allow you to run the GridShib-CA without having a web
+sign-on system available. Again, B<this module is intented for testing
 only>.
 
 =cut
 
-package GridShibCA::FakeShib;
-use GridShibCA::Config;
+package GridShibCA::FakeSignOn;
+
+# Inherit WebSignOn
+use GridShibCA::WebSignOn;
+@ISA = ("GridShibCA::WebSignOn");
 
 =head2 Methods
 
 =over 4
 
-=item new()
+=item _userId()
 
-Create a new FakeShib object.
-
-B<Arguments:> None
-
-B<Returns:> FakeShib instance
-
-=cut
-
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    $self->{config} = GridShibCA::Config->new();
-    $self->{logger} = $self->{config}->getLogger();
-    $self->{logger}->info("WARNING: FakeShib instantiated. Faking Shibboleth authentication. You better not be using this in a production environment.");
-    # These are the fake values we will return
-    $self->{userId} = "FakeShibUser";
-    $self->{idpId} = "urn:gridshib:FakeShib:DoNotTrust";
-    # Note the _sibsession_ prefix here is required.
-    $self->{shibSession} = "_shibsession_=FakeShibSession";
-    $self->{ssoResponse} = "<saml>FakeShibSSOResponse</saml>";
-    bless($self, $class);
-    return $self;
-}
-
-=item getUserId()
-
-Return the string "FakeShibUser"
+Return the string "FakeUser"
 
 B<Arguments:> None
 
-B<Returns:> The string "FakeShibUser"
+B<Returns:> The string "FakeUser"
 
 =cut
 
-sub getUserId
+sub _userId
 {
     my $self = shift;
-    $self->{logger}->info("FakeShib: Returning userId: " .
-			  $self->{userId});
-    return $self->{userId};
+    my $userId = "FakeUser";
+    $self->{logger}->info("FakeSignOn: Returning userId: %s", $userId);
+    return $userId;
 }
 
-=item getIdP()
+=item _idPId()
 
-Returns the fake Shibboleth identity provider Id
-"urn:gridshib:FakeShib:DoNotTrust".
+Returns the fake identity provider Id
+"urn:gridshib:FakeSignOn:DoNotTrust".
 
 B<Arguments:> None
 
@@ -145,50 +121,12 @@ B<Returns:> The string "urn:gridshib:FakeShib:DoNotTrust"
 
 =cut
 
-sub getIdP
+sub _idPId
 {
     my $self = shift;
-    $self->{logger}->info("FakeShib: Returning idpId: " .
-			  $self->{idpId});
-    return $self->{idpId};
-}
-
-=item getShibSession()
-
-Returns a fake Shibboleth session cookie in the form of the string
-"_shibsession_=FakeShibSession".
-
-B<Arguments:> None
-
-B<Returns:> The string "_shibsession_=FakeShibSession"
-
-=cut
-
-sub getShibSession
-{
-    my $self = shift;
-    $self->{logger}->info("FakeShib: Returning ShibSession: " .
-			  $self->{shibSession});
-    return $self->{shibSession};
-}
-
-
-=item getSSOResponse()
-
-Returns fake SSOResponse of the form "<saml>FakeShibSSOResponse</saml>".
-
-B<Arguments:> None
-
-B<Returns:> The string "<saml>FakeShibSSOResponse</saml>"
-
-=cut
-
-sub getSSOResponse
-{
-    my $self = shift;
-    $self->{logger}->info("FakeShib: Returning fake SSOResponse: " .
-			  $self->{ssoResponse});
-    return $self->{ssoResponse};
+    my $idpId = "urn:gridshib:FakeShib:DoNotTrust";
+    $self->{logger}->info("FakeShib: Returning idpId: %s", $idpId);
+    return $idpId;
 }
 
 =back
