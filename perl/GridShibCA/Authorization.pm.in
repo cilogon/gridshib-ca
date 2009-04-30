@@ -103,7 +103,7 @@ sub authorize
     if (!defined($userId) or ($userId eq ""))
     {
 	$self->_error("Authorization module got undefined UserId.");
-	reutnr 0;
+	return 0;
     }
     my $idp = $webSignOn->getIdp();
     if (!defined($idp) or ($idp eq ""))
