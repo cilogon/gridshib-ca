@@ -67,8 +67,10 @@ XXX
 
 package GridShibCA::CGISession;
 
+# -ip_match Requires user's IP stays constant throughout session
+use CGI::Session ( '-ip_match' );
+
 # Inherit CGI::Session
-use CGI::Session;
 @ISA = ("CGI::Session");
 
 use GridShibCA::Config;
@@ -101,7 +103,6 @@ reason.
 sub createNew
 {
     my $class = shift;
-    my %args = @_;
 
     my $config = GridShibCA::Config->new();
     my $logger = $self->{config}->getLogger();
@@ -164,6 +165,87 @@ sub createEstablished
     return $self;
 }
 
+=item saveWebSignOn
+
+Store a WebSignOn object into session.
+
+B<Arguments:> WebSignOn object.
+
+B<Returns:> True on success, False on error
+
+=cut
+
+sub saveWebSignOn
+{
+    my $self = shift;
+    my $signOn = shift;
+
+    my $serializedSignOn = $signOn->serialize();
+    if (!defined($serializedSignOn))
+    {
+	$self->_error("Failed to serialized WebSignOn object.");
+	return 0;
+    }
+    $self->param("WebSignOn", $serializedSignOn);
+    return 1;
+}
+
+=item getWebSignOn
+
+Retrieve a previously stored a WebSignOn object from session.
+
+B<Arguments:> None
+
+B<Returns:> WebSignOn object, undef on error.
+
+=cut
+sub getWeSignOn
+{
+    my $self = shift;
+    my $webSignOn = $self->param("WebSignOn");
+    if (!defined($webSignOn))
+    {
+	$self->_error("Failed to retrieve WebSignOn: " . $self->errstr());
+	return undef;
+    }
+    return $webSignOn;
+}
+
+
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _error()
+
+Handle logging an error message.
+
+B<Arguments:>
+
+C<$format> As per sprintf()
+
+C<@args> As per sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    my @args = @_;
+
+    my $config = GridShibCA::Config->new();
+    my $logger = $self->{config}->getLogger();
+    
+    $logger->error($format, @args);
+}
 
 =back
 

@@ -97,16 +97,24 @@ if (!$authorization->authorize($webSignOn))
     die;
 }
 
-my $shib = $config->getShibInterface();
 
-if (!defined($shib))
+my $session = $config->getCGISession();
+if (!defined($session))
 {
-    errorExit("Could not access Shibboleth interface: "
-	      . $config->getError());
+    $logger->err("Failed to load CGISession module: " . $config->getError());
+    # XXX Handle error here
+    die;
 }
 
-my $user = $shib->getUserId();
-my $idp = $shib->getIdP();
+if (!$session->saveWebSignOn($webSignOn))
+{
+    $logger->err("Failed to save WebSignOn: " . $session->errstr());
+    # XXX Handle error here
+    die;
+}
+
+
+
 
 if (!defined($user))
 {

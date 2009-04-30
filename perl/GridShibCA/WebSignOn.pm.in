@@ -75,11 +75,28 @@ sub new
     my $self = {};
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
+    $self->{error} = undef;
+    bless($self, $class);
 
     $self->{userId} = $self->_cleanUserId();
     $self->{IdPId} = $self->_cleanIdPId();
 
-    bless($self, $class);
+    if (!defined($self->{userId}) && !defined($self->{IdPId}))
+    {
+	$self->_error("Cannot identify origin site or user. It appears this script is not protected by web sign-on.");
+	return undef;
+    }
+    elsif (!defined($self->{userId}))
+    {
+	$self->_error("Cannot determine user identity.");
+	return undef;
+    }
+    elsif (!defined($self->{IdPId}))
+    {
+	$self->_error("Cannot determine users' origin site.");
+	return undef;
+    }
+
     return $self;
 }
 
@@ -115,6 +132,61 @@ sub getIdP
     return $self->_cleanIdPId();
 }
 
+=item serialize()
+
+Serialize the object to a string for storage in a session.
+
+B<Argyuments:> None
+
+B<Returns:> Serialized object as a string, undef on error
+
+=cut
+
+sub serialize
+{
+    my $self = shift;
+
+    use FreezeThaw;
+
+    return FreezeThaw::freeze($self);
+}
+
+=item deserialize()
+
+Class method to deserialize given string and return an SignOn object.
+
+B<Arguments:> Serialed object as string
+
+B<Returns:> Object instance, undef on error
+
+=cut
+
+sub deserialize
+{
+    my $class = shift;
+    my $serialzedObject = shift;
+
+    use FreezeThaw;
+
+    return FreezeThaw::thaw($serialzedObject);
+}
+
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error};
+}
 
 ######################################################################
 
@@ -230,6 +302,42 @@ sub _cleanIdPId
 }
 
 
+=item _error()
+
+Handle logging an error message.
+
+B<Arguments:>
+
+C<$format> As per sprintf()
+
+C<@args> As per sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    my @args = @_;
+
+    chomp($format);
+
+    my $string = sprintf($format, @args);
+    
+    $logger->error($string);
+
+    if (!defined($self->{error}))
+    {
+	$self->{error} = "";
+    }
+    else
+    {
+	$self->{error} .= "\n";
+    }
+    $self->{error} .= $string;
+}
 
 =back
 
