@@ -109,7 +109,7 @@ AC_DEFUN([AC_PROG_PERL_MODULES],[dnl
   fi
 
   if test "x$PERL" != x; then
-    ac_perl_modules_failed=0
+    ac_perl_modules_failed=""
     for ac_perl_module in $ac_perl_modules; do
     	AC_MSG_CHECKING(for perl module $ac_perl_module)
  	
@@ -117,21 +117,29 @@ AC_DEFUN([AC_PROG_PERL_MODULES],[dnl
  	$PERL "-M$ac_perl_module" -e exit > /dev/null 2>&1
  	if test $? -ne 0; then
  	  AC_MSG_RESULT(no);
- 	  ac_perl_modules_failed=1
+ 	  ac_perl_modules_failed="${ac_perl_modules_failed} ${ac_perl_module}"
  	else
  	  AC_MSG_RESULT(ok);
  	fi
     done
  	
     # Run optional shell commands
-    if test "$ac_perl_modules_failed" = 0; then
-        :
-       	$2
+    if test -z "$ac_perl_modules_failed"; then
+        if test -n "$2" ; then
+	   :
+       	   $2
+	else
+	   AC_MSG_RESULT([All Perl modules found.]) 
+	fi
     else
-	:
-	$3
+	if test -n "$3" ; then
+	   :
+	   $3
+	else
+	   AC_MSG_ERROR([Perl modules missing. Using following command to install: cpan${ac_perl_modules_failed}])
+	fi
     fi
-   else
-	AC_MSG_WARN(could not find perl)
- fi])dnl
+  else
+    AC_MSG_WARN(could not find perl)
+  fi])dnl
 
