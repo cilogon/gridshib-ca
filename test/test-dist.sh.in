@@ -75,10 +75,14 @@ echo "Building and testing:"
 make
 make test
 
-echo "Installing and testing:"
+echo "Installing:"
 make install
 utils/create-openssl-ca.pl
-make test-post-install
+
+echo "Testing crediential issuance:"
+credFilename=`mktemp /tmp/test-dist.XXXXXXXX`
+utils/issue-cert.pl -o ${credFilename} testuser@fakeidp.org  urn:mace:incommon:fakeidp
+test/test-cred.sh -c ${tmpDir}/gridshib-ca/ -i ${credFilename} -l -S
 
 echo "Success."
 
