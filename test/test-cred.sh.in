@@ -59,24 +59,35 @@ openssl="openssl"
 
 trustedCertificatesDir=`dirname $0`/certificates/
 
-expectedIssuer="/DC=edu/DC=uiuc/DC=ncsa/DC=computer/O=Certificate Authority/CN=GridShib CA"
+expectedIssuerHost="computer.ncsa.uiuc.edu"
+
+issuerSuffix="/O=Certificate Authority/CN=GridShib CA"
 
 ######################################################################
 
 CHECK_SAML=1
 
+uid=`id -u`
+credFile=/tmp/x509up_u${uid}
+
 usage() {
 cat <<EOF
 Usage: $0
- -h     Display help and exit.
- -S     Do not check for embedded SAML.
+ -c <path>  Use path for trusted CA certificates.
+ -h         Display help and exit.
+ -i <cred>  Test credential in <cred>
+ -l         Expect issuer to be local system instead of '${expectedIssuerHost}'
+ -S         Do not check for embedded SAML.
 EOF
 }
 
-while getopts hS arg
+while getopts c:hi:lS arg
 do
   case $arg in
+    c) trustedCertificatesDir=$OPTARG ;;
     h) usage; exit 0 ;;
+    i) credFile=$OPTARG ;;
+    l) expectedIssuerHost=`hostname` ;;
     S) CHECK_SAML=0 ;;
   esac
 done
@@ -85,8 +96,15 @@ shift `expr $OPTIND - 1`
 
 ######################################################################
 
-uid=`id -u`
-credFile=/tmp/x509up_u${uid}
+# Reverse hostname components and present to issuerSuffix
+hostComponents=`echo $expectedIssuerHost | sed -e 's/\./ /g'`
+echo $hostComponents
+expectedIssuer=$issuerSuffix
+for component in $hostComponents ; do
+    expectedIssuer="/DC=${component}${expectedIssuer}"
+done
+
+######################################################################
 
 if test -f $credFile ; then
     echo "Credential file exists: ${credFile}"
