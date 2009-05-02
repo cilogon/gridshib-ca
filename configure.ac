@@ -312,9 +312,23 @@ AC_SUBST(DOC_INSTALL_FILES)
 dnl ----------------------------------------------------------------------
 dnl check for required perl modules that should be on any reasonably
 dnl recent perl, but don't always seem to be
-AC_PROG_PERL_MODULES([CGI CGI::Session Config::General File::Basename FreezeThaw FileHandle File::Copy File::Path File::Spec File::Temp Getopt::Std IPC::Open3 MIME::Base64 Sys::Syslog],
-	[AC_MSG_RESULT([All standard perl modules found.])],
-	[AC_MSG_ERROR([One or more required standard perl modules not found. Old version of perl?])])
+PERL_MODULES_TO_CHECK=" \
+			CGI \
+			CGI::Session \
+			Config::General \
+			File::Basename \
+			FreezeThaw \
+			FileHandle \
+			File::Copy \
+			File::Path \
+			File::Spec \
+			File::Temp \
+			Getopt::Std \
+			IPC::Open3 \
+			MIME::Base64 \
+			Sys::Syslog \
+			"
+AC_PROG_PERL_MODULES([${PERL_MODULES_TO_CHECK}])
 
 dnl Check for extra perl modules we need
 AC_PROG_PERL_MODULES([Text::Template],
@@ -393,8 +407,9 @@ dnl Each AC_CONFIG_FILES must be separate so chmod works.
 TEST_SCRIPTS=""
 TEST_SCRIPTS="$TEST_SCRIPTS openssl-ca/openssl-ca-test.sh"
 AC_CONFIG_FILES([openssl-ca/openssl-ca-test.sh], [chmod +x openssl-ca/openssl-ca-test.sh])
-TEST_SCRIPTS="$TEST_SCRIPTS test/test-dist.sh"
+TEST_SCRIPTS="$TEST_SCRIPTS test/test-dist.sh test/test-cred.sh"
 AC_CONFIG_FILES([test/test-dist.sh], [chmod +x test/test-dist.sh])
+AC_CONFIG_FILES([test/test-cred.sh], [chmod +x test/test-cred.sh])
 AC_SUBST(TEST_SCRIPTS)
 
 TEST_SCRIPTS="\
