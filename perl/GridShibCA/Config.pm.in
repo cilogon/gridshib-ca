@@ -55,6 +55,7 @@ package GridShibCA::Config;
 
 use GridShibCA::Constants;
 
+use Carp;
 use Config::General;
 
 # Configuration file to read
@@ -75,6 +76,8 @@ B<Arguments:>
 
 C<$debug> Turn on debugging if True
 
+C<$defaultSection> Section to use for getParam() requests.
+
 B<Returns:> Config instance
 
 =cut
@@ -91,6 +94,12 @@ sub new
     {
 	$self->{debug} = 1;
 	$self->_debug("Debugging enabled");
+    }
+
+    $self->{defaultSection} = undef;
+    if (defined($args{defaultSection}))
+    {
+	$self->{defaultSection} = $args{defaultSection};
     }
 
     # Maximum number of replacements on configuration variables
@@ -156,8 +165,9 @@ sub getParam
 {
     my $self = shift;
     my $param = shift;
+    my $section = $self->{defaultSection};
 
-    return $self->getSectionParam(undef, $param);
+    return $self->getSectionParam($section, $param);
 }
 
 =item getParamBoolean()
@@ -269,6 +279,43 @@ sub getError
     return $self->{error};
 }
 
+
+=item  getCommandModule()
+
+Given a Request instance, return an instance of the Command module
+referenced by the Request from the Commands section of the
+configuration file.
+
+B<Arguments:>
+
+C<$request> Request instance.
+
+B<Returns:> Instance, undef on error.
+
+=cut
+
+sub getCommandModule
+{
+    my $self = shift;
+    my $request = shift;
+
+    my $command = $request->getCommand();
+    if (!defined($command))
+    {
+	$self->_error("Failed to parse command from request: %s",
+		      $request->getError());
+	return undef;
+    }
+
+    my $className = $self->getSectionParam("Commands", $command);
+    if (!defined($className))
+    {
+	$self->_error("Unrecognized command \"%s\"", $command);
+	return undef;
+    }
+    return $self->_newInstance($className, @_);
+}
+
 =back
 
 =cut
@@ -283,30 +330,48 @@ which implements the same interface.
 
 =over 4
 
-=item getLogger()
+=item getModules()
 
-Get an instance of the GridShibCA::Logger module by loading it and
-calling its new method with the given arguments. See L<GridShibCA::Logger>.
+Return a list of all modules configured in F<gridshib-ca.conf>. Mainly
+intended for testing.
 
-The exact module loaded is controlled by the loggerModule variable
-in F<gridshib-ca.conf>.
+=cut
+sub getModules
+{
+    my $self = shift;
+    my $config = $self->{config};
+    if (!$config->exists("Modules") || !$config->is_hash("Modules"))
+    {
+	return ();
+    }
+    my %modulesSection = $config->hash("Modules");
+    return keys(%modulesSection);
+}
+
+=item getAuthorization()
+
+Get an instance of the GridShibCA::Authorization module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::Authorization>.
+
+The exact module loaded is controlled by the Authorization variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
-sub getLogger
+sub getAuthorization
 {
     my $self = shift;
-    return $self->_newModule("Logger", @_);
+    return $self->_newModule("Authorization", @_);
 }
-
 
 =item getCA()
 
 Get an instance of the GridShibCA::CA module by loading it and
 calling its new method with the given arguments. See L<GridShibCA::CA>.
 
-The exact module loaded is controlled by the caModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the CA variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
@@ -316,6 +381,22 @@ sub getCA
     return $self->_newModule("CA", @_);
 }
 
+=item getCertRegistry()
+
+Get an instance of the GridShibCA::CertRegistry module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::CertRegistry>.
+
+The exact module loaded is controlled by the CertRegistry variable
+in the Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getCertRegistry
+{
+    my $self = shift;
+    return $self->_newModule("CertRegistry", @_);
+}
 
 =item getCGI()
 
@@ -323,8 +404,8 @@ Get an instance of the GridShibCA::CGI module by loading it and
 calling its new method with the given arguments.
 See L<GridShibCA::CGIinterface>.
 
-The exact module loaded is controlled by the cgiModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the CGI variable
+in the Modules section F<gridshib-ca.conf>.
 
 =cut
 
@@ -340,8 +421,8 @@ Get an instance of the GridShibCA::CGISession module by loading it and
 calling its new method with the given arguments.
 See L<GridShibCA::CGISession>.
 
-The exact module loaded is controlled by the cgiModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the CGISession variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
@@ -352,47 +433,13 @@ sub getCGISession
 }
 
 
-=item getTokenGenerator()
-
-Get an instance of the GridShibCA::TokenGenerator module by loading it and
-calling its new method with the given arguments.
-See L<GridShibCA::TokenGenerator>.
-
-The exact module loaded is controlled by the tokenGeneratorModule variable
-in F<gridshib-ca.conf>.
-
-=cut
-
-sub getTokenGenerator
-{
-    my $self = shift;
-    return $self->_newModule("TokenGenerator", @_);
-}
-
-=item getShibInterface()
-
-Get an instance of the GridShibCA::ShibInterface module by loading it
-and calling its new method with the given arguments.
-See L<GridShibCA::ShibInterface>.
-
-The exact module loaded is controlled by the shibInterfaceModule
-varibale in F<gridshib-ca.conf>.
-
-=cut
-
-sub getWebSignOn
-{
-    my $self = shift;
-    return $self->_newModule("WebSignOn", @_);
-}
-
 =item getCommand()
 
 Get an instance of the GridShibCA::Command module by loading it and
 calling its new method with the given arguments. See L<GridShibCA::Command>.
 
-The exact module loaded is controlled by the commandModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the Command variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
@@ -402,42 +449,55 @@ sub getCommand
     return $self->_newModule("Command", @_);
 }
 
+=item getHTMLError()
 
-=item getCertRegistry()
-
-Get an instance of the GridShibCA::CertRegistry module by loading it and
+Get an instance of the GridShibCA::Error module by loading it and
 calling its new method with the given arguments.
-See L<GridShibCA::CertRegistry>.
+See L<GridShibCA::HTMLError>.
 
-The exact module loaded is controlled by the certRegistryModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the HTMLError variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
-sub getCertRegistry
+sub getHTMLError
 {
     my $self = shift;
-    return $self->_newModule("CertRegistry", @_);
+    return $self->_newModule("HTMLError", @_);
 }
 
+=item getHTMLTemplate()
 
-=item getAuthorization()
-
-Get an instance of the GridShibCA::Authorization module by loading it and
+Get an instance of the GridShibCA::HTMLTemplate module by loading it and
 calling its new method with the given arguments.
-See L<GridShibCA::Authorization>.
+See L<GridShibCA::HTMLTemplate>.
 
-The exact module loaded is controlled by the authorizationModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the HTMLTemplate variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
-sub getAuthorization
+sub getHTMLTemplate
 {
     my $self = shift;
-    return $self->_newModule("Authorization", @_);
+    return $self->_newModule("HTMLTemplate", @_);
 }
 
+=item getLogger()
+
+Get an instance of the GridShibCA::Logger module by loading it and
+calling its new method with the given arguments. See L<GridShibCA::Logger>.
+
+The exact module loaded is controlled by the Logger variable
+in the Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getLogger
+{
+    my $self = shift;
+    return $self->_newModule("Logger", @_);
+}
 
 =item getNameMapper()
 
@@ -445,8 +505,8 @@ Get an instance of the GridShibCA::NameMapper module by loading it and
 calling its new method with the given arguments.
 See L<GridShibCA::NameMapper>.
 
-The exact module loaded is controlled by the nameMapperModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the NameMapper variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
@@ -456,13 +516,31 @@ sub getNameMapper
     return $self->_newModule("NameMapper", @_);
 }
 
+
+=item getRequest()
+
+Get an instance of the GridShibCA::Request module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::Request>.
+
+The exact module loaded is controlled by the Request variable
+in the Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getRequest
+{
+    my $self = shift;
+    return $self->_newModule("Request", @_);
+}
+
 =item getSAMLExtension()
 
 Get an instance of the GridShibCA::SAMLExtension module by loading it
 and calling its new method with the given arguments.  See
 L<GridShibCA::SAMLExtension>.
 
-The exact module loaded is controlled by the samlExtensionModule variable
+The exact module loaded is controlled by the SAMLExtension variable
 in F<gridshib-ca.conf>.
 
 =cut
@@ -473,31 +551,14 @@ sub getSAMLExtension
     return $self->_newModule("SAMLExtension", @_);
 }
 
-=item getHTMLError()
-
-Get an instance of the GridShibCA::Error module by loading it and
-calling its new method with the given arguments.
-See L<GridShibCA::HTMLError>.
-
-The exact module loaded is controlled by the htmlErrorModule variable
-in F<gridshib-ca.conf>.
-
-=cut
-
-sub getHTMLError
-{
-    my $self = shift;
-    return $self->_newModule("HTMLError", @_);
-}
-
 =item getTemplate()
 
 Get an instance of the GridShibCA::Template module by loading it and
 calling its new method with the given arguments.
 See L<GridShibCA::Template>.
 
-The exact module loaded is controlled by the templateModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the Template variable
+in the Modules section of F<gridshib-ca.conf>.
 
 =cut
 
@@ -507,21 +568,38 @@ sub getTemplate
     return $self->_newModule("Template", @_);
 }
 
-=item getHTMLTemplate()
+=item getTokenGenerator()
 
-Get an instance of the GridShibCA::HTMLTemplate module by loading it and
+Get an instance of the GridShibCA::TokenGenerator module by loading it and
 calling its new method with the given arguments.
-See L<GridShibCA::HTMLTemplate>.
+See L<GridShibCA::TokenGenerator>.
 
-The exact module loaded is controlled by the htmlTemplateModule variable
-in F<gridshib-ca.conf>.
+The exact module loaded is controlled by the TokenGenerator variable
+in the modules section of F<gridshib-ca.conf>.
 
 =cut
 
-sub getHTMLTemplate
+sub getTokenGenerator
 {
     my $self = shift;
-    return $self->_newModule("HTMLTemplate", @_);
+    return $self->_newModule("TokenGenerator", @_);
+}
+
+=item getWebSignOn()
+
+Get an instance of the GridShibCA::WebSignOn module by loading it
+and calling its new method with the given arguments.
+See L<GridShibCA::WebSignOn>.
+
+The exact module loaded is controlled by the WebSignOn variable in the
+Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getWebSignOn
+{
+    my $self = shift;
+    return $self->_newModule("WebSignOn", @_);
 }
 
 =back
@@ -535,7 +613,6 @@ sub getHTMLTemplate
 These internal methods not intended for external use.
 
 =over 4
-
 
 =item  _initConfig()
 
@@ -559,6 +636,8 @@ sub _initConfig
 	-ExtendedAccess => 1,
 	# Automatically parse booleans
 	-AutoTrue => 1,
+	# Allow for running under taint mode
+	-AutoLaunder => 1,
 	);
     if ($self->{debug})
     {
@@ -705,6 +784,11 @@ sub _error
 {
     my $self = shift;
     my $format = shift;
+    if (!defined($format))
+    {
+	confess("_error() called with undefined \$format");
+    }
+    my @args = @_;
 
     if (!defined($self->{error}))
     {
@@ -712,7 +796,7 @@ sub _error
     }
     chomp($format);
     my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
-			 @_);
+			 @args);
     $self->{error} .= $string;
 
     # Don't use our Logger module as that could create a deadlock as the

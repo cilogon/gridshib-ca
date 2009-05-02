@@ -1,8 +1,9 @@
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# Logging functions.
+# Login command to establish session from Web Sign-on.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -44,155 +45,120 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::Logger
+=head1 GridShibCA::WebCommand
 
-Interface to logging based on Perl Sys::Syslog Module.
-
-=head2 Configuration Parameters
-
-This class uses the following values from F<gridshib-ca.conf>:
-
-=over 4
-
-=item SyslogId
-
-Identifying string to use with Syslog.
-
-=item SyslogFacility
-
-Facility to use with Syslog.
-
-=back
+Login command to establish session from web sign-on.
 
 =cut
 
-package GridShibCA::Logger;
+package GridShibCA::Login;
 
-use Carp;
-use Sys::Syslog;
-use File::Basename;
 
-use GridShibCA::Config;
+# Inherit WebCommand
+use GridShibCA::WebCommand;
+@ISA = ("GridShibCA::WebCommand");
 
 =head2 Methods
 
 =over 4
 
-=item new()
+=item invoke()
 
-Create a new Logger object.
+Invoke the command.
+
+B<Arguments:> Request object
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub invoke
+{
+    my $self = shift;
+    my $request = shift;
+
+    # For convienence
+    my $config = $self->{config};
+    my $logger = $self->{logger};
+    
+    my $webSignOn = $config->getWebSignOn();
+    if (!defined($webSignOn))
+    {
+	$self->_handleError("Failed to load WebSignOn module: %s",
+			    $config->getError());
+	return 0;
+    }
+
+    if (!$webSignOn->init())
+    {
+	$self->_handleError("Error with sign-on: %s", $webSignOn->getError());
+	return 0;
+    }
+
+    my $authorization = $config->getAuthorization();
+    if (!defined($authorization))
+    {
+	$self->_handleError("Failed to load Authorization module: %s",
+			    $config->getError());
+	return 0;
+    }
+
+    if (!$authorization->authorize($webSignOn))
+    {
+	$logger->err("Authorization failed for user \"%s\" from \"%s\": %s",
+		     $webSignOn->getUserId(),
+		     $webSignOn->getIdPId());
+	$self->_handleError("Authorization failed.");
+	return 0;
+    }
+
+
+    my $session = $config->getCGISession();
+    if (!defined($session))
+    {
+	$self->_handleError("Failed to load CGISession module: %s",
+			    $config->getError());
+	return 0;
+    }
+
+    if (!$session->saveWebSignOn($webSignOn))
+    {
+	$self->_handleError("Failed to save WebSignOn: %s",
+			    $session->errstr());
+	return 0;
+    }
+
+    $logger->info("New session(%s) created for user \"%s\" from \"%s\"",
+		  $session->id(),
+		  $webSignOn->getUserId(),
+		  $webSignOn->getIdPId());
+
+    if (!$self->_displayHTML("login.html"))
+    {
+	$self->_handleError("Failed to display HTML \"login.html\"");
+	return 0;
+    }
+
+    return 1;
+}
+
+
+=item requiresSession()
+
+Returns True if the command requires an established session.
 
 B<Arguments:> None
 
-B<Returns:> Logger instance
+B<Returns:> True if request requires session, False otherwise.
 
 =cut
 
-sub new
-{
-    my $class = shift;
-    my $self = {};
-
-    my $config = GridShibCA::Config->new();
-
-    # Syslog parameters
-    my $SYSLOG_ID = $config->getParam("SyslogId");
-    my $SYSLOG_OPTS = "pid";
-    my $SYSLOG_FACILITY = $config->getParam("SyslogFacility");
-
-    my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
-    openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
-    $self->{debug} = $config->getParamBoolean("debug");
-    bless($self, $class);
-    return $self;
-}
-
-=item log()
-
-Log a message.
-
-B<Arguments:>
-
-I<$level> - one of "info", "warn", "err"
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub log
+sub requiresSession
 {
     my $self = shift;
-    my $level = shift;
-    my $format = shift;
-    my @args = @_;
-    if (!defined($level) || !defined($format))
-    {
-	Carp::confess("Logger called with undefined arguments.");
-    }
-    syslog($level, $format, @args);
+    # We are going to be establishing a session, so don't require one.
+    return 0;
 }
-
-=item info()
-
-Log an informative message
-
-B<Arguments:>
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub info
-{
-    my $self = shift;
-    $self->log("info", @_);
-}
-
-
-=item debug()
-
-Log an debugging message if so configured.
-
-B<Arguments:>
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub debug
-{
-    my $self = shift;
-    if ($self->{debug})
-    {
-	$self->log("info", @_);
-    }
-}
-
-
-=item err()
-
-Log an error message
-
-B<Arguments:>
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub err
-{
-    my $self = shift;
-    $self->log("err", @_);
-}
-
 
 =back
 
@@ -205,7 +171,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 # Return true for import/use
 1;
 
+######################################################################
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
-######################################################################

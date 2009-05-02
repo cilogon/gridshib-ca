@@ -142,7 +142,9 @@ CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/sysinfo.pl \
 	webdocs/login.cgi \
 	webdocs/portalLogin.cgi \
-	webdocs/getTrustedCAs.cgi"
+	webdocs/getTrustedCAs.cgi \
+	webapps/GridShibCA.cgi \
+	"
 AC_SUBST(CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
 AC_SRC_FILES(CGI_BIN_SCRIPTS, CGI_BIN_SRCS)
@@ -230,12 +232,15 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/HTMLError.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
 	perl/GridShibCA/Logger.pm \
+	perl/GridShibCA/Login.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/Request.pm \
 	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibSignOn.pm \
 	perl/GridShibCA/Template.pm \
 	perl/GridShibCA/TokenGenerator.pm \
+	perl/GridShibCA/WebCommand.pm \
 	perl/GridShibCA/WebSignOn.pm \
 	"
 AC_SUBST(REQUIRED_PERL_MODULES)

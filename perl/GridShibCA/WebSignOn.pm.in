@@ -61,7 +61,8 @@ use GridShibCA::Config;
 
 =item new()
 
-Create a new WebSignOn object.
+Create a new WebSignOn object. Caller should call init() to actually
+populate the object.
 
 B<Arguments:> None
 
@@ -77,27 +78,42 @@ sub new
     $self->{logger} = $self->{config}->getLogger();
     $self->{error} = undef;
     bless($self, $class);
+    return $self;
+}
 
+=item init()
+
+Initialize the WebSignOn object with the user's information from the
+sign-on system.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on failure.
+
+=cut
+sub init
+{
+    my $self = shift;
     $self->{userId} = $self->_cleanUserId();
     $self->{IdPId} = $self->_cleanIdPId();
 
     if (!defined($self->{userId}) && !defined($self->{IdPId}))
     {
 	$self->_error("Cannot identify origin site or user. It appears this script is not protected by web sign-on.");
-	return undef;
+	return 0;
     }
     elsif (!defined($self->{userId}))
     {
 	$self->_error("Cannot determine user identity.");
-	return undef;
+	return 0;
     }
     elsif (!defined($self->{IdPId}))
     {
 	$self->_error("Cannot determine users' origin site.");
-	return undef;
+	return 0;
     }
 
-    return $self;
+    return 1;
 }
 
 =item getUserId()
@@ -251,7 +267,7 @@ sub _cleanUserId
 
 
 
-=item _idpId()
+=item _idPId()
 
 Returns an unchecked, tainted IdpId. Should be overridden by child class.
 
@@ -261,7 +277,7 @@ B<Returns:> Clean IdPId, undef on error
 
 =cut
 
-sub _idpId
+sub _idPId
 {
     my $self = shift;
     return undef;
@@ -281,8 +297,8 @@ sub _cleanIdPId
 {
     my $self = shift;
 
-    my $idpId = $self->_idpId();
-    if (!defined($idpId))
+    my $idp = $self->_idPId();
+    if (!defined($idp))
     {
 	return undef;
     }
@@ -326,7 +342,7 @@ sub _error
 
     my $string = sprintf($format, @args);
     
-    $logger->error($string);
+    $self->{logger}->err($string);
 
     if (!defined($self->{error}))
     {

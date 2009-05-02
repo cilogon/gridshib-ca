@@ -1,0 +1,237 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# Base class for Web Commands.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::WebCommand
+
+Base class for Web Commands to be invoked by L<GridShibCA::Request|GridShibCA::Request>::invoke()
+
+=cut
+
+package GridShibCA::WebCommand;
+
+use GridShibCA::Config;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new WebCommand object.
+
+B<Arguments:>
+
+XXX
+
+B<Returns:> CA instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new(defaultSection => "Commands");
+    $self->{logger} = $self->{config}->getLogger();
+    if (!defined($self->{logger}))
+    {
+	return undef;
+    }
+    # HTML template to use for errors
+    $self->{errorHtml} = "error.html";
+    bless($self, $class);
+    return $self;
+}
+
+=item invoke()
+
+Invoke the command. This method should be overridden by the child class.
+
+B<Arguments:> Request object
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub invoke
+{
+    my $self = shift;
+    my $request = shift;
+
+    return 1;
+}
+
+
+=item requiresSession()
+
+Returns True if the command requires an established session.
+
+B<Arguments:> None
+
+B<Returns:> True if request requires session, False otherwise.
+
+=cut
+
+sub requiresSession
+{
+    my $self = shift;
+    # Default is command require a session.
+    return 1;
+}
+
+
+=item requiresCSRFCheck()
+
+Returns True if the command requires an CSRF check.
+
+B<Arguments:> None
+
+B<Returns:> True if request requires CSRF check, False otherwise.
+
+=cut
+
+sub requiresCSRFCheck
+{
+    my $self = shift;
+    # Default is command require a CSRF check
+    return 1;
+}
+
+
+=item _displayHTML()
+
+Display HTML template with given name.
+
+B<Arguments:>
+
+C<$filename> Filename of HTML template.
+
+C<%mappings> Mappings for subsitution
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub _displayHTML
+{
+    my $self = shift;
+    my $filename = shift;
+    my %mappings = shift;
+
+    my $template = $self->{config}->getHTMLTemplate($filename);
+
+    if (!defined($template))
+    {
+	$self->_handleError("Error loadint HTMLTemplate module: %s",
+			    $self->{config}->getError());
+	return 0;
+    }
+
+    $template->addMappings(%mappings);
+
+    my $html = $template->getHTML();
+
+    if (!defined($html))
+    {
+	$self->_handleError("Error rendering HTML from template \"%s\" module: %s",
+			    $filename,
+			    $tempalte->getError());
+	return 0;
+    }
+
+    # XXX Header from CGI::Session?
+    print $html;
+
+    return 1;
+}
+
+=item _handleError()
+
+Handle logging an error and displaying output to user.
+
+B<Arguments:>
+
+C<$format> As per sprintf()
+
+C<@args> As per sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _handleError
+{
+    my $self = shift;
+    my $format = shift;
+    my @args = @_;
+
+    $self->{logger}->err("ERROR: " . $format, @args);
+
+    # XXX handle variables
+    if (!$self->_displayHTML("error.html"))
+    {
+	$self->{logger}->err("ERROR: Could not display error.html");
+	# Last resort, get something to the user...
+	print("Sorry, a fatal error has occurred: " . $format, @args);
+    }
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

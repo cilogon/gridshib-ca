@@ -77,11 +77,11 @@ redirectURL = NONE
   # Perl module to use to map Shibboleth id/attributes to X.509 DN
   NameMapper = GridShibCA::NameMapper
 
+  # Perl module to use to parse and dispatch user request
+  Request = GridShibCA::Request 
+
   # Perl module to use to generate SAML extension
   SAMLExtension = GridShibCA::SAMLExtension
-
-  # Perl module to use for ShibInterface
-  WebSignOn = GridShibCA::ShibSignOn
 
   # Perl module to produce text from templates
   Template = GridShibCA::Template
@@ -89,7 +89,19 @@ redirectURL = NONE
   # Perl module to generate tokens
   TokenGenerator = GridShibCA::TokenGenerator
 
+  # Perl module to use for ShibInterface
+  WebSignOn = GridShibCA::ShibSignOn
+
 </Modules>
+
+<Commands>
+  # Perls modules to service client command requests. Use by
+  # Request::dispatch()
+  
+  # Module to invoke when no command given
+  DEFAULT = GridShibCA::Login
+
+</Commands>
 
 ######################################################################
 #

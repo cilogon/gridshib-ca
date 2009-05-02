@@ -57,64 +57,105 @@ use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
 
 my $logger = $config->getLogger();
-
 if (!defined($logger))
 {
     # No good way to report this error
-    die "Could not get Logger: " . $config->getError();
+    handleError("Could not get Logger: %s", $config->getError());
 }
 
 my $errorHandler = $config->getHTMLError();
-
 if (!defined($errorHandler))
 {
-    $logger->err("Failed to load HTMLError module: " . $config->getError());
-    die "Failed to load HTMLError module: " . $config->getError();
+    handleError("Failed to load HTMLError module: %s", $config->getError());
 }
 
-my $webSignOn = $config->getWebSignOn();
-if (!defined($webSignOn))
+my $request = $config->getRequest();
+if (!defined($request))
 {
-    $logger->err("Failed to load WebSignOn module: " . $config->getError());
-    # XXX Handle error here
-    die;
+    handleError("Unable to load Request module: %s", $config->getError());
 }
 
-my $authorization = $config->getAuthorization();
-if (!defined($authorization))
+my $cgi = $config->getCGI();
+if (!defined($cgi))
 {
-    $logger->err("Failed to load Authorization module: " . $config->getError());
-    # XXX Handle error here
-    die;
+    handleError("Unable to load CGI module: %s", $config->getError());
 }
-
-if (!$authorization->authorize($webSignOn))
-{
-    $logger->err("Authorization failed for user \"%s\" from \"%s\"",
-		 $webSignOn->getUserId(),
-		 $webSignOn->getIdPId());
-    # XXX Handle error here
-    die;
-}
-
 
 my $session = $config->getCGISession();
 if (!defined($session))
 {
-    $logger->err("Failed to load CGISession module: " . $config->getError());
-    # XXX Handle error here
-    die;
+    handleError("Failed to load CGISession module: %s", $config->getError());
 }
 
-if (!$session->saveWebSignOn($webSignOn))
+my $command = $config->getCommandModule($request);
+if (!defined($command))
 {
-    $logger->err("Failed to save WebSignOn: " . $session->errstr());
-    # XXX Handle error here
-    die;
+    handleError("Failed to load command module: %s", $config->getError());
+}
+
+$logger->info("Request: \"%s\" Client: \"%s\"",
+	      $command,
+	      $cgi->remote_host());
+
+if ($command->requiresSession())
+{
+    $logger->debug("Establishing session.");
+    if (!$session->init())
+    {
+	handleError("Failed to establish session: %s", $session->getError());
+    }
+    $logger->debug("Session established.");
+
+    if ($command->requiresCSRFCheck())
+    {
+# XXX Somewhere in here check CSRF
+
+    }
 }
 
 
+if ($command->invoke())
+{
+    $logger->debug("Request invocation successfull.");
+}
+else
+{
+    $logger->error("Request invocation failed.");
+}
 
+exit(0);
+
+######################################################################
+#
+# Support functions
+
+=item handleError()
+
+Handle an error and exits.
+
+B<Arguments:>
+
+C<$format> As per sprintf().
+
+C<@args> As per sprintf().
+
+B<Returns:> Does not return.
+
+=cut
+sub handleError
+{
+    my $format = shift;
+    my @args = @_;
+
+    $logger->err($format, @args);
+
+    # XXX
+    die sprintf($format, @args);
+}
+#
+#
+######################################################################
+# XXX OLD STUFF Follows
 
 if (!defined($user))
 {

@@ -101,7 +101,7 @@ print "Attempting to load all modules...\n";
 my @modules = ( 
     "Logger", "CA", "CGI", "CGISession", "TokenGenerator", "WebSignOn",
     "Command", "CertRegistry", "Authorization", "NameMapper",
-    "SAMLExtension", "HTMLError", "Template", "HTMLTemplate"
+    "SAMLExtension", "HTMLError", "Template", "HTMLTemplate", "Request"
     );
 
 my $errorFound = 0;
@@ -109,6 +109,38 @@ for $module (@modules)
 {
     print "Loading $module ...";
     my $className = $config->getSectionParam("Modules", $module);
+    if (!defined($className))
+    {
+	print "Failed. Undefined module \"%s\"\n", $module;
+	$errorFound = 1;
+	next;
+    }
+    eval "use $className;";
+    if ($@)
+    {
+	print "Failed: $@\n";
+	$errorFound = 1;
+	next;
+    }
+    print "Success.\n";
+}
+
+if ($errorFound)
+{
+    exit(1);
+}
+
+print "Attempting to load all web commands...\n";
+
+my @commands = ( 
+    "DEFAULT"
+    );
+
+my $errorFound = 0;
+for $command (@command)
+{
+    print "Loading $module ...";
+    my $className = $config->getSectionParam("Commands", $module);
     if (!defined($className))
     {
 	print "Failed. Undefined module \"%s\"\n", $module;

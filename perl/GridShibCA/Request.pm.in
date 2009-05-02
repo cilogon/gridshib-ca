@@ -1,8 +1,9 @@
+#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# Logging functions.
+# GridShib CA object representing user request.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -44,9 +45,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::Logger
+=head1 GridShibCA::Request
 
-Interface to logging based on Perl Sys::Syslog Module.
+Object representing using request.
 
 =head2 Configuration Parameters
 
@@ -54,25 +55,19 @@ This class uses the following values from F<gridshib-ca.conf>:
 
 =over 4
 
-=item SyslogId
+=item XXX
 
-Identifying string to use with Syslog.
-
-=item SyslogFacility
-
-Facility to use with Syslog.
+XXX
 
 =back
 
 =cut
 
-package GridShibCA::Logger;
-
-use Carp;
-use Sys::Syslog;
-use File::Basename;
+package GridShibCA::Request;
 
 use GridShibCA::Config;
+
+use CGI;
 
 =head2 Methods
 
@@ -80,11 +75,11 @@ use GridShibCA::Config;
 
 =item new()
 
-Create a new Logger object.
+Create a new Request object.
 
 B<Arguments:> None
 
-B<Returns:> Logger instance
+B<Returns:> Request instance
 
 =cut
 
@@ -92,109 +87,131 @@ sub new
 {
     my $class = shift;
     my $self = {};
-
-    my $config = GridShibCA::Config->new();
-
-    # Syslog parameters
-    my $SYSLOG_ID = $config->getParam("SyslogId");
-    my $SYSLOG_OPTS = "pid";
-    my $SYSLOG_FACILITY = $config->getParam("SyslogFacility");
-
-    my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
-    openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
-    $self->{debug} = $config->getParamBoolean("debug");
+    $self->{config} = GridShibCA::Config->new(defaultSection => "Commands");
+    $self->{logger} = $self->{config}->getLogger();
+    if (!defined($self->{logger}))
+    {
+	return undef;
+    }
+    $self->{cgi} = $self->{config}->getCGI();
+    if (!defined($self->{cgi}))
+    {
+	return undef;
+    }
+    # Command to invoke if none given
+    $self->{defaultCommand} = "DEFAULT";
+    $self->{error} = undef;
     bless($self, $class);
     return $self;
 }
 
-=item log()
+=item dispatch()
 
-Log a message.
+Dispatch the user's request
 
-B<Arguments:>
+B<Arguments:> None
 
-I<$level> - one of "info", "warn", "err"
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
+B<Returns:> True on success, False on error.
 
 =cut
 
-sub log
+sub dispatch()
 {
     my $self = shift;
-    my $level = shift;
-    my $format = shift;
-    my @args = @_;
-    if (!defined($level) || !defined($format))
+    my $command = $self->getCommand();
+
+    my $instance = $config->getCommandModule($command);
+    if (!defined($instance))
     {
-	Carp::confess("Logger called with undefined arguments.");
+	$self->_error($config->getError());
+	return 0;
     }
-    syslog($level, $format, @args);
+
+    return $instance->invoke($self);
 }
 
-=item info()
+=item getCommand()
 
-Log an informative message
+Returns a string with the requested command.
 
-B<Arguments:>
+B<Arguments:> None
 
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
+B<Returns:> String with requested command, undef if none present.
 
 =cut
 
-sub info
+sub getCommand
 {
     my $self = shift;
-    $self->log("info", @_);
-}
-
-
-=item debug()
-
-Log an debugging message if so configured.
-
-B<Arguments:>
-
-I<$format, @args> - as would be presented to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub debug
-{
-    my $self = shift;
-    if ($self->{debug})
+    my $command = $self->{cgi}->param('command');
+    if (!defined($command))
     {
-	$self->log("info", @_);
+	$command = $self->{defaultCommand};
     }
+    return $command;
 }
 
 
-=item err()
+=item getError()
 
-Log an error message
+Return the last error message as a string.
 
-B<Arguments:>
-
-I<$format, @args> - as would be presented to sprintf()
+B<Arguments:> None
 
 B<Returns:> Nothing
 
 =cut
 
-sub err
+sub getError
 {
     my $self = shift;
-    $self->log("err", @_);
+    return $self->{error} || "No Error";
 }
 
 
 =back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+
+    if (!defined($self->{error}))
+    {
+	$self->{error} = "";
+    }
+    chomp($format);
+    my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
+			 @_);
+    $self->{error} .= $string;
+
+    # Don't use our Logger module as that could create a deadlock as the
+    # Logger class tries to load its configuration using this module
+    # Instead we'll print to STDERR, which should end up in the web
+    # server error logs.
+    printf(STDERR $string);
+}
+
 
 =head2 Version
 
@@ -205,7 +222,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 # Return true for import/use
 1;
 
+######################################################################
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
-######################################################################
