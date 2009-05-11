@@ -49,6 +49,10 @@ Output a error message. Either in using HTML error template or in plain text.
 
 package GridShibCA::HTMLError;
 
+# Inherit HTMLTemplate class
+use GridShibCA::HTMLTemplate;
+@ISA = ("GridShibCA::HTMLTemplate");
+
 use GridShibCA::Config;
 
 =head2 Methods
@@ -71,14 +75,15 @@ my $ERROR = undef;
 sub new
 {
     my $class = shift;
-    my $self = {};
-    $self->{config} = GridShibCA::Config->new();
-    $self->{logger} = $self->{config}->getLogger();
+    my $config = GridShibCA::Config->new();
     if (!defined($self->{logger}))
     {
 	$ERROR = $config->getError();
 	return undef;
     }
+    my $errorTemplate = $self->{config}->getSectionParam("Templates",
+							 "ErrorTempalte");
+    my $self = $class->SUPER::new($errorTemplate) || return undef;
     bless($self, $class);
     return $self;
 }

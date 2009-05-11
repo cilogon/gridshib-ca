@@ -49,10 +49,45 @@
 
 Base class for Web Commands to be invoked by L<GridShibCA::Request|GridShibCA::Request>::invoke()
 
+=head2 Constants
+
+The following are flags which are OR'ed together and use by
+getRequirements() and handleRequirements().
+
+=over 4
+
+=item $REQUIRE_HTTPS
+
+Require HTTPS as opposed to HTTP.
+
+=cut
+
+$REQUIRE_HTTPS = 0x0001;
+
+=item $REQUIRE_SESSION
+
+Require an established session.
+
+=cut
+
+$REQUIRE_SESSION = 0x0002;
+
+
+=item $REQUIRE_CSRF_CHECK
+
+Require CSRF protection.
+
+=cut
+
+$REQUIRE_SESSION = 0x0004;
+
+=back
+
 =cut
 
 package GridShibCA::WebCommand;
 
+use Carp;
 use GridShibCA::Config;
 
 =head2 Methods
@@ -75,16 +110,63 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{config} = GridShibCA::Config->new(defaultSection => "Commands");
-    $self->{logger} = $self->{config}->getLogger();
-    if (!defined($self->{logger}))
-    {
-	return undef;
-    }
-    # HTML template to use for errors
-    $self->{errorHtml} = "error.html";
     bless($self, $class);
+    $self->{config} = GridShibCA::Config->new() || $self->_lastResortError("Could not initialize Config object");
     return $self;
+}
+
+=item processRequest()
+
+Process a request from the client.
+
+B<Arguments:> None
+
+B<Returns:> True on sucess, False on error.
+
+=cut
+
+sub processRequest
+{
+    my $self = shift;
+
+    my $self->{logger} = $config->getLogger()
+	|| $self->_handleError("Could not get Logger: %s",
+			       $self->{config}->getError());
+
+    $self->{logger}->debug("Processing request.");
+
+    my $self->{request} = $config->getRequest()
+	|| $self->_handleError("Unable to load Request module: %s",
+			       $self->{config}->getError());
+
+    my $self->{cgi} = $config->getCGI()
+	|| $self->_handleError("Unable to load CGI module: %s",
+			       $self->{config}->getError());
+
+    my $self->{session} = $config->getCGISession()
+	|| $self->_handleError("Failed to establish session: %s",
+			       $self->{config}->getError());
+
+    my $command = $self->{request}->getCommand()
+	|| $self->_handleError("Failed to get command: %s",
+			       $self->{request}->getError());
+
+    $logger->info("Command: \"%s\" Client: \"%s\"",
+		  $command,
+		  $self->{cgi}->remote_host());
+
+    # Re-class ourselves as the command module class
+    my $commandClass = $self->{config}->getCommandClass($command)
+	|| $self->_handleError("Failed to get command class: %s",
+			       $self->{config}->getError());
+
+    $self->{logger}->debug("Instantiating class %s", $commandClass);
+
+    bless($self, $commandClass); 
+
+    $self->_handleRequirements();
+
+
 }
 
 =item invoke()
@@ -206,19 +288,122 @@ B<Returns:> Nothing
 sub _handleError
 {
     my $self = shift;
+    my $format = shift
+	|| self->_lastResortError("Undefined format to _handleError()");
+    my @args = @_;
+
+    my $string = sprintf($format, @args);
+    my %mappings = (
+	message => $string,
+	);
+
+    if (defined($self->{logger}))
+    {
+	$self->{logger}->err("ERROR: %s", $string);
+    }
+
+    my $errorTemplate = $self->{config}->getSectionParam("Templates",
+							 "ErrorTempalte");
+    if (!defined($errorTemplate))
+    {
+	$self->_lastResortError("Could not determine ErrorTemplate. Original error was: %s", $string);
+    }
+
+    if (!$self->_displayHTML($errorTemplate, %mappings))
+    {
+	$self->_lastResortError("Could not display error message. Original error was: %s", $string);
+    }
+}
+
+=item _lastResortError()
+
+Last resort error handling, get something printed when all else fails.
+
+B<Arguments:>
+
+C<$format> As per sprintf()
+
+C<@args> As per sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _lastResortError()
+{
+    my $self = shift;
     my $format = shift;
     my @args = @_;
 
-    $self->{logger}->err("ERROR: " . $format, @args);
-
-    # XXX handle variables
-    if (!$self->_displayHTML("error.html"))
-    {
-	$self->{logger}->err("ERROR: Could not display error.html");
-	# Last resort, get something to the user...
-	print("Sorry, a fatal error has occurred: " . $format, @args);
-    }
+    my $string = "Sorry, a major error happended: " . sprintf($format, @args);
+    print $string;
+    Carp::confess();
 }
+
+
+=item _handleRequirements()
+
+Handle the requirements, as returned by _getRequirements(), of this
+command.
+
+B<arguments:> None
+
+B<Returns:> Calls _handleError on error, returns nothing otherwise.
+
+=cut
+sub _handleRequirements
+{
+    my $self = shift;
+    my $requirements = $self->getRequirements();
+
+    if ($requirements | $REQUIRE_HTTPS)
+    {
+	my $url = $self->{cgi}->url(-full=>1);
+	
+	$self->{logger}->debug("Check for HTTPS protection. URL is %s", $url);
+
+	if ($url =~ /^https:/)
+	{
+	    $self->{logger}->debug("Verified HTTPS protection.");
+	}
+	else
+	{
+	    $self->_handleError("Deployment error: HTTPS protection required but not provided");
+	}
+    }
+
+    if ($requirements | $REQUIRE_SESSION)
+    {
+	if (!$self->{session}->existing())
+	{
+	    $self->_handleError("Failed to verify session: %s",
+				$self->{session}->getError());
+	}
+    }
+
+    if ($requirements | $REQUIRE_CSRF)
+    {
+	$self->_handleError("CSRF protection not implemented yet.");
+    }
+
+}
+
+=item _getRequirements
+
+Return a mask of our requirements. This method should be overriden by
+the child class.
+
+B<Arguments:> None
+
+B<Returns:> Mask of OR'ed requirement flags.
+
+=cut
+sub _getRequirements
+{
+    my $self = shift;
+    return $REQUIRE_HTTPS | $REQUIRE_SESSION;
+}
+
 
 =back
 

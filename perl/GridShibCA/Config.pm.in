@@ -280,11 +280,10 @@ sub getError
 }
 
 
-=item  getCommandModule()
+=item  getCommandClass()
 
-Given a Request instance, return an instance of the Command module
-referenced by the Request from the Commands section of the
-configuration file.
+Given a command name, return the name of the Command class referenced
+by that name from the Commands section of the configuration file.
 
 B<Arguments:>
 
@@ -294,7 +293,7 @@ B<Returns:> Instance, undef on error.
 
 =cut
 
-sub getCommandModule
+sub getCommandClass
 {
     my $self = shift;
     my $request = shift;
@@ -313,7 +312,7 @@ sub getCommandModule
 	$self->_error("Unrecognized command \"%s\"", $command);
 	return undef;
     }
-    return $self->_newInstance($className, @_);
+    return $className;
 }
 
 =back

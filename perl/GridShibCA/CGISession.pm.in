@@ -70,12 +70,10 @@ package GridShibCA::CGISession;
 # -ip_match Requires user's IP stays constant throughout session
 use CGI::Session ( '-ip_match' );
 
-# Inherit CGI::Session
-@ISA = ("CGI::Session");
-
 use GridShibCA::Config;
 
-use CGI;
+use Carp;
+use CGI::Session;
 use File::Spec;
 
 # Parameters for CGI::Session()
@@ -89,80 +87,131 @@ my $defaultOptions = {
 
 =over 4
 
+item new()
+
+Create a new CGISession object. Does not actually create a new
+session. That is done with createNew() or existing().
+
+B<Arguments:> CGI object.
+
+B<Returns:> CGISession instance, undef on error.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $cgi = shift || confess "Missing cgi argument";
+    my $self = {};
+    $self->{cgi} = $cgi;
+    $self->{config} = GridShibCA::Config->new() || return undef;
+    $self->{logger} = $self->{config}->getLogger() || return undef;
+    $self->{error} = undef;
+    bless($session, $class);
+    return $session;
+}
+
 =item createNew()
 
 Establish a new session.
 
 B<Arguments:> None
 
-B<Returns:> CGISession instance, undef on error - call errstr() for
+B<Returns:> 1 on success, 0 otherwise.
 reason.
 
 =cut
 
 sub createNew
 {
-    my $class = shift;
+    my $self = shift;
 
-    my $config = GridShibCA::Config->new();
-    my $logger = $self->{config}->getLogger();
-
-    $logger->debug("CGISession: Creating new session");
-    $session = $class->Super::new(
+    $self->{logger}->debug("CGISession: Creating new session");
+    $self->{session} = CGI::Session::new(
 	$class::defaultDriver,
 	undef, # New session
 	$class::defaultOptions);
 
-    if (!defined($session))
+    if (!defined($self-{session}))
     {
-	$logger->error("Failed to create new CGI::Session object: " . $class->Super->errstr());
-	return undef;
+	$logger->_error("Failed to create new CGI::Session object: %s",
+			$class->Super->errstr());
+	return 0;
     }
-    $logger->debug("Session %d established.", $session->id());
-    bless($session, $class);
-    return $self;
+    $logger->debug("Session %d established.", $self->id());
+    return 1;
 }
 
 
-=item createEstablished()
+=item existing()
 
-Return a established session. undef is returned if an established
-session is not found. 
+Validate an established session.
 
 B<Arguments:> None
 
-B<Returns:> CGISession instance, or undef of error - call errstr() for
-reason.
+B<Returns:> 1 if accomplished, 0 otherwise.
 
 =cut
 
-sub createEstablished
+sub exisiting
 {
-    my $class = shift;
-    my %args = @_;
+    my $self = shift;
 
-    my $config = GridShibCA::Config->new();
-    my $logger = $self->{config}->getLogger();
-
-    $logger->debug("CGISession: Creating established session");
-    $session = $class->Super::load(
+    $self-{logger}->debug("CGISession: Creating established session");
+    $self->{session} = CGI::Session::load(
 	$class::defaultDriver,
-	undef, # New session
+	$self->{cgi}, # New session
 	$class::defaultOptions);
     
     if (!defined($session))
     {
 	$logger->error("Failed to create established CGI::Session object: " . $class->Super->errstr());
-	return undef;
+	return 0;
     }
     if ($session->is_expired())
     {
 	$logger->error("Sesion is expired.");
-	return undef;
+	return 0;
     }
     $logger->debug("Session %d established.", $session->id());
-    bless($session, $class);
-    return $self;
+    return 1;
+}
+
+=item id
+
+Return id of the sesion.
+
+B<Arguments:> None
+
+B<Returns:> Id of session as a string.
+
+=cut
+
+sub id
+{
+    my $self = shift;
+    return $elf->id();
+}
+
+=item param
+
+Get or set parameter in session as per CGI::Session::param()
+
+B<Arguments:>
+
+C<$name> Parameter name
+
+C<$value> If present, value to set parameter to.
+
+C<Returns:> Parameter value
+
+=cut
+
+sub param
+{
+    my $self = shift;
+    my @args = @_;
+    return $self->{session}->param(@args);
 }
 
 =item saveWebSignOn
@@ -212,6 +261,22 @@ sub getWeSignOn
 }
 
 
+=item getError
+
+Return string describing last error. undef if no error has occurred.
+
+B<Aruments:> None
+
+B<Return:> String describing error or undef.
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error};
+}
+
 
 ######################################################################
 
@@ -238,13 +303,12 @@ B<Returns:> Nothing
 sub _error
 {
     my $self = shift;
-    my $format = shift;
+    my $format = shift || confess "Undefined format argument";
     my @args = @_;
 
-    my $config = GridShibCA::Config->new();
-    my $logger = $self->{config}->getLogger();
-    
-    $logger->error($format, @args);
+    my $string = sprinf($format, @args);
+    $self->{logger}->err($format, @args);
+    $self->{error} = $string;
 }
 
 =back

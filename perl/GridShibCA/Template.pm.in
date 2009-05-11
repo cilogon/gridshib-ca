@@ -54,6 +54,7 @@ runtime with values and then the result is output.
 package GridShibCA::Template;
 
 use GridShibCA::Config;
+use GridShibCA::Constants;
 
 use File::Spec;
 use Text::Template;
@@ -86,7 +87,14 @@ sub new
     }
     my $self = {};
     $self->{config} = GridShibCA::Config->new();
-    my $templateDir = $self->{config}->getParam("TemplateDirectory");
+    $self->{logger} = $self->config->getLogger();
+    if (!defined($self->{logger}))
+    {
+	$ERROR = $config->getError();
+	return undef;
+    }
+    my $templateDir = $self->{config}->getSectionParam("Templates",
+						       "Path");
     $self->{templateFile} = File::Spec->catfile($templateDir, $filename);
     # Read HTML template from file.
     # We need to use UNTAINT here to clean file for later evaluation
@@ -101,10 +109,10 @@ sub new
     }
     # Default initial hash values
     $self->{hash} = {
-	Version => "@PACKAGE_VERSION_STRING@",
+	Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
 	ContactAddress => $self->{config}->getParam("ContactAddress"),
 	ShibbolethProtectedCGIBinURL =>
-	    $self->{config}->getParam("ShibbolethProtectedCGIBinURL")
+	    $self->{config}->getParam("ShibbolethProtectedCGIBinURL"),
     };
     bless($self, $class);
     return $self;
@@ -176,7 +184,7 @@ sub getText
     my $text = $template->fill_in(
 	HASH => $self->{hash},
 	BROKEN => \&_broken,
-	BROKEN_ARG => $self->{templateFile}
+	BROKEN_ARG => $self
 	);
 
     if (!defined($text))
@@ -250,18 +258,20 @@ B<Arguments:> Hash with arg, text, error and lineno values.
   arg should contain the filename from BROKEN_ARG. Others as set
   by Text::Template.
 
-B<Returns:> Test to place into template.
+B<Returns:> Text to place into template.
 
 =cut
 
 sub _broken
 {
     my %hash = @_;
-    return sprintf("<p>HTML Template error: File %s line %d: %s : %s</p>",
-		   $hash{arg},
-		   $hash{lineno},
-		   $hash{error},
-		   $hash{text});
+    my $self = $hash{arg};
+    $self->{logger}->err("HTML Template error: File %s line %d: %s : %s",
+			 $self->{template},
+			 $hash{lineno},
+			 $hash{error},
+			 $hash{text});
+    return sprintf("<b>Unknown variable \"%s\"</b>", $hash{text});
 }
 
 

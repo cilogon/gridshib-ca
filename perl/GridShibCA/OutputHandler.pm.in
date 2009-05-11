@@ -1,9 +1,8 @@
-#!@PERL@ @PERL_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# Login command to establish session from Web Sign-on.
+# Handle output for GridShibCA.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,110 +44,109 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::WebCommand
+=head1 OutputHandler class
 
-Login command to establish session from web sign-on.
+This class handles all forms of output for the GridShib-CA.
 
-=cut
+=head2 Configuration Parameters
 
-package GridShibCA::Login;
+This class uses the following values from F<gridshib-ca.conf>:
 
+=over 4
 
-# Inherit WebCommand
-use GridShibCA::WebCommand;
-@ISA = ("GridShibCA::WebCommand");
+=item <Templates>Path</Templates>
+
+Path to location where template files are stored.
+
+=item <Templates>ErrorTempalte</Tempaltes>
+
+Path to template file for error output.
+
+=back
 
 =head2 Methods
 
 =over 4
 
-=item invoke()
-
-Invoke the command.
-
-B<Arguments:> Request object
-
-B<Returns:> True on success, False on error.
-
 =cut
 
-sub invoke
-{
-    my $self = shift;
-    my $request = shift;
+package GridShibCA::OutputHandler;
 
-    # For convienence
-    my $config = $self->{config};
-    my $logger = $self->{logger};
-    
-    my $webSignOn = $config->getWebSignOn();
-    if (!defined($webSignOn))
-    {
-	$self->_handleError("Failed to load WebSignOn module: %s",
-			    $config->getError());
-	return 0;
-    }
+use GridShibCA::Config;
 
-    if (!$webSignOn->init())
-    {
-	$self->_handleError("Error with sign-on: %s", $webSignOn->getError());
-	return 0;
-    }
+=item new()
 
-    my $authorization = $config->getAuthorization();
-    if (!defined($authorization))
-    {
-	$self->_handleError("Failed to load Authorization module: %s",
-			    $config->getError());
-	return 0;
-    }
-
-    if (!$authorization->authorize($webSignOn))
-    {
-	$logger->err("Authorization failed for user \"%s\" from \"%s\": %s",
-		     $webSignOn->getUserId(),
-		     $webSignOn->getIdPId());
-	$self->_handleError("Authorization failed.");
-	return 0;
-    }
-
-    if (!$self->{session}->saveWebSignOn($webSignOn))
-    {
-	$self->_handleError("Failed to save WebSignOn: %s",
-			    $session->errstr());
-	return 0;
-    }
-
-    $logger->info("New session(%s) created for user \"%s\" from \"%s\"",
-		  $self->{session}->id(),
-		  $webSignOn->getUserId(),
-		  $webSignOn->getIdPId());
-
-    if (!$self->_displayHTML("login.html"))
-    {
-	$self->_handleError("Failed to display HTML \"login.html\"");
-	return 0;
-    }
-
-    return 1;
-}
-
-
-=item requiresSession()
-
-Returns True if the command requires an established session.
+Create a new OutputHandler object.
 
 B<Arguments:> None
 
-B<Returns:> True if request requires session, False otherwise.
+B<Returns:> OutputHandler instance
 
 =cut
 
-sub requiresSession
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    my $self->{error} = undef;
+    bless($self, $class);
+    return $self;
+}
+
+
+=item outputHTML()
+
+=cut
+
+sub outputHTML
+{
+}
+
+
+=item getError()
+
+Return Error message associated with last error.
+
+B<Arguments:> None
+
+B<Returns:> String containing Error Message from last error. May be
+undef if no error has occurred.
+
+=cut
+
+sub getError
 {
     my $self = shift;
-    # We are going to be establishing a session, so don't require one.
-    return 0;
+    return $self->{error};
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _error()
+
+Handle a error message.
+
+B<Arguments:> As to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub _error
+{
+    my $self = shift;
+    my $format = shift;
+    $self->{error} = sprintf($format, @_);
 }
 
 =back
@@ -162,7 +160,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 # Return true for import/use
 1;
 
-######################################################################
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
+######################################################################
