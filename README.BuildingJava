@@ -65,7 +65,9 @@ Add this directory to your CLASSPATH:
 export CLASSPATH=${CLASSPATH}:${JAVA_HOME}/sample/jnlp/servlet/jnlp.jar
 
 Special note for MacOSX: Instead of jnlp.jar, use javaws.jar, which
-seems to be at ${JAVA_HOME}/lib/javaws.jar
+seems to be at one of the following locations:
+${JAVA_HOME}/lib/javaws.jar (where JAVA_HOME=/Library/Java/Home)
+/System/Library/Frameworks/JavaVM.framework/Resources/Deploy.bundle/Contents/Home/lib/javaws.jar
 
 ----------------------------------------------------------------------
 
