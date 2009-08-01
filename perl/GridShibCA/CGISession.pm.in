@@ -153,7 +153,7 @@ B<Returns:> 1 if accomplished, 0 otherwise.
 
 =cut
 
-sub exisiting
+sub existing
 {
     my $self = shift;
 
