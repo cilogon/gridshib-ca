@@ -1,0 +1,316 @@
+#!@PERL@ @PERL_CGI_BIN_ARGS@
+######################################################################
+#
+# $Id$
+#
+# This script is to be invoked protected by Shibboleth. It generates
+# Java Web Start JNLP file containing the Shib Session ID so that it
+# can piggyback on the browser's Shibboleth session.
+#
+# This file does not have a ".pl" suffix as that seems to confuse
+# some browsers and prevent them from parsing its output as a type
+# JNLP.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+use GridShibCA::Config;
+
+######################################################################
+
+sub errorExit($)
+{
+  my $error_string = shift;
+
+  print $cgi->header("text/plain");
+
+  print "ERROR: " . $error_string . "\n";
+  
+  my $errString = "ERROR:";
+  if (defined($user))
+  {
+      $errString .= $user  . ":";
+  }
+  if (defined($remoteAddr))
+  {
+      $errString .= $remoteAddr . ":";
+  }
+  if (defined($idp))
+  {
+      $errString .= $idp . ":";
+  }
+  $logger->err($errString . " " . $error_string);
+  exit(1);
+}
+
+######################################################################
+
+# Allowing for safe program execution in taint mode
+$ENV{PATH} = "/bin";
+# Be sure all of our created files are readable by user only
+umask(0077);
+
+my $config = GridShibCA::Config->new();
+
+# Initialize Logging
+
+$logger = $config->getLogger();
+
+if (!defined($logger))
+{
+    # No good way to report this error
+    die "Could not get Logger: " . $config->getError();
+}
+
+$cgi = $config->getCGI();
+if (!defined($cgi))
+{
+    errorExit("Could not access CGI interface: "
+	      . $config->getError());
+}
+
+# Scope these variables to package for use in errorExit
+$user = $cgi->getUserId();
+$remoteAddr = $cgi->remote_host();
+$idp = $cgi->getIdP();
+
+if (!defined($user))
+{
+    errorExit("REMOTE_USER not defined.");
+}
+
+if (!defined($idp))
+{
+    errorExit("Could not determine Shibboleth identity provider for user");
+}
+
+$logger->info("JWSLAUNCH:%s:%s:\"%s\"", $user, $remoteAddr, $idp);
+
+######################################################################
+#
+# Main code
+#
+
+# Protect against CSRF GET attacks
+if (!$cgi->CSRFCheck())
+{
+    errorExit("CSRF check failed. Did you try to relaunch the credential downloader? You must go back and re-load the previous page.");
+}
+
+my $JNLPtemplate = $config->getParam("JNLPTemplate");
+my $ShibProtectedCGIBinURL = $config->getParam("ShibbolethProtectedCGIBinURL");
+
+# Arguments to pass to JWS application
+my @jwsArgs = ();
+
+# Set debug first to turn on debugging early
+if ($config->getParamBoolean("clientDebug"))
+{
+    push(@jwsArgs, "debug=True");
+}
+
+my $url = $cgi->url();
+my $url_base = $cgi->url(-base=>1);
+my $shibsession = $cgi->getShibSession();
+
+if (!defined($shibsession))
+{
+    errorExit("Could not determine Shibboleth session Id.");
+}
+push(@jwsArgs, $shibsession);
+
+######################################################################
+#
+# Handle requested lifetime
+#
+
+my $requestedLifetime = $cgi->getRequestedCredLifetime();
+$logger->debug("Requested lifetime: $requestedLifetime");
+my $maxLifetime = $config->getParam("MaximumCredLifetime");
+if ($requestedLifetime > $maxLifetime)
+{
+    errorExit("Requested lifetime ($requestedLifetime) greater than allowed ($maxLifetime).");
+}
+
+if ($requestedLifetime == 0)
+{
+    errorExit("Requested credential with zero lifetime.");
+}
+
+push(@jwsArgs, "lifetime=" . $requestedLifetime);
+
+######################################################################
+#
+# Generate token
+#
+# We are using a session for the token.
+#
+
+# Get session lifetime in seconds
+my $sessionLifetime = $config->getParam("ClientSessionLifetime");
+
+my $session = $config->getCGISession();
+if (!defined($session))
+{
+    errorExit("Could not initialize session: "
+	      . $config->getError());
+}
+
+if (!$session->createNew(-lifetime=>$sessionLifetime))
+{
+    errorExit("Failed to create new session: " . $session->getError());
+}
+
+$session->param("userId", $user);
+$session->param("remoteAddr", $remoteAddr);
+
+my $sessionId = $session->id();
+$logger->debug("Created new session: $sessionId");
+
+push(@jwsArgs, "token=" . $session->id());
+
+######################################################################
+#
+# Do we want the client to use its bundled CAs when validating
+# https connections? Default is "yes", so we only need to specify
+# this argument if the answer is "no".
+
+my $useBundledCAs = $config->getParamBoolean("useBundledCAs");
+
+if (!$useBundledCAs)
+{
+    push(@jwsArgs, "useBundledCAs=false");
+}
+
+######################################################################
+#
+# Do we have a URL to show to the user when credential acquisition
+# is complete?
+
+my $redirectURL = $config->getParam("redirectURL");
+
+if (!defined($redirectURL) or ($redirectURL ne "NONE"))
+{
+    push(@jwsArgs, "redirectURL=" . $redirectURL);
+}
+
+######################################################################
+#
+# Do we have trusted CAs to pass to client and did the client request
+# we do so?
+#
+
+my $trustedCADirectory = $config->getParam("TrustedCADirectory");
+
+if (defined($trustedCADirectory) &&
+    (-x $trustedCADirectory) &&
+    (-d $trustedCADirectory) &&
+    $cgi->requestedTrustedCAUpdate())
+{
+    # Yes, pass pointer to CGI script
+    my $getTrustedCAsURL = $url_base .
+	$ShibProtectedCGIBinURL .
+	"/getTrustedCAs.cgi";
+    push(@jwsArgs, "trustURL=$getTrustedCAsURL");
+}
+
+######################################################################
+#
+# Create returned text
+#
+
+my $GridShibCAURL = $config->getParam("GridShibCAURL");
+my $code_base = $url_base . $GridShibCAURL;
+
+# JWS can't load jar files from HTTPS with untrusted CA certificates
+# Since JAR file is signed, this is a reasonable work around.
+$code_base =~ s/https:/http:/;
+
+my $genCredURL = $url_base . $ShibProtectedCGIBinURL . "/generateCred.cgi";
+push(@jwsArgs, "url=" . $genCredURL);
+
+# Build string of arguments
+my $arguments = "";
+for my $arg (@jwsArgs)
+{
+    $arguments .= "\t<argument>$arg</argument>\n";
+}
+
+$logger->debug("Successfully build JNLP file.");
+
+open(INPUT, $JNLPtemplate) || errorExit("Could not open JNLP template file \"$JNLPtemplate\": $!");
+
+my %headerArgs = (
+    -type=>"Application/X-Java-Jnlp-File"
+    );
+
+# The attachment option is required for Camino (at least) to do the
+# right thing.  However, this option seems to always cause Firefox to
+# ask what to do with the jnlp file, so we do not use it for FireFox.
+# Not that some Camino user-agent strings contain "like Firefox" hence
+# the apparently overly complex logic here.  See
+# https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719
+if ($cgi->user_agent("Mozilla") and !$cgi->user_agent("Camino"))
+{
+    # Firefox - do nothing
+}
+else
+{
+    # Not Firefox
+    $headerArgs{"-attachment"} = "launch.jnlp";
+}
+
+print $cgi->header(\%headerArgs);
+
+while (<INPUT>) {
+    s/\$\$arguments/$arguments/;
+    s/\$\$code_base/$code_base/;
+    print;
+}
+close(INPUT);
+
+$logger->debug("Finished.");
+
+exit(0);
+
+# The following triggers PERL mode in emaces.
+### Local Variables: ***
+### mode:perl ***
+### End: ***

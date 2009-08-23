@@ -1,9 +1,0 @@
-GridShib-CA Todo List:
-
-
-* Clean up configuration code
-
-* Add a make-release process
-
-* MyProxy work
-

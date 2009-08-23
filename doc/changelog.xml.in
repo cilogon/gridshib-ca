@@ -20,6 +20,30 @@
 </para>
 </sect1>
 
+<sect1 id="version-1.0.0">
+<title>Version: 1.0.0</title>
+<para>
+<itemizedlist>
+<listitem><para>The IO::Socket::SSL Perl module, required by MyProxy, is now required by configure (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=5861">Bug 5861</ulink>).</para></listitem>
+<listitem><para>Renamed create-jnlp to launchGSCA.jnlp as .jnlp suffix is important on Mac (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719">Bug 6719</ulink>).</para></listitem>
+<listitem><para>Improved reading of errors from Myproxy server (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=4917">Bug 4917</ulink>).</para></listitem>
+<listitem><para>Use CGISession.pm instead of TokenGenerator.pm for creating token used by JWS client (resolved Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6802">6802</ulink>). This adds a requirement for CGI::Session.</para></listitem>
+<listitem><para>New improved JWS java client (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=5847">5847</ulink>, <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6718">6718</ulink>).</para></listitem>
+<listitem><para>Added test/test-cred.sh.in for testing credentials downloaded from GS-CA</para></listitem>
+<listitem><para>Added "C=US, ST=UT, L=Salt Lake City, O=The USERTRUST Network, OU=http://www.usertrust.com, CN=UTN-USERFirst-Hardware" to trustStore for go.teragrid.org</para></listitem>
+<listitem><para>Beefed up logging in launchGSCA.jnlp and generateCred.cgi (Bugs <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6770">6770</ulink> and <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6636">6636</ulink>).</para></listitem>
+<listitem><para>Removed umask checking in JWS client (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=5298">5298</ulink>).</para></listitem>
+<listitem><para>Do not assume we can predict the user's DN, instead parse it from returned certificate (Cyrpt::OpenSSL::X509 Perl module now required). Remove get*DN() methods from CA.pm and move to OpenSSLCA.pm. (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6781">6781</ulink> and <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6774">6774</ulink>.)</para></listitem>
+<listitem><para>Use certificate DN hash instead of user identity for filename when logging certificate in CertRegistry.pm (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6778">6778</ulink>). Also include timestamp in filename so that all certificates (instead of last certificate per user) are recorded.</para></listitem>
+<listitem><para>Do not destroy CSRF cookie in create-jnlp (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6771">6771</ulink>).</para></listitem>
+<listitem><para>Fix untainting for ePTID in CGIInterface.pm (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6775">6775</ulink>).</para></listitem>
+<listitem><para>NameMapper.pm now uses CGIInterface.pm for REMOTE_USER and HTTP_SHIB_IDENTITY_PROVIDER (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6782">6782</ulink>).</para></listitem>
+<listitem><para>create-jnlp now adds "attachment" tag to output for non-FireFox browsers, so that Camino works correctly (Bug <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719">6719</ulink>).</para></listitem>
+<listitem><para>Minor bugs fixed: <ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6129">6129</ulink></para></listitem>
+</itemizedlist>
+</para>
+</sect1>
+
 <sect1 id="version-0.5.2">
 <title>Version: 0.5.2</title>
 <para>

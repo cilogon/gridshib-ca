@@ -40,13 +40,6 @@ Prior to using the GridShib CA on a new client system,
 please <a href="checkPrerequisites.html">make sure you have the client
 system properly configured</a>. Failing to do so may cause you
 headaches as well as being insecure.
-</p>
-<p class="prereq-text">
-The GridShib-CA will work for for any Institution with a Shibboleth
-server in InQueue that will release an identity to the
-GridShib-CA. You can find the list of institutions that are part of 
-InQueue <a href="http://inqueue.internet2.edu/who/">here</a>.
-</p>
 <p class="prereq-text">
 To use the GridShib-CA you will need to be served by an identity
 provider. If your home insitution does not provide an identity
@@ -56,10 +49,6 @@ to use and registration takes just a few minutes.
 </p>
 </td>
 <td id="idp-logos" width="25%">
-<a href="http://www.openidp.org">
-<img id="openidp-img" src="openidp-logo-small.png" align="middle"
-     alt="OpenIdP.org"/>
-</a>
 <a href="http://www.protectnetwork.com">
 <img id="protectnetwork-img" src="protectnetwork.png" align="middle"
      alt="Protectnetwork.com"/>

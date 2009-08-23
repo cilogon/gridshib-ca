@@ -8,7 +8,6 @@
 #
 # Make a test ditribution, deploy and test it
 test-dist: dist test/test-dist.sh
-	@echo Testing distribution $(DIST_FILE)
 	@/bin/sh test/test-dist.sh $(DIST_FILE)
 
 ######################################################################

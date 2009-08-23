@@ -50,6 +50,8 @@
 
 use GridShibCA::Config;
 
+use Crypt::OpenSSL::X509;
+
 # Run safely
 $ENV{PATH} = "/bin";
 umask (0077);
@@ -60,7 +62,6 @@ umask (0077);
 #
 
 my $config = GridShibCA::Config->new();
-
 
 $logger = $config->getLogger();
 
@@ -98,7 +99,10 @@ if (!defined($shib))
 	      . $config->getError());
 }
 
+# scope these variables to package for use in errorExit
 $user = $shib->getUserId();
+$idp = $shib->getIdP();
+$remoteAddr = $cgi->remote_host();
 
 if (!defined($user))
 {
@@ -106,15 +110,11 @@ if (!defined($user))
 				 "REMOTE_USER not defined.");
 }
 
-my $remoteAddr = $cgi->remote_host();
-
 if (!defined($remoteAddr))
 {
     $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
 				 "REMOTE_ADDR not defined.");
 }
-
-my $idp = $shib->getIdP();
 
 if (!defined($idp))
 {
@@ -161,42 +161,32 @@ my $requestedLifetime = $cgi->getRequestedCredLifetime();
 # This ensures that this request was routed here through a trusted
 # CGI script and not, e.g., malicious javascript.
 
-my $tokenGenerator = $config->getTokenGenerator($user,
-						$remoteAddr);
+my $session = $config->getCGISession();
 
-if (!defined($tokenGenerator))
+if (!defined($session))
 {
     $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
 				 "Could not initialize token generator: %s",
 				 $config->getError());
 }
 
-if (!$tokenGenerator->verify($token))
+# token is our session id
+if (!$session->fromId($token))
 {
     $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
 				 "Error verifying token: %s",
 				 $tokenGenerator->getError());
 }
 
-######################################################################
-#
-# Get DN for logging
-#
+if ($session->param("userId") ne $user)
+{
+    $errorHandler->HTTPErrorExit($errorHandler->HTTP_BAD_REQUEST,
+				 "User Id in session (%s) does not match actual (%s)",
+		 $$session->param("userId"), $user);
+}
 
-my $ca = $config->getCA($user, $idp);
-if (!defined($ca))
-{
-    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
-				 "Could not instantiate CA interface: %s",
-				 $config->getError());
-}
-my $DN = $ca->getDN();
-if (!defined($DN))
-{
-    $errorHandler->HTTPErrorExit($errorHandler->HTTP_INTERNAL_ERROR,
-				 "Couldn't determine DN for user: %s",
-				 $ca->getError());
-}
+# We're done with the session, we only use it once, delete it.
+$session->destroy();
 
 ######################################################################
 #
@@ -233,6 +223,14 @@ if (defined($portalURL))
 # And generate the credentials, which will be written to stdout.
 #
 
+my $ca = $config->getCA($user, $idp);
+if (!defined($ca))
+{
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Could not instantiate CA interface "
+	      . $config->getError());
+}
+
 if ($requestedLifetime)
 {
     $logger->debug("Requesting lifetime of %d", $requestedLifetime);
@@ -253,14 +251,27 @@ if (!defined($certificate))
 				 $ca->getError());
 }
 
-# XXX Add serial number to logging
-$logger->info("ISSUE: user=%s idp=%s remoteAddr=%s DN=\"%s\" lifetime=%d",
-	      $user, $idp, $remoteAddr, $DN, $ca->getCredLifetime());
+my $x509 = Crypt::OpenSSL::X509->new_from_string($certificate);
+if (!defined($x509))
+{
+    # Not clear to me how Crypt::OpenSSL::X509 returns an error string
+    errorExit($HTTP_INTERNAL_ERROR,
+	      "Error parsing certificate");
+}
+
+my $DN = $x509->subject();
+my $serial = $x509->serial();
+my $hash = $x509->hash();
+
+$logger->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" lifetime=%d",
+	      $user, $idp, $remoteAddr, $serial, $hash,
+	      $DN, $ca->getCredLifetime());
 
 my $certRegistry = $config->getCertRegistry();
 
 if (defined($certRegistry))
 {
+    $logger->debug("Calling certificate registry.");
     if (!$certRegistry->registerCert($user,
 				     $idp,
 				     $DN,

@@ -12,7 +12,9 @@
   </security>
     <resources> 
         <j2se version="1.4+"/> 
-        <jar href="@JAR_FILE@"/> 
+        <jar href="@JAR_NAME@"/> 
     </resources> 
-    <application-desc main-class="edu.ncsa.gridshib.gridshibca.GridShibCATester"/>
+    <application-desc main-class="edu.ncsa.gridshib.gridshibca.GridShibCAClientApp">
+      <argument>testLaunch=true</argument>
+    </application-desc>
 </jnlp> 

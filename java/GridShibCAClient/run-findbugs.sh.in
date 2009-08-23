@@ -1,0 +1,45 @@
+#!/bin/sh
+######################################################################
+#
+# $Id$
+#
+# Runs findbugs on our jar.
+#
+# http://findbugs.sourceforge.net/
+#
+######################################################################
+
+# Path to where findbugs is installed
+FINDBUGS_HOME=@FINDBUGS_HOME@
+
+if test ! -d $FINDBUGS_HOME ; then
+    echo "findbugs home ($FINDBUGS_HOME) not found."
+    exit q
+fi
+
+FINDBUGS_PROG=${FINDBUGS_HOME}/bin/findbugs
+
+if test ! -x $FINDBUGS_PROG ; then
+    echo "findbugs program ($FINDBUG_PROG) not found."
+    exit 1
+fi
+
+# Build our auxillary classpath from all the jars in lib
+AUX_CLASSPATH=""
+for jar in lib/*.jar ; do
+    if test -z $AUX_CLASSPATH ; then
+	AUX_CLASSPATH=${jar}
+    else
+	AUX_CLASSPATH=${AUX_CLASSPATH}:${jar}
+    fi
+done
+
+${FINDBUGS_HOME}/bin/findbugs \
+	-textui \
+	-low \
+	-onlyAnalyze org.globus.\*,edu.ncsa.\* \
+	-auxclasspath ${AUX_CLASSPATH} \
+	dist/@JAR_NAME@
+
+echo "Complete."
+exit 0	

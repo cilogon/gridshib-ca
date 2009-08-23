@@ -143,23 +143,6 @@ if (!$config->getParamBoolean("allowPortalDelegation"))
 
 ######################################################################
 #
-# Get the user's DN to pass to JWS application
-#
-
-my $ca = $config->getCA($user, $idp);
-if (!defined($ca))
-{
-    errorExit("Could not instantiate CA: " . $config->getError());
-}
-
-my $DN = $ca->getDN();
-if (!defined($DN))
-{
-    errorExit("Couldn't determine DN for user: " . $ca->getError());
-}
-
-######################################################################
-#
 # Check user authoriztion
 #
 

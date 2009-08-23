@@ -98,8 +98,8 @@ $config->dump();
 
 print "Attempting to load all modules...\n";
 
-my @modules = ( 
-    "Logger", "CA", "CGI", "CGISession", "TokenGenerator", "WebSignOn",
+my @modules = (
+    "Logger", "CA", "CGI", "CGISession", "WebSignOn",
     "Command", "CertRegistry", "Authorization", "NameMapper",
     "SAMLExtension", "HTMLError", "Template", "HTMLTemplate", "Request"
     );
@@ -111,7 +111,7 @@ for $module (@modules)
     my $className = $config->getSectionParam("Modules", $module);
     if (!defined($className))
     {
-	print "Failed. Undefined module \"%s\"\n", $module;
+	printf("Failed. Undefined module \"%s\"\n", $module);
 	$errorFound = 1;
 	next;
     }

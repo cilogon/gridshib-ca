@@ -192,6 +192,15 @@ sub acceptDelegation
 	return undef;
     }
 
+    # HACK: See MyProxy Bug 359:
+    # http://bugzilla.ncsa.uiuc.edu/show_bug.cgi?id=359
+    # We may get an Myproxy error message here instead of a certificate chain.
+    if ($self->myProxyResponsePending())
+    {
+	$self->_error("Got response from server instead of certificate chain");
+	return undef;
+    }
+
     # Read number of certificates being delegated
     my $numCerts;
     if (!$self->read($numCerts, 1))
@@ -247,7 +256,7 @@ sub readDERCertificate
     # Make sure we have what looks like a header
     if (($headerData[0] != 0x30) or ($headerData[1] != 0x82))
     {
-	$self->_error("Bad DER certificate header (%x %x)",
+	$self->_error("Bad DER certificate header (0x%x 0x%x)",
 		     $headerData[0], $headerData[1]);
 	return undef;
     }
@@ -260,6 +269,37 @@ sub readDERCertificate
 	return undef;
     }
     return $cert;
+}
+
+=item myProxyResponsePending
+
+This function is a hack to suport workaround described in MyProxy bug 359:
+http://bugzilla.ncsa.uiuc.edu/show_bug.cgi?id=359
+
+Return true if there is a MyProxy response waiting on the socket.
+
+B<Arguments:> None
+
+B<Returns:> 1 if MyProxy reponse pending on socket, 0 otherwise.
+
+=cut
+sub myProxyResponsePending
+{
+    my $self = shift;
+
+    my $peekBuf;
+    # This will be the string waiting in the buffer indicating a response
+    my $verString = "VERSION";
+    if (!$self->peek($peekBuf, length($verString)))
+    {
+	$self->_error("Error checking for error reading certificate chain");
+	return 0;
+    }
+    if ($verString eq $peekBuf)
+    {
+	return 1;
+    }
+    return 0;
 }
 
 =item _authorize()

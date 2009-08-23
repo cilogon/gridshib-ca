@@ -229,6 +229,44 @@ sub signRequest
     return $cmd->getOutput();
 }
 
+
+=item getCADN()
+
+Return the DN of the CA.
+
+B<Arguments:> None
+
+B<Returns:> CA DN as string, undef on error
+
+=cut
+
+sub getCADN
+{
+    my $self = shift;
+
+    return $self->{config}->getParam("CADN");
+}
+
+
+=item getCAOpenSSLDN()
+
+Return the CA DN in OpenSSL "oneline" format.
+
+B<Arguments:> None
+
+B<Returns:> CA DN as string, undef on error
+
+=cut
+
+sub getCAOpenSSLDN
+{
+    my $self = shift;
+
+    my $rfc2253DN = $self->getCADN();
+
+    return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
+}
+
 =back
 
 =cut

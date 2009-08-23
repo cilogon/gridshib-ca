@@ -59,6 +59,12 @@ ENABLE_DEMOS=@ENABLE_DEMOS@
 # Groups of files
 #
 
+# Name of our client jar
+JAR_NAME = @JAR_NAME@
+
+# Path to our client jar
+JAR_PATH = @JAR_PATH@
+
 # Image files
 IMAGES=\
 	images/*.jpg \
@@ -71,7 +77,7 @@ HTML_INCS = @HTML_INCS@
 # Source files
 CGI_BIN_SRCS = @CGI_BIN_SRCS@
 HTML_SRCS = @HTML_SRCS@
-CONF_SRCS = @CONF_SRCS@ @OVERWRITE_CONF_SRCS@
+CONF_SRCS = @CONF_SRCS@
 UTIL_SRCS = @UTIL_SRCS@
 PERL_MODULE_SRCS = @PERL_MODULE_SRCS@
 OPENSSL_CA_SRCS = @OPENSSL_CA_SRCS@
@@ -80,7 +86,6 @@ TEST_SRCS = @TEST_SRCS@
 
 # Groups of files
 CONF_FILES=@CONF_FILES@
-OVERWRITE_CONF_FILES=@OVERWRITE_CONF_FILES@
 UTILS=@UTILS@
 DEV_UTILS=@DEV_UTILS@
 BINARIES=@BINARIES@
@@ -105,12 +110,12 @@ DIST_FILES=\
 	$(OPENSSL_CA_SRCS) \
 	$(CGI_DEMO_SRCS) \
 	$(TEMPLATE_FILES) \
-	$(TEST_SRCS)
+	$(TEST_SRCS) \
+	$(JAR_PATH)
 
 # All files to be build by default
 BUILD_ALL =\
 	$(CONF_FILES) \
-	$(OVERWRITE_CONF_FILES) \
 	$(UTILS) \
 	$(BINARIES) \
 	$(PERL_MODULES) \
@@ -134,6 +139,7 @@ TOUCH = @TOUCH@
 OPENSSL = @OPENSSL@
 RM = @RM@
 XSLTPROC = @XSLTPROC@
+
 CONFIG_STATUS = ./config.status
 ENV = @ENV@
 
@@ -142,17 +148,13 @@ ENV = @ENV@
 # Tools needed for building and distribution
 #
 
-JAVAC = @JAVAC@
-JAVAC_OPTS= -sourcepath .:$(BC_SOURCE)
-
-JAR = @JAR@
-KEYTOOL = @KEYTOOL@
-JARSIGNER = @JARSIGNER@
 TAR = @TAR@
 DIR_EXISTS = test -d
 PERL = @PERL@
 POD2HTML = @POD2HTML@
 FIND = @FIND@
+ANT = @ANT@
+KEYTOOL = @KEYTOOL@
 
 ######################################################################
 ######################################################################
@@ -165,7 +167,6 @@ default: build-$(MODE)
 # Only clean up stuff that cannot be regenerated in distribution
 clean:: 
 	rm -f $(CONF_FILES)
-	rm -f $(OVERWRITE_CONF_FILES)
 	rm -f $(UTILS)
 	rm -f $(HTML_FILES)
 	rm -f $(CGI_BIN_SCRIPTS)
@@ -195,24 +196,71 @@ webdocs/checkPrerequisites.html webdocs/index.html: $(HTML_INCS)
 # Subdirectories we are building in
 SUBDIRS=@SUBDIRS@
 
-subdirs:
+# Path to our JWS client
+GRIDSHIBCACLIENT_PATH=java/GridShibCAClient
+
+subdirs: $(SUBDIRS) $(GRIDSHIBCACLIENT_PATH)
+
+$(SUBDIRS):
+	$(MAKE) $@/Makefile
+	$(MAKE) -C $@
+
+realclean clean::
 	@for subdir in $(SUBDIRS) ; do \
-		$(MAKE) $${subdir}/Makefile ;\
-		echo "Running make in $${subdir}:" ; \
-		(cd $${subdir}; make) ; \
+		echo "Running 'make $@' in $${subdir}:" ; \
+		(cd $${subdir}; $(MAKE) $@) ; \
 	done
 
-clean::
-	@for subdir in $(SUBDIRS) ; do \
-		echo "Running 'make clean' in $${subdir}:" ; \
-		(cd $${subdir}; make clean) ; \
+#
+# java/GridShibCAClient
+#
+
+jar: $(JAR_PATH)
+
+JAR_DEPS=@JAR_DEPS@
+
+$(JAR_PATH): $(JAR_DEPS)
+	cd $(GRIDSHIBCACLIENT_PATH) && $(ANT) gsca-jar
+
+$(GRIDSHIBCACLIENT_PATH): $(JAR_PATH)
+
+javaclean: 
+	cd $(GRIDSHIBCACLIENT_PATH) && $(ANT) clean
+
+TRUSTSTORE = $(GRIDSHIBCACLIENT_PATH)/resources/trustStore
+TRUSTSTORE_CERTS = $(GRIDSHIBCACLIENT_PATH)/trusted-https-certs/*.[0-9]
+# Bogus password, not needed but keeps keytool from prompting for one
+TRUSTSTORE_PASSWD=abcdef
+
+truststore: $(TRUSTSTORE)
+
+$(TRUSTSTORE): $(TRUSTSTORE_CERTS)
+	@$(RM) -f $@
+	@for cert in $^; do \
+		certname=`basename $${cert}` ;\
+		echo Adding $${certname} to trustStore ;\
+		$(KEYTOOL) -import \
+			-keystore $@ \
+			-noprompt \
+			-alias $${certname} \
+			-storepass ${TRUSTSTORE_PASSWD} \
+			-file $${cert} ;\
 	done
 
 realclean::
-	@for subdir in $(SUBDIRS) ; do \
-		echo "Running 'make realclean' in $${subdir}:" ; \
-		(cd $${subdir}; make realclean) ; \
-	done
+	$(RM) -f $(TRUSTSTORE)
+
+$(GRIDSHIBCACLIENT_PATH)/gsca.properties: $(GRIDSHIBCACLIENT_PATH)/gsca.properties.in config.status
+	@$(CONFIG_STATUS) --file=$@:$<
+
+$(GRIDSHIBCACLIENT_PATH)/resources/properties: $(GRIDSHIBCACLIENT_PATH)/resources/properties.in config.status
+	@$(CONFIG_STATUS) --file=$@:$<
+
+clean:: javaclean
+
+realcleam:: javaclean
+
+.PHONY: subdirs $(SUBDIRS) jar javaclean $(GRIDSHIBCACLIENT_PATH)
 
 ######################################################################
 ######################################################################
@@ -236,7 +284,6 @@ INSTALL_ALL=install-conf \
 	install-html \
 	install-jar \
 	install-cgi \
-	install-token-key \
 	install-templates \
 	install-demos
 
@@ -247,7 +294,7 @@ $(GRIDSHIB_CA_CONF_DIR):
 	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 
-install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES) $(OVERWRITE_CONF_FILES)
+install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 	@echo "Installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
@@ -258,10 +305,6 @@ install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES) $(OVERWRITE_CONF_FILES)
 		else \
 			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 		fi \
-	done
-	@for file in $(OVERWRITE_CONF_FILES) ; do \
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
@@ -292,9 +335,9 @@ install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES)
 		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
 	done
 
-install-jar:  $(JARFILE)
-	@echo "Installing $(JARFILE) to $(GRIDSHIB_CA_HTML_DIR)"
-	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JARFILE) $(GRIDSHIB_CA_HTML_DIR)/$(JARFILE)
+install-jar:  $(JAR_PATH)
+	@echo "Installing $(JAR_PATH) to $(GRIDSHIB_CA_HTML_DIR)"
+	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JAR_PATH) $(GRIDSHIB_CA_HTML_DIR)/$(JAR_NAME)
 
 $(TEMPLATE_DIR): $(GRIDSHIB_CA_CONF_DIR)
 	@echo "Creating $(TEMPLATE_DIR)"
@@ -324,7 +367,6 @@ install-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(CGI_BIN_SCRIPTS)
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
 	done
 
-
 $(CGI_BIN_DIR):
 	@echo "Creating $(CGI_BIN_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
@@ -337,22 +379,6 @@ install-demos: $(CGI_DEMO_SCRIPTS) $(CGI_BIN_DIR)
 			$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
 		done ;\
 	fi
-
-######################################################################
-#
-# Token Key
-#
-
-TOKEN_KEY=$(GRIDSHIB_CA_CONF_DIR)/token-key
-
-install-token-key: $(TOKEN_KEY)
-
-# Generate a random password for encrypting tokens
-$(TOKEN_KEY):
-	@echo "Creating token key"
-	@(umask 077 && $(OPENSSL) rand -base64 -out token-key 16)
-	@$(INSTALL) -o $(WWW_USER) -m 0600 token-key $@
-	@($(RM) -rf token-key)
 
 ######################################################################
 #
@@ -381,42 +407,12 @@ uninstall:
 	@echo "Uninstall done."
 
 ######################################################################
-#
-# Trust store
-#
-
-# Trusted CA certificates to include in Jar trustStore
-CA_CERTS = certificates/*.[0-9]
-DIST_FILES += $(CA_CERTS)
-
-# Path to jar trustStore
-TRUST_STORE = resources/trustStore
-DIST_FILES += $(TRUST_STORE)
-
-# Password to pass into keytool. Not actually used for anything, just keeps
-# keytool for prompting for one.
-TRUST_STORE_PASSWD=abcdef
-
-trustStore:	build-mode $(TRUST_STORE)
-
-$(TRUST_STORE): ${CA_CERTS}
-	@$(RM) -f $@
-	@$(DIR_EXISTS) resources || $(MKDIR) resources
-	@for cert in $^; do \
-		echo Adding $${cert} to trustStore ;\
-		${KEYTOOL} -import -keystore $@ -noprompt -alias $${cert} -storepass ${TRUST_STORE_PASSWD} -file $${cert} ;\
-	done
-
-realclean::
-	$(RM) -f $(TRUST_STRORE)
-
-######################################################################
 ######################################################################
 #
 # Development mode
 #
 
-build-build: java-prebuild jar build-dist
+build-build: build-mode build-dist
 
 build-mode:
 	@if test $(MODE) != "build" ; then \
@@ -425,107 +421,6 @@ build-mode:
 		exit 1 ;\
 	fi
 
-######################################################################
-#
-# Java files
-#
-
-# Project java files
-JAVA_CLASSES = @JAVA_CLASSES@
-JAVA_SRCS = $(JAVA_CLASSES:.class=.java)
-
-DIST_FILES += $(JAVA_SRCS)
-
-# BouncyCastle source directory
-BC_SOURCE=@BC_SOURCE@
-
-class-files: build-mode $(JAVA_CLASSES)
-
-%.class : %.java
-	$(JAVAC) $(JAVAC_OPTS) $^
-
-realclean::
-	rm -f $(JAVA_CLASSES)
-
-# Clean all BouncyCastle class files
-bc-clean:
-	$(FIND) $(BC_SOURCE) -name \*.class -exec $(RM) -f {} \;
-
-######################################################################
-#
-# Handle generation of Version.java
-#
-
-VERSION_BASE = edu/ncsa/gridshib/gridshibca/Version
-VERSION_JAVA = $(VERSION_BASE).java
-VERSION_IN = $(VERSION_BASE).in
-
-$(VERSON_BASE): $(VERSION_IN) config.status
-	@echo Creating $@
-	@$(CONFIG_STATUS) --file=$@:$<
-
-# Only copy Version to Version.java when it has actually changed
-# in order to prevent unnecessary rebuilds of jar file
-$(VERSION_JAVA): $(VERSION_BASE)
-	@if test -e $@ ; then \
-	  if diff $@ $^ > /dev/null ; then \
-	    : ;\
-	  else \
-	    echo "Updating Version.java" ;\
-	    $(CP) $^ $@ ;\
-	  fi ;\
-	else \
-	  echo "Creating Version.java" ;\
-	  $(CP) $^ $@ ;\
-	fi
-
-java-prebuild:: build-mode $(VERSION_JAVA)
-
-realclean::
-	$(RM) -f $(VERSION_JAVA)
-
-######################################################################
-#
-# Jar
-#
-
-# Target jar file
-JARFILE=@JAR_FILE@
-DIST_FILES += $(JARFILE)
-
-# Unsigned jar file created during build
-UNSIGNED_JARFILE=$(JARFILE:.jar=.unsigned.jar)
-
-# Other files to include in jar
-JAR_INCS=$(TRUST_STORE)
-
-# Extra options for jarsigner
-JARSIGNER_OPTS=@JARSIGNER_OPTS@
-
-jar: build-mode $(JARFILE)
-
-$(UNSIGNED_JARFILE):	$(JAVA_CLASSES) $(JAR_INCS)
-# Need to include the org.globus stuff here because one of the
-# class files has a "$" in it and I haven't figured out any other
-# way to do this and avoid getting it expanded.
-	@echo Creating $@ from local class files
-	$(JAR) cf $@ $^
-	@ echo Adding BouncyCastle class files
-	@(pwd=`pwd` && cd $(BC_SOURCE) && jar uf $${pwd}/$@ `(cd $(BC_SOURCE) && $(FIND) org -name \*.class)`)
-
-$(JARFILE): $(UNSIGNED_JARFILE)
-	@echo =========================================
-	@echo
-	@echo WARNING: Keystrokes will be echoed.
-	@echo 
-	@echo =========================================
-	$(JARSIGNER) $(JARSIGNER_OPTS) -storetype pkcs12 -signedjar $@ $^ default
-
-realclean::
-	$(RM) -f $(JARFILE)
-	$(RM) -f $(UNSIGNED_JARFILE)
-
-######################################################################
 ######################################################################
 #
 # Perl
@@ -631,8 +526,12 @@ POD2HTML_ROOT=/docs/$(DOC_INSTALL_DIR)/perl
 # Currently this removes the xml header
 CLEAN_POD2HTML=dev-utils/clean-pod2html.sh
 
+$(CLEAN_POD2HTML): $(CLEAN_POD2HTML).in config.status
+	@$(CONFIG_STATUS) --file=$@:$<
+
 perl-module-doc: $(PERL_DOC_DIR) $(PERL_MODULES)
 	@$(INSTALL) -d -m 0755 $(PERL_DOC_DIR)/GridShibCA
+	@chmod +x $(CLEAN_POD2HTML)
 	@for script in $(PERL_MODULES) ; do \
 	  f=`basename -s .pm $${script}` ;\
 	  t=GridShibCA::`basename $${script}` ;\
@@ -709,7 +608,7 @@ realclean::
 # Command to run perl scripts so they can get to modules in build directory
 PERL_TEST=${ENV} PERLLIB=./perl/
 
-test: subdirs check-perl test-openssl-ca test-myproxy-mapapp test-config
+test: subdirs chmod-tests chmod-utils check-perl test-openssl-ca test-myproxy-mapapp test-config
 	@echo "Tests successful."
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh
@@ -722,7 +621,10 @@ test-config: ${PERL_MODULES} utils/check-config.pl conf/gridshib-ca.conf
 	$(PERL_TEST) utils/check-config.pl conf/gridshib-ca.conf
 
 test-cert-issue:
+	@echo "Testing basic certificate issuance:"
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@fakeidp.org  urn:mace:incommon:fakeidp
+	@echo "Testing with ePTID-like Id:"
+	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl eptid:like/id@fakeidp.org  urn:mace:incommon:fakeidp
 
 test-myproxy-mapapp: utils/myproxy-mapapp.pl
 	@echo "Calling myproxy-mapapp.pl with good DN."
@@ -767,6 +669,20 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 # Allow for update of aclocal.m4
 aclocal:
 	aclocal --acdir=$(HOME)/lib/aclocal
+
+
+######################################################################
+#
+# Make sure configure-generates scripts are executable
+#
+
+chmod-utils: $(UTILS)
+	chmod 755 $(UTILS)
+
+chmod-tests: $(TEST_SCRIPTS)
+	chmod 755 $(TEST_SCRIPTS)
+
+.PHONY: chmod-utils chmod-tests
 
 ######################################################################
 ######################################################################

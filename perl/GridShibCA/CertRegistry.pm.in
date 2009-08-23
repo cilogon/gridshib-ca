@@ -43,9 +43,11 @@
 
 =head1 GridShibCA::CertRegistry.pm
 
-Interface for certificate registry, used to record issued certificates.
-This implementation records the last certificate issued for each user
-in the directory specified by the configuration parameter I<CertRegistryDir>
+Interface for certificate registry, used to record issued
+certificates.  This implementation records the all certificates in the
+directory specified by the configuration parameter I<CertRegistryDir>
+using a filename that is a concatenation of the DN hash and the
+current timestamp (which is not the issuance instance).
 
 Other implementations include: L<GridShibCA::myVocsDBCertRegistry|GridShibCA::myVocsDBCertRegistry>
 
@@ -65,6 +67,7 @@ Directory in which to store certificates.
 
 package GridShibCA::CertRegistry;
 
+use Crypt::OpenSSL::X509;
 use File::Spec;
 use FileHandle;
 
@@ -103,11 +106,12 @@ I<$userId> - User identity as a string.
 
 I<$idp> - IDP for user as a string.
 
-I<$dn> - DN issued to user as a string.
+I<$dn> - DN issued to user as a string. (Not used, DN derived from
+certificate.)
 
 I<$certificate> - PEM-encoded certificate as a string.
 
-I<$lifetime> - Certificate lifetime in seconds
+I<$lifetime> - Certificate lifetime in seconds.
 
 B<Returns:> One on success, zero on error
 
@@ -118,19 +122,34 @@ sub registerCert()
     my $self = shift;
     my $userId = shift;
     my $idp = shift;
-    my $dn = shift;
+    my $dn = shift; # Not used
     my $certificate = shift;
     my $lifetime = shift;
 
     if (!defined($userId) or
 	!defined($idp) or
-	!defined($dn) or
-	!defined($certificate) or
-	!defined($lifetime))
+	!defined($certificate))
     {
 	$self->_error("Argument missing.");
 	return 0;
     }
+
+    my $x509 = Crypt::OpenSSL::X509->new_from_string($certificate);
+    if (!defined($x509))
+    {
+	# Not clear to me how Crypt::OpenSSL::X509 returns an error string
+	$self->_error("Failed to parse X.509 certificate.");
+	return 0;
+    }
+
+    $dn = $x509->subject();
+    my $serial = $x509->serial();
+    my $hash = $x509->hash();
+    my $timeString = localtime();
+    my $timeSeconds = time();
+
+    # $x509->notAfter() returns a string of the form "Jun 20 11:50:06 2009 GMT"
+    # or I would use it to get lifetime.
 
     my $registryDir = $self->{config}->getParam("CertRegistryDir");
 
@@ -144,7 +163,19 @@ sub registerCert()
 	}
     }
 
-    my $certFilename = File::Spec->catfile($registryDir, $userId);
+    # Hash is tainted, so must untaint before using in filename
+    if ($hash =~ /^(\w+)$/)
+    {
+	$hash = $1;
+    }
+    else
+    {
+	$self->_error("Illegal characters in hash: \"$hash\"");
+	return 0;
+    }
+
+    my $certFilename = File::Spec->catfile($registryDir,
+					   $hash . "." . $timeSeconds);
     my $certFile = new FileHandle;
     
     if (!$certFile->open(">$certFilename"))
@@ -154,13 +185,11 @@ sub registerCert()
 	return 0;
     }
 
-    my $timeString = localtime();
-    my $timeSeconds = time();
-
     print $certFile <<"EOF";
 User: $userId
 IdP: $idp
 DN: $dn
+Serial: 0x$serial
 Time: $timeString
 Seconds: $timeSeconds
 Lifetime: $lifetime

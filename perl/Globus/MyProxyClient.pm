@@ -167,8 +167,24 @@ sub getCred
 
     if (!defined($cred))
     {
-	$self->_error("Error reading credential: %s",
-		      $sock->errstr());
+	if ($sock->myProxyResponsePending())
+	{
+	    $self->readResponse($sock);
+	    if (defined($self->{responseError}))
+	    {
+		$self->_error("Error from MyProxy server (more details in srver log): %s",
+			      $self->{responseError});
+	    }
+	    else
+	    {
+		$self->_error("Got error from MyProxy server but unable to parse. See server logs.");
+	    }
+	}
+	else
+	{
+	    $self->_error("Error reading credential: %s",
+			  $sock->errstr());
+	}
 	return undef;
     }
     $sock->close();
@@ -179,7 +195,7 @@ sub getCred
 
 Read a response from the MyProxy server.
 
-B<Arguments:> None
+B<Arguments:> C<socket>
 
 B<Returns:> Response code. Undef on error, setting
     $self->{responseError}.

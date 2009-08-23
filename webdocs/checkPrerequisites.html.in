@@ -69,16 +69,9 @@ else
     document.write("<p class=\"prereq-report-text\">You do not appear to have Java Web Start installed on your system. Please use the preceding link to install Java Web Start.</p>");
 }
 </script>
-<p class="prereq-report-text">
-On Unix variant systems, your umask must be set to 077 (or more
-restrictive). This prevents your web browser from creating
-world-readable files that would cause the GridShib CA to be insecure
-on multi-user systems.
-<a href="http://gridshib.globus.org/faq.html#gridshib-ca">
-More information about the GridShib CA and umasks.</a>
-</p>
 </td>
 </tr>
+<tr><td><p><p><p></td></tr>
 <tr>
 <td id="check-prereq-header" class="subheader">Check Prerequisites</td>
 <td id="check-prereq" colspan="2">

@@ -1,0 +1,9 @@
+gsca.jar=dist/@JAR_NAME@
+gsca.combinedJar=dist/GridShibCA-combined.jar
+gsca.unsignedJar=dist/GridShibCA-unsigned.jar
+
+jarsigner.exec=@JARSIGNER@
+jarsigner.keystore=@JARSIGNER_KEYSTORE@
+jarsigner.storetype=@JARSIGNER_STORETYPE@
+jarsigner.alias=@JARSIGNER_ALIAS@
+jarsigner.passwordFile=@JARSIGNER_PASSWORD_FILE@

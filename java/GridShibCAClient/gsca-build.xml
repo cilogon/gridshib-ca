@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="GridShibCAClient-JarBuilder" default="gsca-jar" basedir=".">
+  <description>Builds the combined, signed GSCA Client Jar.</description>
+
+  <property file="gsca.properties" />
+  <property file="nbproject/project.properties" />
+
+  <target name="gsca-jar" depends="gsca.unsignedJar"
+	  description="Create signed jar.">
+    <exec executable="${jarsigner.exec}" failonerror="true"
+	  input="${jarsigner.passwordFile}" >
+      <arg line="-storetype ${jarsigner.storetype}" />
+      <arg line="-keystore ${jarsigner.keystore}" />
+      <arg line="-signedjar ${gsca.jar}" />
+      <arg value="${gsca.unsignedJar}" />
+      <arg value="${jarsigner.alias}" />
+    </exec>
+  </target>
+
+  <target name="gsca.combinedJar" depends="jar"
+	  description="Create one combined jar Netbeans jar and libraries.">
+    <jar destfile="${gsca.combinedJar}">
+      <fileset dir="." >
+	<include name="resources/*" />
+	<exclude name="resources/*.in" />
+      </fileset>
+      <zipgroupfileset dir="lib/" >
+	<include name="*.jar" />
+	<exclude name="jnlp.jar" />
+	<exclude name="proguard.jar" />
+	<exclude name="junit*.jar" />
+	<exclude name="org-netbeans*.jar" />
+      </zipgroupfileset>
+      <zipfileset src="${dist.jar}" />
+    </jar>
+  </target>
+
+  <target name="gsca.unsignedJar" depends="gsca.combinedJar"
+	  description="Create combined jar without signature information">
+    <zip destfile="${gsca.unsignedJar}">
+      <zipfileset src="${gsca.combinedJar}">
+	<exclude name="META-INF/*.DSA" />
+	<exclude name="META-INF/*.RSA" />
+	<exclude name="META-INF/*.SF" />
+      </zipfileset>
+    </zip>
+  </target>
+
+</project>

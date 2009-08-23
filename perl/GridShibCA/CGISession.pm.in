@@ -53,15 +53,7 @@ interface with convienence functions for the GridShibCA.
 
 =head2 Configuration Parameters
 
-This class uses the following values from F<gridshib-ca.conf>:
-
-=over 4
-
-=item XXX
-
-XXX
-
-=back
+This class currently uses no values from F<gridshib-ca.conf>.
 
 =cut
 
@@ -76,23 +68,16 @@ use Carp;
 use CGI::Session;
 use File::Spec;
 
-# Parameters for CGI::Session()
-my $defaultDriver = undef;   # Default driver
-my $defaultOptions = {
-     Directory => File::Spec->tmpdir
-};
-
-
 =head2 Methods
 
 =over 4
 
-item new()
+=item new()
 
 Create a new CGISession object. Does not actually create a new
 session. That is done with createNew() or existing().
 
-B<Arguments:> CGI object.
+B<Arguments:> None
 
 B<Returns:> CGISession instance, undef on error.
 
@@ -101,21 +86,22 @@ B<Returns:> CGISession instance, undef on error.
 sub new
 {
     my $class = shift;
-    my $cgi = shift || confess "Missing cgi argument";
     my $self = {};
-    $self->{cgi} = $cgi;
+    $self->{impl} = CGI::Session;
     $self->{config} = GridShibCA::Config->new() || return undef;
     $self->{logger} = $self->{config}->getLogger() || return undef;
     $self->{error} = undef;
-    bless($session, $class);
-    return $session;
+    bless($self, $class);
+    return $self;
 }
 
 =item createNew()
 
 Establish a new session.
 
-B<Arguments:> None
+B<Arguments:>
+
+C<-lifetime> <value>         lifetime of session in seconds
 
 B<Returns:> 1 on success, 0 otherwise.
 reason.
@@ -125,56 +111,125 @@ reason.
 sub createNew
 {
     my $self = shift;
+    my %args = @_;
 
-    $self->{logger}->debug("CGISession: Creating new session");
-    $self->{session} = CGI::Session::new(
-	$class::defaultDriver,
-	undef, # New session
-	$class::defaultOptions);
-
-    if (!defined($self-{session}))
+    $self->{logger}->debug("Creating new session");
+    # undef == create new session instead of trying to use CGI
+    $self->{session} = $self->{impl}->new(undef);
+    if (!defined($self->{session}))
     {
-	$logger->_error("Failed to create new CGI::Session object: %s",
-			$class->Super->errstr());
+	$self->{logger}->err("Failed to create new session object: %s",
+			     $self->{impl}->errstr());
+	$self->_error("Failed to create new session object: %s",
+				$self->{impl}->errstr());
 	return 0;
     }
-    $logger->debug("Session %d established.", $self->id());
+    $self->{logger}->debug("Session established: %s", $self->id());
+    if (defined($args{-lifetime}))
+    {
+	$self->{logger}->debug("Setting session lifetime of %d seconds.",
+		       $args{-lifetime});
+	$self->{session}->expire($args{-lifetime});
+    }
     return 1;
 }
 
 
-=item existing()
+=item fromId()
 
-Validate an established session.
+Load existing session from id.
 
-B<Arguments:> None
+B<Arguments:> id string
 
 B<Returns:> 1 if accomplished, 0 otherwise.
 
 =cut
 
-sub existing
+# Yes, this method is prcedurally the same as from CGI().
+
+sub fromId
+{
+    my $self = shift;
+    my $id = shift || confess "Missing id argument";
+
+    $self->{logger}->debug("Loading established session from id: %s", $id);
+    $self->{session} = $self->{impl}->load($id);
+    
+    if (!defined($self->{session}))
+    {
+	$self->{logger}->err("Failed to load established session from Id(%s): %s",
+		      $id, $self->{impl}->errstr());
+	$self->_error("Failed to re-established session");
+	return 0;
+    }
+    if ($self->{session}->is_expired())
+    {
+	$self->{logger}->err("Session (%s) is expired.", $id);
+	$self->_error("Session is expired.");
+	return 0;
+    }
+    $self->{logger}->debug("Session %s re-established.",
+			   $self->{session}->id());
+    return 1;
+}
+
+=cut
+
+=item fromCGI()
+
+Load existing session from CGI interface.
+
+B<Arguments:> CGI object.
+
+B<Returns:> 1 if accomplished, 0 otherwise.
+
+=cut
+
+sub fromCGI
+{
+    my $self = shift;
+    my $cgi = shift || confess "Missing cgi argument";
+
+    $self->{logger}->debug("CGISession: Creating established session");
+    $self->{session} = $self->{impl}->load($cgi);
+    
+    if (!defined($self->{session}))
+    {
+	$self->{logger}->err("Failed to establish session from CGI: %s",
+			$self->{impl}->errstr());			     
+	$self->_error("Failed to established session: %s",
+			$self->{impl}->errstr());
+	return 0;
+    }
+    if ($self->{session}->is_expired())
+    {
+	$self->{logger}->err("Session (%s) is expired.", $id);
+	$self->_error("Session is expired.");
+	return 0;
+    }
+    $self->{logger}->debug("Session %s established.",
+			   $self->{session}->id());
+    return 1;
+}
+
+=item destroy
+
+Destroy this session.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub destroy
 {
     my $self = shift;
 
-    $self-{logger}->debug("CGISession: Creating established session");
-    $self->{session} = CGI::Session::load(
-	$class::defaultDriver,
-	$self->{cgi}, # New session
-	$class::defaultOptions);
-    
-    if (!defined($session))
-    {
-	$logger->error("Failed to create established CGI::Session object: " . $class->Super->errstr());
-	return 0;
-    }
-    if ($session->is_expired())
-    {
-	$logger->error("Sesion is expired.");
-	return 0;
-    }
-    $logger->debug("Session %d established.", $session->id());
-    return 1;
+    $self->{logger}->debug("Destroying session: %s", $self->{session}->id());
+    $self->{session}->delete();
+    # Recommended practice says use flush() after delete().
+    $self->{session}->flush();
 }
 
 =item id
@@ -190,12 +245,12 @@ B<Returns:> Id of session as a string.
 sub id
 {
     my $self = shift;
-    return $elf->id();
+    return $self->{session}->id();
 }
 
 =item param
 
-Get or set parameter in session as per CGI::Session::param()
+Get or set parameter in session as per CGI::Session->param()
 
 B<Arguments:>
 
@@ -214,53 +269,6 @@ sub param
     return $self->{session}->param(@args);
 }
 
-=item saveWebSignOn
-
-Store a WebSignOn object into session.
-
-B<Arguments:> WebSignOn object.
-
-B<Returns:> True on success, False on error
-
-=cut
-
-sub saveWebSignOn
-{
-    my $self = shift;
-    my $signOn = shift;
-
-    my $serializedSignOn = $signOn->serialize();
-    if (!defined($serializedSignOn))
-    {
-	$self->_error("Failed to serialized WebSignOn object.");
-	return 0;
-    }
-    $self->param("WebSignOn", $serializedSignOn);
-    return 1;
-}
-
-=item getWebSignOn
-
-Retrieve a previously stored a WebSignOn object from session.
-
-B<Arguments:> None
-
-B<Returns:> WebSignOn object, undef on error.
-
-=cut
-sub getWeSignOn
-{
-    my $self = shift;
-    my $webSignOn = $self->param("WebSignOn");
-    if (!defined($webSignOn))
-    {
-	$self->_error("Failed to retrieve WebSignOn: " . $self->errstr());
-	return undef;
-    }
-    return $webSignOn;
-}
-
-
 =item getError
 
 Return string describing last error. undef if no error has occurred.
@@ -277,6 +285,9 @@ sub getError
     return $self->{error};
 }
 
+=back
+
+=cut
 
 ######################################################################
 
@@ -288,7 +299,7 @@ These internal methods not intended for external use.
 
 =item _error()
 
-Handle logging an error message.
+Store error message for later retrieval.
 
 B<Arguments:>
 
@@ -306,8 +317,7 @@ sub _error
     my $format = shift || confess "Undefined format argument";
     my @args = @_;
 
-    my $string = sprinf($format, @args);
-    $self->{logger}->err($format, @args);
+    my $string = sprintf($format, @args);
     $self->{error} = $string;
 }
 

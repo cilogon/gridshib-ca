@@ -5,7 +5,7 @@
 #
 # This script serves as a welcome mat for users. It should be Shibboleth
 # protected and it makes sure that REMOTE_USER is available before
-# providing a link to invoke the "create-jnlp" script.
+# providing a link to invoke the "launchGSCA.jnlp" script.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -111,31 +111,6 @@ if (!defined($user))
     }
 }
 
-my $DN = undef;
-my $rfc2253DN = undef;
-
-if (defined($user))
-{
-    my $ca = $config->getCA($user, $idp);
-    if (!defined($ca))
-    {
-	$errorHandler->HTMLErrorExit("Could not instantiate CA: %s",
-				     $config->getError());
-    }
-    $DN = $ca->getOpenSSLDN();
-    if (!defined($DN))
-    {
-	$errorHandler->HTMLErrorExit("Could not get DN for user: %s",
-				     $ca->getError());
-    }
-    $rfc2253DN = $ca->getDN();
-    if (!defined($rfc2253DN))
-    {
-	$errorHandler->HTMLErrorExit("Could not get (rfc2253) DN for user: %s",
-				     $ca->getError());
-    }
-}
-
 ######################################################################
 #
 # Check user authoriztion
@@ -160,15 +135,21 @@ if (defined($portalURL))
 
 ######################################################################
 #
-# Make a html-friendly version of DN
+# Create CSRF protection
 
-my $formattedDN = $DN;
-# Replace any spaces with non-breaking spaces
-$formattedDN =~ s/ /&nbsp;/g;
+my $CSRFCookie = $cgi->createCSRFCookie();
 
-my $formattedRFC2253DN = $rfc2253DN;
-# Replace any spaces with non-breaking spaces
-$formattedRFC2253DN =~ s/ /&nbsp;/g;
+if (!defined($CSRFCookie))
+{
+    errorExit("Error creating CSRF cookie. Please see server logs.");
+}
+
+my $CSRFElement = $cgi->getCSRFFormElement();
+
+if (!defined($CSRFElement))
+{
+    errorExit("Error creating CSRF element. Please see server logs.");
+}
 
 ######################################################################
 #
@@ -202,6 +183,7 @@ my $defaultLifetime = $config->getParam("DefaultCredLifetime") / 3600;
 my $maximumLifetime = $config->getParam("MaximumCredLifetime") / 3600;
 
 ######################################################################
+
 #
 # Do we have trusted CAs to pass to client?
 #
@@ -257,7 +239,6 @@ print $cgi->header(-cookie=>$CSRFCookie);
 print $html;
 
 exit(0);
-
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***

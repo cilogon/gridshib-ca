@@ -1,0 +1,18 @@
+#
+# GridShibCA JWS Client Properties file
+#
+# Parsed by Java Properties class
+# http://java.sun.com/j2se/1.5.0/docs/api/java/util/Properties.html
+#
+# $Id$
+#
+
+# Our verison string
+Version: @PACKAGE_VERSION_STRING@
+
+# Our copyright string
+Copyright: @COPYRIGHT@
+
+# Path to our trustStore
+TrustStore: resources/trustStore
+

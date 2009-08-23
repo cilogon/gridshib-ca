@@ -97,9 +97,6 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   # Perl module to produce text from templates
   Template = GridShibCA::Template
 
-  # Perl module to generate tokens
-  TokenGenerator = GridShibCA::TokenGenerator
-
   # Perl module to use for ShibInterface
   WebSignOn = GridShibCA::ShibSignOn
 
@@ -119,14 +116,18 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 # Configuration files
 # Various files used by the GridShib-CA.
 
-# Symetric key file for tokens
-TokenKeyFile = ${GridShibCAConfDir}/token-key
+# JNLP file template
+JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
 
 # HTML header to include on web pages
 HTMLHeader = ${GridShibCAConfDir}/header.html
 
 # HTML footer to include on web pages
 HTMLFooter = ${GridShibCAConfDir}/footer.html
+
+# Lifetime for which the GridShib-CA Session Identifier passed to JWS
+# client is valid, in seconds.
+ClientSessionLifetime = 300
 
 ######################################################################
 #

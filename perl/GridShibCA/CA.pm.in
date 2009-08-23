@@ -92,6 +92,67 @@ sub new
     return $self;
 }
 
+
+=item signRequest()
+
+Given a certificate request return a certificate
+
+B<Arguments:> PEM-encoded PKCS10 certificate request as string.
+
+B<Returns:> Certificate as string, or undef on error
+
+=cut
+
+sub signRequest
+{
+    my $self = shift;
+
+    $self->_error("signRequest() unimplemented");
+    return undef;
+}
+
+=item setCredLifetime()
+
+Set the lifetime of signed credentials
+
+B<Arguments:> Lifetime in seconds
+
+B<Returns:> 1 on success, 0 on error
+
+=cut
+
+sub setCredLifetime
+{
+    my $self = shift;
+    my $lifetime = shift;
+    my $maxLifetime = $self->{config}->getParam("MaximumCredLifetime");
+    if ($lifetime > $maxLifetime)
+    {
+	$self->_error("Requested lifetime (%d) greater than maximum allowed (%d)",
+		      $lifetime, $maxLifetime);
+	return 0;
+    }
+    $self->{lifetime} = $lifetime;
+    return 1;
+}
+
+=item getCredLifetime()
+
+Get the lifetime of signed credentials.
+
+B<Arguments:> None
+
+B<Returns:> Credential lifetime in seconds
+
+=cut
+
+sub getCredLifetime
+{
+    my $self = shift;
+    return $self->{lifetime};
+}
+
+
 =item getDN()
 
 Return the DN for the user in RFC 2253 format.
@@ -181,44 +242,6 @@ sub getProtectedOpenSSLDN
     return $DN;
 }
 
-=item getCADN()
-
-Return the DN of the CA.
-
-B<Arguments:> None
-
-B<Returns:> CA DN as string, undef on error
-
-=cut
-
-sub getCADN
-{
-    my $self = shift;
-
-    return $self->{config}->getParam("CADN");
-}
-
-
-=item getCAOpenSSLDN()
-
-Return the CA DN in OpenSSL "oneline" format.
-
-B<Arguments:> None
-
-B<Returns:> CA DN as string, undef on error
-
-=cut
-
-sub getCAOpenSSLDN
-{
-    my $self = shift;
-
-    my $rfc2253DN = $self->getCADN();
-
-    return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
-}
-
-
 
 =item getRelativeDN()
 
@@ -255,81 +278,6 @@ sub getRelativeOpenSSLDN
     my $rfc2253DN = $self->getRelativeDN();
 
     return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
-}
-
-=item signRequest()
-
-Given a certificate request return a certificate
-
-B<Arguments:> PEM-encoded PKCS10 certificate request as string.
-
-B<Returns:> Certificate as string, or undef on error
-
-=cut
-
-sub signRequest
-{
-    my $self = shift;
-
-    $self->_error("signRequest() unimplemented");
-    return undef;
-}
-
-=item setCredLifetime()
-
-Set the lifetime of signed credentials
-
-B<Arguments:> Lifetime in seconds
-
-B<Returns:> 1 on success, 0 on error
-
-=cut
-
-sub setCredLifetime
-{
-    my $self = shift;
-    my $lifetime = shift;
-    my $maxLifetime = $self->{config}->getParam("MaximumCredLifetime");
-    if ($lifetime > $maxLifetime)
-    {
-	$self->_error("Requested lifetime (%d) greater than maximum allowed (%d)",
-		      $lifetime, $maxLifetime);
-	return 0;
-    }
-    $self->{lifetime} = $lifetime;
-    return 1;
-}
-
-=item getCredLifetime()
-
-Get the lifetime of signed credentials.
-
-B<Arguments:> None
-
-B<Returns:> Credential lifetime in seconds
-
-=cut
-
-sub getCredLifetime
-{
-    my $self = shift;
-    return $self->{lifetime};
-}
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
 }
 
 =item convertRFC2253DNToOpenSSL()
@@ -373,6 +321,22 @@ sub convertRFC2253DNToOpenSSL
     my $DN = "/" . join("/", @fields);
 
     return $DN;
+}
+
+=item getError()
+
+Return the last error message as a string.
+
+B<Arguments:> None
+
+B<Returns:> Error string
+
+=cut
+
+sub getError
+{
+    my $self = shift;
+    return $self->{error}
 }
 
 =back

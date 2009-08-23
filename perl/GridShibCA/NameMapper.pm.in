@@ -119,7 +119,23 @@ sub mapUser
     while ($dn =~ /\$\{(\w+)\}/)
     {
 	my $envVar = $1;
-	my $value = $ENV{$envVar};
+	my $value = undef;
+
+	# Handle REMOTE_USER and HTTP_SHIB_IDENTITY_PROVIDER as
+	# special cases and use provided values instead of going
+	# directly to environment.
+	if ($envVar eq "REMOTE_USER")
+	{
+	    $value = $user;
+	}
+	elsif ($envVar eq "HTTP_SHIB_IDENTITY_PROVIDER")
+	{
+	    $value = $idp;
+	}
+	else
+	{
+	    $value = $self->_getenv($envVar);
+	}
 
 	if (!defined($value))
 	{
@@ -129,17 +145,7 @@ sub mapUser
 			  $idp, $envVar, $idpPolicy);
 	    return undef;
 	}
-	# Clean environment value
-	if ($value =~ /^([-\/:\@\w.]+)$/)
-	{
-	    $value = $1;
-	}
-	else
-	{
-	    $self->_error("Invalid characters found in ENV{%s}: \"%s\"",
-			  $envVar, $value);
-	    return undef;
-	}
+
 	$dn =~ s/\$\{$envVar\}/$value/;
 
 	# Prevent run-away replacement with limit on number of replacements
@@ -294,6 +300,40 @@ sub _error
     my $self = shift;
     my $format = shift;
     $self->{error} = sprintf($format, @_);
+}
+
+
+=item _getenv()
+
+Get a environment variable and untaint it.
+
+B<Arguments:> Variable name to get
+
+B<Returns:> Untainted value, or undef if not defined.
+
+=cut
+
+sub _getenv()
+{
+    my $self = shift;
+    my $variable = shift;
+    my $value = $ENV{variable};
+    if (!defined($value))
+    {
+	return undef;
+    }
+    # Clean and untaint
+    if ($value =~ /^([-\/:\@\w.]+)$/)
+    {
+	$value = $1;
+    }
+    else
+    {
+	$self->_error("Invalid characters found in ENV{%s}: \"%s\"",
+		      $name, $value);
+	return undef;
+    }
+    return $value;
 }
 
 

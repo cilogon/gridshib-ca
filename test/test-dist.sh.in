@@ -22,9 +22,11 @@ dist_file=$1
 shift
 
 if test X${dist_file} = X ; then
-    echo "Usage: $0 <dist-file"
+    echo "Usage: $0 <dist-file>"
     exit 1
 fi
+
+echo "Testing distribution: ${dist_file}"
 
 ######################################################################
 #
@@ -84,7 +86,7 @@ credFilename=`mktemp /tmp/test-dist.XXXXXXXX`
 utils/issue-cert.pl -o ${credFilename} testuser@fakeidp.org  urn:mace:incommon:fakeidp
 test/test-cred.sh -c ${tmpDir}/gridshib-ca/ -i ${credFilename} -l -S
 
-echo "Success."
+echo "Distribution test successful."
 
 # Clean up
 #'cd /' prevents errors trying to remove current directory on some systems
