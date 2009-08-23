@@ -80,7 +80,7 @@ follows.
 
 6) Tag the trunk where the merge occurred.
 
-% cvs tag from_v0_5_BRANCH
+% cvs tag -F from_v0_5_BRANCH
 
 ----------------------------------------------------------------------
 
