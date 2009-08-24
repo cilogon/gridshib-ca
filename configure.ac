@@ -327,7 +327,7 @@ EXTRA_PERL_MODULES="\
 	CGI::Session \
 	Crypt::OpenSSL::X509 \
 	IO::Socket::SSL \
-	Text::template \
+	Text::Template \
 "
 AC_MSG_RESULT([Checking for extra PERL modules...])
 AC_PROG_PERL_MODULES([${EXTRA_PERL_MODULES}])
