@@ -47,6 +47,14 @@ cat $dist_file | (cd $tmpDir; tar xvfz - )
 
 cd $tmpDir/gridshib-ca-*
 
+if test -x configure ; then
+    echo "Unpack looks good."
+else
+    echo "Cannot find configure after unpacking."
+    ls -l
+    exit 1
+fi
+
 ######################################################################
 #
 # configure
@@ -79,12 +87,12 @@ make test
 
 echo "Installing:"
 make install
+
+echo "Running create-openssl-ca.pl:"
 utils/create-openssl-ca.pl
 
-echo "Testing crediential issuance:"
-credFilename=`mktemp /tmp/test-dist.XXXXXXXX`
-utils/issue-cert.pl -o ${credFilename} testuser@fakeidp.org  urn:mace:incommon:fakeidp
-test/test-cred.sh -c ${tmpDir}/gridshib-ca/ -i ${credFilename} -l -S
+echo "Running 'make test-post-install':"
+make test-post-install
 
 echo "Distribution test successful."
 
