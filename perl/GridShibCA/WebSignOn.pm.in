@@ -94,8 +94,8 @@ B<Returns:> True on success, False on failure.
 sub init
 {
     my $self = shift;
-    $self->{userId} = $self->_cleanUserId();
-    $self->{IdPId} = $self->_cleanIdPId();
+    $self->{userId} = $self->_userId();
+    $self->{IdPId} = $self->_idPId();
 
     if (!defined($self->{userId}) && !defined($self->{IdPId}))
     {
@@ -118,7 +118,7 @@ sub init
 
 =item getUserId()
 
-Return the clean, untainted user id as reported by sign-on system.
+Return the unchecked, tainted user id as reported by sign-on system.
 
 B<Arguments:> None
 
@@ -129,12 +129,12 @@ B<Returns:> User id as string, or undef if unknown
 sub getUserId
 {
     my $self = shift;
-    return $self->_cleanUserId();
+    return $self->_userId();
 }
 
 =item getIdP()
 
-Returns the clean, untainted identity provider identifier.
+Returns the unchecked, tainted identity provider identifier.
 
 B<Arguments:> None
 
@@ -145,7 +145,7 @@ B<Returns:> IdP as string, or undef if unknown
 sub getIdP
 {
     my $self = shift;
-    return $self->_cleanIdPId();
+    return $self->_idPId();
 }
 
 =item serialize()
@@ -230,43 +230,6 @@ sub _userId()
     return undef;
 }
 
-=item _cleanUserId()
-
-Returns an checked, untainted version of the UserId
-
-B<Arguments:> None
-
-B<Returns:> Clean UserId, undef on error
-
-=cut
-
-sub _cleanUserId
-{
-    my $self = shift;
-    my $userId = $self->_userId();
-    
-    if (!defined($userId))
-    {
-	return undef;
-    }
-
-    # Clean user name (from perlsec manual)
-    if ($userId =~ /^([-\@\w.]+)$/)
-    {
-	$userId = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in UserId (%s))",
-	    $userId);
-	return undef;
-    }
-
-    return $userId;
-}
-
-
-
 =item _idPId()
 
 Returns an unchecked, tainted IdpId. Should be overridden by child class.
@@ -282,41 +245,6 @@ sub _idPId
     my $self = shift;
     return undef;
 }
-
-=item _cleanIdpId()
-
-Returns an checked, untainted version of the passed IdpId
-
-B<Arguments:> None
-
-B<Returns:> Clean IdPId, undef on error
-
-=cut
-
-sub _cleanIdPId
-{
-    my $self = shift;
-
-    my $idp = $self->_idPId();
-    if (!defined($idp))
-    {
-	return undef;
-    }
-
-    # Clean Idp Id (from perlsec manual)
-    if ($idp =~ /^([-\/:\@\w.]+)$/)
-    {
-	$idp = $1;
-    }
-    else
-    {
-	$self->{logger}->err("Illegal characters detected in IdP Id (%s)",
-			     $idp);
-	return undef;
-    }
-    return $idp;
-}
-
 
 =item _error()
 
