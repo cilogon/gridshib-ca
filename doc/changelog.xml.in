@@ -9,7 +9,7 @@
 <title>Current Version: @PACKAGE_VERSION@</title>
 <para>
 <itemizedlist>
-<listitem><para>UserId and IdpID returned by WebSignOn.on are no longer untainted.  (<ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6775">Bug 6775</ulink>)</para></listitem>
+<listitem><para>UserId and IdpID returned by WebSignOn.on are no longer untainted.  (<ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6809">Bug 6809</ulink>)</para></listitem>
 <listitem><para>Now using Config::General to parse configuration (<ulink url="https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6527">Bug 6527</ulink>. No longer have coded-in default. Configuration file format has changed.</para></listitem>
 <listitem><para>Added ShibInterface perl module, taking methods from CGIInterface module.</para></listitem>
 <listitem><para>Added SAMLExtension perl module, basically wrapping GridShib-SAMLTools</para></listitem>
