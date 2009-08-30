@@ -14,7 +14,10 @@ sub name { 'GridShib-CA Test Suite' }
 
 sub include_tests
 {
-    qw(GridShibCA::test::ConfigTest)
+    qw(
+GridShibCA::test::ConfigTest
+GridShibCA::test::CommandTest
+)
 }
 
 # Return true for import/use
