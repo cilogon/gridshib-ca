@@ -78,7 +78,7 @@ my $configFilename = shift;
 if (defined($configFilename))
 {
     print "Checking configuration file $configFilename instead of default.\n";
-    GridShibCA::Config->setConfigFilename($configFilename);a
+    GridShibCA::Config->setConfigFilename($configFilename);
 }
 
 my $config = GridShibCA::Config->new(
