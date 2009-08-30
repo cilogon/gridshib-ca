@@ -696,6 +696,14 @@ if test ${MODE} = "build" ; then
 		[chmod +x java/GridShibCAClient/run-findbugs.sh])
 
    dnl ----------------------------------------
+   dnl PERL
+   AC_MSG_RESULT([Checking for PERL modules required for development...])
+   PERL_DEV_MODULES="\
+	Test::Unit \
+	"
+   AC_PROG_PERL_MODULES([${PERL_DEV_MODULES}])
+		
+   dnl ----------------------------------------
    dnl Development
 
    dnl Generate development utilities and tests
