@@ -437,6 +437,8 @@ check-perl: $(PERL_SCRIPTS) $(REQUIRED_PERL_MODULES)
 		$(PERL) -c -T -I./perl/ $${script} || exit 1 ;\
 	done
 
+test:: check-perl
+
 clean::
 	$(RM) -f $(PERL_MODULES)
 
@@ -608,17 +610,16 @@ realclean::
 # Command to run perl scripts so they can get to modules in build directory
 PERL_TEST=${ENV} PERLLIB=./perl/
 
-test: subdirs chmod-tests chmod-utils check-perl test-openssl-ca test-myproxy-mapapp test-config
-	@echo "Tests successful."
-
-test-openssl-ca: openssl-ca/openssl-ca-test.sh
+test-openssl-ca: openssl-ca/openssl-ca-test.sh openssl-ca
+	@chmod 755 openssl-ca/openssl-ca-test.sh
 	openssl-ca/openssl-ca-test.sh
 
-test-post-install: test-cert-issue
-	@echo "Post install tests successful."
+test:: test-openssl-ca
 
 test-config: ${PERL_MODULES} utils/check-config.pl conf/gridshib-ca.conf
 	$(PERL_TEST) utils/check-config.pl conf/gridshib-ca.conf
+
+test:: test-config
 
 test-cert-issue:
 	@echo "Testing basic certificate issuance:"
@@ -626,7 +627,11 @@ test-cert-issue:
 	@echo "Testing with ePTID-like Id:"
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl eptid:like/id@fakeidp.org  urn:mace:incommon:fakeidp
 
+test-post-install: test-cert-issue
+	@echo "Post install tests successful."
+
 test-myproxy-mapapp: utils/myproxy-mapapp.pl
+	@chmod 755 utils/myproxy-mapapp.pl
 	@echo "Calling myproxy-mapapp.pl with good DN."
 	@if utils/myproxy-mapapp.pl "@OPENSSL_RELATIVE_DN@/Test User" ; then \
 		echo "Success." ;\
@@ -641,6 +646,8 @@ test-myproxy-mapapp: utils/myproxy-mapapp.pl
 	else \
 		echo "Success." ;\
 	fi
+
+test:: test-myproxy-mapapp
 
 ######################################################################
 ######################################################################
@@ -669,20 +676,6 @@ $(srcdir)/configure: @CONFIGURE_DEP@
 # Allow for update of aclocal.m4
 aclocal:
 	aclocal --acdir=$(HOME)/lib/aclocal
-
-
-######################################################################
-#
-# Make sure configure-generates scripts are executable
-#
-
-chmod-utils: $(UTILS)
-	chmod 755 $(UTILS)
-
-chmod-tests: $(TEST_SCRIPTS)
-	chmod 755 $(TEST_SCRIPTS)
-
-.PHONY: chmod-utils chmod-tests
 
 ######################################################################
 ######################################################################

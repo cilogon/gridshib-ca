@@ -17,6 +17,8 @@ test-dist: dist test/test-dist.sh
 perl-unit-tests: $(PERL_MODULES)
 	$(PERL) -I perl/ test/TestRunner.pl perl/GridShibCA/test/Suite.pm
 
+test:: perl-unit-tests
+
 ######################################################################
 #
 # Name of test host
