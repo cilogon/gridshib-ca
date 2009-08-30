@@ -39,8 +39,8 @@ sub tear_down
 sub test_getConfigFilename
 {
     my $self = shift;
-    $self->assert_str_equals($self->{config}->getConfigFilename(),
-			     $configFilename);
+    $self->assert_str_equals($configFilename,
+			     $self->{config}->getConfigFilename());
 }
 
 sub test_getParam
