@@ -12,6 +12,13 @@ test-dist: dist test/test-dist.sh
 
 ######################################################################
 #
+# PERL unit tests
+
+perl-unit-tests: $(PERL_MODULES)
+	$(PERL) -I perl/ test/TestRunner.pl perl/GridShibCA/test/Suite.pm
+
+######################################################################
+#
 # Name of test host
 
 TEST_HOST=computer.ncsa.uiuc.edu

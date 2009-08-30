@@ -79,6 +79,8 @@ C<$debug> Turn on debugging if True
 
 C<$defaultSection> Section to use for getParam() requests.
 
+C<$useStderrOnError> Print error to STDERR on error (default is True)
+
 B<Returns:> Config instance
 
 =cut
@@ -101,6 +103,12 @@ sub new
     if (defined($args{defaultSection}))
     {
 	$self->{defaultSection} = $args{defaultSection};
+    }
+    
+    $self->{useStderrOnError} = 1;
+    if (defined($args{useStderrOnError}))
+    {
+	$self->{useStderrOnError} = $args{useStderrOnError};
     }
 
     # Maximum number of replacements on configuration variables
@@ -798,11 +806,14 @@ sub _error
 			 @args);
     $self->{error} .= $string;
 
-    # Don't use our Logger module as that could create a deadlock as the
-    # Logger class tries to load its configuration using this module
-    # Instead we'll print to STDERR, which should end up in the web
-    # server error logs.
-    printf(STDERR $string);
+    if ($self->{useStderrOnError})
+    {
+	# Don't use our Logger module as that could create a deadlock as the
+	# Logger class tries to load its configuration using this module
+	# Instead we'll print to STDERR, which should end up in the web
+	# server error logs.
+	printf(STDERR $string);
+    }
 }
 
 =back
