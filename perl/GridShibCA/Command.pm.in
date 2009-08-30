@@ -137,6 +137,14 @@ sub exec
     local(*cmdIn, *cmdOut, *cmdErr);
     my ($pid);
 
+    # Since we can't catch unexistent files easily as errors from IPC::Open3
+    # check for executable here.
+    if ( ! -x $self->{command} )
+    {
+	$self->{status} = 1;
+	return 0;
+    }
+
     my $inFD = \*cmdIn;
     if ($self->{useSTDIN} == 1)
     {
@@ -150,7 +158,6 @@ sub exec
     my $savePATH = $ENV{PATH};
     $ENV{PATH} = "/bin";
 
-    # XXX Error handling
     $pid = IPC::Open3::open3($inFD, \*cmdOut, \*cmdErr, @cmdArgs);
 
     if (defined($self->{input}))
@@ -159,10 +166,10 @@ sub exec
     }
     close(cmdIn);
 
-    waitpid($pid, 0);
+    my $reapedPid = waitpid($pid, 0);
 
-    $self->{status} = $?;
-
+    $self->{status} = $? >> 8;
+    
     # Read STDOUT and STDERR from command
     $self->{stdout} = "";
     $self->{stderr} = "";
@@ -181,7 +188,13 @@ sub exec
 
     $ENV{PATH} = $savePATH;
 
-    return ($self->{status} == 0);
+    my $returnValue = 1;
+    if ($self->{status} != 0)
+    {
+	$returnValue = 0;
+    }
+
+    return $returnValue;
 }
 
 =item getOutput()
