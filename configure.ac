@@ -222,6 +222,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/CGISession.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
+	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLError.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
 	perl/GridShibCA/Logger.pm \
