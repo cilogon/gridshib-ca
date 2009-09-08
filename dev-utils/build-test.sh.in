@@ -42,10 +42,13 @@ conf_opts="\
 --with-www-user=www-data \
 "
 
-echo "Running configure..."
-echo "Options are: $conf_opts"
-
-./configure ${conf_opts}
+if test -f Makefile ; then
+    echo "Makefile already existings. Skiping configure"
+else
+    echo "Running configure..."
+    echo "Options are: $conf_opts"
+    ./configure ${conf_opts}
+fi
 
 ######################################################################
 
