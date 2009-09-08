@@ -57,6 +57,10 @@ package GridShibCA::ShibSignOn;
 use GridShibCA::WebSignOn;
 @ISA = ("GridShibCA::WebSignOn");
 
+=head2 Methods
+
+=over 4
+
 =item _userId()
 
 Return the user id as reported by Shibboleth through REMOTE_USER.
@@ -71,14 +75,7 @@ sub _userId
 {
     my $self = shift;
 
-    my $cgi = $self->{config}->getCGI();
-    if (!defined($cgi))
-    {
-	$self->{logger}->err("Could not instantiate CGI inteface.");
-	return undef;
-    }
-	
-    my $remote_user = $cgi->remote_user();
+    my $remote_user = $self->{cgi}->remote_user();
     if (!defined($remote_user))
     {
 	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
@@ -139,6 +136,20 @@ sub getShibSession
     return $shibsession;
 }
 
+=item methodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub methodName
+{
+    return "Shibboleth";
+}
 
 =item getSSOResponse()
 

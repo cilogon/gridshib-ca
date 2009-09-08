@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# Login command to establish session from Web Sign-on.
+# Logon WebCommand.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,26 +45,27 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::WebCommand
+=head1 GridShibCA::Logon
 
-Login command to establish session from web sign-on.
+Handles conversion of WebSignOn to internal session and directs
+user to gsca.cgi
 
 =cut
 
-package GridShibCA::Login;
-
+package GridShibCA::Logon;
 
 # Inherit WebCommand
-use GridShibCA::WebCommand;
-@ISA = ("GridShibCA::WebCommand");
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
 =over 4
 
-=item invoke()
+=item doCommand()
 
-Invoke the command.
+Override base class with my specific logic.
 
 B<Arguments:> Request object
 
@@ -72,83 +73,54 @@ B<Returns:> True on success, False on error.
 
 =cut
 
-sub invoke
+sub doCommand
 {
     my $self = shift;
-    my $request = shift;
-
-    # For convienence
-    my $config = $self->{config};
-    my $logger = $self->{logger};
     
-    my $webSignOn = $config->getWebSignOn();
-    if (!defined($webSignOn))
-    {
-	$self->_handleError("Failed to load WebSignOn module: %s",
-			    $config->getError());
-	return 0;
-    }
+    $self->{logger}->info("Connection from %s", $self->{cgi}->remote_addr());
 
-    if (!$webSignOn->init())
-    {
-	$self->_handleError("Error with sign-on: %s", $webSignOn->getError());
-	return 0;
-    }
-
-    my $authorization = $config->getAuthorization();
-    if (!defined($authorization))
-    {
-	$self->_handleError("Failed to load Authorization module: %s",
-			    $config->getError());
-	return 0;
-    }
-
-    if (!$authorization->authorize($webSignOn))
-    {
-	$logger->err("Authorization failed for user \"%s\" from \"%s\": %s",
-		     $webSignOn->getUserId(),
-		     $webSignOn->getIdPId());
-	$self->_handleError("Authorization failed.");
-	return 0;
-    }
-
-    if (!$self->{session}->saveWebSignOn($webSignOn))
-    {
-	$self->_handleError("Failed to save WebSignOn: %s",
-			    $session->errstr());
-	return 0;
-    }
-
-    $logger->info("New session(%s) created for user \"%s\" from \"%s\"",
-		  $self->{session}->id(),
-		  $webSignOn->getUserId(),
-		  $webSignOn->getIdPId());
-
-    if (!$self->_displayHTML("login.html"))
-    {
-	$self->_handleError("Failed to display HTML \"login.html\"");
-	return 0;
-    }
-
-    return 1;
+    my %mappings = ();
+    my $signon = $self->{config}->getWebSignOn();
+    $self->{logger}->debug("Performing %s sign-on", $signon->methodName());
+    $signon->init();
+    $self->{logger}->debug("Sign-on complete: UserId=%s IdPId=%s",
+			   $signon->getUserId(), $signon->getIdP());
+    $self->doLogon($signon);
+    $self->_displayHTML("LogonTemplate", %mappings);
 }
 
+=item doLogon()
 
-=item requiresSession()
+Given a WebSignOn object, authorize and create a session.
 
-Returns True if the command requires an established session.
+B<Arguments:> WebSignOn object
 
-B<Arguments:> None
-
-B<Returns:> True if request requires session, False otherwise.
+B<Returns:> Nothing. Throws GridShibCA::Exception or descendant on error.
 
 =cut
 
-sub requiresSession
+sub doLogon
 {
     my $self = shift;
-    # We are going to be establishing a session, so don't require one.
-    return 0;
+    my $signon = shift ||
+	throw GridShibCA::Exception("signon undefined");
+
+    my $authorization = $self->{config}->getAuthorization();
+    $authorization->authorize($signon);
+    
+    my $session = $self->{config}->getCGISession();
+    $session->createNew();
+    $session->recordWebSignOn($signon);
+ 
+    $self->{logger}->info("NEW SESSION:UserId %s:IdPId %s:Session %s:IP %s",
+			  $signon->getUserId(),
+			  $signon->getIdP(),
+			  $session->id(),
+			  $signon->getClientHost());
+
+    $self->{session} = $session;
+
+    return 1;
 }
 
 =back

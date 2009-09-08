@@ -59,23 +59,26 @@ use GridShibCA::Template;
 
 =over 4
 
-=item getHTML()
+=item getText()
 
-Return HTML with variable substitution. Alias for getText().
+Return template text with appropriate HTML headers.
 
 B<Arguments:> None
 
-B<Returns:> HTML as string, undef on error (get getError())
+B<Returns:> HTML as string.
+
+Throws GridShibCA::TemplateException on error.
 
 =cut
 
-sub getHTML
+sub getText
 {
     my $self = shift;
 
     my $header = "Content-type: text/html\n\n";
+    my $text = $self->SUPER::getText();
 
-    return $header . $self->getText();
+    return $header . $text;
 }
 
 =back

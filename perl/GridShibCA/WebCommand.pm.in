@@ -47,14 +47,29 @@
 
 =head1 GridShibCA::WebCommand
 
-Base class for Web Commands to be invoked by L<GridShibCA::Request|GridShibCA::Request>::invoke()
+Base class for Web Commands to be invoked by CGI scripts.
+
+=cut
+
+package GridShibCA::WebCommand;
+
+use Carp;
+use GridShibCA::Config;
+use GridShibCA::ErrorHandler qw(handleError);
+use GridShibCA::Exception qw(:try);
 
 =head2 Constants
 
-The following are flags which are OR'ed together and use by
-getRequirements() and handleRequirements().
+The following are flags which are OR'ed together and used by
+_requirements().
 
 =over 4
+
+=item $REQUIRE_NOTHING
+
+=cut
+
+$REQUIRE_NOTHING = 0x0000;
 
 =item $REQUIRE_HTTPS
 
@@ -79,16 +94,9 @@ Require CSRF protection.
 
 =cut
 
-$REQUIRE_SESSION = 0x0004;
+$REQUIRE_CSRF_CHECK = 0x0004;
 
 =back
-
-=cut
-
-package GridShibCA::WebCommand;
-
-use Carp;
-use GridShibCA::Config;
 
 =head2 Methods
 
@@ -98,11 +106,9 @@ use GridShibCA::Config;
 
 Create a new WebCommand object.
 
-B<Arguments:>
+B<Arguments:> None
 
-XXX
-
-B<Returns:> CA instance
+B<Returns:> WebCommand instance. Throws GridShibCA::Exception on error.
 
 =cut
 
@@ -111,118 +117,71 @@ sub new
     my $class = shift;
     my $self = {};
     bless($self, $class);
-    $self->{config} = GridShibCA::Config->new() || $self->_lastResortError("Could not initialize Config object");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{cgi} = $self->{config}->getCGI();
+    $self->{session} = $self->{config}->getCGISession();
     return $self;
 }
 
-=item processRequest()
-
-Process a request from the client.
-
-B<Arguments:> None
-
-B<Returns:> True on sucess, False on error.
-
-=cut
-
-sub processRequest
-{
-    my $self = shift;
-
-    my $self->{logger} = $config->getLogger()
-	|| $self->_handleError("Could not get Logger: %s",
-			       $self->{config}->getError());
-
-    $self->{logger}->debug("Processing request.");
-
-    my $self->{request} = $config->getRequest()
-	|| $self->_handleError("Unable to load Request module: %s",
-			       $self->{config}->getError());
-
-    my $self->{cgi} = $config->getCGI()
-	|| $self->_handleError("Unable to load CGI module: %s",
-			       $self->{config}->getError());
-
-    my $self->{session} = $config->getCGISession()
-	|| $self->_handleError("Failed to establish session: %s",
-			       $self->{config}->getError());
-
-    my $command = $self->{request}->getCommand()
-	|| $self->_handleError("Failed to get command: %s",
-			       $self->{request}->getError());
-
-    $logger->info("Command: \"%s\" Client: \"%s\"",
-		  $command,
-		  $self->{cgi}->remote_host());
-
-    # Re-class ourselves as the command module class
-    my $commandClass = $self->{config}->getCommandClass($command)
-	|| $self->_handleError("Failed to get command class: %s",
-			       $self->{config}->getError());
-
-    $self->{logger}->debug("Instantiating class %s", $commandClass);
-
-    bless($self, $commandClass); 
-
-    $self->_handleRequirements();
-
-
-}
 
 =item invoke()
 
-Invoke the command. This method should be overridden by the child class.
+Process a request from the client. Should be called by
+WebApp.pm::invokeCommand()
 
-B<Arguments:> Request object
+B<Arguments:> None
 
-B<Returns:> True on success, False on error.
+B<Returns:> Nothing
 
 =cut
 
 sub invoke
 {
     my $self = shift;
-    my $request = shift;
 
-    return 1;
+    try
+    {
+	$self->_handleRequirements();
+    }
+    otherwise
+    {
+	my $ex = shift;
+	handleError("Error with request: " . $ex->text(),
+	    -exception=>$ex);
+    };
+
+    # Any exception from this should be handled by WebApp.pm
+    $self->doCommand();
 }
 
+=item doCommand()
 
-=item requiresSession()
-
-Returns True if the command requires an established session.
+This method should be overridden by the child class and implement the
+actual work of the module.
 
 B<Arguments:> None
 
-B<Returns:> True if request requires session, False otherwise.
+B<Returns:> 1 on success, 0 on error.
+
+May throw exceptions of any sort.
 
 =cut
 
-sub requiresSession
+sub doCommand
 {
     my $self = shift;
-    # Default is command require a session.
+
     return 1;
 }
 
+######################################################################
 
-=item requiresCSRFCheck()
+=head2 Internal methods
 
-Returns True if the command requires an CSRF check.
+These internal methods not intended for external use.
 
-B<Arguments:> None
-
-B<Returns:> True if request requires CSRF check, False otherwise.
-
-=cut
-
-sub requiresCSRFCheck
-{
-    my $self = shift;
-    # Default is command require a CSRF check
-    return 1;
-}
-
+=over 4
 
 =item _displayHTML()
 
@@ -230,7 +189,7 @@ Display HTML template with given name.
 
 B<Arguments:>
 
-C<$filename> Filename of HTML template.
+C<$filename> Name of HTML template in gridshib-ca.conf Templates section.
 
 C<%mappings> Mappings for subsitution
 
@@ -241,105 +200,48 @@ B<Returns:> True on success, False on error.
 sub _displayHTML
 {
     my $self = shift;
-    my $filename = shift;
-    my %mappings = shift;
+    my $templateName = shift;
+    my %mappings = @_;
 
-    my $template = $self->{config}->getHTMLTemplate($filename);
-
-    if (!defined($template))
-    {
-	$self->_handleError("Error loadint HTMLTemplate module: %s",
-			    $self->{config}->getError());
-	return 0;
-    }
-
+    my $template = $self->{config}->getHTMLTemplate($templateName);
     $template->addMappings(%mappings);
 
-    my $html = $template->getHTML();
-
-    if (!defined($html))
-    {
-	$self->_handleError("Error rendering HTML from template \"%s\" module: %s",
-			    $filename,
-			    $tempalte->getError());
-	return 0;
-    }
-
-    # XXX Header from CGI::Session?
+    my $html = $template->getText();
     print $html;
 
     return 1;
 }
 
-=item _handleError()
+=item _displayHTMLError()
 
-Handle logging an error and displaying output to user.
+Display HTML template with given name.
 
 B<Arguments:>
 
-C<$format> As per sprintf()
+C<$message> Error message
 
-C<@args> As per sprintf()
+C<%mappings> Optional additional mappings for subsitution
 
 B<Returns:> Nothing
 
 =cut
 
-sub _handleError
+sub _displayHTMLError
 {
     my $self = shift;
-    my $format = shift
-	|| self->_lastResortError("Undefined format to _handleError()");
-    my @args = @_;
-
-    my $string = sprintf($format, @args);
-    my %mappings = (
-	message => $string,
-	);
-
-    if (defined($self->{logger}))
+    my $message = shift;
+    my %mappings;
+    if (scalar(@_) > 0)
     {
-	$self->{logger}->err("ERROR: %s", $string);
+	%mappings = @_;
     }
-
-    my $errorTemplate = $self->{config}->getSectionParam("Templates",
-							 "ErrorTempalte");
-    if (!defined($errorTemplate))
+    else
     {
-	$self->_lastResortError("Could not determine ErrorTemplate. Original error was: %s", $string);
+	%mappings = ();
     }
-
-    if (!$self->_displayHTML($errorTemplate, %mappings))
-    {
-	$self->_lastResortError("Could not display error message. Original error was: %s", $string);
-    }
+    $mappings{Error} = $message;
+    $self->_displayHTML("ErrorTemplate", %mappings);
 }
-
-=item _lastResortError()
-
-Last resort error handling, get something printed when all else fails.
-
-B<Arguments:>
-
-C<$format> As per sprintf()
-
-C<@args> As per sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub _lastResortError()
-{
-    my $self = shift;
-    my $format = shift;
-    my @args = @_;
-
-    my $string = "Sorry, a major error happended: " . sprintf($format, @args);
-    print $string;
-    Carp::confess();
-}
-
 
 =item _handleRequirements()
 
@@ -348,64 +250,133 @@ command.
 
 B<arguments:> None
 
-B<Returns:> Calls _handleError on error, returns nothing otherwise.
+B<Returns:> Nothing. 
+
+Throws GridShibCA::RequirementsException on Error.
 
 =cut
 sub _handleRequirements
 {
     my $self = shift;
-    my $requirements = $self->getRequirements();
 
-    if ($requirements | $REQUIRE_HTTPS)
+    my $requirements = $self->_requirements();
+    if (!defined($requirements))
     {
-	my $url = $self->{cgi}->url(-full=>1);
-	
-	$self->{logger}->debug("Check for HTTPS protection. URL is %s", $url);
+	throw GridShibCA::RequirementsException("Requirements undefined.");
+    }
+    $self->{logger}->debug("Checking request requirements (0x%X)",
+			   $requirements);
 
-	if ($url =~ /^https:/)
+    if ($requirements & $REQUIRE_HTTPS)
+    {
+	if ($self->_checkHTTPS())
 	{
 	    $self->{logger}->debug("Verified HTTPS protection.");
 	}
 	else
 	{
-	    $self->_handleError("Deployment error: HTTPS protection required but not provided");
+	    throw GridShibCA::RequirementsException(
+		"Deployment error: HTTPS protection required but not provided");
 	}
     }
 
-    if ($requirements | $REQUIRE_SESSION)
+    if ($requirements & $REQUIRE_SESSION)
     {
-	if (!$self->{session}->existing())
+	try
 	{
-	    $self->_handleError("Failed to verify session: %s",
-				$self->{session}->getError());
+	    $self->{session}->fromCGI($self->{cgi});
 	}
+	catch GridShibCA::SessionException with
+	{
+	    my $ex = shift;
+	    throw GridShibCA::RequirementsException(
+		"Failed to verify session: " .
+		$self->{session}->getError());
+	}
+	otherwise
+	{
+	    my $ex = shift;
+	    throw GridShibCA::RequirementsException(
+		"Unexpected error establishing session: " . $ex->text());
+	};
+
+	# Throws exception if expired
+	$self->{session}->checkExpired();
     }
 
-    if ($requirements | $REQUIRE_CSRF)
+    if ($requirements & $REQUIRE_CSRF)
     {
-	$self->_handleError("CSRF protection not implemented yet.");
+	throw GridShibCA::RequirementsException(
+	    "CSRF protection not implemented yet.");
     }
-
+    $self->{logger}->debug("Requirements check done.");
 }
 
-=item _getRequirements
+=item _checkHTTPS
 
-Return a mask of our requirements. This method should be overriden by
-the child class.
+Check and make sure request is over https.
 
 B<Arguments:> None
 
-B<Returns:> Mask of OR'ed requirement flags.
+B<Returns:> 1 if over https, zero otherwise.
 
 =cut
-sub _getRequirements
+
+sub _checkHTTPS
 {
     my $self = shift;
-    return $REQUIRE_HTTPS | $REQUIRE_SESSION;
+
+    my $result = 0;
+    my $url = $self->{cgi}->url(-full=>1);
+    if ($url =~ /^https:/)
+    {
+	$result = 1;
+    }
+    else
+    {
+	$result = 0;
+	$self->{logger}->err("Check for HTTPS failed. URL is %s", $url);
+    }
+
+    return $result;
 }
 
 
+=item _requirements()
+
+Return the requirements of the command, which should be an bitwise OR
+of the REQUIRE_* contants.  This method should be overridden by the
+child class.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_NOTHING;
+}
+
 =back
+
+=cut
+
+######################################################################
+
+package GridShibCA::RequirementsException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::RequirementsException
+
+Class for exceptions caused by requirement errors.
+
+=cut
+
+######################################################################
 
 =head2 Version
 

@@ -143,7 +143,7 @@ dnl CGI-BIN scripts
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/launchGSCA.jnlp \
 	webdocs/sysinfo.pl \
-	webdocs/login.cgi \
+	webapps/login.cgi \
 	webdocs/portalLogin.cgi \
 	webdocs/getTrustedCAs.cgi \
 	webapps/GridShibCA.cgi \
@@ -222,17 +222,17 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/CGISession.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
+	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
-	perl/GridShibCA/HTMLError.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
 	perl/GridShibCA/Logger.pm \
-	perl/GridShibCA/Login.pm \
+	perl/GridShibCA/Logon.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
-	perl/GridShibCA/Request.pm \
 	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibSignOn.pm \
 	perl/GridShibCA/Template.pm \
+	perl/GridShibCA/WebApp.pm \
 	perl/GridShibCA/WebCommand.pm \
 	perl/GridShibCA/WebSignOn.pm \
 	"

@@ -124,7 +124,7 @@ B<Returns:> The string "urn:gridshib:FakeShib:DoNotTrust"
 sub _idPId
 {
     my $self = shift;
-    my $idpId = "urn:gridshib:FakeShib:DoNotTrust";
+    my $idpId = "urn:gridshib:FakeSignOn:FakeIdp";
     $self->{logger}->info("FakeShib: Returning idpId: %s", $idpId);
     return $idpId;
 }

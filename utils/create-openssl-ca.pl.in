@@ -137,6 +137,8 @@ umask(0077);
 ######################################################################
 
 print "Creating GridShib CA\n";
+print " OpenSSL is $openssl\n";
+print " GridShibCA path is $confPath\n";
 print " Keyfile is $keyFile\n";
 print " Certificate is $certFile\n";
 print " DN for CA is $subject\n";
@@ -158,7 +160,7 @@ my $cmd = $config->getCommand($openssl, @args);
 
 if (!$cmd->exec())
 {
-    print "Execution of $openssl failed: " . $cmd->getError();
+    print "Execution of $openssl failed: " . $cmd->getError() . "\n";
     exit(1);
 }
 

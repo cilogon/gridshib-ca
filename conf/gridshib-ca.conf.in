@@ -49,8 +49,10 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   # Templates for output to client.
   Path = ${GridShibCAConfDir}/templates
 
-  ErrorTempalte = ${Path}/error.html
+  ErrorTemplate = ${Path}/error.html
   
+  LogonTemplate = ${Path}/login.html
+
 </Templaes>
 
 <Modules>
@@ -97,17 +99,19 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   # Perl module to produce text from templates
   Template = GridShibCA::Template
 
+  # Base module for Web Applications
+  WebCommand = GridShibCA::WebCommand
+
   # Perl module to use for ShibInterface
   WebSignOn = GridShibCA::ShibSignOn
 
 </Modules>
 
 <Commands>
-  # Perls modules to service client command requests. Use by
-  # Request::dispatch()
+  # Modules used directly by webapps (login.cgi and GridShibCA.cgi)
   
-  # Module to invoke when no command given
-  DEFAULT = GridShibCA::Login
+  # Module invoked by logon.cgi to convert web signon to session.
+  Logon = GridShibCA::Logon
 
 </Commands>
 

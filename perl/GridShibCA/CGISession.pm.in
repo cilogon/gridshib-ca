@@ -51,6 +51,26 @@ Wrapper around standard PERL CGI::Session
 (L<http://search.cpan.org/dist/CGI-Session/lib/CGI/Session.pm>)
 interface with convienence functions for the GridShibCA.
 
+=head2 Session Parameters
+
+Defined parameters that should be stored in the session.
+
+=over 4
+
+=item UserId
+
+User identifier as returned by L<GridShibCA::WebSignOn>.
+
+=item IdP
+
+Identity provider identifier as returned by L<GridShibCA::WebSignOn>.
+
+=item ClientHost
+
+Client hostname or IP address as returned by L<GridShibCA::WebSignOn>.
+
+=back
+
 =head2 Configuration Parameters
 
 This class currently uses no values from F<gridshib-ca.conf>.
@@ -63,6 +83,7 @@ package GridShibCA::CGISession;
 use CGI::Session ( '-ip_match' );
 
 use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
 
 use Carp;
 use CGI::Session;
@@ -75,11 +96,11 @@ use File::Spec;
 =item new()
 
 Create a new CGISession object. Does not actually create a new
-session. That is done with createNew() or existing().
+session. That is done with createNew(), from Id() or fromCGI().
 
 B<Arguments:> None
 
-B<Returns:> CGISession instance, undef on error.
+B<Returns:> CGISession instance. Throws GridShibCA::Exception on error.
 
 =cut
 
@@ -103,7 +124,7 @@ B<Arguments:>
 
 C<-lifetime> <value>         lifetime of session in seconds
 
-B<Returns:> 1 on success, 0 otherwise.
+B<Returns:> Nothing. Throws GridShibCA::SessionException on error.
 reason.
 
 =cut
@@ -118,11 +139,9 @@ sub createNew
     $self->{session} = $self->{impl}->new(undef);
     if (!defined($self->{session}))
     {
-	$self->{logger}->err("Failed to create new session object: %s",
-			     $self->{impl}->errstr());
-	$self->_error("Failed to create new session object: %s",
-				$self->{impl}->errstr());
-	return 0;
+	throw GridShibCA::SessionException(
+	    "Session creation failed.",
+	    -logText => "Failed to create new session object: " . $self->{impl}->errstr());
     }
     $self->{logger}->debug("Session established: %s", $self->id());
     if (defined($args{-lifetime}))
@@ -131,13 +150,13 @@ sub createNew
 		       $args{-lifetime});
 	$self->{session}->expire($args{-lifetime});
     }
-    return 1;
 }
 
 
 =item fromId()
 
-Load existing session from id.
+Load existing session from id. Not that caller is responsible for
+checking expiration.
 
 B<Arguments:> id string
 
@@ -145,7 +164,7 @@ B<Returns:> 1 if accomplished, 0 otherwise.
 
 =cut
 
-# Yes, this method is prcedurally the same as from CGI().
+# Yes, this method is procedurally nearly identical as fromCGI().
 
 sub fromId
 {
@@ -157,17 +176,15 @@ sub fromId
     
     if (!defined($self->{session}))
     {
-	$self->{logger}->err("Failed to load established session from Id(%s): %s",
-		      $id, $self->{impl}->errstr());
-	$self->_error("Failed to re-established session");
-	return 0;
+	my $logText = sprintf(
+	    "Failed to load established session from Id(%s): %s",
+	    $id, $self->{impl}->errstr());
+
+	throw GridShibCA::SessionException(
+	    "Failed to load existing session from Id.",
+	    -logText => $logText);
     }
-    if ($self->{session}->is_expired())
-    {
-	$self->{logger}->err("Session (%s) is expired.", $id);
-	$self->_error("Session is expired.");
-	return 0;
-    }
+
     $self->{logger}->debug("Session %s re-established.",
 			   $self->{session}->id());
     return 1;
@@ -177,13 +194,16 @@ sub fromId
 
 =item fromCGI()
 
-Load existing session from CGI interface.
+Load existing session from CGI interface. Not that caller is responsible for
+checking expiration.
 
 B<Arguments:> CGI object.
 
 B<Returns:> 1 if accomplished, 0 otherwise.
 
 =cut
+
+# Yes, this method is procedurally nearly identical as fromId().
 
 sub fromCGI
 {
@@ -195,24 +215,58 @@ sub fromCGI
     
     if (!defined($self->{session}))
     {
-	$self->{logger}->err("Failed to establish session from CGI: %s",
-			$self->{impl}->errstr());			     
-	$self->_error("Failed to established session: %s",
+	my $logText = sprintf("Failed to establish session from CGI: %s",
 			$self->{impl}->errstr());
-	return 0;
-    }
-    if ($self->{session}->is_expired())
-    {
-	$self->{logger}->err("Session (%s) is expired.", $id);
-	$self->_error("Session is expired.");
-	return 0;
+	throw GridShibCA::SessionException("Error re-establishing session.",
+					   -logText => $logText);
     }
     $self->{logger}->debug("Session %s established.",
 			   $self->{session}->id());
     return 1;
 }
 
-=item destroy
+=item isExpired()
+
+Is the session expired?
+
+B<Arguments:> None
+
+B<Returns:> 1 if session expired, 0 otherwise.
+
+=cut
+
+sub isExpired
+{
+    my $self = shift;
+    if (!defined($self->{session}))
+    {
+	throw GridShibCA::SessionException("Session is not defined");
+    }
+    return $self->{session}->is_expired();
+}
+
+=item checkExpired()
+
+Is the session expired? 
+
+B<Arguments:> None
+
+B<Returns:> Nothing.
+
+Throws GridShibCA::SessionExpiredException if session expired.
+
+=cut
+
+sub checkExpired
+{
+    my $self = shift;
+    if ($self->isExpired())
+    {
+	throw GridShibCA::SessionExpiredException("Session expired");
+    }
+}
+
+=item destroy()
 
 Destroy this session.
 
@@ -269,20 +323,27 @@ sub param
     return $self->{session}->param(@args);
 }
 
-=item getError
+=item recordWebSignOn
 
-Return string describing last error. undef if no error has occurred.
+Given a L<GridShibCA::WebSignOn> object, record the sign-on details.
 
-B<Aruments:> None
+B<Aruments:> WebSignOn object
 
-B<Return:> String describing error or undef.
+B<Return:> Nothing
+
+Throws L<GridShibCA::SessionException> on error.
 
 =cut
 
-sub getError
+sub recordWebSignOn
 {
     my $self = shift;
-    return $self->{error};
+    my $signon = shift ||
+	throw GridShibCA::SessionException("signon undefined.");
+
+    $self->param("UserId", $signon->getUserId());
+    $self->param("IdP", $signon->getIdP());
+    $self->param("ClientHost", $signon->getClientHost());
 }
 
 =back
@@ -290,38 +351,35 @@ sub getError
 =cut
 
 ######################################################################
+#
+# GridShibCA::SessionException
 
-=head2 Internal methods
+package GridShibCA::SessionException;
 
-These internal methods not intended for external use.
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
 
-=over 4
+=head1 GridShibCA::SessionException
 
-=item _error()
-
-Store error message for later retrieval.
-
-B<Arguments:>
-
-C<$format> As per sprintf()
-
-C<@args> As per sprintf()
-
-B<Returns:> Nothing
+Class for exceptions caused by session errors.
 
 =cut
 
-sub _error
-{
-    my $self = shift;
-    my $format = shift || confess "Undefined format argument";
-    my @args = @_;
+######################################################################
+#
+# GridShibCA::SessionExpiredException
 
-    my $string = sprintf($format, @args);
-    $self->{error} = $string;
-}
+package GridShibCA::SessionExpiredException;
 
-=back
+use base qw(GridShibCA::SessionException);
+
+=head1 GridShibCA::SessionExpiredException
+
+The client session has expired.
+
+=cut
+
+######################################################################
 
 =head2 Version
 

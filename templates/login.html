@@ -7,11 +7,8 @@ and proceed to launching the JWS application.
 
 Values filled in for this page (besides default values):
  DefaultLifetime - Default credential lifetime in hours
- FormattedDN - User's DN in Globus grid-mapfile format
- FormattedRFC2253DN - User's DN in RFC 2253 format
  MaximumLifetime - Maximum credential lifetime in hours
  TrustedCAsAvailable - if true, trused CAs available for download
- UserId   - User's Shibboleth-provided identifier
 -->
 <head>
   <title>GridShib CA Welcome</title>
@@ -30,23 +27,7 @@ Values filled in for this page (besides default values):
 <center>
 <h1>GridShib CA</h1>
 (Version {$Version})
-<p id="welcome" class="login">Welcome $user</p>
-<hr class="login-hr"/>
-<p id="dn-preamble" class="login">
-  Your GridShib-CA X.509 identity from this CA will be:
-</p>
-<p id="globus-dn-preamble" class="login">
-  Globus Grid-Mapfile Format:
-</p>
-<p id="globus-dn" class="login">
-  $formattedDN
-</p>
-<p id="rfc2253-dn-preamble" class="login">
-  Standard RFC 2253 Format:
-</p>
-<p id="rfc2253-dn" class="login">
-  $formattedRFC2253DN
-</p>
+<p id="welcome" class="login">Welcome</p>
 <hr class="login-hr"/>
 <p class="login">Get your Grid Credential</p>
 <form id="create-jnlp" method="POST" action=\"$shibProtectedCGIBinURL/create-jnlp\">

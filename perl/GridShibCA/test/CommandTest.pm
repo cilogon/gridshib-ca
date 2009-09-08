@@ -10,6 +10,7 @@ package GridShibCA::test::CommandTest;
 
 use base qw(Test::Unit::TestCase);
 
+use GridShibCA::Config;
 use GridShibCA::Command;
 
 # Binaries to use. Need to use absolute paths.
@@ -17,6 +18,7 @@ my %binary = (
     "bogus" => "nonexistantBinary",
     "cat" => "/bin/cat",
     "echo" => "/bin/echo",
+    "false" => "/usr/bin/false",
 );
 
 sub new
@@ -51,10 +53,28 @@ sub test_basic
 sub test_nonzero_status
 {
     my $self = shift;
-    $self->{command} = GridShibCA::Command->new("false");
+    $self->{command} = GridShibCA::Command->new($binary{"false"});
     $self->assert_not_null($self->{command});
     $self->assert_equals(0, $self->{command}->exec());
     $self->assert_equals(1, $self->{command}->getStatus());
+}
+
+sub test_null_command
+{
+    my $self = shift;
+    $self->assert_raises(GridShibCA::CommandException,
+			 sub { GridShibCA::Command->new() });
+}
+
+sub test_command_openssl
+{
+    my $self = shift;
+    my $config = GridShibCA::Config->new();
+    $self->assert_not_null($config);
+    my $openssl = $config->getParam("OpenSSL");
+    $self->assert_not_null($openssl);
+    my $command = GridShibCA::Command->new($openssl);
+    $self->assert_not_null($command);
 }
 
 # Return true for import/use

@@ -70,6 +70,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 =cut
 
 use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
 
 # Flush after every write to keep STDOUT and STDERR in sync.
 $|=1;
@@ -81,17 +82,20 @@ if (defined($configFilename))
     GridShibCA::Config->setConfigFilename($configFilename);
 }
 
-my $config = GridShibCA::Config->new(
-    debug => 1
-    );
-
-
-my $error = $config->getError();
-if (defined($error))
+my $config;
+try
 {
-    print "Error parsing configuration file: $error\n";
-    exit(1);
+    $config = GridShibCA::Config->new(
+	debug => 1
+	);
 }
+catch GridShibCA::Exception with
+{
+     my $ex = shift;
+     print "Error parsing configuration file: " . $ex->text() . "\n";
+     exit(1);
+};
+
 print "Done reading configuration file. Dumping....\n";
 
 $config->dump();
@@ -99,9 +103,19 @@ $config->dump();
 print "Attempting to load all modules...\n";
 
 my @modules = (
-    "Logger", "CA", "CGI", "CGISession", "WebSignOn",
-    "Command", "CertRegistry", "Authorization", "NameMapper",
-    "SAMLExtension", "HTMLError", "Template", "HTMLTemplate", "Request"
+    "Authorization",
+    "CA",
+    "CertRegistry",
+    "CGI",
+    "CGISession",
+    "Command",
+    "HTMLTemplate",
+    "Logger",
+    "NameMapper",
+    "SAMLExtension",
+    "Template",
+    "WebCommand",
+    "WebSignOn",
     );
 
 my $errorFound = 0;
@@ -133,17 +147,17 @@ if ($errorFound)
 print "Attempting to load all web commands...\n";
 
 my @commands = ( 
-    "DEFAULT"
+    "Logon"
     );
 
 my $errorFound = 0;
-for $command (@command)
+for $command (@commands)
 {
-    print "Loading $module ...";
-    my $className = $config->getSectionParam("Commands", $module);
+    print "Loading $command ...";
+    my $className = $config->getSectionParam("Commands", $command);
     if (!defined($className))
     {
-	print "Failed. Undefined module \"%s\"\n", $module;
+	print "Failed. Undefined module \"%s\"\n", $command;
 	$errorFound = 1;
 	next;
     }

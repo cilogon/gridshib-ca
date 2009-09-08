@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# GridShib CA object representing user request.
+# Base class for Web Commands.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,29 +45,17 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::Request
+=head1 GridShibCA::WebApp
 
-Object representing using request.
-
-=head2 Configuration Parameters
-
-This class uses the following values from F<gridshib-ca.conf>:
-
-=over 4
-
-=item XXX
-
-XXX
-
-=back
+Interface for GridShibCA webb applications.
 
 =cut
 
-package GridShibCA::Request;
+package GridShibCA::WebApp;
 
 use GridShibCA::Config;
-
-use CGI;
+use GridShibCA::ErrorHandler qw(handleError);
+use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
@@ -75,11 +63,11 @@ use CGI;
 
 =item new()
 
-Create a new Request object.
+Create a webapplication interface object
 
 B<Arguments:> None
 
-B<Returns:> Request instance
+B<Returns:> Nothing. Does not return on error.
 
 =cut
 
@@ -87,131 +75,69 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{config} = GridShibCA::Config->new(defaultSection => "Commands");
-    $self->{logger} = $self->{config}->getLogger();
-    if (!defined($self->{logger}))
-    {
-	return undef;
-    }
-    $self->{cgi} = $self->{config}->getCGI();
-    if (!defined($self->{cgi}))
-    {
-	return undef;
-    }
-    # Command to invoke if none given
-    $self->{defaultCommand} = "DEFAULT";
-    $self->{error} = undef;
     bless($self, $class);
+
+    try
+    {
+	$self->{config}  = GridShibCA::Config->new();    
+	$self->{logger} = $self->{config}->getLogger();
+    }
+    otherwise
+    {
+	my $ex = shift;
+	handleError("Failed to bootstrap web application",
+		    -exception=>$ex);
+	# Does not return
+    };
     return $self;
 }
+	
+=item invokeCommand()
 
-=item dispatch()
+Invoke WebCommand and handle any resulting error.
 
-Dispatch the user's request
+B<Arguments:> Command name.
 
-B<Arguments:> None
-
-B<Returns:> True on success, False on error.
+B<Returns:> Nothing. Does not return on error.
 
 =cut
 
-sub dispatch()
+sub invokeCommand
 {
     my $self = shift;
-    my $command = $self->getCommand();
+    my $command = shift ||
+	handleError("Undefined command to invokeCommand()");
+    $self->{logger}->debug("Invoking command %s", $command);
+    my $module = undef;
 
-    my $instance = $config->getCommandModule($command);
-    if (!defined($instance))
+    try
     {
-	$self->_error($config->getError());
-	return 0;
+	$module = $self->{config}->getCommandModule($command);
     }
-
-    return $instance->invoke($self);
-}
-
-=item getCommand()
-
-Returns a string with the requested command.
-
-B<Arguments:> None
-
-B<Returns:> String with requested command, undef if none present.
-
-=cut
-
-sub getCommand
-{
-    my $self = shift;
-    my $command = $self->{cgi}->param('command');
-    if (!defined($command))
+    otherwise
     {
-	$command = $self->{defaultCommand};
+	my $ex = shift;
+	handleError("Error launching web application $command",
+		    -exception=>$ex);
+	# Does not return
+    };
+
+    try
+    {
+	$self->{logger}->debug("Calling invoke()");
+	$module->invoke();
+	$self->{logger}->debug("invoke() completed.");
     }
-    return $command;
+    otherwise
+    {
+	my $ex = shift;
+	handleError("Uncaught error in web application $command",
+		    -exception=>$ex);
+	# Does not return
+    };
 }
-
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Nothing
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error} || "No Error";
-}
-
 
 =back
-
-=cut
-
-######################################################################
-
-=head2 Internal methods
-
-These internal methods not intended for external use.
-
-=over 4
-
-=item _error()
-
-Handle a error message.
-
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-
-    if (!defined($self->{error}))
-    {
-	$self->{error} = "";
-    }
-    chomp($format);
-    my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
-			 @_);
-    $self->{error} .= $string;
-
-    # Don't use our Logger module as that could create a deadlock as the
-    # Logger class tries to load its configuration using this module
-    # Instead we'll print to STDERR, which should end up in the web
-    # server error logs.
-    printf(STDERR $string);
-}
-
 
 =head2 Version
 

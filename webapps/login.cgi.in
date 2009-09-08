@@ -1,8 +1,11 @@
+#!@PERL@ @PERL_CGI_BIN_ARGS@
 ######################################################################
 #
 # $Id$
 #
-# Base class for Exceptions based on Error.pm
+# This script invokes the Login.pm module, generating a session
+# for the user based on the results of their authentication
+# and displaying the login.html template.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -44,115 +47,41 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-package GridShibCA::Exception;
+use CGI;
 
-# Inherit Error
-use base qw(Error);
-
-=head1 GridShibCA::Exception
-
-Base class for exceptions based on Perl Error module.
-
-For full try/catch syntax, include as:
-
-C<use GridShibCA::Exception qw(:try);>
-
-=head2 Methods
-
-=over 4
-
-=item new()
-
-Create a new Exception object.
-
-B<Arguments:> 
-
-C<$text> Text for exception, displayable to user.
-
-Following C<$text> is a dictionary of values, including:
-
-C<-logText> Additional text for logging, not displayed to user.
-
-B<Returns:> Exception instance
-
-=cut
-
-sub new
-{
-   my $class = shift;
-   my $text = "" . shift;
-   my @args = @_;
-
-   # Enables storing of stacktrace
-   local $Error::Debug = 1;
-
-   my $self = $class->SUPER::new(-text => $text, @args);    
-   bless($self, $class);
-   return $self;
-}
-
-=item logText()
-
-Return logText associated with an Exception. This text should not be
-displayed to user as it may contain sensitive information.
-
-B<Arguments:> None
-
-B<Returns:> String with log text.
-
-=cut
-
-sub logText
-{
-    my $self = shift;
-    return "" || $self->{-logText};
-}
-
-=item html()
-
-Return exception formatted as HTML.
-
-B<Arguments:> None
-
-B<Returns:> String with HTML.
-
-=cut
-
-sub html
-{
-    my $self = shift;
-    return "Content-type: text/html\n\n" . $self->text();
-}
-
-=back
-
-=cut
+use GridShibCA::Exception qw(:try);
+use GridShibCA::WebApp;
 
 ######################################################################
 #
-# GridShibCA::InternalException
+# Initialize config instance, logger and errorHandler
+#
 
-package GridShibCA::InternalException;
+try
+{
+    my $webapp = GridShibCA::WebApp->new();
+    $webapp->invokeCommand("Logon");
+}
+otherwise
+{
+    # If we get here, it means something really bad happened
+    # (misconfiguration or programming error). Do our best to handle
+    # it gracefully.
+    my $ex = shift;
 
-# Inherit Error
-use base qw(GridShibCA::Exception);
+    # Send error to client
+    my $cgi = CGI->new();
+    print $cgi->header(-type=>"text/plain",
+		       -status=>"500 Internal Server Error"
+	);
+    print "Caught exception: " . $ex->text() . "\n";
 
-=head1 GridShibCA::InternalException
+    # Print stacktrace to STDERR and hope apache logs it
+    print STDERR "Caught Exception: " . $ex->text() . "\n";
+    print STDERR $ex->stacktrace();
+ };
 
-Class for exceptions caused by internal GridShibCA errors that caused
-by code, misconfiguration, etc.
-
-=head2 Version
-
-GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
-
-=cut
-
-
-# Return true for import/use
-1;
-
+exit(0);
 ### Local Variables: ***
 ### mode:perl ***
 ### End: ***
-######################################################################

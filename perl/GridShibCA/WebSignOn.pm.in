@@ -68,6 +68,8 @@ B<Arguments:> None
 
 B<Returns:> WebSignOn instance
 
+Throws GridShibCA::WebSignOnException on error.
+
 =cut
 
 sub new
@@ -76,6 +78,7 @@ sub new
     my $self = {};
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
+    $self->{cgi} = $self->{config}->getCGI();
     $self->{error} = undef;
     bless($self, $class);
     return $self;
@@ -97,20 +100,24 @@ sub init
     $self->{userId} = $self->_userId();
     $self->{IdPId} = $self->_idPId();
 
+    my $errText = sprintf("Error doing %s sign-on", $self->methodName());
     if (!defined($self->{userId}) && !defined($self->{IdPId}))
     {
-	$self->_error("Cannot identify origin site or user. It appears this script is not protected by web sign-on.");
-	return 0;
+	throw GridShibCA::WebSignOnException(
+	    $errText,
+	    -logText=>"Cannot determine user or identity provider.");
     }
     elsif (!defined($self->{userId}))
     {
-	$self->_error("Cannot determine user identity.");
-	return 0;
+	throw GridShibCA::WebSignOnException(
+	    $errText,
+	    -logText=>"Cannot determine user.");
     }
     elsif (!defined($self->{IdPId}))
     {
-	$self->_error("Cannot determine users' origin site.");
-	return 0;
+	throw GridShibCA::WebSignOnException(
+	    $errText,
+	    -logText=>"Cannot determine identity provider.");
     }
 
     return 1;
@@ -148,60 +155,34 @@ sub getIdP
     return $self->_idPId();
 }
 
-=item serialize()
-
-Serialize the object to a string for storage in a session.
-
-B<Argyuments:> None
-
-B<Returns:> Serialized object as a string, undef on error
-
-=cut
-
-sub serialize
-{
-    my $self = shift;
-
-    use FreezeThaw;
-
-    return FreezeThaw::freeze($self);
-}
-
-=item deserialize()
-
-Class method to deserialize given string and return an SignOn object.
-
-B<Arguments:> Serialed object as string
-
-B<Returns:> Object instance, undef on error
-
-=cut
-
-sub deserialize
-{
-    my $class = shift;
-    my $serialzedObject = shift;
-
-    use FreezeThaw;
-
-    return FreezeThaw::thaw($serialzedObject);
-}
-
-
-=item getError()
-
-Return the last error message as a string.
+=item getClientHost
 
 B<Arguments:> None
 
-B<Returns:> Nothing
+B<Returns:> Client hostname or (if hostname unavailable) IP address
+as string.
 
 =cut
 
-sub getError
+sub getClientHost
 {
     my $self = shift;
-    return $self->{error};
+    return $self->{cgi}->remote_host();
+}
+
+=item methodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub methodName
+{
+    return "undefined";
 }
 
 ######################################################################
@@ -246,44 +227,24 @@ sub _idPId
     return undef;
 }
 
-=item _error()
-
-Handle logging an error message.
-
-B<Arguments:>
-
-C<$format> As per sprintf()
-
-C<@args> As per sprintf()
-
-B<Returns:> Nothing
+=back
 
 =cut
 
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    my @args = @_;
+######################################################################
 
-    chomp($format);
+package GridShibCA::WebSignOnException;
 
-    my $string = sprintf($format, @args);
-    
-    $self->{logger}->err($string);
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
 
-    if (!defined($self->{error}))
-    {
-	$self->{error} = "";
-    }
-    else
-    {
-	$self->{error} .= "\n";
-    }
-    $self->{error} .= $string;
-}
+=head1 GridShibCA::WebSignOnException
 
-=back
+Class for exceptions caused by web signon errors.
+
+=cut
+
+######################################################################
 
 =head2 Version
 

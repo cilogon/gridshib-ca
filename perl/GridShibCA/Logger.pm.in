@@ -193,6 +193,38 @@ sub err
     $self->log("err", @_);
 }
 
+=item logException()
+
+Handle logging of an GridShibCA::Exception.
+
+B<Arguments:>
+
+C<$ex> GridShibCA::Exception (or instance of descendant) to log
+
+B<Returns:> Nothing
+
+=cut
+
+sub logException
+{
+    my $self = shift;
+    my $ex = shift;
+
+    $self->err("Exception: ". $ex->text());
+    
+    my $logText = $ex->logText();
+    if (defined($logText))
+    {
+	$self->err("Exception details: " . $logText);
+    }
+
+    my $stackTrace = $ex->stacktrace();
+    if (defined($strackTrace))
+    {
+	$self->err("Exception stacktrace: " . $stackTrace);
+    }
+}
+
 
 =back
 

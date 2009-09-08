@@ -69,34 +69,21 @@ Create a new Template object.
 
 B<Arguments:> Template file name
 
-B<Returns:> Template instance, undef on error setting ERROR
+B<Returns:> Template instance
+
+Throws GridShibCA::TemplateException on error.
 
 =cut
-
-# Error string set by constructor
-my $ERROR = undef;
 
 sub new
 {
     my $class = shift;
-    my $filename = shift;
-    if (!defined($filename))
-    {
-	$ERROR = "Missing argument";
-	return undef;
-    }
     my $self = {};
+    $self->{templateFile} = shift ||
+	throw GridShibCA::TemplateException("Missing filename");
+
     $self->{config} = GridShibCA::Config->new();
-    $self->{logger} = $self->config->getLogger();
-    if (!defined($self->{logger}))
-    {
-	$ERROR = $config->getError();
-	return undef;
-    }
-    my $templateDir = $self->{config}->getSectionParam("Templates",
-						       "Path");
-    $self->{templateFile} = File::Spec->catfile($templateDir, $filename);
-    # Read HTML template from file.
+
     # We need to use UNTAINT here to clean file for later evaluation
     # Note this means files must be trustworthy.
     $self->{template} = Text::Template->new(TYPE => 'FILE',
@@ -104,8 +91,7 @@ sub new
 					    UNTAINT => 1);
     if (!$self->{template})
     {
-	$ERROR = "Couldn't construct template: $Text::Template::ERROR";
-	return undef;
+	throw GridShibCA::TemplateException("Couldn't construct template: $Text::Template::ERROR");
     }
     # Default initial hash values
     $self->{hash} = {
@@ -156,12 +142,10 @@ B<Returns:> Nothing
 sub addMappings
 {
     my $self = shift;
-    my $hash = shift;
-    if (defined($hash))
-    {
-	while ( my ($key, $value) = each(%{$hash}) ) {
-	    $self->{hash}->{$key} = $value;
-	}
+    my %hash = @_;
+
+    while ( my ($key, $value) = each(%hash) ) {
+	$self->{hash}->{$key} = $value;
     }
 }
 
@@ -171,7 +155,9 @@ Return Text with variable substitution.
 
 B<Arguments:> None
 
-B<Returns:> Text as string, undef on error (get getError())
+B<Returns:> Text as string.
+
+Throws GridShibCA::TemplateException on error.
 
 =cut
 
@@ -189,34 +175,10 @@ sub getText
 
     if (!defined($text))
     {
-	$self->_error("Couldn't fill in template: $Text::Template::ERROR");
-	return undef;
+	throw GridShibCA::TemplateException("Error rendering output: $Text::Template::ERROR");
     }
 
     return $text;
-}
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    if (defined($self))
-    {
-	return $self->{error}
-    }
-    else
-    {
-	return $ERROR;
-    }
 }
 
 =back
@@ -230,25 +192,6 @@ sub getError
 These internal methods not intended for external use.
 
 =over 4
-
-
-=item _error()
-
-Handle a error message.
-
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
-}
-
 
 =item _broken()
 
@@ -274,6 +217,16 @@ sub _broken
     return sprintf("<b>Unknown variable \"%s\"</b>", $hash{text});
 }
 
+##################################################################
+
+package GridShibCA::TemplateException;
+
+# Inherit Error
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::TemplateException
+
+Class for exceptions caused by Template errors.
 
 =back
 

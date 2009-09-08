@@ -49,17 +49,25 @@
 Interface to GridShib CA configuration and loader of classes based
 on that configuration.
 
+Configuration file can be set by setConfigFilename() (if called before
+new()). Otherwise will be taken from the GRIDSHIBCA_CONFIG_FILENAME
+environment variable if set, or from the CONFIG_FILE variable in
+L<GridShibCA::Constants> module.
+
 =cut
 
 package GridShibCA::Config;
 
 use GridShibCA::Constants;
+use GridShibCA::Exception qw(:try);
 
 use Carp;
 use Config::General;
 
-# Configuration file to read
-my $configFilename = $GridShibCA::Constants::CONFIG_FILE;
+# Default value of configuration file to read
+my $configFilename = 
+    $ENV{"GRIDSHIB_CA_CONFIG_FILENAME"} ||
+    $GridShibCA::Constants::CONFIG_FILE;
 
 # Actual Config::General object, will be set first time Config object
 # is created
@@ -78,8 +86,6 @@ B<Arguments:>
 C<$debug> Turn on debugging if True
 
 C<$defaultSection> Section to use for getParam() requests.
-
-C<$useStderrOnError> Print error to STDERR on error (default is True)
 
 B<Returns:> Config instance
 
@@ -105,22 +111,16 @@ sub new
 	$self->{defaultSection} = $args{defaultSection};
     }
     
-    $self->{useStderrOnError} = 1;
-    if (defined($args{useStderrOnError}))
-    {
-	$self->{useStderrOnError} = $args{useStderrOnError};
-    }
-
     # Maximum number of replacements on configuration variables
     $self->{replacementLimit} = 24;
-    # Error string
-    $self->{error} = undef;
 
     if (!defined($config))
     {
 	$self->_initConfig();
     }
     $self->{config} = $config;
+    
+    $self->_debug("Config objection creation successful.");
 
     return $self;
 }
@@ -166,7 +166,7 @@ B<Arguments:>
  Parameter name as string
 
 B<Returns:>
-Value as string, undef if not defined
+Value as string, throws GridShibCA::ConfigException if not found.
 
 =cut
 
@@ -187,7 +187,7 @@ B<Arguments:>
  Parameter name as string
 
 B<Returns:>
-Value as boolean, undef if not defined or not boolean.
+Value as boolean, throws GridShibCA::ConfigException if not found.
 
 =cut
 
@@ -211,7 +211,7 @@ C<$section> Section name as string.
 C<$param> Parameter name as string.
 
 B<Returns:>
-Value as string, undef if not defined
+Value as string, throws GridShibCA::ConfigException if not found.
 
 =cut
 
@@ -228,9 +228,7 @@ sub getSectionParam
 	if (!$config->exists($section) ||
 	    !$config->is_hash($section))
 	{
-	    $self->_error("Request for parameter \"%s\" in non-existant section \"%s\"",
-			  $param, $section);
-	    return undef;
+	    throw GridShibCA::ConfigException("Request for parameter \"$param\" in non-existant section \"$section\"");
 	}
 
 	# Section now becomes the object we get value from.
@@ -243,8 +241,7 @@ sub getSectionParam
 	{
 	    $string .= sprintf(" in section \"%s\"", $section);
 	}
-	$self->_error($string);
-	return undef;
+	throw GridShibCA::ConfigException($string);
     }	
 
     my $value = $config->value($param);
@@ -272,56 +269,35 @@ sub dump
     }
 }
 
-=item getError()
+=item  getCommandModule()
 
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Nothing
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error};
-}
-
-
-=item  getCommandClass()
-
-Given a command name, return the name of the Command class referenced
-by that name from the Commands section of the configuration file.
+Given a command name, return the module of the Command referenced by
+that name from the Commands section of the configuration file.
 
 B<Arguments:>
 
-C<$request> Request instance.
+C<$request> Command name
 
-B<Returns:> Instance, undef on error.
+B<Returns:> Instance, throws GridShibCA::ModuleException on error.
 
 =cut
 
-sub getCommandClass
+sub getCommandModule
 {
     my $self = shift;
-    my $request = shift;
+    my $command = shift;
 
-    my $command = $request->getCommand();
     if (!defined($command))
     {
-	$self->_error("Failed to parse command from request: %s",
-		      $request->getError());
-	return undef;
+	throw GridShibCA::InternalException("Undefined command");
     }
 
     my $className = $self->getSectionParam("Commands", $command);
     if (!defined($className))
     {
-	$self->_error("Unrecognized command \"%s\"", $command);
-	return undef;
+	throw GridShibCA::ModuleException("Unrecognized command \"$command\"");
     }
-    return $className;
+    return $self->_newInstance($className, @_);
 }
 
 =back
@@ -487,7 +463,10 @@ in the Modules section of F<gridshib-ca.conf>.
 sub getHTMLTemplate
 {
     my $self = shift;
-    return $self->_newModule("HTMLTemplate", @_);
+    my $templateName = shift ||
+	throw GridShibCA::ConfigException("Missing template name");
+    my $filename = $self->_templateNameToFilename($templateName);
+    return $self->_newModule("HTMLTemplate", $filename);
 }
 
 =item getLogger()
@@ -523,24 +502,6 @@ sub getNameMapper
     return $self->_newModule("NameMapper", @_);
 }
 
-
-=item getRequest()
-
-Get an instance of the GridShibCA::Request module by loading it and
-calling its new method with the given arguments.
-See L<GridShibCA::Request>.
-
-The exact module loaded is controlled by the Request variable
-in the Modules section of F<gridshib-ca.conf>.
-
-=cut
-
-sub getRequest
-{
-    my $self = shift;
-    return $self->_newModule("Request", @_);
-}
-
 =item getSAMLExtension()
 
 Get an instance of the GridShibCA::SAMLExtension module by loading it
@@ -567,12 +528,17 @@ See L<GridShibCA::Template>.
 The exact module loaded is controlled by the Template variable
 in the Modules section of F<gridshib-ca.conf>.
 
+B<Arguments:> Template name from gridshib-ca.conf Templates section.
+
 =cut
 
 sub getTemplate
 {
     my $self = shift;
-    return $self->_newModule("Template", @_);
+    my $templateName = shift ||
+	throw GridShibCA::ConfigException("Missing template name");
+    my $filename = $self->_templateNameToFilename($templateName);
+    return $self->_newModule("Template", $filename);
 }
 
 =item getTokenGenerator()
@@ -590,6 +556,24 @@ sub getTokenGenerator
 {
     my $self = shift;
     return $self->_newModule("TokenGenerator", @_);
+}
+
+
+=item getWebCommand()
+
+Get an instance of the GridShibCA::WebCommand module by loading it and
+calling its new method with the given arguments.
+See L<GridShibCA::WebCommand>.
+
+The exact module loaded is controlled by the WebCommand variable
+in the Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getWebCommand
+{
+    my $self = shift;
+    return $self->_newModule("WebCommand", @_);
 }
 
 =item getWebSignOn()
@@ -627,7 +611,7 @@ Initialize our configuration the first time we are called.
 
 B<Arguments:> None
 
-B<Returns:> Instance, dies on error
+B<Returns:> Instance, throws GridShibCA::ConfigException on error.
 
 =cut
 
@@ -659,25 +643,28 @@ sub _initConfig
     $config = new Config::General(%options);
     if (!defined($config))
     {
-	$self->_error("Failed to parse configuration file %s",
-		      $configFilename);
-	exit(1);
+	my $message = sprintf("Failed to parse configuration file %s",
+			      $configFilename);
+	$self->_debug($message);
+	throw GridShibCA::ConfigException($message);
     }
     # Make sure we recognize the configuration version number
     if (!$config->exists("ConfigVersion"))
     {
-	$self->_error("Missing 'ConfigVersion' parameter in configuration file (%s): Old style configuration?",
-		      $configFilename);
-	exit(1);
+	my $message = sprintf("Missing 'ConfigVersion' parameter in configuration file (%s): Old style configuration?",
+	    $configFilename);
+	$self->_debug($message);
+	throw GridShibCA::ConfigException($message);
     }
     else
     {
 	my $configVersion = $config->value("ConfigVersion");
 	if ($configVersion != 2)
 	{
-	    $self->_error("Unrecognized ConfigVersion (%s) in configuration file (%s).",
-			  $config->{ConfigVersion}, $configFilename);
-	    exit(1);
+	    my $message = sprintf("Unrecognized ConfigVersion (%s) in configuration file (%s).",
+				  $config->{ConfigVersion}, $configFilename);
+	    $self->_debug($message);
+	    throw GridShibCA::ConfigException($message);
 	}
     }
 }
@@ -694,7 +681,7 @@ C<$class> Name of configuration variable
 
 C<@_> Arguments to pass to new() method
 
-B<Returns:> Instance, dies on error
+B<Returns:> Instance, throws GridShibCA::ModuleException on error.
 
 =cut
 
@@ -702,14 +689,31 @@ sub _newModule
 {
     my $self = shift;
     my $configVariable = shift;
+    my $instance = undef;
+    my @args = @_;
 
     my $className = $self->getSectionParam("Modules", $configVariable);
     if (!defined($className))
     {
-	$self->_error("Undefined module \"%s\"", $configVariable);
-	return undef;
+	throw GridShibCA::ModuleException("Undefined module \"" .
+					  $configVariable , "\"");
     }
-    return $self->_newInstance($className, @_);
+    $self->_debug("Loading class %s for module %s (%d arguments)",
+		  $className, $configVariable, scalar(@args));
+    try
+    {
+	$instance = $self->_newInstance($className, @args);
+    }
+    catch GridShibCA::Exception with
+    {
+	my $ex = shift;
+	my $text = sprintf("Failed to load module \"%s\": %s",
+			   $configVariable, $ex->text());
+	throw GridShibCA::ModuleException($text);
+    };
+    $self->_debug("Successfully instaneated class %s for module %s",
+		  $className, $configVariable);
+    return $instance;
 }
 
 
@@ -723,7 +727,7 @@ C<$class> Name of class to create
 
 C<@_> Arguments to pass to new() method
 
-B<Returns:> Instance, dies on error
+B<Returns:> Instance, throws GridShibCA::ModuleException on error.
 
 =cut
 
@@ -733,8 +737,7 @@ sub _newInstance
     my $class = shift;
     if (!defined($class))
     {
-	$self->_error("\$class undefined");
-	exit(1);
+	throw GridShibCA::InternalException("Undefined class requested.");
     }
     my @args = @_;
 
@@ -742,13 +745,11 @@ sub _newInstance
     eval "use $class; \$instance = $class->new(\@args);";
     if ($@)
     {
-	$self->_error("Failure loading class $class: " . $@);
-	exit(1);
+	throw GridShibCA::ModuleException("Failure loading class $class: " . $@);
     }
     if (!defined($instance))
     {
-	$self->_error("Failure loading class $class: No instance returned.");
-	exit(1);
+	throw GridShibCA::ModuleException("Failure loading class $class: No instance returned.");
     }
     return $instance;
 }
@@ -776,47 +777,57 @@ sub _debug
     }
 }
 
+=item _templateNameToFilename
 
-=item _error()
+Given the name of a template, look it up in the Tempaltes section and
+return the associated filename.
 
-Handle a error message.
+B<Arguments:> Template name
 
-B<Arguments:> As to sprintf()
+B<Returns:> Filename
 
-B<Returns:> Nothing
+Throws GridShibCA::ConfigException on error.
 
 =cut
 
-sub _error
+sub _templateNameToFilename
 {
     my $self = shift;
-    my $format = shift;
-    if (!defined($format))
-    {
-	confess("_error() called with undefined \$format");
-    }
-    my @args = @_;
-
-    if (!defined($self->{error}))
-    {
-	$self->{error} = "";
-    }
-    chomp($format);
-    my $string = sprintf("GridShib-CA Configuration error: " . $format . "\n",
-			 @args);
-    $self->{error} .= $string;
-
-    if ($self->{useStderrOnError})
-    {
-	# Don't use our Logger module as that could create a deadlock as the
-	# Logger class tries to load its configuration using this module
-	# Instead we'll print to STDERR, which should end up in the web
-	# server error logs.
-	printf(STDERR $string);
-    }
+    my $templateName = shift ||
+	throw GridShibCA::ConfigException("Missing template name");
+    my $filename = $self->getSectionParam("Templates", $templateName);
+    return $filename;
 }
 
 =back
+
+=cut
+
+######################################################################
+
+package GridShibCA::ConfigException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::ConfigException
+
+Class for exceptions caused by configuration errors.
+
+=cut
+
+######################################################################
+
+package GridShibCA::ModuleException;
+
+# Inherit Error
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::ModuleException
+
+Class for exceptions caused by module loading errors.
+
+=cut
 
 =head2 Version
 

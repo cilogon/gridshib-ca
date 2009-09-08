@@ -85,7 +85,11 @@ B<Arguments:>
 
 C<$webSignOn> - WebSignOn instance.
 
-B<Returns:> 1 if user authorized, 0 otherwise
+B<Returns:> 1 if user authorized.
+
+Throws GridShibCA::AuthorizationFailedException if not authorized
+
+Throws GridShibCA::AuthorizationException on error.
 
 =cut
 
@@ -96,54 +100,42 @@ sub authorize
 
     if (!defined($webSignOn))
     {
-	$self->_error("Authorization module received undefined WebSignOn object.");
-	return 0;
+	throw GridShibCA::AuthorizationException("Authorization module received undefined WebSignOn object.");
     }
     my $userId = $webSignOn->getUserId();
     if (!defined($userId) or ($userId eq ""))
     {
-	$self->_error("Authorization module got undefined UserId.");
-	return 0;
+	throw GridShibCA::AuthorizationException("Authorization module got undefined UserId.");
     }
     my $idp = $webSignOn->getIdP();
     if (!defined($idp) or ($idp eq ""))
     {
-	$self->_error("Authorization module got undefined IdP.");
+	throw GridShibCA::AuthorizationException("Authorization module got undefined IdP.");
     }
 
     my $authorizedIdpFilename =
 	$self->{config}->getParam("AuthorizedIdpsFile");
     my $status = $self->_inFile($idp, $authorizedIdpFilename);
 
-    if ($status == -1)
+    if ($status != 1)
     {
-	return 0;
-    }
-    
-    if ($status == 0)
-    {
-	$self->_error("Idp unrecognized.");
-	return 0;
+	my $logText = sprintf("Authorization failed:UserId %s:IdPId %s",
+			      $userId,
+			      $idp);
+
+	if ($status == 0)
+	{
+	    $logText .= ":IdP unrecognized";
+	}
+	else
+	{
+	    $logText .= ":Bad userId";
+	}
+	throw GridShibCA::AuthorizationFailedException("Authorization Failed",
+	    -logText=>$logText);
     }
 
     return 1;
-}
-
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
 }
 
 =back
@@ -158,23 +150,6 @@ These internal methods not intended for external use.
 
 =over 4
 
-
-=item _error()
-
-Handle a error message.
-
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
-}
 
 =item _inFile()
 
@@ -191,7 +166,9 @@ I<$string> - String to match
 
 I<$filename> - Filename
 
-B<Returns:> One if string matches a line in file, zero if not, -1 on error
+B<Returns:> One if string matches a line in file, zero if not.
+
+Throws GridShibCA::AuthorizationException on error.
 
 =cut
 
@@ -206,9 +183,7 @@ sub _inFile
     my $fh = new FileHandle;
     if (!$fh->open("<$filename"))
     {
-	$self->_error("Could not open authorized Idp file (%s): %s",
-		      $filename, $!);
-	return -1;
+	throw GridShibCA::AuthorizationException("Could not open authorized Idp file ($filename): $!");
     }
     while (<$fh>)
     {
@@ -244,6 +219,36 @@ sub _inFile
 }
 
 =back
+
+=cut
+
+######################################################################
+#
+# GridShibCA::AuthorizationException
+
+package GridShibCA::AuthorizationException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::AuthorizationException
+
+Class for exceptions caused by authorization errors (besides failure).
+
+=cut
+
+######################################################################
+#
+# GridShibCA::AuthorizationFailedException
+
+package GridShibCA::AuthorizationFailedException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::AuthorizationFailedException
+
+Class for exceptions caused by authorization failure.
 
 =head2 Version
 
