@@ -23,6 +23,8 @@ or later should work, early versions might.)</para></listitem>
 <listitem><para>Extra Perl modules. Install the following extra Perl modules via <ulink url="http://www.cpan.org/">CPAN</ulink>:
 <itemizedlist>
   <listitem><para><ulink url="http://search.cpan.org/dist/CGI-Session/lib/CGI/Session.pm">CGI::Session</ulink></para></listitem>
+  <listitem><para><ulink url="http://search.cpan.org/dist/Config-General/General.pm">Config::General</ulink></para></listitem>
+  <listitem><para><ulink url="http://search.cpan.org/dist/Error/">Error</ulink></para></listitem>
   <listitem><para><ulink url="http://search.cpan.org/dist/Crypt-OpenSSL-X509/X509.pm">Crypt::OpenSSL::X509</ulink></para></listitem>
   <listitem><para><ulink url="http://search.cpan.org/dist/IO-Socket-SSL/SSL.pm">IO::Socket::SSL</ulink></para></listitem>
 </itemizedlist>
