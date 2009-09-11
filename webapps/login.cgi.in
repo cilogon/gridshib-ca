@@ -47,15 +47,9 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-use CGI;
-
+use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
 use GridShibCA::WebApp;
-
-######################################################################
-#
-# Initialize config instance, logger and errorHandler
-#
 
 try
 {
@@ -68,17 +62,9 @@ otherwise
     # (misconfiguration or programming error). Do our best to handle
     # it gracefully.
     my $ex = shift;
-
-    # Send error to client
-    my $cgi = CGI->new();
-    print $cgi->header(-type=>"text/plain",
-		       -status=>"500 Internal Server Error"
-	);
-    print "Caught exception: " . $ex->text() . "\n";
-
-    # Print stacktrace to STDERR and hope apache logs it
-    print STDERR "Caught Exception: " . $ex->text() . "\n";
-    print STDERR $ex->stacktrace();
+    handleError("Failed to invoke Logon application",
+		-exception=>$ex);
+    # Does not return
  };
 
 exit(0);
