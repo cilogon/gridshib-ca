@@ -74,7 +74,7 @@ C<WebSignOn = GridShibCA::FakeSignOn>
 Then edit F<authorizedIdps.conf> and add a line authorizing the
 "FakeShib IdP" to use the GridShib CA:
 
-C<urn:gridshib:FakeSignOn:DoNotTrust "CN=FakeUser,OU=FakeIdp,O=GridShib">
+C<urn:gridshib:FakeSignOn:FakeIdp "CN=FakeUser,OU=FakeIdp,O=GridShib">
 
 This will then allow you to run the GridShib-CA without having a web
 sign-on system available. Again, B<this module is intented for testing
@@ -92,6 +92,45 @@ use GridShibCA::WebSignOn;
 
 =over 4
 
+=item new()
+
+Create a new FakeSignOn object. Caller should call init() to actually
+populate the object.
+
+B<Arguments:> None
+
+B<Returns:> FakeSignOn instance
+
+Throws GridShibCA::WebSignOnException on error.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+    $self->{logger}->warn("FakeSignOn in use. You better be testing!");
+    return $self;
+}
+
+
+
+=item methodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub methodName
+{
+    return "FAKE";
+}
+
+
 =item _userId()
 
 Return the string "FakeUser"
@@ -106,7 +145,6 @@ sub _userId
 {
     my $self = shift;
     my $userId = "FakeUser";
-    $self->{logger}->info("FakeSignOn: Returning userId: %s", $userId);
     return $userId;
 }
 
@@ -117,7 +155,7 @@ Returns the fake identity provider Id
 
 B<Arguments:> None
 
-B<Returns:> The string "urn:gridshib:FakeShib:DoNotTrust"
+B<Returns:> The string "urn:gridshib:FakeSignOn:FakeIdp"
 
 =cut
 
@@ -125,7 +163,6 @@ sub _idPId
 {
     my $self = shift;
     my $idpId = "urn:gridshib:FakeSignOn:FakeIdp";
-    $self->{logger}->info("FakeShib: Returning idpId: %s", $idpId);
     return $idpId;
 }
 
