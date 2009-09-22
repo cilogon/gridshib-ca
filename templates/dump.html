@@ -1,0 +1,21 @@
+<html>
+<head>
+  <title>GridShib CA Session Dump</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
+</head>
+<body>
+<h1>GridShib CA Session Dump</h1>
+<p>
+Session Id: {$id}<br/>
+</p>
+<table>
+{
+  foreach my $key (keys(%session)) {
+     $OUT .= "<tr><td>$key</td><td>$session{$key}</td></tr>\n";
+  }
+}
+</table>
+</body>
+</html>

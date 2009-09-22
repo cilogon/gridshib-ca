@@ -53,6 +53,8 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   
   LogonTemplate = ${Path}/login.html
 
+  DumpTemplate = ${Path}/dump.html
+
 </Templaes>
 
 <Modules>
@@ -112,6 +114,9 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   
   # Module invoked by logon.cgi to convert web signon to session.
   Logon = GridShibCA::Logon
+
+  # Modules invokable by GridShibCA.cgi
+  DumpSession = GridShibCA::DumpSession
 
 </Commands>
 
