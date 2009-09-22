@@ -139,11 +139,18 @@ AC_SUBST_FILE(DOC_FOOTER)
 DOC_INCS="${DOC_HEADER} ${DOC_FOOTER}"
 AC_SUBST(DOC_INCS)
 
-dnl CGI-BIN scripts
+dnl Shib-protected CGI-BIN scripts
+SHIB_CGI_BIN_SCRIPTS="webapps/login.cgi"
+
+AC_SUBST(SHIB_CGI_BIN_SCRIPTS)
+AC_CONFIG_FILES([$SHIB_CGI_BIN_SCRIPTS])
+AC_SRC_FILES(SHIB_CGI_BIN_SCRIPTS, SHIB_CGI_BIN_SRCS)
+AC_SUBST(SHIB_CGI_BIN_SRCS)
+
+dnl Session-protected CGI-BIN scripts
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
 	webdocs/launchGSCA.jnlp \
 	webdocs/sysinfo.pl \
-	webapps/login.cgi \
 	webdocs/portalLogin.cgi \
 	webdocs/getTrustedCAs.cgi \
 	webapps/GridShibCA.cgi \
@@ -165,6 +172,7 @@ AC_SUBST(HTML_SRCS)
 
 TEMPLATE_FILES="\
 	templates/CredentialRetriever.jnlp \
+	templates/dump.html \
 	templates/error.html \
 	templates/login.html"
 AC_SUBST(TEMPLATE_FILES)
@@ -222,6 +230,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/CGISession.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
+	perl/GridShibCA/DumpSession.pm \
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
@@ -571,6 +580,26 @@ AC_ARG_WITH(relative-dn,
 AC_MSG_RESULT(${RELATIVE_DN})
 AC_SUBST(RELATIVE_DN)
 
+dnl Syslog ID to use (can be changed later in gridshib-ca.conf)
+AC_MSG_CHECKING([for syslog Id to use])
+AC_ARG_WITH(syslog-id,
+	AC_HELP_STRING([--with-syslog-id=<string>],
+		[Specify the syslog identifier to use (Default: GridShib-CA)]),
+		[SYSLOG_ID=$withval],
+		[SYSLOG_ID="GridShib-CA"])
+AC_MSG_RESULT(${SYSLOG_ID})
+AC_SUBST(SYSLOG_ID)
+
+dnl Syslog Facility to use (can be changed later in gridshib-ca.conf)
+AC_MSG_CHECKING([for syslog facility to use])
+AC_ARG_WITH(syslog-facility,
+	AC_HELP_STRING([--with-syslog-facility=<string>],
+		[Specify the syslog facility to use (Default: local0)]),
+		[SYSLOG_FACILITY=$withval],
+		[SYSLOG_FACILITY="local0"])
+AC_MSG_RESULT(${SYSLOG_FACILITY})
+AC_SUBST(SYSLOG_FACILITY)
+
 dnl Generate an OpenSSL version of Relative DN
 dnl This assumes no commas in DN
 AC_MSG_CHECKING([for the relativce DN in OpenSSL format])
@@ -628,13 +657,6 @@ if test ${ENABLE_DEMOS} = "true" ; then
       AC_MSG_ERROR([Could not find GLOBUS_LOCATION needed for demos. Please specify using --with-globus-location])
    fi
 fi
-
-dnl ------------------------------------------------------------
-dnl syslog parameters
-SYSLOG_ID="GridShib-CA"
-AC_SUBST(SYSLOG_ID)
-SYSLOG_FACILITY="local0"
-AC_SUBST(SYSLOG_FACILITY)
 
 dnl ------------------------------------------------------------
 dnl Development mode
