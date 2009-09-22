@@ -108,6 +108,15 @@ sub new
 
 Add a variable to value mapping.
 
+Note that references will be dereferenced as they are made available
+in the template. E.g. if you add a hash reference as follows:
+
+    $template->addMapping("hash", { one => "uno", two => "dos" });
+
+Then reference C<$hash> in the tamplate like so:
+
+    { foreach $key (keys(%hash)) { $OUT .= $key . "=" . $hash{$key}; } }
+
 B<Arguments:>
 
 I<$variableName> - name of variable to map
@@ -203,6 +212,8 @@ B<Arguments:> Hash with arg, text, error and lineno values.
 
 B<Returns:> Text to place into template.
 
+=back
+
 =cut
 
 sub _broken
@@ -228,9 +239,7 @@ use base qw(GridShibCA::Exception);
 
 Class for exceptions caused by Template errors.
 
-=back
-
-=head2 Version
+=head1 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 
