@@ -55,9 +55,36 @@ package GridShibCA::HTMLTemplate;
 use GridShibCA::Template;
 @ISA = ("GridShibCA::Template");
 
+use CGI;
+
 =head2 Methods
 
 =over 4
+
+=item new()
+
+Create a new HTMLTemplate object.
+
+B<Arguments:> Template file name
+
+B<Returns:> HTMLTemplate instance
+
+Throws GridShibCA::TemplateException on error.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = $class->SUPER::new(@_);
+
+    $self->{cgi} = CGI->new() ||
+	throw GridShibCA::TemplateException("Could not instaneate CGI instance");;
+
+    # Reference to array of cookies to add to HTML
+    $self->{cookies} = undef;
+    return $self;
+}
 
 =item getText()
 
@@ -75,10 +102,31 @@ sub getText
 {
     my $self = shift;
 
-    my $header = "Content-type: text/html\n\n";
+    my $header = $self->{cgi}->header(
+	-cookies=>$self->{cookies}
+	);
     my $text = $self->SUPER::getText();
 
     return $header . $text;
+}
+
+=item setCookies()
+
+Set cookies to be added to HTML output.
+
+B<Arguments:> Reference to array of CGI::cookie() objects.
+
+B<Returns:> Nothing
+
+=cut
+
+sub setCookies
+{
+    my $self = shift;
+    my $cookies = shift ||
+	throw GridShibCA::Exception("Undefined cookies argument");
+
+    $self->{cookies} = $cookies;
 }
 
 =back
