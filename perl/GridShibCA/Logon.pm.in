@@ -67,7 +67,7 @@ use GridShibCA::Exception qw(:try);
 
 Override base class with my specific logic.
 
-B<Arguments:> Request object
+B<Arguments:> None
 
 B<Returns:> True on success, False on error.
 
@@ -112,6 +112,8 @@ sub doLogon
     $session->createNew();
     $session->recordWebSignOn($signon);
  
+    $self->_addCookie($session->cookie());
+
     $self->{logger}->info("NEW SESSION:UserId %s:IdPId %s:Session %s:IP %s",
 			  $signon->getUserId(),
 			  $signon->getIdP(),
