@@ -53,6 +53,7 @@ Interface for GridShibCA webb applications.
 
 package GridShibCA::WebApp;
 
+use CGI;
 use GridShibCA::Config;
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
@@ -81,6 +82,7 @@ sub new
     {
 	$self->{config}  = GridShibCA::Config->new();    
 	$self->{logger} = $self->{config}->getLogger();
+	$self->{cgi} = CGI->new();
     }
     otherwise
     {
@@ -91,7 +93,26 @@ sub new
     };
     return $self;
 }
-	
+
+=item handleRequest()
+
+Read the requested command name from the CGI interface and invoke the
+command associated with that name (via invokeCommand()).
+
+B<Arguments:> None
+
+B<Returns:> None
+
+=cut
+
+sub handleRequest
+{
+    my $self = shift;
+    my $commandName = $self->{cgi}->param("command") || "DEFAULT";
+    $self->{logger}->debug("Got client request for %s", $commandName);
+    $self->invokeCommand($commandName);
+}
+
 =item invokeCommand()
 
 Invoke WebCommand and handle any resulting error.
@@ -107,7 +128,8 @@ sub invokeCommand
     my $self = shift;
     my $command = shift ||
 	handleError("Undefined command to invokeCommand()");
-    $self->{logger}->debug("Invoking command %s", $command);
+    $self->{logger}->info("Invoking command %s for %s",
+			  $command, $self->{cgi}->remote_addr());
     my $module = undef;
 
     try
