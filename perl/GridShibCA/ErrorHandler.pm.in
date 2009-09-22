@@ -210,6 +210,9 @@ sub htmlError
 	print "The original error was: " . $message . "\n";
 	print "The error reporting the problem was: " . $htmlEx->text() . "\n";
 	print "Please report this to the site administrator.\n";
+
+	# And log for service administrator
+	logError("Failure generating HTML error output for user", $htmlEx);
     };
 }
 
