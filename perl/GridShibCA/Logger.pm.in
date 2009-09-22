@@ -102,7 +102,6 @@ sub new
 
     my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
     openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
-    $self->{debug} = $config->getParamBoolean("debug");
     bless($self, $class);
     return $self;
 }
@@ -153,9 +152,29 @@ sub info
 }
 
 
+
+=item warn()
+
+Log an warning message
+
+B<Arguments:>
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub warn
+{
+    my $self = shift;
+    $self->log("warning", @_);
+}
+
+
 =item debug()
 
-Log an debugging message if so configured.
+Log an message at debug level.
 
 B<Arguments:>
 
@@ -168,10 +187,7 @@ B<Returns:> Nothing
 sub debug
 {
     my $self = shift;
-    if ($self->{debug})
-    {
-	$self->log("info", @_);
-    }
+    $self->log("debug", @_);
 }
 
 
@@ -212,10 +228,13 @@ sub logException
 
     $self->err("Exception: ". $ex->text());
     
-    my $logText = $ex->logText();
-    if (defined($logText))
+    if ($ex->can("logText"))
     {
-	$self->err("Exception details: " . $logText);
+	my $logText = $ex->logText();
+	if (defined($logText))
+	{
+	    $self->err("Exception details: " . $logText);
+	}
     }
 
     my $stackTrace = $ex->stacktrace();
