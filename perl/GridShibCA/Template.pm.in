@@ -209,7 +209,7 @@ sub _broken
 {
     my %hash = @_;
     my $self = $hash{arg};
-    $self->{logger}->err("HTML Template error: File %s line %d: %s : %s",
+    $self->{logger}->err("Template error: File %s line %d: %s : %s",
 			 $self->{template},
 			 $hash{lineno},
 			 $hash{error},
