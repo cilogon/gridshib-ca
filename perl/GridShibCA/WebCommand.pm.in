@@ -121,6 +121,8 @@ sub new
     $self->{logger} = $self->{config}->getLogger();
     $self->{cgi} = $self->{config}->getCGI();
     $self->{session} = $self->{config}->getCGISession();
+    # Cookies to be added to output HTML
+    $self->{cookies} = [];
     return $self;
 }
 
@@ -175,6 +177,10 @@ sub doCommand
     return 1;
 }
 
+=back
+
+=cut
+
 ######################################################################
 
 =head2 Internal methods
@@ -182,6 +188,25 @@ sub doCommand
 These internal methods not intended for external use.
 
 =over 4
+
+=item _addCookie()
+
+Add cookie to output HTML.
+
+B<Arguments>: CGI::cookie() instance
+
+B<Returns:> Nothing
+
+=cut
+
+sub _addCookie
+{
+    my $self = shift;
+    my $cookie = shift ||
+	throw GridShibCA::Exception("Missing cookie argument");
+    my $cookies = $self->{cookies};
+    push(@$cookies, $cookie);
+}
 
 =item _displayHTML()
 
@@ -204,6 +229,7 @@ sub _displayHTML
     my %mappings = @_;
 
     my $template = $self->{config}->getHTMLTemplate($templateName);
+    $template->setCookies($self->{cookies});
     $template->addMappings(%mappings);
 
     my $html = $template->getText();
@@ -286,22 +312,29 @@ sub _handleRequirements
 	{
 	    $self->{session}->fromCGI($self->{cgi});
 	}
+	catch GridShibCA::SessionExpiredException with
+	{
+	    # XXX should redirect to login.cgi here
+	    my $ex = shift;
+	    $self->{logger}->logException($ex);
+	    throw GridShibCA::RequirementsException(
+		"Session expired.");
+	}
 	catch GridShibCA::SessionException with
 	{
+	    # XXX Should redirect use to login.cgi here
 	    my $ex = shift;
+	    $self->{logger}->logException($ex);
 	    throw GridShibCA::RequirementsException(
-		"Failed to verify session: " .
-		$self->{session}->getError());
+		"Failed to establish session.");
 	}
 	otherwise
 	{
 	    my $ex = shift;
+	    $self->{logger}->logException($ex);
 	    throw GridShibCA::RequirementsException(
 		"Unexpected error establishing session: " . $ex->text());
 	};
-
-	# Throws exception if expired
-	$self->{session}->checkExpired();
     }
 
     if ($requirements & $REQUIRE_CSRF_CHECK)
