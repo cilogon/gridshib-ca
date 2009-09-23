@@ -141,7 +141,6 @@ AC_SUBST(DOC_INCS)
 
 dnl Shib-protected CGI-BIN scripts
 SHIB_CGI_BIN_SCRIPTS="webapps/login.cgi"
-
 AC_SUBST(SHIB_CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$SHIB_CGI_BIN_SCRIPTS])
 AC_SRC_FILES(SHIB_CGI_BIN_SCRIPTS, SHIB_CGI_BIN_SRCS)
@@ -477,6 +476,17 @@ AC_CLEAN_PATH(WWW_DIR)
 AC_SUBST(WWW_DIR)
 AC_MSG_RESULT(${WWW_DIR})
 
+AC_MSG_CHECKING([for path to cgi-bin directory])
+default=${WWW_DIR}/cgi-bin/
+AC_ARG_WITH(cgi-bin-dir,
+	AC_HELP_STRING([--with-cgi-bin-dir=<path>],
+		[Specify the (unprotected) cgi-bin directory. (Default: <www-dir>/cgi-bin/)]),
+	[CGI_BIN_DIR=$withval],
+	[CGI_BIN_DIR=$default])
+AC_CLEAN_PATH(CGI_BIN_DIR)
+AC_SUBST(CGI_BIN_DIR)
+AC_MSG_RESULT(${CGI_BIN_DIR})
+
 AC_MSG_CHECKING([for URL for Shibboleth-protected CGI-BIN directory])
 default=/cgi-bin/shib-protected/${GRIDSHIB_CA_DIR_NAME}
 AC_ARG_WITH(shib-protected-cgi-bin-url,
@@ -638,17 +648,6 @@ AC_ARG_ENABLE(demos,
 AC_SUBST(ENABLE_DEMOS)
 
 if test ${ENABLE_DEMOS} = "true" ; then
-   AC_MSG_CHECKING([for path to cgi-bin directory])
-   default=${WWW_DIR}/cgi-bin/
-   AC_ARG_WITH(cgi-bin-dir,
-	AC_HELP_STRING([--with-cgi-bin-dir=<path>],
-		[Specify the (unprotected) cgi-bin directory. (Default: <www-dir>/cgi-bin/)]),
-	[CGI_BIN_DIR=$withval],
-	[CGI_BIN_DIR=$default])
-   AC_CLEAN_PATH(CGI_BIN_DIR)
-   AC_SUBST(CGI_BIN_DIR)
-   AC_MSG_RESULT(${CGI_BIN_DIR})
-
    AC_PROG_PERL_MODULES([Crypt::OpenSSL::PKCS10])
 
    AC_GLOBUS_LOCATION()
