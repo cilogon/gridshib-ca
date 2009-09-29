@@ -111,9 +111,6 @@ sub new
 	$self->{defaultSection} = $args{defaultSection};
     }
     
-    # Maximum number of replacements on configuration variables
-    $self->{replacementLimit} = 24;
-
     if (!defined($config))
     {
 	$self->_initConfig();
@@ -198,6 +195,34 @@ sub getParamBoolean
 
     # Config::General handles this for us, so we just use normal method
     return $self->getParam($param);
+}
+
+=item getSection()
+
+Return a hash representing a whole section.
+
+B<Arguments:> Section name as string.
+
+B<Returns:> Hash representing section.
+
+Throws GridShibCA::ConfigException if section not found.
+
+=cut
+
+sub getSection
+{
+    my $self = shift;
+    my $section = shift
+	|| throw GridShibCA::ConfigException("Missing section name");
+    my $config = $self->{config};
+
+    if (!$config->exists($section) ||
+	!$config->is_hash($section))
+    {
+	throw GridShibCA::ConfigException("Request for non-existant section \"$section\"");
+    }
+
+    return $config->hash($section);
 }
 
 =item getSectionParam()

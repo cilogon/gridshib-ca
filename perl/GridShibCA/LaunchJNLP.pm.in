@@ -1,0 +1,176 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# LaunchJNLP WebCommand.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::LaunchJNLP
+
+Handles generation of jnlp file to launch Java Web Start application
+
+=cut
+
+package GridShibCA::LaunchJNLP;
+
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::ErrorHandler qw(handleError);
+use GridShibCA::Exception qw(:try);
+
+=head2 Methods
+
+=over 4
+
+=item doCommand()
+
+Override base class with my specific logic.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+
+    try
+    {
+	my $template = $self->{config}->getTemplate("JNLPTemplate");
+	$template->addSectionAsMappings("JNLP");
+	$template->addMapping("CodeBase", $self->_codebase());
+	my $header = $self->_generateHeader();
+	my $jnlpText = $template->getText();
+
+	print $header . "\n\n";
+	print $jnlpText;
+    }
+    catch GridShibCA::Exception with
+    {
+	my $ex = shift;
+	handleError("Error rendering JNLP file", -exception=>$ex);
+    };
+
+    # Success
+    return 1;
+}
+
+=item _codebase()
+
+Return string for codebase of JNLP file.
+
+B<Arguments:> None
+
+B<Returns:> String with codebase.
+
+=cut
+
+sub _codebase
+{
+    my $self = shift;
+    my $cgi = $self->{cgi};
+    
+    my $urlBase = $cgi->url(-base=>1);
+    my $relativeURL = $self->{config}->getSectionParam("URL", "GridShibCAURL");
+    return $urlBase . $relativeURL;
+}
+
+    
+=item _generateHeader()
+
+Generate the header string for the JNLP file.
+
+B<Arguments:> None
+
+B<Returns:> Header string for JNLP file.
+
+=cut
+
+sub _generateHeader
+{
+    my $self = shift;
+    my $cgi = $self->{cgi};
+
+    my %headerArgs = (
+	-type=>"Application/X-Java-Jnlp-File"
+	);
+
+    # The attachment option is required for Camino (at least) to do the
+    # right thing.  However, this option seems to always cause Firefox to
+    # ask what to do with the jnlp file, so we do not use it for FireFox.
+    # Not that some Camino user-agent strings contain "like Firefox" hence
+    # the apparently overly complex logic here.  See
+    # https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719
+    if ($cgi->user_agent("Mozilla") and !$cgi->user_agent("Camino"))
+    {
+	# Firefox - do nothing
+    }
+    else
+    {
+	# Not Firefox
+	$headerArgs{"-attachment"} = "launch.jnlp";
+    }
+
+    my $header = $cgi->header(\%headerArgs);
+
+    return $header;
+}
+
+=back
+
+=head1 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

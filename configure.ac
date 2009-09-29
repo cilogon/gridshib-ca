@@ -148,11 +148,11 @@ AC_SUBST(SHIB_CGI_BIN_SRCS)
 
 dnl Session-protected CGI-BIN scripts
 CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
-	webdocs/launchGSCA.jnlp \
 	webdocs/sysinfo.pl \
 	webdocs/portalLogin.cgi \
 	webdocs/getTrustedCAs.cgi \
 	webapps/GridShibCA.cgi \
+	webapps/launchGSCA.jnlp \
 	"
 AC_SUBST(CGI_BIN_SCRIPTS)
 AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
@@ -173,6 +173,7 @@ TEMPLATE_FILES="\
 	templates/CredentialRetriever.jnlp \
 	templates/dump.html \
 	templates/error.html \
+	templates/GSCA.jnlp \
 	templates/login.html"
 AC_SUBST(TEMPLATE_FILES)
 
@@ -233,6 +234,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
+	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/Logon.pm \
 	perl/GridShibCA/NameMapper.pm \

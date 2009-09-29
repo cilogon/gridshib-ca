@@ -158,6 +158,25 @@ sub addMappings
     }
 }
 
+=item addSectionAsMappings()
+
+Add a configuration section as mappings.
+
+B<Arguments:> Section name as string.
+
+B<Returns:> Nothing
+
+=cut
+
+sub addSectionAsMappings
+{
+    my $self = shift;
+    my $section = shift
+	|| throw TemplateException("Missing section name");
+    my %mappings = $self->{config}->getSection($section);
+    $self->addMappings(%mappings);
+}
+
 =item getText()
 
 Return Text with variable substitution.

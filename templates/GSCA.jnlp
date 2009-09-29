@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?> 
+
+<jnlp spec="1.0+" codebase="{$CodeBase}" > 
+  <information> 
+    <title>GridShib CA Credential Retriever ({$Version})</title>
+    <vendor>GridShib Project</vendor>
+    <homepage href="http://gridshib.globus.org"/>
+    <description>Download and install my Grid credentials.</description>
+  </information> 
+  <security>
+    <all-permissions/>
+  </security>
+  <resources> 
+    <j2se version="1.4+"/> 
+    <jar href="{$JarName}"/> 
+  </resources> 
+  <application-desc main-class="edu.ncsa.gridshib.gridshibca.GridShibCAClientApp">
+    {
+      foreach my $arg (@Arguments) {
+        $OUT .= "\t<argument>$arg</argument>\n";
+      }
+    }
+  </application-desc>
+</jnlp> 

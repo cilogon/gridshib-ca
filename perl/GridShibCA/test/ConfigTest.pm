@@ -14,6 +14,9 @@ use GridShibCA::Config;
 # Bogus, non-existant parameter for failure tests
 my $bogusParam = "ThisParamDoesNotExist";
 
+# Bogus, non-existant section for failure tests
+my $bogusSection = "ThisSectionDoesNotExist";
+
 sub new
 {
     my $self = shift()->SUPER::new(@_);
@@ -77,6 +80,29 @@ sub test_raiseModuleException
     my $self = shift;
     $self->assert_raises(GridShibCA::ModuleException,
 			 sub { throw GridShibCA::ModuleException("test"); });
+
+}
+
+sub test_getSection
+{
+    my $self = shift;
+    my %section = $self->{config}->getSection("JNLP"); 
+    $self->assert_not_null($section{Jar});
+}
+
+sub test_getSectionparam
+{
+    my $self = shift;
+    $self->assert_not_null($self->{config}->getSectionParam("Modules", "CA"));
+}
+
+sub test_getSectionparamShouldFail
+{
+    my $self = shift;
+    $self->assert_raises(GridShibCA::ConfigException,
+			 sub { $self->{config}->getSectionParam($bogusSection, "CA");} );
+    $self->assert_raises(GridShibCA::ConfigException,
+			 sub { $self->{config}->getSectionParam("Modules", $bogusParam);} );
 
 }
 

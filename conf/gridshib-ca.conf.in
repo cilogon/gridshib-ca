@@ -55,6 +55,8 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 
   DumpTemplate = ${Path}/dump.html
 
+  # JNLP file template used by launchGSCA.jnlp
+  JNLPTemplate = ${Path}/GSCA.jnlp
 </Templaes>
 
 <Modules>
@@ -110,23 +112,37 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 </Modules>
 
 <Commands>
-  # Modules used directly by webapps (login.cgi and GridShibCA.cgi)
+  # Modules used directly by webapps
   
   # Module invoked by logon.cgi to convert web signon to session.
   Logon = GridShibCA::Logon
 
-  # Modules invokable by GridShibCA.cgi
-  DumpSession = GridShibCA::DumpSession
+  # Module invoked by launchGSCA.jnlp to generate Java Web Start jnlp file
+  LaunchJNLP = GridShibCA::LaunchJNLP
 
+  #
+  # Modules invokable by GridShibCA.cgi
+  #
+
+  # Dump CGI session (intended for debugging)
+  DumpSession = GridShibCA::DumpSession
 </Commands>
+
+<JNLP>
+  # Contents of JNLP file
+
+  JarName = @JAR_NAME@
+</JNLP>
+
+<URL>
+  # Relative URL to unprotected GridShib CA files (e.g. CSS, Jar)
+  GridShibCAURL = @GRIDSHIB_CA_URL@
+</URL>
 
 ######################################################################
 #
 # Configuration files
 # Various files used by the GridShib-CA.
-
-# JNLP file template
-JNLPTemplate = $(GridShibCAConfDir)/CredentialRetriever.jnlp
 
 # HTML header to include on web pages
 HTMLHeader = ${GridShibCAConfDir}/header.html
@@ -146,8 +162,7 @@ ClientSessionLifetime = 300
 # Hostname to use in URLs
 WWWHostname = @WWW_HOSTNAME@
 
-# Relative URL to unprotected GridShib CA files
-GridShibCAURL = @GRIDSHIB_CA_URL@
+
 
 # Relative URL to Shibboleth-protected CGI-BIN directory
 ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
