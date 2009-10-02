@@ -9,5 +9,13 @@ use Test::Unit::TestRunner;
 #debug_pkgs(qw/Test::Unit::TestCase/);
 
 my $testrunner = Test::Unit::TestRunner->new();
-$testrunner->start(@ARGV);
+my $success = $testrunner->start(@ARGV);
+
+if (!$success)
+{
+    exit(1);
+}
+
+exit(0);
+
 
