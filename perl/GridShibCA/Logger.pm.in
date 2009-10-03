@@ -226,7 +226,26 @@ sub logException
     my $self = shift;
     my $ex = shift;
 
-    $self->err("Exception: ". $ex->text());
+    my $exType = ref($ex);
+    my $text = $ex->text();
+
+    if ($exType eq "Error::Simple")
+    {
+	# If we have a simple error, include filename and line number as
+	# that will be useful.
+	my $file = $ex->file() || "Unknown file";
+	my $line = $ex->line() || "Unknwon line";
+	$text = "Exception: $text ($file:$line)";
+    }
+    else
+    {
+	# For other types of exceptions, filename and line number will be
+	# from the Error.pm module, which isn't useful. Instead include
+	# the type of exception.
+	$text = $exType . ": " . $text;
+    }
+
+    $self->err($text);
     
     if ($ex->can("logText"))
     {
