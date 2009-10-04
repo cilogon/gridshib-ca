@@ -87,7 +87,7 @@ sub test_getSection
 {
     my $self = shift;
     my %section = $self->{config}->getSection("JNLP"); 
-    $self->assert_not_null($section{Jar});
+    $self->assert_not_null($section{JarName});
 }
 
 sub test_getSectionparam
