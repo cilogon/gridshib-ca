@@ -111,7 +111,14 @@ sub new
     $self->{impl} = CGI::Session;
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
-    $self->{error} = undef;
+    # Parameters to be copied into client sessions
+    $self->{clientSessionParams} =
+	[
+	 "UserId",
+	 "IdP",
+	 "ClientHost"
+	];
+
     bless($self, $class);
     return $self;
 }
@@ -347,6 +354,36 @@ sub recordWebSignOn
     $self->param("IdP", $signon->getIdP());
     $self->param("ClientHost", $signon->getClientHost());
     $self->flush();
+}
+
+=item createClientSession()
+
+Create a new session, based on this one, for a client application.
+
+B<Arguments:> None
+
+B<Returns:> New CGISession object
+
+=cut
+
+sub createClientSession
+{
+    my $self = shift;
+    $self->_checkSession();
+    $self->{logger}->debug("Creating new client session from session %s",
+			   $self->id());
+    my $session = ref($self)::new();
+    $self->{logger}->debug("New client session %s created", $session->id());
+
+    # XXX Set client session expiration time
+
+    # Fill in new client session with values from current session
+    foreach my $param ($self->{clientSessionParams})
+    {
+	$session->param($param, $self->param($param));
+    }
+    $session->flush();
+    return $session;
 }
 
 =item params()

@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# LaunchJNLP WebCommand.
+# LaunchClient WebCommand.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,24 +45,77 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::LaunchJNLP
+=head1 GridShibCA::LaunchClient
 
-Handles generation of jnlp file to launch Java Web Start application
+Stub to handle generation of scripts/files (e.g. jnlp file) for GSCA
+clients.
 
 =cut
 
-package GridShibCA::LaunchJNLP;
+package GridShibCA::LaunchClient;
 
 # Inherit WebCommand
-use base qw(GridShibCA::LaunchClient);
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::ErrorHandler qw(handleError);
+use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
 =over 4
 
+=item doCommand()
+
+Parse template and create output.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+
+    try
+    {
+	$self->{clientSession} = $self->{session}->createClientSession();
+	my $header = $self->_generateHeader();
+	my $text = $self->_generateText();
+
+	print $header . "\n\n";
+	print $text;
+    }
+    catch GridShibCA::Exception with
+    {
+	my $ex = shift;
+	handleError("Error rendering output", -exception=>$ex);
+    };
+
+    # Success
+    return 1;
+}
+
+
+=item _requirements()
+
+Return protection requirements of this command.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_SESSION;
+}
+
 =item _getTemplate()
 
-Return the Template object.
+Return the Template object. Should be overridden by child class.
 
 B<Arguments:> None
 
@@ -72,13 +125,13 @@ B<Returns:> Template object
 
 sub _getTemplate
 {
-    my $self = shift;
-    return $self->{config}->getTemplate("JNLPTemplate");
+    raise GridShibCA::Exception("Abstract method called.");
 }
 
 =item _generateHeader()
 
-Generate the header string for the JNLP file.
+Generate the header string for the output file. Should be overridden
+by client class.
 
 B<Arguments:> None
 
@@ -91,32 +144,30 @@ sub _generateHeader
     my $self = shift;
     my $cgi = $self->{cgi};
 
-    my %headerArgs = (
-	-type=>"Application/X-Java-Jnlp-File"
-	);
-
-    # The attachment option is required for Camino (at least) to do the
-    # right thing.  However, this option seems to always cause Firefox to
-    # ask what to do with the jnlp file, so we do not use it for FireFox.
-    # Not that some Camino user-agent strings contain "like Firefox" hence
-    # the apparently overly complex logic here.  See
-    # https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719
-    if ($cgi->user_agent("Mozilla") and !$cgi->user_agent("Camino"))
-    {
-	# Firefox - do nothing
-    }
-    else
-    {
-	# Not Firefox
-	$headerArgs{"-attachment"} = "launch.jnlp";
-    }
-
-    my $header = $cgi->header(\%headerArgs);
+    my $header = $cgi->header();
 
     return $header;
 }
 
+=item _generateText()
 
+Generate text from template.
+
+B<Arguments:> None.
+
+B<Returns:> Text as string
+
+=cut
+
+sub _generateText
+{
+    my $self = shift;
+
+    my $template = $self->_getTemplate();
+    $self->_setTemplateMappings($template);
+    
+    return $template->getText();
+}
 
 =item _setTemplateMappings()
 
@@ -134,29 +185,9 @@ sub _setTemplateMappings
     my $self = shift;
     my $template = shift;
 
-    $self->SUPER::_setTemplateMappings($template);
-    $template->addMapping("CodeBase", $self->_codebase());
-}
-
-
-=item _codebase()
-
-Return string for codebase of JNLP file.
-
-B<Arguments:> None
-
-B<Returns:> String with codebase.
-
-=cut
-
-sub _codebase
-{
-    my $self = shift;
-    my $cgi = $self->{cgi};
-    
-    my $urlBase = $cgi->url(-base=>1);
-    my $relativeURL = $self->{config}->getSectionParam("URL", "GridShibCAURL");
-    return $urlBase . $relativeURL;
+    $template->addSectionAsMappings("LaunchClient");
+    $template->addMapping("authenticationToken",
+			  $self->{clientSession}->id());
 }
 
 =back

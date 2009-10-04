@@ -86,8 +86,8 @@ sub test_raiseModuleException
 sub test_getSection
 {
     my $self = shift;
-    my %section = $self->{config}->getSection("JNLP"); 
-    $self->assert_not_null($section{JarName});
+    my %section = $self->{config}->getSection("Commands"); 
+    $self->assert_not_null($section{Logon});
 }
 
 sub test_getSectionparam

@@ -128,16 +128,24 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   DumpSession = GridShibCA::DumpSession
 </Commands>
 
-<JNLP>
-  # Contents of JNLP file
+<LaunchClient>
+  # This section contains mappings that will be made in any scripts/
+  # configuration files (e.g. JNLP file) that launch GSCA clients.
 
   JarName = @JAR_NAME@
-</JNLP>
+</LaunchClient>
 
-<URL>
+<URLs>
+  # Base URL for session-protected space
+  SessionProtectedBase = @SESSION_PROTECTED_BASE_URL@
+
+  
   # Relative URL to unprotected GridShib CA files (e.g. CSS, Jar)
   GridShibCAURL = @GRIDSHIB_CA_URL@
-</URL>
+
+  # URL for the GridShibCA.cgi webapp
+  GridShibCACGIURL = ${SessionProtectedBase}/GridShibCA.cgi
+</URLs>
 
 ######################################################################
 #
