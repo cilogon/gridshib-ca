@@ -90,6 +90,10 @@ AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(TOUCH, touch)
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(ENV, env)
+AC_PATH_PROG(CAT, cat)
+AC_PATH_PROG(FALSE, false)
+AC_PATH_PROG(TRUE, true)
+AC_PATH_PROG(ECHO, echo)
 
 dnl ------------------------------------------------------------
 dnl Figure out our FQDN

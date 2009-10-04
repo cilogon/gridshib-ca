@@ -12,14 +12,7 @@ use base qw(Test::Unit::TestCase);
 
 use GridShibCA::Config;
 use GridShibCA::Command;
-
-# Binaries to use. Need to use absolute paths.
-my %binary = (
-    "bogus" => "nonexistantBinary",
-    "cat" => "/bin/cat",
-    "echo" => "/bin/echo",
-    "false" => "/usr/bin/false",
-);
+use GridShibCA::Constants qw(%BINARY);
 
 sub new
 {
@@ -41,7 +34,7 @@ sub test_basic
 {
     my $self = shift;
     my $message = "hello world";
-    $self->{command} = GridShibCA::Command->new($binary{"echo"}, $message);
+    $self->{command} = GridShibCA::Command->new($BINARY{"echo"}, $message);
     $self->assert_not_null($self->{command});
     $self->assert_equals(1, $self->{command}->exec());
     my $output = $self->{command}->getOutput();
@@ -53,7 +46,7 @@ sub test_basic
 sub test_nonzero_status
 {
     my $self = shift;
-    $self->{command} = GridShibCA::Command->new($binary{"false"});
+    $self->{command} = GridShibCA::Command->new($BINARY{"false"});
     $self->assert_not_null($self->{command});
     $self->assert_equals(0, $self->{command}->exec());
     $self->assert_equals(1, $self->{command}->getStatus());
