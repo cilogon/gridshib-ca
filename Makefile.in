@@ -75,8 +75,8 @@ IMAGES=\
 HTML_INCS = @HTML_INCS@
 
 # Source files
-CGI_BIN_SRCS = @CGI_BIN_SRCS@
-SHIB_CGI_BIN_SRCS = @SHIB_CGI_BIN_SRCS@
+WEBAPP_SRCS = @WEBAPP_SRCS@
+SHIB_WEBAPP_SRCS = @SHIB_WEBAPP_SRCS@
 HTML_SRCS = @HTML_SRCS@
 CONF_SRCS = @CONF_SRCS@
 UTIL_SRCS = @UTIL_SRCS@
@@ -90,9 +90,8 @@ CONF_FILES=@CONF_FILES@
 UTILS=@UTILS@
 DEV_UTILS=@DEV_UTILS@
 BINARIES=@BINARIES@
-CGI_BIN_SCRIPTS=@CGI_BIN_SCRIPTS@
-SHIB_CGI_BIN_SCRIPTS=@SHIB_CGI_BIN_SCRIPTS@
-CGI_DEMO_SCRIPTS=@CGI_DEMO_SCRIPTS@
+WEBAPPS=@WEBAPPS@
+SHIB_WEBAPPS=@SHIB_WEBAPPS@
 HTML_FILES=@HTML_FILES@
 PERL_MODULES = @PERL_MODULES@
 REQUIRED_PERL_MODULES = @REQUIRED_PERL_MODULES@
@@ -103,8 +102,8 @@ TEST_SCRIPTS = @TEST_SCRIPTS@
 # Files to be distributed (will be added to through this file)
 DIST_FILES=\
 	$(IMAGES) \
-	$(CGI_BIN_SRCS) \
-	$(SHIB_CGI_BIN_SRCS) \
+	$(WEBAPP_SRCS) \
+	$(SHIB_WEBAPP_SRCS) \
 	$(HTML_SRCS) \
 	$(CONF_SRCS) \
 	$(UTIL_SRCS) \
@@ -122,8 +121,8 @@ BUILD_ALL =\
 	$(BINARIES) \
 	$(PERL_MODULES) \
 	$(HTML_FILES) \
-	$(CGI_BIN_SCRIPTS) \
-	$(SHIB_CGI_BIN_SCRIPTS) \
+	$(WEBAPPS) \
+	$(SHIB_WEBAPPS) \
 	$(CGI_DEMO_SCRIPTS) \
 	$(DEV_UTILS) \
 	$(TEST_SCRIPTS)
@@ -172,8 +171,8 @@ clean::
 	rm -f $(CONF_FILES)
 	rm -f $(UTILS)
 	rm -f $(HTML_FILES)
-	rm -f $(CGI_BIN_SCRIPTS)
-	rm -f $(SHIB_CGI_BIN_SCRIPTS)
+	rm -f $(WEBAPPS)
+	rm -f $(SHIB_WEBAPPS)
 	rm -f $(HTML_INCS)
 	rm -f $(BINARIES)
 
@@ -275,10 +274,9 @@ realcleam:: javaclean
 # Installation directories
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 TEMPLATE_DIR=@TEMPLATE_DIR@
-GRIDSHIB_CA_HTML_DIR=@GRIDSHIB_CA_HTML_DIR@
+GRIDSHIB_CA_WEB_PATH=@GRIDSHIB_CA_WEB_PATH@
 GRIDSHIB_CA_DOC_DIR=@GRIDSHIB_CA_DOC_DIR@
-CGI_BIN_DIR=@CGI_BIN_DIR@
-SHIB_PROTECTED_CGI_BIN_DIR=@SHIB_PROTECTED_CGI_BIN_DIR@
+SHIB_PROTECTED_PATH=@SHIB_PROTECTED_PATH@
 
 # User that httpd runs under
 WWW_USER=@WWW_USER@
@@ -288,8 +286,8 @@ INSTALL_ALL=install-conf \
 	install-perl \
 	install-html \
 	install-jar \
-	install-cgi \
-	install-shib-cgi \
+	install-webapps \
+	install-shib-webapps \
 	install-templates \
 	install-demos
 
@@ -329,21 +327,28 @@ install-perl: $(PERL_MODULES) $(PERL_DIST_MODULES)
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR)/$${file} ;\
 	done
 
-$(GRIDSHIB_CA_HTML_DIR):
-	@echo "Creating $(GRIDSHIB_CA_HTML_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_HTML_DIR)
+$(GRIDSHIB_CA_WEB_PATH):
+	@echo "Creating $(GRIDSHIB_CA_WEB_PATH)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_WEB_PATH)
 
-install-html: $(GRIDSHIB_CA_HTML_DIR) $(HTML_FILES) $(IMAGES)
-	@echo "Installing html to $(GRIDSHIB_CA_HTML_DIR)"
+install-html: $(GRIDSHIB_CA_WEB_PATH) $(HTML_FILES) $(IMAGES)
+	@echo "Installing html to $(GRIDSHIB_CA_WEB_PATH)"
 	@for file in $(HTML_FILES) $(IMAGES) ; do \
 		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_HTML_DIR) ;\
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
 	done
 
 install-jar:  $(JAR_PATH)
-	@echo "Installing $(JAR_PATH) to $(GRIDSHIB_CA_HTML_DIR)"
-	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JAR_PATH) $(GRIDSHIB_CA_HTML_DIR)/$(JAR_NAME)
+	@echo "Installing $(JAR_PATH) to $(GRIDSHIB_CA_WEB_PATH)"
+	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JAR_PATH) $(GRIDSHIB_CA_WEB_PATH)/$(JAR_NAME)
+
+install-webapps: $(GRIDSHIB_CA_WEB_PATH) $(WEBAPPS)
+	@echo "Installing webapps to $(GRIDSHIB_CA_WEB_PATH)"
+	@for file in $(WEBAPPS) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
+	done
 
 $(TEMPLATE_DIR): $(GRIDSHIB_CA_CONF_DIR)
 	@echo "Creating $(TEMPLATE_DIR)"
@@ -362,26 +367,15 @@ install-templates: $(TEMPLATE_DIR)
 		fi \
 	done
 
-$(SHIB_PROTECTED_CGI_BIN_DIR):
-	@echo "Creating $(SHIB_PROTECTED_CGI_BIN_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_CGI_BIN_DIR)
+$(SHIB_PROTECTED_PATH):
+	@echo "Creating $(SHIB_PROTECTED_PATH)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_PATH)
 
-install-shib-cgi: $(SHIB_PROTECTED_CGI_BIN_DIR) $(SHIB_CGI_BIN_SCRIPTS)
-	@echo "Installing Shibboleth-protected cgi-bin scripts to $(SHIB_PROTECTED_CGI_BIN_DIR)"
-	@for file in $(SHIB_CGI_BIN_SCRIPTS) ; do \
+install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
+	@echo "Installing Shibboleth-protected cgi-bin scripts to $(SHIB_PROTECTED_PATH)"
+	@for file in $(SHIB_WEBAPPS) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_CGI_BIN_DIR) ;\
-	done
-
-$(CGI_BIN_DIR):
-	@echo "Creating $(CGI_BIN_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(CGI_BIN_DIR)
-
-install-cgi: $(CGI_BIN_DIR) $(CGI_BIN_SCRIPTS)
-	@echo "Installing cgi-bin scripts to $(CGI_BIN_DIR)"
-	@for file in $(CGI_BIN_SCRIPTS) ; do \
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
+		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_PATH) ;\
 	done
 
 install-demos: $(CGI_DEMO_SCRIPTS) $(CGI_BIN_DIR)
@@ -408,15 +402,15 @@ uninstall:
 	@for file in $(HTML_FILES) ; do \
 		f=`basename $${file}` ;\
 		echo "Uninstalling $${f}" ;\
-		rm -f $(GRIDSHIB_CA_HTML_DIR)/$${f} ;\
+		rm -f $(GRIDSHIB_CA_WEB_PATH)/$${f} ;\
 	done
-	@if $(DIR_EXISTS) $(GRIDSHIB_CA_HTML_DIR) ; then $(RMDIR) $(GRIDSHIB_CA_HTML_DIR) ; fi
+	@if $(DIR_EXISTS) $(GRIDSHIB_CA_WEB_PATH) ; then $(RMDIR) $(GRIDSHIB_CA_WEB_PATH) ; fi
 	@for file in $(PROTECTED_CGI_BIN_FILES) ; do \
 		f=`basename $${file}` ;\
 		echo "Uninstalling $${f}" ;\
 		rm -f $(PROTECTED_CGI_BIN_DIR)/$${f} ;\
 	done
-	@if $(DIR_EXISTS) $(SHIB_PROECTED_CGI_BIN_DIR) ; then $(RMDIR) $(SHIB_PROTECTED_CGI_BIN_DIR) ; fi
+	@if $(DIR_EXISTS) $(SHIB_PROECTED_CGI_BIN_DIR) ; then $(RMDIR) $(SHIB_PROTECTED_PATH) ; fi
 	@echo "Uninstall done."
 
 ######################################################################

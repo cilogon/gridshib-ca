@@ -143,25 +143,22 @@ AC_SUBST_FILE(DOC_FOOTER)
 DOC_INCS="${DOC_HEADER} ${DOC_FOOTER}"
 AC_SUBST(DOC_INCS)
 
-dnl Shib-protected CGI-BIN scripts
-SHIB_CGI_BIN_SCRIPTS="webapps/login.cgi"
-AC_SUBST(SHIB_CGI_BIN_SCRIPTS)
-AC_CONFIG_FILES([$SHIB_CGI_BIN_SCRIPTS])
-AC_SRC_FILES(SHIB_CGI_BIN_SCRIPTS, SHIB_CGI_BIN_SRCS)
-AC_SUBST(SHIB_CGI_BIN_SRCS)
+dnl Shib-protected webapps
+SHIB_WEBAPPS="webapps/login.cgi"
+AC_SUBST(SHIB_WEBAPPS)
+AC_CONFIG_FILES([$SHIB_WEBAPPS])
+AC_SRC_FILES(SHIB_WEBAPPS, SHIB_WEBAPP_SRCS)
+AC_SUBST(SHIB_WEBAPP_SRCS)
 
-dnl Session-protected CGI-BIN scripts
-CGI_BIN_SCRIPTS="webdocs/generateCred.cgi \
-	webdocs/sysinfo.pl \
-	webdocs/portalLogin.cgi \
-	webdocs/getTrustedCAs.cgi \
+dnl Webapplications to be installed in GRIDSHIB_CA_WEB_PATH
+WEBAPPS="\
 	webapps/GridShibCA.cgi \
 	webapps/launchGSCA.jnlp \
 	"
-AC_SUBST(CGI_BIN_SCRIPTS)
-AC_CONFIG_FILES([$CGI_BIN_SCRIPTS])
-AC_SRC_FILES(CGI_BIN_SCRIPTS, CGI_BIN_SRCS)
-AC_SUBST(CGI_BIN_SRCS)
+AC_SUBST(WEBAPPS)
+AC_CONFIG_FILES([$WEBAPPS])
+AC_SRC_FILES(WEBAPPS, WEBAPP_SRCS)
+AC_SUBST(WEBAPP_SRCS)
 
 dnl Files to be installed in unprotected html directory
 HTML_FILES="webdocs/index.html \
@@ -238,8 +235,8 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
-	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/LaunchClient.pm \
+	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/Logon.pm \
 	perl/GridShibCA/NameMapper.pm \
@@ -435,9 +432,8 @@ AC_SRC_FILES(TEST_SCRIPTS, TEST_SRCS)
 AC_SUBST(TEST_SRCS)
 
 dnl ------------------------------------------------------------
-dnl Command-line options
-
 dnl Enable building (aka development) mode?
+
 AC_ARG_ENABLE(build,
 	AC_HELP_STRING([--enable-build],
 		[Enable build environment. For developers. (Default: Disabled)]),
@@ -445,7 +441,16 @@ AC_ARG_ENABLE(build,
 	[MODE=dist])
 AC_SUBST(MODE)
 
-AC_MSG_CHECKING([for name of various GridShib-CA directories])
+dnl ------------------------------------------------------------
+dnl Figure out our install paths and URLs
+
+dnl Figure out prefix
+myprefix=${prefix}
+if test "x$myprefix" = xNONE ; then
+   myprefix=$ac_default_prefix
+fi
+
+AC_MSG_CHECKING([for name of GridShib-CA directories])
 default=gridshib-ca-${PACKAGE_VERSION}
 AC_ARG_WITH(gridshib-ca-dir-name,
 	AC_HELP_STRING([--with-gridshib-ca-dir-name=<name>],
@@ -455,11 +460,14 @@ AC_ARG_WITH(gridshib-ca-dir-name,
 AC_SUBST(GRIDSHIB_CA_DIR_NAME)
 AC_MSG_RESULT(${GRIDSHIB_CA_DIR_NAME})
 
-dnl Figure out prefix
-myprefix=${prefix}
-if test "x$myprefix" = xNONE ; then
-   myprefix=$ac_default_prefix
-fi
+AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
+AC_ARG_WITH(www-hostname,
+	AC_HELP_STRING([--with-www-hostname],
+		[Specify the hostname used in the GridShib CA URL. (Default: local hostname)]),
+	[WWW_HOSTNAME=$withval],
+	[WWW_HOSTNAME=$HOSTNAME])
+AC_MSG_RESULT(${WWW_HOSTNAME})
+AC_SUBST(WWW_HOSTNAME)
 
 AC_MSG_CHECKING([for path to GridShib CA configuration directory])
 default=${myprefix}/${GRIDSHIB_CA_DIR_NAME}
@@ -472,60 +480,20 @@ AC_CLEAN_PATH(GRIDSHIB_CA_CONF_DIR)
 AC_SUBST(GRIDSHIB_CA_CONF_DIR)
 AC_MSG_RESULT(${GRIDSHIB_CA_CONF_DIR})
 
-AC_MSG_CHECKING([for Apache httpd root directory])
+AC_MSG_CHECKING([for path to Apache doc root])
 default=/var/www/
 AC_ARG_WITH(www-dir,
 	AC_HELP_STRING([--with-www-dir=<path>],
 		[Specify the base www directory. This is directory under which the Apache HTTPD has the html/ and cgi-bin/ directories. (Default: /var/www/)]),
-	[WWW_DIR=$withval],
-	[WWW_DIR=$default])
-AC_CLEAN_PATH(WWW_DIR)
-AC_SUBST(WWW_DIR)
-AC_MSG_RESULT(${WWW_DIR})
+	[APACHE_DOCROOT=$withval],
+	[APACHE_DOCROOT=$default])
+AC_CLEAN_PATH(APACHE_DOCROOT)
+AC_SUBST(APACHE_DOCROOT)
+AC_MSG_RESULT(${APACHE_DOCROOT})
 
-AC_MSG_CHECKING([for path to cgi-bin directory])
-default=${WWW_DIR}/cgi-bin/
-AC_ARG_WITH(cgi-bin-dir,
-	AC_HELP_STRING([--with-cgi-bin-dir=<path>],
-		[Specify the (unprotected) cgi-bin directory. (Default: <www-dir>/cgi-bin/)]),
-	[CGI_BIN_DIR=$withval],
-	[CGI_BIN_DIR=$default])
-AC_CLEAN_PATH(CGI_BIN_DIR)
-AC_SUBST(CGI_BIN_DIR)
-AC_MSG_RESULT(${CGI_BIN_DIR})
+dnl GridShib-CA web space URL and path
 
-AC_MSG_CHECKING([for URL for Shibboleth-protected CGI-BIN directory])
-default=/cgi-bin/shib-protected/${GRIDSHIB_CA_DIR_NAME}
-AC_ARG_WITH(shib-protected-cgi-bin-url,
-	AC_HELP_STRING([--with-shib-protected-cgi-bin-url=<url>],
-		[Specify the Shibboleth-protected cgi-bin url. This is the relative URL, without hostname, where Shibboleth-protected CGI-BIN executables are installed. (Default: /cgi-bin/shib-protected/<gridshib-ca-dir-name>)]),
-	[SHIB_PROTECTED_CGI_BIN_URL=$withval],
-	[SHIB_PROTECTED_CGI_BIN_URL=$default])
-AC_SUBST(SHIB_PROTECTED_CGI_BIN_URL)
-AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_URL})
-
-AC_MSG_CHECKING([for path to Shibboleth-protected CGI-BIN directory])
-default=${WWW_DIR}/${SHIB_PROTECTED_CGI_BIN_URL}
-AC_ARG_WITH(shib-protected-cgi-bin-dir,
-	AC_HELP_STRING([--with-shib-protected-cgi-bin-dir=<path>],
-		[Specify the Shibboleth-protected cgi-bin directory. This is the path that corresponds the the shib-protected-cgi-bin url. (Default: <www-dir>/<gridshib-ca-cgi-bin-url>)]),
-	[SHIB_PROTECTED_CGI_BIN_DIR=$withval],
-	[SHIB_PROTECTED_CGI_BIN_DIR=$default])
-AC_CLEAN_PATH(SHIB_PROTECTED_CGI_BIN_DIR)
-AC_SUBST(SHIB_PROTECTED_CGI_BIN_DIR)
-AC_MSG_RESULT(${SHIB_PROTECTED_CGI_BIN_DIR})
-
-AC_MSG_CHECKING([for protocol for Shibboleth-protected CGI-BIN directory])
-default=https
-AC_ARG_WITH(shib-protected-protocol,
-	AC_HELP_STRING([--with-shib-protected-protocol],
-		[Specify the protocol to use for the Shibboleth protected cgi-bin directory. By default is 'https' and should only be changed to 'http' for test deployments.]),
-	[SHIB_PROTECTED_PROTOCOL=$withval],
-	[SHIB_PROTECTED_PROTOCOL=$default])
-AC_SUBST(SHIB_PROTECTED_PROTOCOL)
-AC_MSG_RESULT(${SHIB_PROTECTED_PROTOCOL})
-
-AC_MSG_CHECKING([for URL to GridSHIB-CA])
+AC_MSG_CHECKING([for base URL to GridSHIB-CA web space])
 default=/${GRIDSHIB_CA_DIR_NAME}/
 AC_ARG_WITH(gridshib-ca-url,
 	AC_HELP_STRING([--with-gridshib-ca-url=<url>],
@@ -535,24 +503,40 @@ AC_ARG_WITH(gridshib-ca-url,
 AC_SUBST(GRIDSHIB_CA_URL)
 AC_MSG_RESULT(${GRIDSHIB_CA_URL})
 
-AC_MSG_CHECKING([for path to GridShib CA html directory])
-AC_ARG_WITH(gridshib-ca-html-dir,
-	AC_HELP_STRING([--with-gridshib-ca-html-dir],
-		[Specify the direcotry for the gridshib-ca HTML corresponding to the gridshib-ca-url. Default: <www-dir>/html/<gridshib-ca-dir-name>/]),
-	[GRIDSHIB_CA_HTML_DIR=$withval],
-	[GRIDSHIB_CA_HTML_DIR=${WWW_DIR}/html/${GRIDSHIB_CA_DIR_NAME}/])
-AC_CLEAN_PATH(GRIDSHIB_CA_HTML_DIR)
-AC_SUBST(GRIDSHIB_CA_HTML_DIR)
-AC_MSG_RESULT(${GRIDSHIB_CA_HTML_DIR})
+AC_MSG_CHECKING([for path to GridShib-CA web space])
+default=${APACHE_DOCROOT}/${GRIDSHIB_CA_URL}
+AC_ARG_WITH(gridshib-ca-web-path,
+	AC_HELP_STRING([--with-gridshib-ca-web-path=<path>],
+		[Specify the path for the GridShib-CA web space. This is the path that corresponds the the GridShib-CA base URL. (Default: <www-dir>/<gridshib-ca-cgi-bin-url>)]),
+	[GRIDSHIB_CA_WEB_PATH=$withval],
+	[GRIDSHIB_CA_WEB_PATH=$default])
+AC_CLEAN_PATH(GRIDSHIB_CA_WEB_PATH)
+AC_SUBST(GRIDSHIB_CA_WEB_PATH)
+AC_MSG_RESULT(${GRIDSHIB_CA_WEB_PATH})
 
-AC_MSG_CHECKING([for hostname to use in GridShib CA URLS])
-AC_ARG_WITH(www-hostname,
-	AC_HELP_STRING([--with-www-hostname],
-		[Specify the hostname used in the GridShib CA URL. (Default: local hostname)]),
-	[WWW_HOSTNAME=$withval],
-	[WWW_HOSTNAME=$HOSTNAME])
-AC_MSG_RESULT(${WWW_HOSTNAME})
-AC_SUBST(WWW_HOSTNAME)
+dnl Shibboleth-protected web space URL and path
+
+AC_MSG_CHECKING([for base URL to Shibboleth-protected web space])
+default=/shib-protected/${GRIDSHIB_CA_DIR_NAME}
+AC_ARG_WITH(shib-protected-url,
+	AC_HELP_STRING([--with-shib-protected-url=<url>],
+		[Specify the base url for the Shibboleth-protected web space. This is the relative URL, without hostname, where Shibboleth-protected webapps are installed. (Default: /shib-protected/<gridshib-ca-dir-name>)]),
+	[SHIB_PROTECTED_URL=$withval],
+	[SHIB_PROTECTED_URL=$default])
+AC_SUBST(SHIB_PROTECTED_URL)
+AC_MSG_RESULT(${SHIB_PROTECTED_URL})
+
+AC_MSG_CHECKING([for path to Shibboleth-protected web space])
+default=${APACHE_DOCROOT}/${SHIB_PROTECTED_URL}
+AC_ARG_WITH(shib-protected-path,
+	AC_HELP_STRING([--with-shib-protected-path=<path>],
+		[Specify the path for the Shibboleth-protected web space. This is the filesystem path where Shibboleth-protected webapps are installed. (Default: <apache_docroot>/<shib_protected_url>)]),
+	[SHIB_PROTECTED_PATH=$withval],
+	[SHIB_PROTECTED_PATH=$default])
+AC_SUBST(SHIB_PROTECTED_PATH)
+AC_MSG_RESULT(${SHIB_PROTECTED_PATH})
+
+dnl CSS URL
 
 AC_MSG_CHECKING([for CSS URL to use])
 AC_ARG_WITH(css-url,
@@ -562,6 +546,9 @@ AC_ARG_WITH(css-url,
 	[CSS_URL=${GRIDSHIB_CA_URL}/GridShibCA.css])
 AC_SUBST(CSS_URL)
 AC_MSG_RESULT(${CSS_URL})
+
+dnl ----------------------------------------------------------------------
+dnl Miscellaneous Install parameters
 
 AC_MSG_CHECKING([for owner of www files])
 AC_ARG_WITH(www-user,
@@ -840,11 +827,11 @@ AC_SUBST(PERL_CGI_BIN_ARGS)
 dnl ------------------------------------------------------------
 dnl URLs for common targets
 
-SHIB_PROTECTED_FULL_URL=${SHIB_PROTECTED_PROTOCOL}://${WWW_HOSTNAME}${SHIB_PROTECTED_CGI_BIN_URL}
+SHIB_PROTECTED_FULL_URL=${SHIB_PROTECTED_PROTOCOL}://${WWW_HOSTNAME}${SHIB_PROTECTED_URL}
 AC_SUBST(SHIB_PROTECTED_FULL_URL)
 
 LOGIN_URL=${SHIB_PROTECTED_FULL_URL}/login.cgi
-AC_SUBST(LOGIN_URL)
+AC_SUBST(SHIB_LOGIN_URL)
 
 dnl ------------------------------------------------------------
 dnl Makefiles
