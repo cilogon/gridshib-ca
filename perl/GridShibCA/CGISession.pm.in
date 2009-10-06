@@ -372,7 +372,7 @@ sub createClientSession
     $self->_checkSession();
     $self->{logger}->debug("Creating new client session from session %s",
 			   $self->id());
-    my $session = ref($self)::new();
+    my $session = GridShibCA::CGISession->new();
     $self->{logger}->debug("New client session %s created", $session->id());
 
     # XXX Set client session expiration time
