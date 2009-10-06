@@ -112,11 +112,6 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 </Modules>
 
 <Commands>
-  # Modules used directly by webapps
-  
-  # Module invoked by logon.cgi to convert web signon to session.
-  Logon = GridShibCA::Logon
-
   # Module invoked by launchGSCA.jnlp to generate Java Web Start jnlp file
   LaunchJNLP = GridShibCA::LaunchJNLP
 

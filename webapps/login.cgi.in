@@ -53,8 +53,8 @@ use GridShibCA::WebApp;
 
 try
 {
-    my $webapp = GridShibCA::WebApp->new();
-    $webapp->invokeCommand("Logon");
+    my $logon = GridShibCA::Logon::new();
+    $logon->invoke();
 }
 otherwise
 {

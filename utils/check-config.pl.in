@@ -146,15 +146,13 @@ if ($errorFound)
 
 print "Attempting to load all web commands...\n";
 
-my @commands = ( 
-    "Logon"
-    );
+my %commands = $config->getSection("Commands");
 
 my $errorFound = 0;
-for $command (@commands)
+for $command (keys(%commands))
 {
     print "Loading $command ...";
-    my $className = $config->getSectionParam("Commands", $command);
+    my $className = $commands{$command};
     if (!defined($className))
     {
 	print "Failed. Undefined module \"%s\"\n", $command;
