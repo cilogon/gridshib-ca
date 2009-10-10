@@ -18,6 +18,7 @@
       main-class="edu.ncsa.gridshib.gridshibca.GridShibCAClientApp">
     <argument>AuthenticationToken = { $AuthenticationToken }</argument>
     <argument>WebAppURL = { $WebAppURL }</argument>
+    <argument>UseBundledCAs = { $UseBundledCAs }</argument>
     {
       foreach my $arg (@Arguments) {
         $OUT .= "\t<argument>$arg</argument>\n";
