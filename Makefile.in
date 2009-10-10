@@ -281,17 +281,30 @@ SHIB_PROTECTED_PATH=@SHIB_PROTECTED_PATH@
 # User that httpd runs under
 WWW_USER=@WWW_USER@
 
-INSTALL_ALL=install-conf \
+INSTALL_BASE=\
 	install-binaries \
 	install-perl \
 	install-html \
 	install-jar \
 	install-webapps \
 	install-shib-webapps \
-	install-templates \
 	install-demos
 
+INSTALL_ALL=\
+	$(INSTALL_BASE) \
+        install-conf \
+        install-templates
+
+INSTALL_FORCE=\
+	$(INSTALL_BASE) \
+        install-conf-force \
+	install-templates-force
+
 install: $(INSTALL_ALL)
+	@echo "Installation done."
+
+# Force overwrite of configuration and templates
+install-force: $(INSTALL_FORCE) 
 	@echo "Installation done."
 
 $(GRIDSHIB_CA_CONF_DIR):
@@ -299,11 +312,25 @@ $(GRIDSHIB_CA_CONF_DIR):
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
 
 install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
-	@echo "Installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
+	@echo "Installing configuration in $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
+		target=$(GRIDSHIB_CA_CONF_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+		if test -f $${target} ; then \
+			echo "  Avoiding overwriting existing file." ;\
+			target=$${targat}.new ;\
+		fi ;\
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $${target}} ;\
+        done
+
+install-conf-force: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
+	@echo "Force installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
+	@for file in $(CONF_FILES) ; do \
+		f=`basename $${file}` ;\
+		target=$(GRIDSHIB_CA_CONF_DIR)/$${f} ;\
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $${target}} ;\
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
@@ -349,12 +376,27 @@ $(TEMPLATE_DIR): $(GRIDSHIB_CA_CONF_DIR)
 	@echo "Creating $(TEMPLATE_DIR)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(TEMPLATE_DIR)
 
+
 install-templates: $(TEMPLATE_DIR)
 	@echo "Installing templates to $(TEMPLATE_DIR)"
 	@for file in $(TEMPLATE_FILES) ; do \
 		f=`basename $${file}` ;\
+		target=$(TEMPLATE_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR) ;\
+		if test -f $${target} ; then \
+			echo "  Avoiding overwriting existing file." ;\
+			target=$${targat}.new ;\
+		fi ;\
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $${target}} ;\
+	done
+
+install-templates-force: $(TEMPLATE_DIR)
+	@echo "Installing templates to $(TEMPLATE_DIR)"
+	@for file in $(TEMPLATE_FILES) ; do \
+		f=`basename $${file}` ;\
+		target=$(TEMPLATE_DIR)/$${f} ;\
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $${target}} ;\
 	done
 
 $(SHIB_PROTECTED_PATH):
