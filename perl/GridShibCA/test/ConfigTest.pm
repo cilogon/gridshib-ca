@@ -94,6 +94,7 @@ sub test_getSectionparam
 {
     my $self = shift;
     $self->assert_not_null($self->{config}->getSectionParam("Modules", "CA"));
+    $self->assert_not_null($self->{config}->getSectionParam("URLs", "Base"));
 }
 
 sub test_getSectionparamShouldFail

@@ -62,9 +62,9 @@ public class GridShibCACredentialRetriever
         }
         debug("Properties:\n" + GridShibCAProperties.dumpToString());
 
-        if (GridShibCAProperties.getPropertyAsBoolean("testLaunch"))
+        if (GridShibCAProperties.getPropertyAsBoolean("TestLaunch"))
         {
-            debug("testLaunch is True");
+            debug("TestLaunch is True");
             this.message("Test successful.");
             view.doneLabel.setEnabled(true);
             view.displaySuccess();
@@ -96,8 +96,8 @@ public class GridShibCACredentialRetriever
 
         try
         {
-            URL gridshibCAURL = GridShibCAProperties.getPropertyAsURL("url");
-            String token = GridShibCAProperties.getProperty("token");
+            URL gridshibCAURL = GridShibCAProperties.getPropertyAsURL("WebAppURL");
+            String token = GridShibCAProperties.getProperty("AuthenticationToken");
 
             credIssuerURL = new GridShibCACredentialIssuerURL(gridshibCAURL,
                     token);
@@ -113,11 +113,9 @@ public class GridShibCACredentialRetriever
         }
 
         this.message("Requesting credential from GridShib-CA server.");
-        int lifetime = GridShibCAProperties.getPropertyAsInt("lifetime");
-        debug("Requesting lifetime of " + lifetime);
         try
         {
-            credential = credIssuerURL.requestCredential(lifetime);
+            credential = credIssuerURL.requestCredential();
         } catch (javax.net.ssl.SSLHandshakeException e)
         {
             fatalError("SSL error communicating with server. Unrecognized HTTPS certificate?", e);
@@ -271,21 +269,13 @@ public class GridShibCACredentialRetriever
      */
     private void validateProperties()
     {
-        if (!GridShibCAProperties.isSet("url"))
+        if (!GridShibCAProperties.isSet("WebAppURL"))
         {
-            throw new IllegalArgumentException("Missing URL argument for credential generator.");
+            throw new IllegalArgumentException("Missing URL argument for GridShibCA Web Application.");
         }
-        if (!GridShibCAProperties.isSet("shibsession"))
-        {
-            throw new IllegalArgumentException("Missing Shibboleth Session argument.");
-        }
-        if (!GridShibCAProperties.isSet("token"))
+        if (!GridShibCAProperties.isSet("AuthenticationToken"))
         {
             throw new IllegalArgumentException("Missing token argument.");
-        }
-        if (!GridShibCAProperties.isSet("lifetime"))
-        {
-            throw new IllegalArgumentException("Missing lifetime argument.");
         }
     }
 }

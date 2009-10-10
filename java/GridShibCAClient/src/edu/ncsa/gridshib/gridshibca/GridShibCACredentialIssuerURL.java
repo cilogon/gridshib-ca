@@ -84,7 +84,6 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
 
     /**
      * Request a credential from the GridShibCA.
-     * @param lifetime Requested lifetime in seconds.
      * @return Credential object.
      * @throws java.io.IOException
      * @throws NoSuchAlgorithmException
@@ -93,7 +92,7 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
      * @throws SignatureException
      * @throws InvalidKeyException
      */
-    public Credential requestCredential(int lifetime)
+    public Credential requestCredential()
         throws IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, SignatureException, InvalidKeyException
     {
         this.openConnection();
@@ -103,7 +102,7 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
         String requestPEM = cred.generatePEMCertificateRequest();
 
         GridShibCAClientLogger.debugMessage("Writing certificate request");
-        this.writeRequest(requestPEM, lifetime);
+        this.writeRequest(requestPEM);
 
         GridShibCAClientLogger.debugMessage("Reading certificate");
         this.readCertificate(cred);
@@ -116,11 +115,9 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
     /**
      * Send a POST request to the GridShibCA server.
      * @param requestPEM PEM-encoded certificate request.
-     * @param lifetime Requested certificate lifetime in seconds.
      * @throws java.io.IOException
      */
-    private void writeRequest(String requestPEM,
-                              int lifetime)
+    private void writeRequest(String requestPEM)
         throws IOException
     {
         OutputStreamWriter postWriter =
@@ -128,9 +125,8 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
         String postData =
                 "certificateRequest=" +
                 URLEncoder.encode(requestPEM, "UTF-8") + "&" +
-                "token=" +
-                URLEncoder.encode(this.authenticationToken, "UTF-8") + "&" +
-                "lifetime=" + lifetime;
+                "token=" +  
+                URLEncoder.encode(this.authenticationToken, "UTF-8");   
         GridShibCAClientLogger.debugMessage("POST data: " + postData);
         postWriter.write(postData);
         postWriter.flush();

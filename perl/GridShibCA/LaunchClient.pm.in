@@ -81,13 +81,22 @@ sub doCommand
     try
     {
 	$self->{clientSession} = $self->{session}->createClientSession();
+    }
+    otherwise
+    {
+	my $ex = shift;
+	handleError("Error creating client session", -exception=>$ex);
+    };
+
+    try
+    {
 	my $header = $self->_generateHeader();
 	my $text = $self->_generateText();
 
 	print $header . "\n\n";
 	print $text;
     }
-    catch GridShibCA::Exception with
+    otherwise
     {
 	my $ex = shift;
 	handleError("Error rendering output", -exception=>$ex);
@@ -186,7 +195,10 @@ sub _setTemplateMappings
     my $template = shift;
 
     $template->addSectionAsMappings("LaunchClient");
-    $template->addMapping("authenticationToken",
+    $template->addMappings("WebAppURL",
+			   $self->{config}->getSectionParam("URLs",
+							    "WebApp"));
+    $template->addMapping("AuthenticationToken",
 			  $self->{clientSession}->id());
 }
 

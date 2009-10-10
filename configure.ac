@@ -469,6 +469,11 @@ AC_ARG_WITH(www-hostname,
 AC_MSG_RESULT(${WWW_HOSTNAME})
 AC_SUBST(WWW_HOSTNAME)
 
+AC_MSG_CHECKING([for base URL])
+BASE_URL=https://${WWW_HOSTNAME}/
+AC_MSG_RESULT(${BASE_URL})
+AC_SUBST(BASE_URL)
+
 AC_MSG_CHECKING([for path to GridShib CA configuration directory])
 default=${myprefix}/${GRIDSHIB_CA_DIR_NAME}
 AC_ARG_WITH(gridshib-ca-conf-dir,
@@ -482,9 +487,9 @@ AC_MSG_RESULT(${GRIDSHIB_CA_CONF_DIR})
 
 AC_MSG_CHECKING([for path to Apache doc root])
 default=/var/www/
-AC_ARG_WITH(www-dir,
-	AC_HELP_STRING([--with-www-dir=<path>],
-		[Specify the base www directory. This is directory under which the Apache HTTPD has the html/ and cgi-bin/ directories. (Default: /var/www/)]),
+AC_ARG_WITH(apache-docroot,
+	AC_HELP_STRING([--with-apache-docroot=<path>],
+		[Specify the Apache docroot. (Default: /var/www/)]),
 	[APACHE_DOCROOT=$withval],
 	[APACHE_DOCROOT=$default])
 AC_CLEAN_PATH(APACHE_DOCROOT)

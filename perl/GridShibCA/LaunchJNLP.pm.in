@@ -135,28 +135,8 @@ sub _setTemplateMappings
     my $template = shift;
 
     $self->SUPER::_setTemplateMappings($template);
-    $template->addMapping("CodeBase", $self->_codebase());
-}
-
-
-=item _codebase()
-
-Return string for codebase of JNLP file.
-
-B<Arguments:> None
-
-B<Returns:> String with codebase.
-
-=cut
-
-sub _codebase
-{
-    my $self = shift;
-    my $cgi = $self->{cgi};
-    
-    my $urlBase = $cgi->url(-base=>1);
-    my $relativeURL = $self->{config}->getSectionParam("URL", "GridShibCAURL");
-    return $urlBase . $relativeURL;
+    $template->addMapping("CodeBase",
+			  $self->{config}->getSectionParam("URLs", "GridShibCA"));
 }
 
 =back

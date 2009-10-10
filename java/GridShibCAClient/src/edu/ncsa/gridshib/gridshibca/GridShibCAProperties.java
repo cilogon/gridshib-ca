@@ -63,14 +63,12 @@ public class GridShibCAProperties
      */
     private final static String[] knownArguments =
     {
-        "token", // Authentication token (required)
-        "url", // URL to of GridShibCA (required)
-        "debug", // Turn on debugging if true
-        "lifetime", // Credential lifetime in seconds (required)
-        "trustURL", // URL from which to download trusted CAs
-        "useBundledCAs", // Use CAs in JWS jar to validate HTTPs connections.
-        "redirectURL",      // URL to redirect browser to on success
-        "testLaunch", // Just test launch and exit
+        "AuthenticationToken", // Required
+        "WebAppURL", // URL to of GridShibCA (required)
+        "DownloadCAs", // Download trusted CAs?
+        "UseBundledCAs", // Use CAs in JWS jar to validate HTTPs connections.
+        "RedirectURL", // URL to redirect browser to on success
+        "TestLaunch", // Just test launch and exit
     };
 
     /**
@@ -85,9 +83,9 @@ public class GridShibCAProperties
         properties = new Properties();
 
         // Defaults
-        properties.setProperty("debug", "false");
-        properties.setProperty("useBundledCAs", "true");
-        properties.setProperty("testLaunch", "false");
+        properties.setProperty("UseBundledCAs", "true");
+        properties.setProperty("TestLaunch", "false");
+        properties.setProperty("DownloadCAs", "true");
         
         // Load from our JWS Jar
         properties.load(propertiesResource.asStream());
@@ -195,18 +193,7 @@ public class GridShibCAProperties
             String arg = args[argIndex].trim();
 
             /*
-             * shibsession is a oddball since the variable name is
-             * "_shibsession_" prefix with unpredictable token following,
-             * so we match start and save whole argument as value.
-             */
-            if (arg.startsWith("_shibsession_"))
-            {
-                properties.setProperty("shibsession", arg);
-                continue;
-            }
-
-            /*
-             * Standard argument. If it appears in argumentSet, add to
+             * If argument appears in argumentSet, add to
              * properties. Otherwise, it is an error.
              */
 
@@ -217,8 +204,8 @@ public class GridShibCAProperties
                 throw new IllegalArgumentException(
                         "Failed to parse argument (no '='): " + arg);
             }
-            String var = arg.substring(0, equalIndex);
-            String value = arg.substring(equalIndex + 1);
+            String var = arg.substring(0, equalIndex).trim();
+            String value = arg.substring(equalIndex + 1).trim();
 
             if (argumentSet.contains(var))
             {
@@ -226,7 +213,7 @@ public class GridShibCAProperties
             } else
             {
                 throw new IllegalArgumentException(
-                        "Unrecognized variable in argument: " + arg);
+                        "Unrecognized variable: " + var);
             }
         }
     }

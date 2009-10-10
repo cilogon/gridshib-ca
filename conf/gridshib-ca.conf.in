@@ -124,22 +124,22 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 </Commands>
 
 <LaunchClient>
-  # This section contains mappings that will be made in any scripts/
+  # This section containsb mappings that will be made in any scripts/
   # configuration files (e.g. JNLP file) that launch GSCA clients.
 
   JarName = @JAR_NAME@
+
 </LaunchClient>
 
 <URLs>
-  # Base URL for session-protected space
-  SessionProtectedBase = @SESSION_PROTECTED_BASE_URL@
+  # Protocol and host (e.g. https://somehost.foo.edu)
+  Base = @BASE_URL@
 
-  
-  # Relative URL to unprotected GridShib CA files (e.g. CSS, Jar)
-  GridShibCAURL = @GRIDSHIB_CA_URL@
+  # URL to GridShib CA directory (e.g. https://somehost.doo.edu/gridshib-ca-2.0)
+  GridShibCA = ${Base}/@GRIDSHIB_CA_URL@
 
   # URL for the GridShibCA.cgi webapp
-  GridShibCACGIURL = ${SessionProtectedBase}/GridShibCA.cgi
+  WebApp = ${GridShibCA}/GridShibCA.cgi
 </URLs>
 
 ######################################################################

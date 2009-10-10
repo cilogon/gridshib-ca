@@ -63,9 +63,6 @@ public class GridShibCAURL
     // SSLSocketFactory to use for HTTPS connections
     private static SSLSocketFactory mySSLSocketFactory = null;
 
-    // Our shibboleth session cookie
-    private static String shibbolethSession = null;
-
     /**
      * Create new URL object presenting server at given url.
      * @param url URL to service.
@@ -82,7 +79,7 @@ public class GridShibCAURL
      */
     public static void init()
     {
-        Boolean useBundledCAs = GridShibCAProperties.getPropertyAsBoolean("useBundledCAs");
+        Boolean useBundledCAs = GridShibCAProperties.getPropertyAsBoolean("UseBundledCAs");
 
         if (useBundledCAs)
         {
@@ -110,42 +107,6 @@ public class GridShibCAURL
                 throw new RuntimeException(e);
             }
         }
-
-        // It appears that Java Web Start for Java 1.5 under MacOS 10.4 (at
-        // least) sets up a CookieHandler that screws us up, so if this
-        // class exists, then disable the default CookieHandler
-        // Note special ClassLoader for JWS:
-        // http://java.sun.com/j2se/1.5.0/docs/guide/javaws/developersguide/faq.html#211
-        try
-        {
-            ClassLoader cl = GridShibCAURL.class.getClassLoader();
-            Class cookieHandler = cl.loadClass("java.net.CookieHandler");
-            Class[] params =
-            {
-                cookieHandler
-            };
-            Method setDefaultCookieHandler = cookieHandler.getMethod("setDefault", params);
-            Object[] argArray =
-            {
-                null
-            };
-            setDefaultCookieHandler.invoke(cookieHandler, argArray);
-            GridShibCAClientLogger.debugMessage("Cookie handler reset.");
-        } catch (ClassNotFoundException e)
-        {
-            // CookieHandler class doesn't exist, don't need to do anything
-            GridShibCAClientLogger.debugMessage("No cookie handler class found.");
-        } catch (Exception e)
-        {
-            // Variety of other exceptions
-            throw new RuntimeException("Error setting cookie handler:" + e, e);
-        }
-
-        shibbolethSession = GridShibCAProperties.getProperty("shibsession");
-        if (shibbolethSession == null)
-        {
-            throw new IllegalArgumentException("shibsesison is null");
-        }
     }
 
     /**
@@ -170,11 +131,6 @@ public class GridShibCAURL
         }
 
         this.conn.setDoOutput(true);
-        if (this.shibbolethSession != null)
-        {
-            GridShibCAClientLogger.debugMessage("Setting Shibboleth session cookie: " + this.shibbolethSession);
-            this.conn.setRequestProperty("Cookie", this.shibbolethSession);
-        }
     }
 
     /**

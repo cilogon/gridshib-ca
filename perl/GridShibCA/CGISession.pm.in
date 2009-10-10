@@ -373,6 +373,7 @@ sub createClientSession
     $self->{logger}->debug("Creating new client session from session %s",
 			   $self->id());
     my $session = GridShibCA::CGISession->new();
+    $session->createNew();
     $self->{logger}->debug("New client session %s created", $session->id());
 
     # XXX Set client session expiration time
@@ -454,11 +455,16 @@ sub _checkSession
 
     if (!defined($self->{session}))
     {
-	$self->{logger}->debug("Undefined session");
-	throw GridShibCA::SessionException("session not created");
+	$self->{logger}->debug("Internal error: Session parameter is undefined");
+	throw GridShibCA::SessionException("Internal error: session not defined");
     }
 
-    my $id = $self->{session}->id() || "Unknown Id";
+    my $id = $self->{session}->id();
+    if (!defined($id))
+    {
+	$self->{logger}->debug("Session has undefined id.");
+	throw GridShibCA::SessionException("Session id not defined");
+    }
 
     if ($self->{session}->is_expired())
     {
