@@ -303,12 +303,7 @@ install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
-		if test -f $(GRIDSHIB_CA_CONF_DIR)/$${f} ; then \
-			echo "  Avoiding overwriting existing file." ;\
-			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR)/$${f}.new ;\
-		else \
-			$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
-		fi \
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
 	done
 
 install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
@@ -359,12 +354,7 @@ install-templates: $(TEMPLATE_DIR)
 	@for file in $(TEMPLATE_FILES) ; do \
 		f=`basename $${file}` ;\
 		echo "Installing $${file}" ;\
-		if test -f $(TEMPLATE_DIR)/$${f} ; then \
-			echo "  Avoiding overwriting existing file." ;\
-			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR)/$${f}.new ;\
-		else \
-			$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR) ;\
-		fi \
+		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(TEMPLATE_DIR) ;\
 	done
 
 $(SHIB_PROTECTED_PATH):
