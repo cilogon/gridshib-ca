@@ -20,6 +20,7 @@ GridShibCA::test::ConfigTest
 GridShibCA::test::CommandTest
 GridShibCA::test::ExceptionTest
 GridShibCA::test::HTMLTemplateTest
+GridShibCA::test::ShibSignOnTest
 )
 }
 
