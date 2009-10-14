@@ -26,8 +26,8 @@ sub set_up
 
 sub tear_down
 {
-    $ENV{"REMOTE_USER"} = undef;
-    $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"} = undef;
+    delete $ENV{"REMOTE_USER"};
+    delete $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
 }
 
 sub test_EPPN
