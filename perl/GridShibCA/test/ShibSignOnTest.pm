@@ -11,6 +11,8 @@ use base qw(Test::Unit::TestCase);
 
 use GridShibCA::ShibSignOn;
 
+my $expectedMethod = "Shibboleth";
+
 sub new
 {
     my $self = shift()->SUPER::new(@_);
@@ -37,6 +39,7 @@ sub test_EPPN
     my $idp = "urn:mace:incommon:fakeidp";
     $self->_setupEnvironment($userId, $idp);
     $self->{signon}->init();
+    $self->assert_equals($expectedMethod, $self->{signon}->methodName());
     $self->assert_equals($userId, $self->{signon}->getUserId());
     $self->assert_equals($idp, $self->{signon}->getIdP());
 }
@@ -48,6 +51,7 @@ sub test_EPTID
     my $idp = "urn:mace:incommon:fakeidp";
     $self->_setupEnvironment($userId, $idp);
     $self->{signon}->init();
+    $self->assert_equals($expectedMethod, $self->{signon}->methodName());
     $self->assert_equals($userId, $self->{signon}->getUserId());
     $self->assert_equals($idp, $self->{signon}->getIdP());
 }
