@@ -97,7 +97,13 @@ use GridShibCA::WebSignOn;
 Create a new FakeSignOn object. Caller should call init() to actually
 populate the object.
 
-B<Arguments:> None
+B<Arguments:>  Optional dictionary with the following elements:
+
+C<method> Method to return (Default: FAKE)
+
+C<userId> User Id to return (Default: FakeUser)
+
+C<idpId> Idp Id to return (Default: urn:gridshib:FakeSignOn:FakeIdp)
 
 B<Returns:> FakeSignOn instance
 
@@ -110,6 +116,10 @@ sub new
     my $class = shift;
     my $self = $class->SUPER::new(@_);
     $self->{logger}->warn("FakeSignOn in use. You better be testing!");
+    my %args = @_;
+    $self->{method} = $args{"method"} || "FAKE";
+    $self->{userId} = $args{"userId"} || "FakeUser";
+    $self->{idpId} = $args{"idpId"} || "urn:gridshib:FakeSignOn:FakeIdp";
     return $self;
 }
 
@@ -127,43 +137,41 @@ B<Returns:> String identifying sign-on method.
 
 sub methodName
 {
-    return "FAKE";
+    my $self = shift;
+    return $self->{method};
 }
 
 
 =item _userId()
 
-Return the string "FakeUser"
+Return the fake user identifier.
 
 B<Arguments:> None
 
-B<Returns:> The string "FakeUser"
+B<Returns:> Fake user Id as string.
 
 =cut
 
 sub _userId
 {
     my $self = shift;
-    my $userId = "FakeUser";
-    return $userId;
+    return $self->{userId};
 }
 
 =item _idPId()
 
-Returns the fake identity provider Id
-"urn:gridshib:FakeSignOn:DoNotTrust".
+Returns the fake identity provider Id.
 
 B<Arguments:> None
 
-B<Returns:> The string "urn:gridshib:FakeSignOn:FakeIdp"
+B<Returns:> Idp Id as string.
 
 =cut
 
 sub _idPId
 {
     my $self = shift;
-    my $idpId = "urn:gridshib:FakeSignOn:FakeIdp";
-    return $idpId;
+    return $self->{idpId};
 }
 
 =back
