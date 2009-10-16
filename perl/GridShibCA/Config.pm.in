@@ -81,11 +81,9 @@ my $config = undef;
 
 Create a new Config object.
 
-B<Arguments:>
+B<Arguments:> Optional dictionary with following values:
 
-C<$debug> Turn on debugging if True
-
-C<$defaultSection> Section to use for getParam() requests.
+C<debug> Turn on debugging if True
 
 B<Returns:> Config instance
 
@@ -105,12 +103,6 @@ sub new
 	$self->_debug("Debugging enabled");
     }
 
-    $self->{defaultSection} = undef;
-    if (defined($args{defaultSection}))
-    {
-	$self->{defaultSection} = $args{defaultSection};
-    }
-    
     if (!defined($config))
     {
 	$self->_initConfig();
@@ -160,7 +152,10 @@ sub setConfigFilename
 Return a configuration parameter from the default section.
 
 B<Arguments:>
- Parameter name as string
+
+C<$section> Optional section name.
+
+C<$param> Parameter name as string
 
 B<Returns:>
 Value as string, throws GridShibCA::ConfigException if not found.
@@ -170,10 +165,42 @@ Value as string, throws GridShibCA::ConfigException if not found.
 sub getParam
 {
     my $self = shift;
+    my $section = undef;
+    if ($#_ > 0)
+    {
+	$section = shift;
+    }
     my $param = shift;
-    my $section = $self->{defaultSection};
 
-    return $self->getSectionParam($section, $param);
+    my $config = $self->{config};
+
+    if (defined($section))
+    {
+	if (!$config->exists($section) ||
+	    !$config->is_hash($section))
+	{
+	    throw GridShibCA::ConfigException("Request for parameter \"$param\" in non-existant section \"$section\"");
+	}
+
+	# Section now becomes the object we get value from.
+	$config = $config->obj($section);
+    }
+    # Come up with string describing parameter for errors
+    my $paramName = sprintf("parameter \"%s\"", $param);
+    if (defined($section))
+    {
+	$paramName .= sprintf(" in section \"%s\"", $section);
+    }
+    if (!$config->exists($param))
+    {
+	throw GridShibCA::ConfigException("Unknown " . $paramName);
+    }	
+    if ($config->is_hash($param))
+    {
+	throw GridShibCA::ConfigException("Parameter is a section: " . $paramName);
+    }
+    my $value = $config->value($param);
+    return $value;
 }
 
 =item getParamBoolean()
@@ -181,7 +208,10 @@ sub getParam
 Return a boolean configuration parameter from the default section.
 
 B<Arguments:>
- Parameter name as string
+
+C<$section> Optional section name.
+
+C<$param> Parameter name as string
 
 B<Returns:>
 Value as boolean, throws GridShibCA::ConfigException if not found.
@@ -191,10 +221,9 @@ Value as boolean, throws GridShibCA::ConfigException if not found.
 sub getParamBoolean
 {
     my $self = shift;
-    my $param = shift;
 
     # Config::General handles this for us, so we just use normal method
-    return $self->getParam($param);
+    return $self->getParam(@_);
 }
 
 =item getSection()
@@ -225,54 +254,6 @@ sub getSection
     return $config->hash($section);
 }
 
-=item getSectionParam()
-
-Return a configuration parameter from the given section.
-
-B<Arguments:>
-
-C<$section> Section name as string.
-
-C<$param> Parameter name as string.
-
-B<Returns:>
-Value as string, throws GridShibCA::ConfigException if not found.
-
-=cut
-
-sub getSectionParam
-{
-    my $self = shift;
-    my $section = shift;
-    my $param = shift;
-
-    my $config = $self->{config};
-
-    if (defined($section))
-    {
-	if (!$config->exists($section) ||
-	    !$config->is_hash($section))
-	{
-	    throw GridShibCA::ConfigException("Request for parameter \"$param\" in non-existant section \"$section\"");
-	}
-
-	# Section now becomes the object we get value from.
-	$config = $config->obj($section);
-    }
-    if (!$config->exists($param))
-    {
-	my $string = sprintf("Unknown parameter \"%s\"", $param);
-	if (defined($section))
-	{
-	    $string .= sprintf(" in section \"%s\"", $section);
-	}
-	throw GridShibCA::ConfigException($string);
-    }	
-
-    my $value = $config->value($param);
-    return $value;
-}
-
 =item dump()
 
 Print parameters to STDOUT. Intended for debugging.
@@ -287,11 +268,7 @@ sub dump
 {
     my $self = shift;
     my $config = $self->{config};
-
-    for $key ($config->keys())
-    {
-	print $key . "=\"" . $self->getParam($key) . "\"\n";
-    }
+    print $config->save_string();
 }
 
 =item  getCommandModule()
@@ -317,7 +294,7 @@ sub getCommandModule
 	throw GridShibCA::InternalException("Undefined command");
     }
 
-    my $className = $self->getSectionParam("Commands", $command);
+    my $className = $self->getParam("Commands", $command);
     if (!defined($className))
     {
 	throw GridShibCA::ModuleException("Unrecognized command \"$command\"");
@@ -717,7 +694,7 @@ sub _newModule
     my $instance = undef;
     my @args = @_;
 
-    my $className = $self->getSectionParam("Modules", $configVariable);
+    my $className = $self->getParam("Modules", $configVariable);
     if (!defined($className))
     {
 	throw GridShibCA::ModuleException("Undefined module \"" .
@@ -820,7 +797,7 @@ sub _templateNameToFilename
     my $self = shift;
     my $templateName = shift ||
 	throw GridShibCA::ConfigException("Missing template name");
-    my $filename = $self->getSectionParam("Templates", $templateName);
+    my $filename = $self->getParam("Templates", $templateName);
     return $filename;
 }
 

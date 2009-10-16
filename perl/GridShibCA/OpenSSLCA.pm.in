@@ -94,6 +94,7 @@ use GridShibCA::CA;
 @ISA = ("GridShibCA::CA");
 
 use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
@@ -118,115 +119,23 @@ sub new
     my $class = shift;
     my $self = $class->SUPER::new(@_);
     $self->{config} = GridShibCA::Config->new();
-    $self->{caProg} = $self->{config}->getParam("OpenSSLCA");
-    $self->{cert} = $self->{config}->getParam("OpenSSLCACert");
-    $self->{key} = $self->{config}->getParam("OpenSSLCAKey");
-    $self->{serialFile} = $self->{config}->getParam("OpenSSLCASerial");
-    $self->{randFile} = $self->{config}->getParam("OpenSSLRandFile");
+
+    try
+    {
+	$self->{caProg} = $self->{config}->getParam("OpenSSLCA", "Program");
+	$self->{cert} = $self->{config}->getParam("OpenSSLCA", "CACert");
+	$self->{key} = $self->{config}->getParam("OpenSSLCA", "CAKey");
+	$self->{serialFile} = $self->{config}->getParam("OpenSSLCA", "SerialFile");
+	$self->{randFile} = $self->{config}->getParam("OpenSSLCA", "RandFile");
+    }
+    catch GridShibCA::ConfigException with
+    {
+	my $ex = shift;
+	throw GridShibCA::CAException("CA configuration error: " . $ex->getText());
+    };
+
     bless($self, $class);
     return $self;
-}
-
-=item signRequest()
-
-Given a certificate request return a certificate
-
-B<Arguments>: Certificate request as string
-
-B<Returns>: Certificate as string, or undef on error
-
-=cut
-
-sub signRequest
-{
-    my $self = shift;
-    my $certificateRequest = shift;
-
-    # If defined, has file containing SAML extension
-    my $samlExtFilename = undef;
-    my $samlExtFile = undef;
-
-    # Check for our key and certificate
-    if (! -e $self->{caProg})
-    {
-	$self->_error("Could not find openssl CA executable: %s ",
-		      $self->{ca_Prog});
-	return undef;
-    }
-
-    if (! -r $self->{cert})
-    {
-	$self->_error("Could not read certificate: " . $self->{cert});
-	return undef;
-    }
-
-    if (! -r $self->{key})
-    {
-	$self->_error("Could not read private key: " . $self->{key});
-	return undef;
-    }
-
-    # Everything checks out. Go ahead and sign certificate request.
-
-    # Allow openssl to save random number state to avoid "unable to
-    # write 'random state'" errors
-    $ENV{"RANDFILE"} = $self->{randFile};
-
-    my @args;
-
-    my $DN = $self->getProtectedOpenSSLDN();
-
-    if ($self->{config}->getParamBoolean("IncludeSAMLInCert"))
-    {
-	$self->_debug("Including SAML in certificate");
-
-	my $samlExt = $self->_getSAMLExt();
-
-	if (defined($samlExt))
-	{
-	    $self->_debug("SAML extension: %s", $samlExt);
-	    # Create temporary file and put extension in it
-	    ($samlExtFile, $samlExtFilename) = File::Temp::tempfile();
-	    print $samlExtFile $samlExt;
-	    close($samlExtFile);
-	}
-    }
-
-    # XXX Need to have locking here to serialize access to the serial file
-    my $status;
-    @args = ();
-
-    # Sign certificate request
-    # Request is read from stdin and certificate output to stdout
-    push(@args, "-subj", $DN);
-    push(@args, "-lifetime", $self->{lifetime});
-    push(@args, "-CA", $self->{cert});
-    push(@args, "-CAkey", $self->{key});
-    push(@args, "-CAserial", $self->{serialFile});
-    push(@args, "-CAcreateserial");
-    if (defined($samlExtFilename))
-    {
-	push(@args, "-samlExt", $samlExtFilename);
-    }
-
-    my $cmd = $self->{config}->getCommand($self->{caProg}, @args);
-    $self->_debug("Executing: %s %s", $self->{caProg}, join(" ", @args));
-    $cmd->setInput($certificateRequest);
-    my $result = $cmd->exec();
-    # Clean up SAML extension if need be
-    if (defined($samlExtFilename))
-    {
-	unlink($samlExtFilename);
-    }
-    # Did certificate signing succeed?
-    if (!$result)
-    {
-	$self->_error("Error executing %s: %s",
-		      $self->{caProg}, $cmd->getError());
-	return undef;
-    }
-    # Yes, return PEM-encoded certificate as string
-    return $cmd->getOutput();
 }
 
 
@@ -244,7 +153,7 @@ sub getCADN
 {
     my $self = shift;
 
-    return $self->{config}->getParam("CADN");
+    return $self->{config}->getParam("CA", "DN");
 }
 
 
@@ -273,18 +182,133 @@ sub getCAOpenSSLDN
 
 ######################################################################
 
-=head2 Internal methods
+=head1 Internal methods
 
 These internal methods not intended for external use.
 
 =over 4
+
+
+=item _signRequest()
+
+Given a certificate request return a certificate
+
+B<Arguments>:
+
+C<$signon> WebSignOn instance (Required)
+
+C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
+
+Optional dictionary with the following optional values:
+
+C<requestedLifetime> Requested lifetime in seconds.
+
+B<Returns>: Certificate as Crypt::OpenSSL::X509 object
+
+=cut
+
+sub _signRequest
+{
+    my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::CAException("Missing signon argument");
+    my $certificateRequest = shift ||
+	throw GridShibCA::CAException("Missing certificate request argument");
+    my %options = @_;
+
+    # If defined, has file containing SAML extension
+    my $samlExtFilename = undef;
+    my $samlExtFile = undef;
+
+    if (! -x $self->{caProg})
+    {
+	throw GridShibCA::CAException(
+	    "CA configuration error (missing program)",
+	    -logText=>"Program " . $self->{caProg} . " not found/executable");
+    }
+
+    if (! -r $self->{cert})
+    {
+	throw GridShibCA::CAException(
+	    "CA configuration error (missing certificate)",
+	    -logText=>"Certificate " . $self->{cert} . " not found/readable");
+    }
+
+    if (! -r $self->{key})
+    {
+	throw GridShibCA::CAException(
+	    "CA configuration error (missing key)",
+	    -logText=>"Key " . $self->{key} . " not found/readable");
+    }
+
+    if (! -r $self->{serialFile})
+    {
+	throw GridShibCA::CAException(
+	    "CA configuration error (missing serial file)",
+	    -logText=>"Serial file " . $self->{serialFile} . " not found/readable");
+    }
+
+    # Allow openssl to save random number state to avoid "unable to
+    # write 'random state'" errors
+    $ENV{"RANDFILE"} = $self->{randFile};
+
+    my $DN = $self->getProtectedOpenSSLDN($signon);
+
+    if ($self->{config}->getParamBoolean("OpenSSLCA", "IncludeSAMLInCert"))
+    {
+	$self->{logger}->debug("Including SAML in certificate");
+
+	my $samlExt = $self->_getSAMLExt($signon);
+
+	if (defined($samlExt))
+	{
+	    $self->{logger}->debug("SAML extension: %s", $samlExt);
+	    # Create temporary file and put extension in it
+	    ($samlExtFile, $samlExtFilename) =
+		File::Temp::tempfile(UNLINK => 1);
+	    print $samlExtFile $samlExt;
+	    close($samlExtFile);
+	}
+    }
+
+    # XXX Need to have locking here to serialize access to the serial file
+    my $status;
+    my @opensslArgs = ();
+
+    # Sign certificate request
+    # Request is read from stdin and certificate output to stdout
+    push(@opensslArgs, "-subj", $DN);
+    push(@opensslArgs, "-lifetime", $options{requestedLifetime});
+    push(@opensslArgs, "-CA", $self->{cert});
+    push(@opensslArgs, "-CAkey", $self->{key});
+    push(@opensslArgs, "-CAserial", $self->{serialFile});
+    push(@opensslArgs, "-CAcreateserial");
+    if (defined($samlExtFilename))
+    {
+	push(@opensslArgs, "-samlExt", $samlExtFilename);
+    }
+
+    my $cmd = $self->{config}->getCommand($self->{caProg}, @opensslArgs);
+    $self->{logger}->debug("Executing: %s %s",
+			   $self->{caProg}, join(" ", @opensslArgs));
+    $cmd->setInput($certificateRequest);
+    my $result = $cmd->exec();
+    if (!$result)
+    {
+	throw GridShibCA::CAException("Error signing certificate request: OpenSSL returned non-zero ($result).");
+    }
+
+    my $pemCert =  $cmd->getOutput();
+    my $x509 = $self->_X509fromPEM($pemCert);
+    return $x509;
+}
 
 =item _getSAMLExt()
 
 Create a SAML extension for inclusion in certificate. Includes an
 ASN.1 header so it can be easily feed to openssl.
 
-B<Arguments:> None
+B<Arguments:> WebSignOn instance
 
 B<Returns:> SAML extension as string or undef on error.
 
@@ -293,6 +317,7 @@ B<Returns:> SAML extension as string or undef on error.
 sub _getSAMLExt
 {
     my $self = shift;
+    my $signon = shift;
 
     my $samlExtensionModule = $self->{config}->getSAMLExtension();
 
@@ -303,7 +328,7 @@ sub _getSAMLExt
 	return undef;
     }
 
-    my $saml = $samlExtensionModule->generateSAML($self->getDN());
+    my $saml = $samlExtensionModule->generateSAML($self->getDN($signon));
 
     if (!defined($saml))
     {
@@ -317,7 +342,7 @@ sub _getSAMLExt
 
 =back
 
-=head2 Version
+=head1 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 

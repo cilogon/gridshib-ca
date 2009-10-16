@@ -57,6 +57,7 @@ and L<GridShibCA::MyProxyCA|GridShibCA::MyProxyCA>
 
 package GridShibCA::CA;
 
+use Crypt::OpenSSL::X509;
 use GridShibCA::Config;
 
 =head2 Methods
@@ -81,83 +82,106 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{username} = shift;
-    $self->{idp} = shift;
     $self->{config} = GridShibCA::Config->new();
-    $self->{lifetime} = $self->{config}->getParam("DefaultCredLifetime");
-    $self->{relativeDN} = $self->{config}->getParam("RelativeDN");
-    $self->{error} = undef;
     $self->{logger} = $self->{config}->getLogger();
     bless($self, $class);
     return $self;
 }
 
+=item handleRequest()
+
+Given a request for a certificate, authorize it, issue the certifiate
+and log the issuance.
+
+B<Arguments:>
+
+C<$signon> WebSignOn instance (Required)
+
+C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
+
+Optional dictionary with the following optional values:
+
+C<requestedLifetime> Requested lifetime in seconds.
+
+B<Returns:> Certificate as Crypt::OpenSSL::X509 object. Throws
+GridhibCA::CAException on error.
+
+=cut
+
+sub handleRequest
+{
+    my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::CAException("Missing signon argument");
+    my $certificateRequest = shift ||
+	throw GridShibCA::CAException("Missing certificate request argument");
+    my %options = @_;
+
+    $self->_authorizeRequest($signon);
+    my $certificate = $self->signRequest($signon,
+					 $certificateRequest,
+					 %options);
+    $self->_logIssuance($signon, $certificate);
+    return $certificate;
+}
 
 =item signRequest()
 
-Given a certificate request return a certificate
+Given a certificate request return a certificate.
 
-B<Arguments:> PEM-encoded PKCS10 certificate request as string.
+Note that this function does not do any authorization or logging. Use
+handleSigningRequest() for a method that includes that logic.
 
-B<Returns:> Certificate as string, or undef on error
+B<Arguments:> 
+
+C<$signon> WebSignOn instance (Required)
+
+C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
+
+Optional dictionary with the following optional values:
+
+C<requestedLifetime> Requested lifetime in seconds.
+
+B<Returns:> Certificate as Crypt::OpenSSL::X509 object. Throws
+GridhibCA::CAException on error.
 
 =cut
 
 sub signRequest
 {
     my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::CAException("Missing signon argument");
+    my $certificateRequest = shift ||
+	throw GridShibCA::CAException("Missing certificate request argument");
+    my %options = @_;
 
-    $self->_error("signRequest() unimplemented");
-    return undef;
-}
-
-=item setCredLifetime()
-
-Set the lifetime of signed credentials
-
-B<Arguments:> Lifetime in seconds
-
-B<Returns:> 1 on success, 0 on error
-
-=cut
-
-sub setCredLifetime
-{
-    my $self = shift;
-    my $lifetime = shift;
-    my $maxLifetime = $self->{config}->getParam("MaximumCredLifetime");
-    if ($lifetime > $maxLifetime)
+    if (defined($options{requestedLifetime}))
     {
-	$self->_error("Requested lifetime (%d) greater than maximum allowed (%d)",
-		      $lifetime, $maxLifetime);
-	return 0;
+	my $maxLifetime = $self->_getMaximumLifetime();
+	my $requestedLifetime = $options{requestedLifetime};
+	if ($requestedLifetime > $maxLifetime)
+	{
+	    throw GridShibCA::CAException("Requested lifetime ($requestedLifetime) greated than maximum allowable ($maxLifetime)");
+	}
     }
-    $self->{lifetime} = $lifetime;
-    return 1;
+    else
+    {
+	$options{requestedLifetime} = $self->_getDefaultLifetime();
+    }
+
+    my $cert = $self->_signRequest($signon, $certificateRequest, %options)
+	|| throw GridShibCA::CAException("_signRequest() returned undef");
+    return $cert;
 }
 
-=item getCredLifetime()
-
-Get the lifetime of signed credentials.
-
-B<Arguments:> None
-
-B<Returns:> Credential lifetime in seconds
-
-=cut
-
-sub getCredLifetime
-{
-    my $self = shift;
-    return $self->{lifetime};
-}
-
+# XXX Can these functions go away?
 
 =item getDN()
 
 Return the DN for the user in RFC 2253 format.
 
-B<Arguments:> None
+B<Arguments:> WebSignOn instance
 
 B<Returns:> DN as string, or undef on error
 
@@ -166,55 +190,47 @@ B<Returns:> DN as string, or undef on error
 sub getDN
 {
     my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::CAException("Missing signon argument");
+
     my $nameMapper = $self->{config}->getNameMapper();
-    my $userDN = $nameMapper->mapUser($self->{username}, $self->{idp});
-    if (!defined($userDN))
-    {
-	$self->_error($nameMapper->getError());
-	return undef;
-    }
-    my $DN = sprintf("%s,%s", $userDN, $self->{relativeDN});
+    my $userDN = $nameMapper->mapUser($signon);
+    my $DN = sprintf("%s,%s", $userDN, $self->getRelativeDN());
 
     # Do some clean up of DN
-
+ 
     # Removing all whitespace before and after commas.
     $DN =~ s/\s*,\s*/,/g;
-
+ 
     # Convert any attribute types to uppercase.
     $DN =~ s/(\w+)=/\U$1\E=/g;
-
+ 
     return $DN;
 }
 
 =item getOpenSSLDN()
-
+ 
 Return the DN for the user in OpenSSL format (e.g.
 /C=US/O=Example/CN=John Smith).
 
-B<Arguments:> None
+B<Arguments:> WebSignOn instance
 
 B<Returns:> DN as string, or undef on error
-
+ 
 =cut
-
+ 
 sub getOpenSSLDN
 {
-    my $self = shift;
-
-    my $rfc2253DN = $self->getDN();
-
-    if (!defined($rfc2253DN))
-    {
-	# Error already set
-	return undef;
-    }
-	    
-    my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
-
-    return $DN;
+     my $self = shift;
+     my $signon = shift ||
+	 throw GridShibCA::CAException("Missing signon argument");
+ 
+     my $rfc2253DN = $self->getDN($signon);
+     my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
+ 
+     return $DN;
 }
-
-
+ 
 =item getProtectedOpenSSLDN()
 
 Return the DN for the user in OpenSSL format with any forward slahses
@@ -222,7 +238,7 @@ protected so that it can be passed to OpenSSL. E.g.:
 
 /C=US/O=Example/OU=https:\/\/someurl.edu\/foo/CN=John Smith).
 
-B<Arguments:> None
+B<Arguments:> WebSignOn instance
 
 B<Returns:> DN as string, or undef on error
 
@@ -231,8 +247,10 @@ B<Returns:> DN as string, or undef on error
 sub getProtectedOpenSSLDN
 {
     my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::CAException("Missing signon argument");
 
-    my $rfc2253DN = $self->getDN();
+    my $rfc2253DN = $self->getDN($signon);
 
     # Protect any slashes in the DN with a backslash
     $rfc2253DN =~ s|/|\\/|g;
@@ -245,7 +263,7 @@ sub getProtectedOpenSSLDN
 
 =item getRelativeDN()
 
-Return the Relative DN in RFC 2253 format.
+Return the Relative DN of this CA in RFC 2253 format.
 
 B<Arguments:> None
 
@@ -257,13 +275,13 @@ sub getRelativeDN
 {
     my $self = shift;
 
-    return $self->{config}->getParam("RelativeDN");
+    return $self->{config}->getParam("CA", "RelativeDN");
 }
 
 
 =item getRelativeOpenSSLDN()
 
-Return the Relative DN in OpenSSL "oneline" format.
+Return the Relative DN of this CA in OpenSSL "oneline" format.
 
 B<Arguments:> None
 
@@ -293,7 +311,8 @@ B<Returns:> DN string in OpenSSL "oneline" format
 sub convertRFC2253DNToOpenSSL
 {
     my $self = shift;
-    my $rfc2253DN = shift;
+    my $rfc2253DN = shift ||
+	throw GridShibCA::CAException("Missing DN argument");
 
     if (!defined($rfc2253DN))
     {
@@ -323,22 +342,6 @@ sub convertRFC2253DNToOpenSSL
     return $DN;
 }
 
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
-}
-
 =back
 
 =cut
@@ -347,66 +350,146 @@ sub getError
 
 =head2 Internal methods
 
-These internal methods not intended for external use.
-
 =over 4
 
+=item _signRequest()
 
-=item _error()
+Sign the certificate request. This function is a stub that should be
+implemented in child classes.
 
-Handle a error message.
+B<Arguments:> Same as signRequest().
 
-B<Arguments:> As to sprintf()
+B<Returns:> Same as signRequest().
+
+=cut
+
+sub _signRequest()
+{
+    throw GridShibCA::CAException("Unimplemeneted function.");
+
+}
+
+=item _authorizeRequest()
+
+Authorize the request
+
+B<Arguments:> WebSignOn instance
+
+B<Returns:> Nothing, throws exception on error.
+
+=cut
+
+sub _authorizeRequest
+{
+    my $self = shift;
+    my $signon = shift;
+
+    my $authorization = $self->{config}->getAuthorization();
+    $authorization->authorize($signon);
+}
+
+
+=item _logIssuance()
+
+Log the issuance of the certificate.
+
+B<Arguments:>
+
+C<$signon> WebSignOn instance.
+
+C<$certificate:> Certificate as use Crypt::OpenSSL::X509 object.
 
 B<Returns:> Nothing
 
 =cut
 
-sub _error
+sub _logIssuance
 {
     my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
+    my $signon = shift;
+    my $certificate = shift;
+
+    my $DN = $certificate->subject();
+    my $serial = $certificate->serial();
+    my $hash = $certificate->hash();
+    # Unfortunately notAfter() returns a human-readable string instead of
+    # seconds since 1970.
+    my $expires = $certificate->notAfter();
+
+    $self->{logger}->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" expires=\"%s\"",
+			  $signon->getUserId(), $signon->getIdP(),
+			  $signon->getClientHost(), $serial, $hash,
+			  $DN, $expires);
+    
+    my $certRegistry = $self->{config}->getCertRegistry();
+    $certRegistry->registerCert($sigon, $certificate);
+
 }
 
+=item _X509fromPEM
 
-=item _warn()
+Convert PEM-encoded string to Crypt::OpenSSL::X509 object.
 
-Hande a warning message.
+B<Arguments:> PEM-encoded certificate as string
 
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
+B<Returns:> Crypt::OpenSSL::X509 object
 
 =cut
 
-sub _warn
+sub _X509fromPEM
 {
     my $self = shift;
-    my $format = shift;
-    $self->{logger}->err($format, @_);
+    my $pem = shift;
+
+    my $x509 = Crypt::OpenSSL::X509->new_from_string($pem);
+    if (!defined($x509))
+    {
+	# Not clear to me how Crypt::OpenSSL::X509 returns an error string
+	throw GridShibCA::CAException("Error parsing PEM certificate");
+    }
+    return $x509;
 }
 
-=item _debug()
+=item _getDefaultLifetime
 
-Hande a debug message.
+B<Arguments:> None
 
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
+B<Returns:> Default certificate lifetime in seconds.
 
 =cut
 
-sub _debug
+sub _getDefaultLifetime
 {
     my $self = shift;
-    my $format = shift;
-    $self->{logger}->debug($format, @_);
+    return $self->{config}->getParam("CA", "DefaultCredLifetime");
 }
 
-=back
+=item _getMaximumLifetime
 
-=head2 Version
+B<Arguments:> None
+
+B<Returns:> Maximum certificate lifetime in seconds.
+
+=cut
+
+sub _getMaximumLifetime
+{
+    my $self = shift;
+    return $self->{config}->getParam("CA", "MaximumCredLifetime");
+}
+
+##################################################################
+
+package GridShibCA::CAException;
+
+# Inherit Error
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::CAException
+
+Class for exceptions caused by CA errors.
+
+=head1 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 

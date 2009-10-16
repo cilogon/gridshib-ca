@@ -64,7 +64,7 @@ sub test_command_openssl
     my $self = shift;
     my $config = GridShibCA::Config->new();
     $self->assert_not_null($config);
-    my $openssl = $config->getParam("OpenSSL");
+    my $openssl = $config->getParam("Binaries", "OpenSSL");
     $self->assert_not_null($openssl);
     my $command = GridShibCA::Command->new($openssl);
     $self->assert_not_null($command);

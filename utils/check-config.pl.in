@@ -98,7 +98,16 @@ catch GridShibCA::Exception with
 
 print "Done reading configuration file. Dumping....\n";
 
-$config->dump();
+try
+{
+    $config->dump();
+}
+otherwise
+{
+    my $ex = shift;
+    print "Error dumping configuration: " . $ex->text() . "\n";
+    exit(1);
+};
 
 print "Attempting to load all modules...\n";
 
@@ -119,24 +128,25 @@ my @modules = (
     );
 
 my $errorFound = 0;
-for $module (@modules)
+for my $module (@modules)
 {
     print "Loading $module ...";
-    my $className = $config->getSectionParam("Modules", $module);
-    if (!defined($className))
+    try
     {
-	printf("Failed. Undefined module \"%s\"\n", $module);
-	$errorFound = 1;
-	next;
+	my $className = $config->getParam("Modules", $module);
+	eval "use $className;";
+	if ($@)
+	{
+	    throw GridShibCA::Exception($@);
+	}
+	print "Success.\n";
     }
-    eval "use $className;";
-    if ($@)
+    otherwise
     {
-	print "Failed: $@\n";
+	my $ex = shift;
+	print "Failed: " . $ex->text() . "\n";
 	$errorFound = 1;
-	next;
-    }
-    print "Success.\n";
+    };
 }
 
 if ($errorFound)

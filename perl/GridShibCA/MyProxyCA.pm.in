@@ -87,12 +87,24 @@ use Globus::MyProxyClient;
 
 use GridShibCA::Config;
 
-# new()
-# Create a new interface to the CA.
-# Arguments:
-#  $username - name of user as string
-#  $idp - idp of user as string
-# Returns: CA instance
+=head1 Methods
+
+=pver 4
+
+=item new()
+
+Create a new interface to a MyProxy CA.
+
+B<Arguments:>
+
+C<$username> - name of user as string
+
+C<$idp> - idp of user as string
+
+B<Returns:> CA instance
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -107,10 +119,16 @@ sub new
     return $self;
 }
 
-# signRequest
-# Given a certificate request return a certificate
-# Arguments: Certificate request as string
-# Returns: Certificate as string, or undef on error
+=item signRequest()
+
+Given a certificate request return a certificate
+
+B<Arguments:> PEM-encoded PKCS10 certificate request as string.
+
+B<Returns:> Certificate as Crypt::OpenSSL::X509 object
+
+=cut
+
 sub signRequest
 {
     my $self = shift;
@@ -124,19 +142,13 @@ sub signRequest
 
     if (!defined($client))
     {
-	$self->_error("Error creating MyProxyClient object: %s",
-		      Globus::MyProxyClient::errstr());
-	return undef;
+	throw GridShibCA::CAException("Error creating MyProxyClient object: %s",
+				      Globus::MyProxyClient::errstr());
     }
-    my $reqPEM = $self->_convertReqToDER($certificateRequest);
-    if (!defined($reqPEM))
-    {
-	# Error already set
-	return undef;
-    }
+    my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
     my $lifetime = $self->{lifetime};
     my $dn = $self->getOpenSSLDN();
-    # This isn't used since we're authenticated with a certificate
+    # This isn't used since we're authenticating with a certificate
     # and private key
     my $passphrase = "Dummy";
     $self->{logger}->debug("MyProxy request: DN = %s lifetime = %d",
@@ -150,38 +162,48 @@ sub signRequest
 
     if (!defined($cred))
     {
-	$self->_error("Error getting credential from MyProxy: %s",
-		      $client->errstr());
-	return undef;
+	throw GridShibCA::CAException("Error getting credential from MyProxy: %s",
+				      $client->errstr());
     }
 
-    # Get certificate chain and convert to PEM
-    my $certChain = "";
     my @certs = $cred->getDERCerts();
-    foreach my $cert (@certs)
+    if ($#certs > 1)
     {
-	my $certPEM = $self->_convertCertToPEM($cert);
-	if (!defined($certPEM))
-	{
-	    # Error already set
-	    return undef;
-	}
-	$certChain .= $certPEM;
+	throw GridShibCA::CAException("Got a certificate chain from MyProxy of length greater than 1 (%d)", $#certs);
     }
-
-    return $certChain;
+    my $cert = $self->_convertCertDERtoPEM($certs[0]);
+    my $x509 = $self->_X509fromPEM($pemCert);
+    return $x509;
 }
 
-######################################################################
-#
-# Conversion routines to convert from DER to/from PEM
-# These call out to openssl, which is a pain, but there doesn't seem
-# to be a native way to accomplish this.
+=back
 
-sub _convertReqToDER {
+=cut
+
+######################################################################
+
+=head1 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _convertReqPEMtoDER
+
+Convert PEM-encoded PKCS10 request to DER.
+
+B<Arguments:> Certificate request as PEM-encoded PKCS10 string.
+
+B<Returns:> Certificate request as DER-encoded string.
+
+=cut
+
+sub _convertReqPEMtoDER {
     my $self = shift;
     my $reqPEM = shift;
     my @args = ();
+
+    # Uses OpenSSL as there doesn't seem to be a native way to accomplish.
     push(@args, "req");
     push(@args, "-inform", "PEM");
     push(@args, "-outform", "DER");
@@ -190,18 +212,27 @@ sub _convertReqToDER {
     $cmd->setInput($reqPEM);
     if (!$cmd->exec())
     {
-	$self->_error("Error executing %s: %s",
-		      $openssl, $cmd->getError());
-	return undef;
+	throw GridShibCA::CAException("Trying to convert request from PEM to DER: OpenSSL returned non-zero.");
     }
     return $cmd->getOutput();
 }
 
+=item _convertCertDERtoPEM
 
-sub _convertCertToPEM {
+Convert DER encoded X.509 certificate to PEM.
+
+B<Arguments:> DER-encoded X.509 certificate.
+
+B<Returns:> Certificate as PEM-encoded string.
+
+=cut
+
+sub _convertCertDERtoPEM {
     my $self = shift;
     my $certDER = shift;
     my @args = ();
+
+    # Uses OpenSSL as there doesn't seem to be a native way to accomplish.
     push(@args, "x509");
     push(@args, "-inform", "DER");
     push(@args, "-outform", "PEM");
@@ -210,14 +241,14 @@ sub _convertCertToPEM {
     $cmd->setInput($certDER);
     if (!$cmd->exec())
     {
-	$self->_error("Error executing %s: %s",
-		      $openssl, $cmd->getError());
-	return undef;
+	throw GridShibCA::CAException("Error converting certificate from DER to PEM: OpenSSL returned non-zero");
     }
     return $cmd->getOutput();
 }
 
-=head2 Version
+=back
+
+=head1 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 

@@ -235,6 +235,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
+	perl/GridShibCA/IssueCert.pm \
 	perl/GridShibCA/LaunchClient.pm \
 	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/Logger.pm \

@@ -114,7 +114,16 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 
   # Dump CGI session (intended for debugging)
   DumpSession = GridShibCA::DumpSession
+
+  # Accept and sign a certificate request
+  IssueCert = GridShibCA::IssueCert
+
 </Commands>
+
+<Authorization>
+  # Authorized Idps
+  AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf
+</Authorization>
 
 <LaunchClient>
   # This section containsb mappings that will be made in any scripts/
@@ -142,6 +151,17 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   # URL for the GridShibCA.cgi webapp
   WebApp = ${GridShibCA}/GridShibCA.cgi
 </URLs>
+
+<Binaries>
+  # OpenSSL binary to use
+  OpenSSL = @OPENSSL@
+
+  # JAVA_HOME (needed for inclusion of SAML)
+  JavaHome = /usr/local/java
+
+  # Path to GridShib SAML Tools install (needed for inclusion of SAML)
+  GridShibSAMLToolsPath = /usr/local/gridshib-saml-tool-0_1_3/
+</Binaries>
 
 ######################################################################
 #
@@ -171,54 +191,48 @@ WWWHostname = @WWW_HOSTNAME@
 # Relative URL to Shibboleth-protected CGI-BIN directory
 ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 
-######################################################################
-#
-# CA Parameters
-# Parameters related to certificate signing.
+<CA>
+  # CA Parameters
+  # Parameters related to certificate signing.
 
-# DN of the CA in RFC 2253 format
-CADN = @CA_DN@
+  # DN of the CA in RFC 2253 format
+  DN = @CA_DN@
 
-# Relative DN for issued certificates
-# Must be in RFC 2253 format: e.g. O=NCSA,C=US
-RelativeDN = @RELATIVE_DN@
+  # Relative DN for issued certificates
+  # Must be in RFC 2253 format: e.g. O=NCSA,C=US
+  RelativeDN = @RELATIVE_DN@
 
-# Default credential lifetime in seconds (12 hours)
-DefaultCredLifetime = 43200
+  # Default credential lifetime in seconds (12 hours)
+  DefaultCredLifetime = 43200
 
-# Maximum credential lifetime in seconds (7 days)
-MaximumCredLifetime = 604800
+  # Maximum credential lifetime in seconds (7 days)
+  MaximumCredLifetime = 604800
+</CA>
 
-######################################################################
-#
-# Parameters specific to the OpenSSL-based CA
-#
+<OpenSSLCA>
+  # Parameters specific to the OpenSSL-based CA
 
-# Certificate for OpenSSL-based CA
-OpenSSLCACert = ${GridShibCAConfDir}/gridshib-ca-cert.pem
+  # Binary to use
+  Program = ${GridShibCAConfDir}/openssl-ca
 
-# Certificate for OpenSSL-based CA
-OpenSSLCAKey = ${GridShibCAConfDir}/gridshib-ca-key.pem
+  # Certificate for OpenSSL-based CA
+  CACert = ${GridShibCAConfDir}/gridshib-ca-cert.pem
 
-# Serial number file for OpenSSL-based CA
-OpenSSLCASerial = ${GridShibCAConfDir}/serial
+  # Certificate for OpenSSL-based CA
+  CAKey = ${GridShibCAConfDir}/gridshib-ca-key.pem
 
-# Where OpenSSL can store its random state
-OpenSSLRandFile = ${GridShibCAConfDir}/.rand
+  # Serial number file for OpenSSL-based CA
+  SerialFile = ${GridShibCAConfDir}/serial
 
-######################################################################
-#
-# Parameters relating to including SAML assertion from Shibboleth
-# in certificate. This only works with the OpenSSL CA.
+  # Where OpenSSL can store its random state
+  RandFile = ${GridShibCAConfDir}/.rand
 
-# Include Shibboleth SAML assertion in certificate
-IncludeSAMLInCert = false
+  # Include Shibboleth SAML assertion in certificate
+  # If True, need to set JavaHome and GridShibSAMLToolsPath in <Binaries>
+  IncludeSAMLInCert = false
 
-# JAVA_HOME (needed for inclusion of SAML)
-JavaHome = /usr/local/java
+</OpenSSLCA>
 
-# Path to GridShib SAML Tools install (needed for inclusion of SAML)
-GridShibSAMLToolsPath = /usr/local/gridshib-saml-tool-0_1_3/
 
 ######################################################################
 #
@@ -282,9 +296,6 @@ myVocsDBPassword = dummy
 # Authorization configuration files
 #
 
-# Authorized Idps
-AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf
-
 # Authorized Portals
 AuthorizedPortalsFile = ${GridShibCAConfDir}/authorizedPortals.conf
 
@@ -293,14 +304,8 @@ AuthorizedPortalsFile = ${GridShibCAConfDir}/authorizedPortals.conf
 # Binaries
 #
 
-# OpenSSL binary to use
-OpenSSL = @OPENSSL@
-
 # Globus Location to use
 GlobusLocation = @GLOBUS_LOCATION@
-
-# OpenSSL-CA program to use
-OpenSSLCA = ${GridShibCAConfDir}/openssl-ca
 
 ######################################################################
 #

@@ -52,6 +52,9 @@ sub test_getParamShouldFail
     my $self = shift;
     $self->assert_raises(GridShibCA::ConfigException,
 			 sub { $self->{config}->getParam($bogusParam) });
+    # Get a section, which should fail
+    $self->assert_raises(GridShibCA::ConfigException,
+			 sub { $self->{config}->getParam("CA") });
 }
 
 sub test_getParamBoolean
@@ -93,17 +96,17 @@ sub test_getSection
 sub test_getSectionparam
 {
     my $self = shift;
-    $self->assert_not_null($self->{config}->getSectionParam("Modules", "CA"));
-    $self->assert_not_null($self->{config}->getSectionParam("URLs", "Base"));
+    $self->assert_not_null($self->{config}->getParam("Modules", "CA"));
+    $self->assert_not_null($self->{config}->getParam("URLs", "Base"));
 }
 
 sub test_getSectionparamShouldFail
 {
     my $self = shift;
     $self->assert_raises(GridShibCA::ConfigException,
-			 sub { $self->{config}->getSectionParam($bogusSection, "CA");} );
+			 sub { $self->{config}->getParam($bogusSection, "CA");} );
     $self->assert_raises(GridShibCA::ConfigException,
-			 sub { $self->{config}->getSectionParam("Modules", $bogusParam);} );
+			 sub { $self->{config}->getParam("Modules", $bogusParam);} );
 
 }
 
@@ -116,7 +119,7 @@ sub test_getCA
 sub test_getCommand
 {
     my $self = shift;
-    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $openssl = $self->{config}->getParam("Binaries", "OpenSSL");
     $self->assert_not_null($openssl);
     $command = $self->{config}->getCommand($openssl);
     $self->assert_not_null($command);

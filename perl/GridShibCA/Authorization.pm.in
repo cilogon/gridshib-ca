@@ -76,7 +76,7 @@ sub new
     return $self;
 }
 
-=item authorize()
+=item authorizeSignOn()
 
 Authorize whether a user can be issued a certificate.
 This implementation authorizes all users.
@@ -114,7 +114,7 @@ sub authorize
     }
 
     my $authorizedIdpFilename =
-	$self->{config}->getParam("AuthorizedIdpsFile");
+	$self->{config}->getParam("Authorization", "AuthorizedIdpsFile");
     my $status = $self->_inFile($idp, $authorizedIdpFilename);
 
     if ($status != 1)

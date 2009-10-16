@@ -78,10 +78,10 @@ use GridShibCA::Config;
 my $config = GridShibCA::Config->new();
 my $ca = $config->getCA();
 
-my $openssl = $config->getParam("OpenSSL");
 my $confPath = $config->getParam("GridShibCAConfDir");
-my $certFile = $config->getParam("OpenSSLCACert");
-my $keyFile = $config->getParam("OpenSSLCAKey");
+my $openssl = $config->getParam("Binaries", "OpenSSL");
+my $certFile = $config->getParam("OpenSSLCA", "CACert");
+my $keyFile = $config->getParam("OpenSSLCA", "CAKey");
 
 ######################################################################
 
@@ -136,13 +136,15 @@ umask(0077);
 
 ######################################################################
 
-print "Creating GridShib CA\n";
+print "Creating OpenSSL-based CA\n";
 print " OpenSSL is $openssl\n";
 print " GridShibCA path is $confPath\n";
 print " Keyfile is $keyFile\n";
+print " Key length is $keyLength\n";
 print " Certificate is $certFile\n";
 print " DN for CA is $subject\n";
 print " Relative DN is $relativeDN\n";
+print " Lifetime is $lifetime\n";
 print "\n";
 print "Generating keys. This may take a minute...\n";
 

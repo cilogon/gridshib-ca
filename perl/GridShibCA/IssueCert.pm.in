@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# Base class for Web Commands.
+# IssueCert WebCommand.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,122 +45,115 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::WebApp
+=head1 GridShibCA::IssueCert
 
-Interface for GridShibCA webb applications.
+Accept a certificate request from client, sign and return it.
 
 =cut
 
-package GridShibCA::WebApp;
+package GridShibCA::IssueCert;
 
-use CGI;
-use GridShibCA::Config;
-use GridShibCA::ErrorHandler qw(handleError);
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
 use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
 =over 4
 
-=item new()
+=item doCommand()
 
-Create a webapplication interface object
-
-B<Arguments:> None
-
-B<Returns:> Nothing. Does not return on error.
-
-=cut
-
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    bless($self, $class);
-
-    # Run safely
-    $ENV{PATH} = "/bin";
-    umask (0077);
-
-    try
-    {
-	$self->{config}  = GridShibCA::Config->new();    
-	$self->{logger} = $self->{config}->getLogger();
-	$self->{cgi} = CGI->new();
-    }
-    otherwise
-    {
-	my $ex = shift;
-	handleError("Failed to bootstrap web application",
-		    -exception=>$ex);
-	# Does not return
-    };
-    return $self;
-}
-
-=item handleRequest()
-
-Read the requested command name from the CGI interface and invoke the
-command associated with that name (via invokeCommand()).
+Override base class with my specific logic.
 
 B<Arguments:> None
 
-B<Returns:> None
+B<Returns:> True on success, False on error.
 
 =cut
 
-sub handleRequest
+sub doCommand
 {
     my $self = shift;
-    my $commandName = $self->{cgi}->param("command") || "DEFAULT";
-    $self->{logger}->debug("Got client request for %s", $commandName);
-    $self->invokeCommand($commandName);
+    my $certificateRequest = $self->{cgi}->getCertificateRequest();
+
+    my $ca = $self->{config}->getCA();
+
+    $self->_authorizeRequest();
+    my $certificate = $self->issueCertificate($certificateRequest);
+    $self->_logIssuance($certificate);
+    $self->_outputCertificate($certificate);
 }
 
-=item invokeCommand()
+=item _logIssuance()
 
-Invoke WebCommand and handle any resulting error.
+Log the issuance of the certificate.
 
-B<Arguments:> Command name.
+B<Arguments:> Certificate as use Crypt::OpenSSL::X509 object
 
-B<Returns:> Nothing. Does not return on error.
+B<Returns:> Nothing
 
 =cut
 
-sub invokeCommand
+sub _logIssuance
 {
     my $self = shift;
-    my $command = shift ||
-	handleError("Undefined command to invokeCommand()");
-    $self->{logger}->info("Invoking command %s for %s",
-			  $command, $self->{cgi}->remote_addr());
-    my $module = undef;
 
-    try
-    {
-	$module = $self->{config}->getCommandModule($command);
-    }
-    otherwise
-    {
-	my $ex = shift;
-	handleError("Error launching web application $command",
-		    -exception=>$ex);
-	# Does not return
-    };
+    my $x509 = Crypt::OpenSSL::X509->new_from_string($certificate);
 
-    try
+    my $DN = $x509->subject();
+    my $serial = $x509->serial();
+    my $hash = $x509->hash();
+    
+    $logger->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" lifetime=%d",
+		  $user, $idp, $remoteAddr, $serial, $hash,
+		  $DN, $ca->getCredLifetime());
+    
+    my $certRegistry = $config->getCertRegistry();
+    $certRegistry->registerCert($user,
+				$idp,
+				$DN,
+				$certificate,
+				$ca->getCredLifetime());
+}
+
+=item _outputCertificate()
+
+Output the certificate to return it to the client.
+
+B<Arguments:> Certificate as use Crypt::OpenSSL::X509 object
+
+B<Returns:> Nothing
+
+=cut
+
+sub _outputCertificate
+{
+    my $self = shift;
+    my $certificate = shift;
+
+    my $pem = $certificate->as_string();
+    if (!defined($pem) || ($pem eq ""))
     {
-	$self->{logger}->debug("Calling invoke()");
-	$module->invoke();
-	$self->{logger}->debug("invoke() completed.");
+	throw GridShibCA::Exception("Failed to convert X.509 certificate to PEM");
     }
-    otherwise
-    {
-	my $ex = shift;
-	handleError("Uncaught error in web application $command",
-		    -exception=>$ex);
-	# Does not return
-    };
+    
+    print $self->{cgi}->header("text/plain");
+    print $pem;
+}
+=item _requirements()
+
+Return protection requirements of this command.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_SESSION;
 }
 
 =back

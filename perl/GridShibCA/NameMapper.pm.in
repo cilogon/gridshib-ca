@@ -80,37 +80,20 @@ sub new
 
 Return the RFC 2253 formatted DN for the given user.
 
-B<Arguments:>
+B<Arguments:> WebSignOn object
 
-I<$user> - user id.
-
-I<$idp> - user idp as string
-
-B<Returns:> RFC 2253-formatted DN as string, undef on error.
+B<Returns:> RFC 2253-formatted DN as string. Throws
+GridShibCA::NameMapperException on error.
 
 =cut
 
 sub mapUser
 {
     my $self = shift;
-    my $user = shift;
-    my $idp = shift;
+    my $signon = shift ||
+	throw GridShibCA::NameMapperException("Missing signon argument");
 
-    if (!defined($user) or !defined($idp))
-    {
-	$self->_error("Invalid argument to NameMapper->mapUser().");
-	return undef;
-    }
-
-    my $idpPolicy = $self->getIdpPolicy($idp);
-
-    if (!defined($idpPolicy))
-    {
-	# error already set
-	return undef;
-    }
-
-    my $dn = $idpPolicy;
+    my $dn = $self->getMapping($signon);
 
     # Maximum number of replacements to revent run-away
     my $numReplacements = $self->{replacementLimit};
@@ -126,11 +109,11 @@ sub mapUser
 	# directly to environment.
 	if ($envVar eq "REMOTE_USER")
 	{
-	    $value = $user;
+	    $value = $signon->getUserId();
 	}
 	elsif ($envVar eq "HTTP_SHIB_IDENTITY_PROVIDER")
 	{
-	    $value = $idp;
+	    $value = $signon->getIdP();
 	}
 	else
 	{
@@ -139,11 +122,11 @@ sub mapUser
 
 	if (!defined($value))
 	{
-	    $self->_error("Error mapping name for Idp \"%s\":" .
-			  " Environment variable \"%s\" not defined." .
-			  " (Policy is %s)",
-			  $idp, $envVar, $idpPolicy);
-	    return undef;
+	    throw GridShibCA::NameMappingException(
+		"Error mapping name for Idp \"%s\":" .
+		" Environment variable \"%s\" not defined." .
+		" (Policy is %s)",
+		$signon->getIdP(), $envVar, $idpPolicy);
 	}
 
 	$dn =~ s/\$\{$envVar\}/$value/;
@@ -152,9 +135,10 @@ sub mapUser
 	$numReplacements -= 1;
 	if ($numReplacements == 0)
 	{
-	    $self->_error("Recusion limit hit for expanding user name for Idp %s",
-			  $idp);
-	    last;
+	    throw GridShibCA::NameMappingException(
+		"Recursion limit (%d) hit for expanding user name for Idp %s",
+		$self->{replacementLimit},
+		$signon->getIdP());
 	}
     }
 
@@ -162,36 +146,37 @@ sub mapUser
     return $dn;
 }
 
-=item getIdpPolicy()
+=item getMapping()
 
-Given an Idp name, return the name mapping policy associated with it
-from the authorizedIdps file.
+Given an WebSignOn name, return the raw (pre-substitution) name
+mapping policy associated with it from the authorizedIdps file.
 
-B<Arguments:>
+B<Arguments:> WebSignOn object.
 
-I<$idp> - Idp id as a string
-
-B<Returns:> Policy as string, undef on error
+B<Returns:> Mapping as string. Throws GridShibCA::NameMappingException
+on error.
 
 =cut
 
-sub getIdpPolicy
+sub getMapping
 {
     my $self = shift;
-    my $idp = shift;
-    my $filename = $self->{config}->getParam("AuthorizedIdpsFile");
+    my $signon = shift ||
+	throw GridShibCA::NameMappingException("Missing signon argument");
+    my $idp = $signon->getIdP();
+    my $filename = $self->{config}->getParam("Authorization", 
+					     "AuthorizedIdpsFile");
 
     if (!defined($filename))
     {
-	$self->_error("AuthorizedIdpsFile is undefined.");
-	return undef;
+	throw GridShibCA::NameMappingException("AuthorizedIdpsFile is undefined.");
     }
     my $fh = new FileHandle;
     if (!$fh->open("<$filename"))
     {
-	$self->_error("Could not open authorized Idp file (%s): %s",
-		      $filename, $!);
-	return undef;
+	throw GridShibCA::NameMappingException(
+	    "Could not open authorized Idp file (%s): %s",
+	    $filename, $!);
     }
 
     my $policy = undef;
@@ -225,9 +210,9 @@ sub getIdpPolicy
 
 	if (!defined($remainder))
 	{
-	    $self->_error("Error parsing naming policy for Idp %s (Matched by %s in %s): No mapping policy provided (0.3.0 style file?)",
-			  $idp, $regex, $filename);
-	    return undef;
+	    throw GridShibCA::NameMappingException(
+		"Error parsing naming policy for Idp %s (Matched by %s in %s): No mapping policy provided (0.3.0 style file?)",
+		$idp, $regex, $filename);
 	}
 
 	# Remainder should be double-quote delimited policy
@@ -238,8 +223,9 @@ sub getIdpPolicy
 	    last;
 	}
 	# Some sort of parsing failure, return an error
-	$self->_error("Error parsing naming policy for Idp %s (Matched by %s in %s): %s",
-		      $idp, $regex, $filename, $remainder);
+	throw GridShibCA::NameMappingException(
+	    "Error parsing naming policy for Idp %s (Matched by %s in %s): %s",
+	    $idp, $regex, $filename, $remainder);
 	return undef;
     }
 
@@ -248,28 +234,12 @@ sub getIdpPolicy
     # If we have fallen through, policy will be undef
     if (!defined($policy))
     {
-	$self->_error("No match for Idp %s in policy mapping file (%s)",
-		      $idp, $filename);
-	return undef;
+	throw GridShibCA::NameMappingException(
+	    "No match for Idp %s in policy mapping file (%s)",
+	    $idp, $filename);
     }
 
     return $policy;
-}
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
 }
 
 =back
@@ -284,32 +254,13 @@ These internal methods not intended for external use.
 
 =over 4
 
-
-=item _error()
-
-Handle a error message.
-
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
-
-=cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
-}
-
-
 =item _getenv()
 
 Get a environment variable and untaint it.
 
 B<Arguments:> Variable name to get
 
-B<Returns:> Untainted value, or undef if not defined.
+B<Returns:> Untainted value. Throws GridShibCA::NameMappingException on error.
 
 =cut
 
@@ -329,8 +280,9 @@ sub _getenv()
     }
     else
     {
-	$self->_error("Invalid characters found in ENV{%s}: \"%s\"",
-		      $name, $value);
+	throw GridShibCA::NameMappingException(
+	    "Invalid characters found in ENV{%s}: \"%s\"",
+	    $name, $value);
 	return undef;
     }
     return $value;
@@ -338,6 +290,22 @@ sub _getenv()
 
 
 =back
+
+
+=cut
+
+######################################################################
+#
+# GridShibCA::AuthorizationFailedException
+
+package GridShibCA::NameMapperException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head2 GridShibCA::NameMapperException
+
+Class for exceptions caused by name mapping failures.
 
 =head2 Version
 
