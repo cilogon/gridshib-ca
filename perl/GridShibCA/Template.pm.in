@@ -83,6 +83,7 @@ sub new
 	throw GridShibCA::TemplateException("Missing filename");
 
     $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
 
     # We need to use UNTAINT here to clean file for later evaluation
     # Note this means files must be trustworthy.
