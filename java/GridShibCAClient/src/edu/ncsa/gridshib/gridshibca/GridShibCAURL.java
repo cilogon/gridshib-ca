@@ -41,12 +41,14 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
  */
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Iterator;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import org.jdesktop.application.ResourceMap;
 
 /**
  * Base class for URLs representing GridShibCA services.
@@ -119,6 +121,10 @@ public class GridShibCAURL
         GridShibCAClientLogger.debugMessage("Establishing connection to " + this.url);
         this.conn = (HttpURLConnection) this.url.openConnection();
 
+        this.conn.setRequestProperty("accept", "text/plain");
+        this.conn.setRequestProperty("User-Agent",
+                "GridShibCA-JWS/" + GridShibCAProperties.getProperty("Version"));
+
         // If this is a https connection and we have SSLSocketFactory
         // to use (i.e. we have a trustStore besides the default) now
         // is the time to take care of that.
@@ -131,6 +137,35 @@ public class GridShibCAURL
         }
 
         this.conn.setDoOutput(true);
+    }
+
+    /**
+     * Post a request to the connection
+     * @param values Paramets to post.
+     * @throws IOException
+     */
+    protected void post(HashMap values)
+            throws IOException
+    {
+        GridShibCAClientLogger.debugMessage("POSTing...");
+        OutputStreamWriter postWriter =
+                new OutputStreamWriter(this.conn.getOutputStream());
+        String postData = "";
+        Iterator keysIterator = values.keySet().iterator();
+        while (keysIterator.hasNext())
+        {
+            String key = (String) keysIterator.next();
+            String value = URLEncoder.encode((String) values.get(key), "UTF-8");
+            postData += key + "=" + value;
+            GridShibCAClientLogger.debugMessage("\t" + key + "=" + value);
+            if (keysIterator.hasNext())
+            {
+                postData += "&";
+            }
+        }
+        GridShibCAClientLogger.debugMessage("POST: " + postData);
+        postWriter.write(postData);
+        postWriter.flush();
     }
 
     /**

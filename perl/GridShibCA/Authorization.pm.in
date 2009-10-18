@@ -76,14 +76,12 @@ sub new
     return $self;
 }
 
-=item authorizeSignOn()
+=item authorizeSession()
 
-Authorize whether a user can be issued a certificate.
-This implementation authorizes all users.
+Authorize whether a user represented by give CGISession instance can
+be issued a certificate.
 
-B<Arguments:>
-
-C<$webSignOn> - WebSignOn instance.
+B<Arguments:> CGISession instance.
 
 B<Returns:> 1 if user authorized.
 
@@ -93,25 +91,98 @@ Throws GridShibCA::AuthorizationException on error.
 
 =cut
 
-sub authorize
+sub authorizeSession
 {
     my $self = shift;
-    my $webSignOn = shift;
+    my $session = shift ||
+	throw GridShibCA::AuthorizationException("Missing sesssion argument");
 
-    if (!defined($webSignOn))
-    {
-	throw GridShibCA::AuthorizationException("Authorization module received undefined WebSignOn object.");
-    }
-    my $userId = $webSignOn->getUserId();
+    my $userId = $session->param("UserId");
     if (!defined($userId) or ($userId eq ""))
     {
 	throw GridShibCA::AuthorizationException("Authorization module got undefined UserId.");
     }
-    my $idp = $webSignOn->getIdP();
+    my $idp = $session->param("IdP");
     if (!defined($idp) or ($idp eq ""))
     {
 	throw GridShibCA::AuthorizationException("Authorization module got undefined IdP.");
     }
+
+    return $self->_authorize($idp, $userId);
+
+}
+
+
+=item authorizeSignon()
+
+Authorize initial sign-on of user represented by a WebSignOn instance.
+
+B<Arguments:> WebSignOn instance.
+
+B<Returns:> 1 if user authorized.
+
+Throws GridShibCA::AuthorizationFailedException if not authorized
+
+Throws GridShibCA::AuthorizationException on error.
+
+=cut
+
+sub authorizeSignon
+{
+    my $self = shift;
+    my $signon = shift ||
+	throw GridShibCA::AuthorizationException("Missing signon argument");
+
+    my $userId = $signon->getUserId();
+    if (!defined($userId) or ($userId eq ""))
+    {
+	throw GridShibCA::AuthorizationException("Authorization module got undefined UserId.");
+    }
+    my $idp = $signon->getIdP();
+    if (!defined($idp) or ($idp eq ""))
+    {
+	throw GridShibCA::AuthorizationException("Authorization module got undefined IdP.");
+    }
+
+    return $self->_authorize($idp, $userId);
+}
+
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _authorize()
+
+Authorize the given user.
+
+B<Arguments:>
+
+C<$idp> Identity provider Id.
+
+C<$userId> User identifier.
+
+B<Returns:> 1 on success.
+
+Throws GridShibCA::AuthorizationFailedException if not authorized
+
+Throws GridShibCA::AuthorizationException on error.
+
+=cut
+
+sub _authorize
+{
+    my $self = shift;
+    my $idp = shift;
+    my $userId = shift;
 
     my $authorizedIdpFilename =
 	$self->{config}->getParam("Authorization", "AuthorizedIdpsFile");
@@ -137,19 +208,6 @@ sub authorize
 
     return 1;
 }
-
-=back
-
-=cut
-
-######################################################################
-
-=head2 Internal methods
-
-These internal methods not intended for external use.
-
-=over 4
-
 
 =item _inFile()
 

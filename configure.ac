@@ -172,7 +172,7 @@ AC_SUBST(HTML_SRCS)
 
 TEMPLATE_FILES="\
 	templates/CredentialRetriever.jnlp \
-	templates/dump.html \
+	templates/debug.html \
 	templates/error.html \
 	templates/GSCA.jnlp \
 	templates/login.html"
@@ -231,7 +231,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/CGISession.pm \
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
-	perl/GridShibCA/DumpSession.pm \
+	perl/GridShibCA/Debug.pm \
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
@@ -539,6 +539,7 @@ AC_ARG_WITH(shib-protected-path,
 		[Specify the path for the Shibboleth-protected web space. This is the filesystem path where Shibboleth-protected webapps are installed. (Default: <apache_docroot>/<shib_protected_url>)]),
 	[SHIB_PROTECTED_PATH=$withval],
 	[SHIB_PROTECTED_PATH=$default])
+AC_CLEAN_PATH(SHIB_PROTECTED_PATH)
 AC_SUBST(SHIB_PROTECTED_PATH)
 AC_MSG_RESULT(${SHIB_PROTECTED_PATH})
 

@@ -1,0 +1,55 @@
+<html>
+<head>
+  <title>GridShib CA Debug Page</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
+</head>
+<body>
+<h1>GridShib CA Debug Page</h1>
+<p>
+<hr/>
+<h2>Sign-On Methods</h2>
+<p>
+<ul>
+{
+  foreach my $key (keys(%SignOnMethods)) {
+    $OUT .= "<li><a href=\"$SignOnMethods{$key}\">$key</a></li>";
+  }
+}
+</ul>
+</p>
+<hr/>
+<h2>Commands</h2>
+<p>
+<ul>
+{
+  foreach my $command (keys(%Commands)) {
+    $OUT .= "<li><a href=\"GridShibCA.cgi?command=$command\">$command</a></li>";
+  }
+}
+</ul>
+</p>
+<hr/>
+<h2>Credential Retriever Clients</h2>
+<p>
+{
+  foreach my $client (keys(%CredRetrieverClients)) {
+    $OUT .= "<p><form action=\"$CredRetrieverClients{$client}\" method=\"get\"><input type=\"submit\" value=\"$client\"/></form></p>";
+  }
+}
+</p>
+<hr/>
+<h2>Session Dump</h2>
+<p>
+Session Id: {$id}<br/>
+</p>
+<table>
+{
+  foreach my $key (keys(%session)) {
+     $OUT .= "<tr><td>$key</td><td>$session{$key}</td></tr>\n";
+  }
+}
+</table>
+</body>
+</html>

@@ -64,11 +64,11 @@ use GridShibCA::Exception qw(:try);
 
 =item doCommand()
 
-Override base class with my specific logic.
+Override base class with this class' specific logic.
 
 B<Arguments:> None
 
-B<Returns:> True on success, False on error.
+B<Returns:> 1 on success, 0 on error.
 
 =cut
 
@@ -76,45 +76,14 @@ sub doCommand
 {
     my $self = shift;
     my $certificateRequest = $self->{cgi}->getCertificateRequest();
-
     my $ca = $self->{config}->getCA();
-
-    $self->_authorizeRequest();
-    my $certificate = $self->issueCertificate($certificateRequest);
-    $self->_logIssuance($certificate);
+    my %options = ();
+    my $certificate = $ca->handleRequest(
+	$self->{session},
+	$certificateRequest,
+	%options);
     $self->_outputCertificate($certificate);
-}
-
-=item _logIssuance()
-
-Log the issuance of the certificate.
-
-B<Arguments:> Certificate as use Crypt::OpenSSL::X509 object
-
-B<Returns:> Nothing
-
-=cut
-
-sub _logIssuance
-{
-    my $self = shift;
-
-    my $x509 = Crypt::OpenSSL::X509->new_from_string($certificate);
-
-    my $DN = $x509->subject();
-    my $serial = $x509->serial();
-    my $hash = $x509->hash();
-    
-    $logger->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" lifetime=%d",
-		  $user, $idp, $remoteAddr, $serial, $hash,
-		  $DN, $ca->getCredLifetime());
-    
-    my $certRegistry = $config->getCertRegistry();
-    $certRegistry->registerCert($user,
-				$idp,
-				$DN,
-				$certificate,
-				$ca->getCredLifetime());
+    return 1;
 }
 
 =item _outputCertificate()
@@ -130,7 +99,8 @@ B<Returns:> Nothing
 sub _outputCertificate
 {
     my $self = shift;
-    my $certificate = shift;
+    my $certificate = shift ||
+	throw GridShibCA::Exception("Missing certificate argument");
 
     my $pem = $certificate->as_string();
     if (!defined($pem) || ($pem eq ""))
@@ -141,6 +111,7 @@ sub _outputCertificate
     print $self->{cgi}->header("text/plain");
     print $pem;
 }
+
 =item _requirements()
 
 Return protection requirements of this command.

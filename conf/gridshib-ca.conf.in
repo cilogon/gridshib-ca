@@ -38,6 +38,12 @@ redirectURL = NONE
 # GridShib CA configuration directory
 GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
 
+# Relative URL for GridShibCA web space
+GridShibCAURL = @GRIDSHIB_CA_URL@
+
+# Relative URL for Shibboleth-protected web space
+ShibProtectedURL = @SHIB_PROTECTED_URL@
+
 <Templates>
   # Templates for output to client.
   Path = ${GridShibCAConfDir}/templates
@@ -46,10 +52,10 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   
   LogonTemplate = ${Path}/login.html
 
-  DumpTemplate = ${Path}/dump.html
+  DebugTemplate = ${Path}/debug.html
 
   # JNLP file template used by launchGSCA.jnlp
-  JNLPTemplate = ${Path}/GSCA.jnlp
+  JNLPTemplate = ${Path}GSCA.jnlp
 </Templaes>
 
 <Modules>
@@ -112,18 +118,27 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   # Modules invokable by GridShibCA.cgi
   #
 
-  # Dump CGI session (intended for debugging)
-  DumpSession = GridShibCA::DumpSession
+  # No command given
+  DEFAULT = GridShibCA::Debug
 
   # Accept and sign a certificate request
   IssueCert = GridShibCA::IssueCert
 
 </Commands>
 
+<AuthMethods>
+  # List of all authentication end points
+  Shibboleth = ${ShibProtectedURL}/login.cgi
+</AuthMethods>
+
 <Authorization>
   # Authorized Idps
   AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf
 </Authorization>
+
+<CredRetrieverClients>
+  JavaWebStart = ${GridShibCAURL}/launchGSCA.jnlp
+</CredRetrieverClients>
 
 <LaunchClient>
   # This section containsb mappings that will be made in any scripts/
@@ -163,6 +178,21 @@ GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
   GridShibSAMLToolsPath = /usr/local/gridshib-saml-tool-0_1_3/
 </Binaries>
 
+<Session>
+  # Parameters related to client sessions
+
+  # Default lifetime in seconds for web browser client
+  DefaultLifetime = 300
+
+  # Credential Retriever client lifetime
+  CredentialRetrieverClientLifetime = 300
+
+  # Cookie/Parameter name
+  # NOTE: Do not change this at this time. Credential retriever
+  # clients are still hard-coded.
+  Name = GRIDSHIBCA_SESSION_ID
+
+</Session>
 ######################################################################
 #
 # Configuration files
@@ -173,10 +203,6 @@ HTMLHeader = ${GridShibCAConfDir}/header.html
 
 # HTML footer to include on web pages
 HTMLFooter = ${GridShibCAConfDir}/footer.html
-
-# Lifetime for which the GridShib-CA Session Identifier passed to JWS
-# client is valid, in seconds.
-ClientSessionLifetime = 300
 
 ######################################################################
 #
@@ -233,6 +259,13 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 
 </OpenSSLCA>
 
+<CertRegistry>
+  # Configuration for CertRegistry.pm
+
+  # Directory to store issued certificates in
+  Path = ${GridShibCAConfDir}/certs/
+</CertRegistry>
+
 
 ######################################################################
 #
@@ -266,9 +299,6 @@ SyslogFacility = @SYSLOG_FACILITY@
 #
 # Certificate Registry Parameters
 #
-
-# Directory to store issued certificates in
-CertRegistryDir = ${GridShibCAConfDir}/certs/
 
 ######################################################################
 #
@@ -311,9 +341,6 @@ GlobusLocation = @GLOBUS_LOCATION@
 #
 # HTML Template configuration
 #
-
-# Directory where templates are stored
-TemplateDirectory = ${GridShibCAConfDir}/templates
 
 # Contact address for this deployment
 ContactAddress = ContactAddressNotConfigured

@@ -68,11 +68,7 @@ use GridShibCA::Config;
 
 Create a new interface to the CA.
 
-B<Arguments:>
-
-C<$username> - name of user as string
-
-C<$idp> - idp of user as string
+B<Arguments:> None
 
 B<Returns:> CA instance
 
@@ -95,7 +91,7 @@ and log the issuance.
 
 B<Arguments:>
 
-C<$signon> WebSignOn instance (Required)
+C<$signon> CGISession instance (Required)
 
 C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
 
@@ -111,17 +107,17 @@ GridhibCA::CAException on error.
 sub handleRequest
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::CAException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
 	throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
-    $self->_authorizeRequest($signon);
-    my $certificate = $self->signRequest($signon,
+    $self->_authorizeRequest($session);
+    my $certificate = $self->signRequest($session,
 					 $certificateRequest,
 					 %options);
-    $self->_logIssuance($signon, $certificate);
+    $self->_logIssuance($session, $certificate);
     return $certificate;
 }
 
@@ -134,7 +130,7 @@ handleSigningRequest() for a method that includes that logic.
 
 B<Arguments:> 
 
-C<$signon> WebSignOn instance (Required)
+C<$signon> CGISession instance (Required)
 
 C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
 
@@ -150,8 +146,8 @@ GridhibCA::CAException on error.
 sub signRequest
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::CAException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
 	throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
@@ -170,7 +166,7 @@ sub signRequest
 	$options{requestedLifetime} = $self->_getDefaultLifetime();
     }
 
-    my $cert = $self->_signRequest($signon, $certificateRequest, %options)
+    my $cert = $self->_signRequest($session, $certificateRequest, %options)
 	|| throw GridShibCA::CAException("_signRequest() returned undef");
     return $cert;
 }
@@ -181,7 +177,7 @@ sub signRequest
 
 Return the DN for the user in RFC 2253 format.
 
-B<Arguments:> WebSignOn instance
+B<Arguments:> CGISession instance
 
 B<Returns:> DN as string, or undef on error
 
@@ -190,11 +186,11 @@ B<Returns:> DN as string, or undef on error
 sub getDN
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::CAException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::CAException("Missing session argument");
 
     my $nameMapper = $self->{config}->getNameMapper();
-    my $userDN = $nameMapper->mapUser($signon);
+    my $userDN = $nameMapper->mapUser($session);
     my $DN = sprintf("%s,%s", $userDN, $self->getRelativeDN());
 
     # Do some clean up of DN
@@ -213,7 +209,7 @@ sub getDN
 Return the DN for the user in OpenSSL format (e.g.
 /C=US/O=Example/CN=John Smith).
 
-B<Arguments:> WebSignOn instance
+B<Arguments:> CGISession instance
 
 B<Returns:> DN as string, or undef on error
  
@@ -222,10 +218,10 @@ B<Returns:> DN as string, or undef on error
 sub getOpenSSLDN
 {
      my $self = shift;
-     my $signon = shift ||
-	 throw GridShibCA::CAException("Missing signon argument");
+     my $session = shift ||
+	 throw GridShibCA::CAException("Missing session argument");
  
-     my $rfc2253DN = $self->getDN($signon);
+     my $rfc2253DN = $self->getDN($session);
      my $DN = $self->convertRFC2253DNToOpenSSL($rfc2253DN);
  
      return $DN;
@@ -238,7 +234,7 @@ protected so that it can be passed to OpenSSL. E.g.:
 
 /C=US/O=Example/OU=https:\/\/someurl.edu\/foo/CN=John Smith).
 
-B<Arguments:> WebSignOn instance
+B<Arguments:> CGISession instance
 
 B<Returns:> DN as string, or undef on error
 
@@ -247,10 +243,10 @@ B<Returns:> DN as string, or undef on error
 sub getProtectedOpenSSLDN
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::CAException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::CAException("Missing session argument");
 
-    my $rfc2253DN = $self->getDN($signon);
+    my $rfc2253DN = $self->getDN($session);
 
     # Protect any slashes in the DN with a backslash
     $rfc2253DN =~ s|/|\\/|g;
@@ -373,7 +369,7 @@ sub _signRequest()
 
 Authorize the request
 
-B<Arguments:> WebSignOn instance
+B<Arguments:> CGISession instance
 
 B<Returns:> Nothing, throws exception on error.
 
@@ -382,10 +378,10 @@ B<Returns:> Nothing, throws exception on error.
 sub _authorizeRequest
 {
     my $self = shift;
-    my $signon = shift;
+    my $session = shift;
 
     my $authorization = $self->{config}->getAuthorization();
-    $authorization->authorize($signon);
+    $authorization->authorizeSession($session);
 }
 
 
@@ -395,7 +391,7 @@ Log the issuance of the certificate.
 
 B<Arguments:>
 
-C<$signon> WebSignOn instance.
+C<$signon> CGISession instance.
 
 C<$certificate:> Certificate as use Crypt::OpenSSL::X509 object.
 
@@ -406,7 +402,7 @@ B<Returns:> Nothing
 sub _logIssuance
 {
     my $self = shift;
-    my $signon = shift;
+    my $session = shift;
     my $certificate = shift;
 
     my $DN = $certificate->subject();
@@ -417,12 +413,14 @@ sub _logIssuance
     my $expires = $certificate->notAfter();
 
     $self->{logger}->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" expires=\"%s\"",
-			  $signon->getUserId(), $signon->getIdP(),
-			  $signon->getClientHost(), $serial, $hash,
+			  $session->param("UserId"),
+			  $session->param("IdP"),
+			  $session->param("ClientHost"),
+			  $serial, $hash,
 			  $DN, $expires);
     
     my $certRegistry = $self->{config}->getCertRegistry();
-    $certRegistry->registerCert($sigon, $certificate);
+    $certRegistry->registerCert($session, $certificate);
 
 }
 

@@ -46,12 +46,12 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
 
 /**
  * URL representing GridShibCA Server.
@@ -122,14 +122,11 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
     {
         OutputStreamWriter postWriter =
                 new OutputStreamWriter(this.conn.getOutputStream());
-        String postData =
-                "certificateRequest=" +
-                URLEncoder.encode(requestPEM, "UTF-8") + "&" +
-                "token=" +  
-                URLEncoder.encode(this.authenticationToken, "UTF-8");   
-        GridShibCAClientLogger.debugMessage("POST data: " + postData);
-        postWriter.write(postData);
-        postWriter.flush();
+        HashMap values = new HashMap();
+        values.put("command", "IssueCert");
+        values.put("GRIDSHIBCA_SESSION_ID", this.authenticationToken);
+        values.put("certificateRequest", requestPEM);
+        this.post(values);
     }
 
     /**

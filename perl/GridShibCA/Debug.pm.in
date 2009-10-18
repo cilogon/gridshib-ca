@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# DumpSession WebCommand.
+# Debug WebCommand.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,13 +45,13 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::DumpSession
+=head1 GridShibCA::Debug
 
-Dump a session back to the user. Intended for debugging.
+Give the client a debugging view of the GridShibCA.
 
 =cut
 
-package GridShibCA::DumpSession;
+package GridShibCA::Debug;
 
 # Inherit WebCommand
 use base qw(GridShibCA::WebCommand);
@@ -75,13 +75,19 @@ B<Returns:> True on success, False on error.
 sub doCommand
 {
     my $self = shift;
-    my $params = $self->{session}->params();
+    my %signOnMethods = $self->{config}->getSection("AuthMethods");
+    my %commands = $self->{config}->getSection("Commands");
+    my %credRetrieverClients =
+	$self->{config}->getSection("CredRetrieverClients");
     my %mappings = (
 	"id"=>$self->{session}->id(),
 	"UserId"=>$self->{session}->param("UserId"),
-	"session"=>$params,
+	"SignOnMethods"=>\%signOnMethods,
+	"Commands"=>\%commands,
+	"CredRetrieverClients"=>\%credRetrieverClients,
+	"session"=>$self->{session}->params(),
 	);
-    $self->_displayHTML("DumpTemplate", %mappings);
+    $self->_displayHTML("DebugTemplate", %mappings);
 }
 
 =item _requirements()

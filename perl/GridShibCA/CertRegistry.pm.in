@@ -67,7 +67,6 @@ Directory in which to store certificates.
 
 package GridShibCA::CertRegistry;
 
-use Crypt::OpenSSL::X509;
 use File::Spec;
 use FileHandle;
 
@@ -102,65 +101,42 @@ Record an issued certificate.
 
 B<Arguments:>
 
-I<$userId> - User identity as a string.
+C<$session> - CGISession object.
 
-I<$idp> - IDP for user as a string.
+C<$certificate> - Certificate as use Crypt::OpenSSL::X509 object.
 
-I<$dn> - DN issued to user as a string. (Not used, DN derived from
-certificate.)
-
-I<$certificate> - PEM-encoded certificate as a string.
-
-I<$lifetime> - Certificate lifetime in seconds.
-
-B<Returns:> One on success, zero on error
+B<Returns:> Nothing. Throws GridShibCA::CertRegistryException on error.
 
 =cut
 
 sub registerCert()
 {
     my $self = shift;
-    my $userId = shift;
-    my $idp = shift;
-    my $dn = shift; # Not used
-    my $certificate = shift;
-    my $lifetime = shift;
+    my $session = shift ||
+	throw GridShibCA::CertRegistryException("Missing session argument");
+    my $x509 = shift ||
+	throw GridShibCA::CertRegistryException("Missing certificate argument");
 
-    if (!defined($userId) or
-	!defined($idp) or
-	!defined($certificate))
-    {
-	$self->_error("Argument missing.");
-	return 0;
-    }
-
-    my $x509 = Crypt::OpenSSL::X509->new_from_string($certificate);
-    if (!defined($x509))
-    {
-	# Not clear to me how Crypt::OpenSSL::X509 returns an error string
-	$self->_error("Failed to parse X.509 certificate.");
-	return 0;
-    }
-
-    $dn = $x509->subject();
+    my $userId = $session->param("UserId");
+    my $idp = $session->param("IdP");
+    my $dn = $x509->subject();
     my $serial = $x509->serial();
     my $hash = $x509->hash();
     my $timeString = localtime();
     my $timeSeconds = time();
+    # TODO: $x509->notAfter() returns a string of the form "Jun 20
+    # 11:50:06 2009 GMT". Convert to seconds with Date::Parse
+    my $expires = $x509->notAfter();
+    my $certPem = $x509->as_string();
 
-    # $x509->notAfter() returns a string of the form "Jun 20 11:50:06 2009 GMT"
-    # or I would use it to get lifetime.
-
-    my $registryDir = $self->{config}->getParam("CertRegistryDir");
+    my $registryDir = $self->{config}->getParam("CertRegistry", "Path");
 
     if (! -d $registryDir)
     {
-	if (!mkdir($registryDir, 0700))
-	{
-	    $self->_error("Could not create certificate registry directory (%s): %s",
-			  $registryDir, $!);
-	    return 0;
-	}
+	mkdir($registryDir, 0700) ||
+	    throw GridShibCA::CertRegistryException(
+		"Could not create certificate registry directory (%s): %s",
+		$registryDir, $!);
     }
 
     # Hash is tainted, so must untaint before using in filename
@@ -170,20 +146,16 @@ sub registerCert()
     }
     else
     {
-	$self->_error("Illegal characters in hash: \"$hash\"");
-	return 0;
+	throw GridShibCA::CertRegistryException("Illegal characters in hash: \"$hash\"");
     }
 
     my $certFilename = File::Spec->catfile($registryDir,
 					   $hash . "." . $timeSeconds);
     my $certFile = new FileHandle;
-    
-    if (!$certFile->open(">$certFilename"))
-    {
-	$self->_error("Could not open certificate file (%s): %s",
-		      $certFilename, $!);
-	return 0;
-    }
+    $certFile->open(">$certFilename") ||
+	throw GridShibCA::CertRegistryException(
+	    "Could not open certificate file (%s): %s",
+	    $certFilename, $!);
 
     print $certFile <<"EOF";
 User: $userId
@@ -192,32 +164,11 @@ DN: $dn
 Serial: 0x$serial
 Time: $timeString
 Seconds: $timeSeconds
-Lifetime: $lifetime
+Expires: $expires
 
-$certificate
+$certPem
 EOF
-
-    # Success
-    return 1;
 }
-
-
-=item getError()
-
-Return the last error message as a string.
-
-B<Arguments:> None
-
-B<Returns:> Error string
-
-=cut
-
-sub getError
-{
-    my $self = shift;
-    return $self->{error}
-}
-
 
 =back
 
@@ -225,30 +176,16 @@ sub getError
 
 ######################################################################
 
-=head2 Internal methods
+package GridShibCA::CertRegistryException;
 
-These internal methods not intended for external use.
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
 
-=over 4
+=head1 GridShibCA::CertRegistryException
 
-=item _error()
-
-Handle a error message.
-
-B<Arguments:> As to sprintf()
-
-B<Returns:> Nothing
+Class for exceptions caused by certificate registration errors.
 
 =cut
-
-sub _error
-{
-    my $self = shift;
-    my $format = shift;
-    $self->{error} = sprintf($format, @_);
-}
-
-=back
 
 =head2 Version
 

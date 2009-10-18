@@ -79,8 +79,6 @@ This class currently uses no values from F<gridshib-ca.conf>.
 
 package GridShibCA::CGISession;
 
-use CGI::Session;
-
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
 
@@ -108,7 +106,6 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{impl} = CGI::Session;
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     # Parameters to be copied into client sessions
@@ -118,7 +115,10 @@ sub new
 	 "IdP",
 	 "ClientHost"
 	];
-
+    # Define the cookie/parameter name we use
+    CGI::Session->name($self->{config}->getParam("Session", "Name"));
+    $self->{defaultLifetime} =
+	$self->{config}->getParam("Session", "DefaultLifetime");
     bless($self, $class);
     return $self;
 }
@@ -143,20 +143,17 @@ sub createNew
 
     $self->{logger}->debug("Creating new session");
     # undef == create new session instead of trying to use CGI
-    $self->{session} = $self->{impl}->new(undef);
+    $self->{session} = CGI::Session->new();
     if (!defined($self->{session}))
     {
 	throw GridShibCA::SessionException(
 	    "Session creation failed.",
-	    -logText => "Failed to create new session object: " . $self->{impl}->errstr());
+	    -logText => "Failed to create new session object: " . CGI::Session->errstr());
     }
-    $self->{logger}->debug("Session established: %s", $self->id());
-    if (defined($args{-lifetime}))
-    {
-	$self->{logger}->debug("Setting session lifetime of %d seconds.",
-		       $args{-lifetime});
-	$self->{session}->expire($args{-lifetime});
-    }
+    my $lifetime = $args{-lifetime} || $self->{defaultLifetime};
+    $self->{session}->expire($lifetime);
+    $self->{logger}->debug("Session established: %s (lifetime %d)",
+			   $self->id(), $lifetime);
 }
 
 
@@ -180,7 +177,7 @@ sub fromId
 	throw GridShibCA::SessionException("Missing id argument");
 
     $self->{logger}->debug("Loading session (%s)", $id);
-    $self->{session} = $self->{impl}->load($id);
+    $self->{session} = CGI::Session->load($id);
     $self->_checkSession();
     $self->{logger}->debug("Session (%s) loaded.", $id);
     return 1;
@@ -208,7 +205,7 @@ sub fromCGI
 	throw GridShibCA::SessionException("Missing cgi argument");
 
     $self->{logger}->debug("CGISession: Loading session via CGI");
-    $self->{session} = $self->{impl}->load($cgi);
+    $self->{session} = CGI::Session->load($cgi);
     $self->_checkSession();
     $self->{logger}->debug("Session %s established.", $self->id());
     return 1;
@@ -372,11 +369,13 @@ sub createClientSession
     $self->_checkSession();
     $self->{logger}->debug("Creating new client session from session %s",
 			   $self->id());
-    my $session = GridShibCA::CGISession->new();
-    $session->createNew();
-    $self->{logger}->debug("New client session %s created", $session->id());
-
-    # XXX Set client session expiration time
+    my $session = CGI::Session->new();
+    my $lifetime =
+	$self->{config}->getParam("Session",
+				  "CredentialRetrieverClientLifetime");
+    $session->expire($lifetime);
+    $self->{logger}->debug("New client session %s created (lifeime: %d)",
+			   $session->id(), $lifetime);
 
     # Fill in new client session with values from current session
     foreach my $param ($self->{clientSessionParams})
@@ -420,7 +419,7 @@ sub cookie
 {
     my $self = shift;
     $self->_checkSession();
-    return CGI::cookie(CGISESSID => $self->{session}->id());
+    return CGI::cookie($self->{session}->name() => $self->{session}->id());
 }
 
 =back

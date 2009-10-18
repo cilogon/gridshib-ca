@@ -70,6 +70,7 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 =cut
 
 use File::Temp;
+use GridShibCA::CGISession;
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
 use GridShibCA::FakeSignOn;
@@ -159,6 +160,9 @@ print "Idp: " . $idp . "\n";
 
 my $signon = GridShibCA::FakeSignOn->new((userId=>$userId,
 					  idpId=>$idp));
+my $session = GridShibCA::CGISession->new();
+$session->createNew();
+$session->recordWebSignOn($signon);
 
 ######################################################################
 
@@ -194,12 +198,12 @@ my $certificate = undef;
 try
 {
     my $ca = GridShibCA::OpenSSLCA->new();
-    $certificate = $ca->handleRequest($signon, $reqPEM);
+    $certificate = $ca->handleRequest($session, $reqPEM);
 }
 otherwise
 {
     my $ex = shift;
-    errorExit("Failuring signing certificate: %s", $ex->text());
+    handleException("Failure signing certificate", $ex);
 };
 
 ######################################################################
@@ -247,7 +251,28 @@ sub errorExit
     chomp($format);
     $format .= "\n";
     printf(STDERR $format, @_);
-    exit(1)
+    exit(1);
+}
+
+sub handleException
+{
+    my $message = shift;
+    my $ex = shift;
+    chomp($message);
+    printf(STDERR $message . ": " . $ex->text() . "\n");
+    if ($ex->can("logText"))
+    {
+	print STDERR $ex->logText() . "\n";
+    }
+    if ($ex->can("stacktrace"))
+    {
+	my $trace = $ex->stacktrace();
+	if (defined($trace))
+	{
+	    print STDERR $trace;
+	}
+    }
+    exit(1);
 }
 
 ### Local Variables: ***

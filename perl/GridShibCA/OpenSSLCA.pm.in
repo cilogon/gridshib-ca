@@ -53,27 +53,28 @@ See that Module for a description of methods.
 
 =head2 Configuration Parameters
 
-This class uses the following values from F<gridshib-ca.conf>:
+This class uses the following values from the C<OpenSSLCA> section of
+F<gridshib-ca.conf>:
 
 =over 4
 
-=item OpenSSLCA
+=item Program
 
 Path to executable to use.
 
-=item OpenSSLCACert
+=item CACert
 
 Path to CA certificate.
 
-=item OpenSSLCAKey
+=item CAKey
 
 Path to private key to use.
 
-=item OpenSSLCASerial
+=item SerialFile
 
 Path to file containing the serial number.
 
-=item OpenSSLRandFile
+=item RandFile
 
 Path to file to store random state.
 
@@ -104,11 +105,7 @@ use GridShibCA::Exception qw(:try);
 
 Create a new interface to the CA.
 
-B<Arguments:>
-
-C<$username> - name of user as string
-
-C<$idp> - idp of user as string
+B<Arguments:> None
 
 B<Returns>: CA instance
 
@@ -195,7 +192,7 @@ Given a certificate request return a certificate
 
 B<Arguments>:
 
-C<$signon> WebSignOn instance (Required)
+C<$session> CGISession instance (Required)
 
 C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
 
@@ -210,8 +207,8 @@ B<Returns>: Certificate as Crypt::OpenSSL::X509 object
 sub _signRequest
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::CAException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
 	throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
@@ -252,22 +249,30 @@ sub _signRequest
     # write 'random state'" errors
     $ENV{"RANDFILE"} = $self->{randFile};
 
-    my $DN = $self->getProtectedOpenSSLDN($signon);
+    my $DN = $self->getProtectedOpenSSLDN($session);
 
     if ($self->{config}->getParamBoolean("OpenSSLCA", "IncludeSAMLInCert"))
     {
 	$self->{logger}->debug("Including SAML in certificate");
 
-	my $samlExt = $self->_getSAMLExt($signon);
-
-	if (defined($samlExt))
+	try
 	{
+	    my $samlExt = $self->_getSAMLExt($session);
 	    $self->{logger}->debug("SAML extension: %s", $samlExt);
 	    # Create temporary file and put extension in it
 	    ($samlExtFile, $samlExtFilename) =
 		File::Temp::tempfile(UNLINK => 1);
 	    print $samlExtFile $samlExt;
 	    close($samlExtFile);
+	}
+	otherwise
+	{
+	    my $ex = shift;
+	    $self->{logger}->warn("SAML generation failed.");
+	    if (defined($ex))
+	    {
+		$self->{logger}->logException($ex);
+	    }
 	}
     }
 
@@ -308,7 +313,7 @@ sub _signRequest
 Create a SAML extension for inclusion in certificate. Includes an
 ASN.1 header so it can be easily feed to openssl.
 
-B<Arguments:> WebSignOn instance
+B<Arguments:> CGISession instance
 
 B<Returns:> SAML extension as string or undef on error.
 
@@ -317,7 +322,7 @@ B<Returns:> SAML extension as string or undef on error.
 sub _getSAMLExt
 {
     my $self = shift;
-    my $signon = shift;
+    my $session = shift;
 
     my $samlExtensionModule = $self->{config}->getSAMLExtension();
 
@@ -328,15 +333,7 @@ sub _getSAMLExt
 	return undef;
     }
 
-    my $saml = $samlExtensionModule->generateSAML($self->getDN($signon));
-
-    if (!defined($saml))
-    {
-	# Detailed error should have been logged by SAMLExtension
-	$self->_warn("SAML generation failed.");
-	return undef;
-    }
-
+    my $saml = $samlExtensionModule->generateSAML($self->getDN($session));
     return $saml;
 }
 

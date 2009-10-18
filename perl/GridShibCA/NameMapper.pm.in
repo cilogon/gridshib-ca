@@ -80,7 +80,7 @@ sub new
 
 Return the RFC 2253 formatted DN for the given user.
 
-B<Arguments:> WebSignOn object
+B<Arguments:> CGISession object
 
 B<Returns:> RFC 2253-formatted DN as string. Throws
 GridShibCA::NameMapperException on error.
@@ -90,10 +90,12 @@ GridShibCA::NameMapperException on error.
 sub mapUser
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::NameMapperException("Missing signon argument");
+    my $session = shift ||
+	throw GridShibCA::NameMapperException("Missing session argument");
 
-    my $dn = $self->getMapping($signon);
+    my $dn = $self->getMapping($session);
+    my $userId = $session->param("UserId");
+    my $idp = $session->param("IdP");
 
     # Maximum number of replacements to revent run-away
     my $numReplacements = $self->{replacementLimit};
@@ -109,11 +111,11 @@ sub mapUser
 	# directly to environment.
 	if ($envVar eq "REMOTE_USER")
 	{
-	    $value = $signon->getUserId();
+	    $value = $userId;
 	}
 	elsif ($envVar eq "HTTP_SHIB_IDENTITY_PROVIDER")
 	{
-	    $value = $signon->getIdP();
+	    $value = $idp;
 	}
 	else
 	{
@@ -126,7 +128,7 @@ sub mapUser
 		"Error mapping name for Idp \"%s\":" .
 		" Environment variable \"%s\" not defined." .
 		" (Policy is %s)",
-		$signon->getIdP(), $envVar, $idpPolicy);
+		$idp, $envVar, $idpPolicy);
 	}
 
 	$dn =~ s/\$\{$envVar\}/$value/;
@@ -138,7 +140,7 @@ sub mapUser
 	    throw GridShibCA::NameMappingException(
 		"Recursion limit (%d) hit for expanding user name for Idp %s",
 		$self->{replacementLimit},
-		$signon->getIdP());
+		$idp);
 	}
     }
 
@@ -148,10 +150,10 @@ sub mapUser
 
 =item getMapping()
 
-Given an WebSignOn name, return the raw (pre-substitution) name
+Given an CGISession object, return the raw (pre-substitution) name
 mapping policy associated with it from the authorizedIdps file.
 
-B<Arguments:> WebSignOn object.
+B<Arguments:> CGISession object.
 
 B<Returns:> Mapping as string. Throws GridShibCA::NameMappingException
 on error.
@@ -161,9 +163,9 @@ on error.
 sub getMapping
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::NameMappingException("Missing signon argument");
-    my $idp = $signon->getIdP();
+    my $session = shift ||
+	throw GridShibCA::NameMappingException("Missing session argument");
+    my $idp = $session->param("IdP");
     my $filename = $self->{config}->getParam("Authorization", 
 					     "AuthorizedIdpsFile");
 

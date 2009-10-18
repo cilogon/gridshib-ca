@@ -106,7 +106,7 @@ sub doLogon
 	throw GridShibCA::Exception("signon undefined");
 
     my $authorization = $self->{config}->getAuthorization();
-    $authorization->authorize($signon);
+    $authorization->authorizeSignon($signon);
     
     my $session = $self->{config}->getCGISession();
     $session->createNew();
