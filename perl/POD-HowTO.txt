@@ -1,0 +1,74 @@
+This document describes the format for Plain Old Documentation (POD)
+in GridShibCA perl code.
+
+$Id$
+
+For more information on PERL documentation see:
+
+http://perldoc.perl.org/perlpod.html
+
+The basic structure of perl module documentation should be as follows:
+
+=head1 Module::Name
+
+Module description
+
+=head2 Methods
+
+=over
+
+=item method()
+
+Description.
+
+B<Arguments:> Single argument here, or...
+
+C<$arg1> Description of arg1
+
+C<$arg2> Desctription of arg2 (Optional)
+
+C<Returns:> Something as string. Throws Some::Exception on error.
+
+=cut
+
+sub method
+{
+...
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+Methods here as before.
+
+=back
+
+=cut
+
+######################################################################
+#
+# Some::Exception
+
+package Some::Exception
+
+# Inherit Error
+use base qw(GridShibCA::Exception);
+
+=head2 Some::Exception
+
+Description
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
