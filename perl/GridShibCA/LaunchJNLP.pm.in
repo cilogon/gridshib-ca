@@ -136,7 +136,7 @@ sub _setTemplateMappings
 
     $self->SUPER::_setTemplateMappings($template);
     $template->addMapping("CodeBase",
-			  $self->{config}->getSectionParam("URLs", "GridShibCA"));
+			  $self->{config}->getParam("URLs", "GridShibCA"));
 }
 
 =back
