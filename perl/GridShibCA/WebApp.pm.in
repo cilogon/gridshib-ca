@@ -113,7 +113,6 @@ sub handleRequest
 {
     my $self = shift;
     my $commandName = $self->{cgi}->param("command") || "DEFAULT";
-    $self->{logger}->debug("Got client request for %s", $commandName);
     $self->invokeCommand($commandName);
 }
 
@@ -134,6 +133,8 @@ sub invokeCommand
 	handleError("Undefined command to invokeCommand()");
     $self->{logger}->info("Invoking command %s for %s",
 			  $command, $self->{cgi}->remote_addr());
+    $self->{logger}->debug("User-Agent: " . $self->{cgi}->user_agent());
+
     my $module = undef;
 
     try
