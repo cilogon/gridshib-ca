@@ -49,11 +49,11 @@
 
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
-use GridShibCA::WebApp;
+use GridShibCA::Logon;
 
 try
 {
-    my $logon = GridShibCA::Logon::new();
+    my $logon = GridShibCA::Logon->new();
     $logon->invoke();
 }
 otherwise
