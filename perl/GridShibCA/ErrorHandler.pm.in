@@ -58,6 +58,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(handleError logError htmlError htmlErrorAndExit);
 
+use CGI;
 use GridShibCA::Exception qw(:try);
 
 =head2 Methods
@@ -90,8 +91,15 @@ sub handleError
 
     logError($message, $ex);
 
-    # XXX Really we only want to do this if the client is a web browser
-    htmlError($message, $ex);
+    my $cgi = CGI->new();
+    if ($cgi->Accept("text/html"))
+    {
+	htmlError($message, $ex);
+    }
+    else
+    {
+	textError($message, $ex);
+    }
 
     my $exitCode = $args{-exitCode} || 1;
     exit($exitCode);
@@ -182,6 +190,8 @@ B<Arguments:>
 
 C<$message> Error message
 
+C<$ex> Exception (optional)
+
 B<Returns:> Nothing
 
 =cut
@@ -189,7 +199,8 @@ B<Returns:> Nothing
 sub htmlError
 {
     my $message = shift || "No message given";
-    
+    my $ex = shift;
+
     try
     {
 	my $config = GridShibCA::Config->new();
@@ -214,6 +225,33 @@ sub htmlError
 	# And log for service administrator
 	logError("Failure generating HTML error output for user", $htmlEx);
     };
+}
+
+=item textError()
+
+Handle displaying of a plain text error to client.
+
+B<Arguments:>
+
+C<$message> Error message
+
+C<$ex> Exception (optional)
+
+B<Returns:> Nothing
+
+=cut
+
+sub textError
+{
+    my $message = shift || "No message given";
+    my $ex = shift;
+
+    chomp($message);
+    my $cgi = CGI->new();;
+
+    # 500 Internal Server Error
+    print $cgi->header(-type=>"text/plain",
+		       -status=>"500 GridShib-CA Internal Error: $message");
 }
 
 =back
