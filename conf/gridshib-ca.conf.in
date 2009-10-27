@@ -55,7 +55,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   DebugTemplate = ${Path}/debug.html
 
   # JNLP file template used by launchGSCA.jnlp
-  JNLPTemplate = ${Path}GSCA.jnlp
+  JNLPTemplate = ${Path}/GSCA.jnlp
 </Templaes>
 
 <Modules>
