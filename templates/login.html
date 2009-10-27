@@ -1,56 +1,16 @@
 <html>
-<!--
-This is the first Shibboleth-authenticated page the user sees. It
-displays their Shibboleth identifier and their X.509 DN. It also
-provides forms for the user to request their credential lifetime
-and proceed to launching the JWS application.
-
-Values filled in for this page (besides default values):
- DefaultLifetime - Default credential lifetime in hours
- MaximumLifetime - Maximum credential lifetime in hours
- TrustedCAsAvailable - if true, trused CAs available for download
--->
 <head>
-  <title>GridShib CA Welcome</title>
+  <title>GridShib CA Login Successful</title>
   <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
   <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
+  <META http-equiv="REFRESH" content="0;url={$GridShibCAURL}">
 </head>
 <body>
-  <!--
-      Break out of any iFrame to prevent clickjacking.
-      See Bug 6649: https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6649
-  -->
-  <script type="text/javascript">
-    if (window.top !== window.self) \{ window.top.location.href = window.self.location.href; \}
-  </script>
-<center>
-<h1>GridShib CA</h1>
-(Version {$Version})
-<p id="welcome" class="login">Welcome</p>
-<hr class="login-hr"/>
-<p class="login">Get your Grid Credential</p>
-<form id="create-jnlp" method="POST" action=\"$shibProtectedCGIBinURL/create-jnlp\">
-  <p class="login">
-    Credential Lifetime:
-    <input type="radio" name="lifetime" value="default" checked />
-    Default ($defaultLifetime hours)
-    <input type="radio" name="lifetime" value="specified" />
-    Other:
-    <input type="text" name="specifiedLifetime" value="$defaultLifetime" size="4"/>
-    Hours ($maximumLifetime max)
-    <input type="hidden" name="lifetimeUnit" value="hours"/>
-    {$CSRFElement}
-    <br/>
-
-<!-- Only display checkbox if trusted CAs are available -->
-{ if ($TrustedCAsAvailable) { $OUT = "<input type=checkbox name=\"installTrustedCAs\" value=\"true\" checked />Update my trusted CAs<br/>"; } }
-<input type="submit" value="Press here to generate and download Grid credential.">
-  </form>
-<hr class="login-hr"/>
-<p class="login">
-  When the Credential Retriever application completes, you may close this
-  browser window.
+<p>
+Login successfull. You should be redirected to the GridShibCA Main Page.
+</p>
+<p>
+If not, click <a href="{$GridShibCAURL}">here</a>.
 </p>
 </center>
 </body>
