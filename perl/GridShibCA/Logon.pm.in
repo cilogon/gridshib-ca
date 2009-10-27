@@ -86,6 +86,7 @@ sub doCommand
     $self->{logger}->debug("Sign-on complete: UserId=%s IdPId=%s",
 			   $signon->getUserId(), $signon->getIdP());
     $self->doLogon($signon);
+    $mappings{GridShibCAURL} = $self->{config}->getParam("URLs", "WebApp");
     $self->_displayHTML("LogonTemplate", %mappings);
 }
 
@@ -105,9 +106,12 @@ sub doLogon
     my $signon = shift ||
 	throw GridShibCA::Exception("signon undefined");
 
+    $self->{logger}->debug("Authorizing signon.");
     my $authorization = $self->{config}->getAuthorization();
     $authorization->authorizeSignon($signon);
-    
+    $self->{logger}->debug("Authorization complete.");
+
+    $self->{logger}->debug("Creating session.");
     my $session = $self->{config}->getCGISession();
     $session->createNew();
     $session->recordWebSignOn($signon);
