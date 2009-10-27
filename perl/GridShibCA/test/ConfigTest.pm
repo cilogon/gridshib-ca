@@ -90,7 +90,7 @@ sub test_getSection
 {
     my $self = shift;
     my %section = $self->{config}->getSection("Commands"); 
-    $self->assert_not_null($section{LaunchJNLP});
+    $self->assert_not_null($section{IssueCert});
 }
 
 sub test_getSectionparam

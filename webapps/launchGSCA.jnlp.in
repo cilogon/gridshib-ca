@@ -54,12 +54,12 @@
 
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
-use GridShibCA::WebApp;
+use GridShibCA::LaunchJNLP;
 
 try
 {
-    my $webapp = GridShibCA::WebApp->new();
-    $webapp->invokeCommand("LaunchJNLP");
+    my $launcher = GridShibCA::LaunchJNLP->new();
+    $launcher->invoke();
 }
 otherwise
 {

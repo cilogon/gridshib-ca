@@ -111,9 +111,6 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </Modules>
 
 <Commands>
-  # Module invoked by launchGSCA.jnlp to generate Java Web Start jnlp file
-  LaunchJNLP = GridShibCA::LaunchJNLP
-
   #
   # Modules invokable by GridShibCA.cgi
   #
@@ -127,7 +124,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </Commands>
 
 <AuthMethods>
-  # List of all authentication end points
+  # List of all authentication methods and their end points
   Shibboleth = ${ShibProtectedURL}/login.cgi
 </AuthMethods>
 
