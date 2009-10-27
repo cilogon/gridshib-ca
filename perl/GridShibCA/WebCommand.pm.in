@@ -54,6 +54,7 @@ Base class for Web Commands to be invoked by CGI scripts.
 package GridShibCA::WebCommand;
 
 use Carp;
+use GridShibCA::CGISession;  # For exceptions
 use GridShibCA::Config;
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
@@ -87,6 +88,14 @@ Require an established session.
 
 $REQUIRE_SESSION = 0x0002;
 
+=item $ACCEPT_SESSION
+
+Process a session if presented, but do not require it. WebCommand
+implementation is responsible for checking for established session.
+
+=cut
+
+$ACCEPT_SESSION = 0x0004;
 
 =item $REQUIRE_CSRF_CHECK
 
@@ -94,7 +103,7 @@ Require CSRF protection.
 
 =cut
 
-$REQUIRE_CSRF_CHECK = 0x0004;
+$REQUIRE_CSRF_CHECK = 0x0008;
 
 =back
 
@@ -120,7 +129,6 @@ sub new
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     $self->{cgi} = $self->{config}->getCGI();
-    $self->{session} = $self->{config}->getCGISession();
     # Cookies to be added to output HTML
     $self->{cookies} = [];
     return $self;
@@ -310,6 +318,7 @@ sub _handleRequirements
     {
 	try
 	{
+	    $self->{session} = $self->{config}->getCGISession();
 	    $self->{session}->fromCGI($self->{cgi});
 	}
 	catch GridShibCA::SessionExpiredException with
@@ -327,6 +336,37 @@ sub _handleRequirements
 	    $self->{logger}->logException($ex);
 	    throw GridShibCA::RequirementsException(
 		"Failed to establish session.");
+	}
+	otherwise
+	{
+	    my $ex = shift;
+	    $self->{logger}->logException($ex);
+	    throw GridShibCA::RequirementsException(
+		"Unexpected error establishing session: " . $ex->text());
+	};
+    }
+
+    if ($requirements & $ACCEPT_SESSION)
+    {
+	try
+	{
+	    $self->{logger}->debug("Checking for optional session.");
+	    $self->{session} = $self->{config}->getCGISession();
+	    $self->{session}->fromCGI($self->{cgi});
+	    $self->{logger}->debug("Session accepted: %s",
+		$self->{session}->id());
+	}
+	catch GridShibCA::SessionExpiredException with
+	{
+	    # Ignore exception
+	    my $ex = shift;
+	    $ex->flush();
+	}
+	catch GridShibCA::SessionException with
+	{
+	    # Ignore exception
+	    my $ex = shift;
+	    $ex->flush();
 	}
 	otherwise
 	{
@@ -378,8 +418,8 @@ sub _checkHTTPS
 =item _requirements()
 
 Return the requirements of the command, which should be an bitwise OR
-of the REQUIRE_* contants.  This method should be overridden by the
-child class.
+of the REQUIRE_* and ACCEPT_* constants.  This method should be
+overridden by the child class.
 
 B<Arguments:> None
 
