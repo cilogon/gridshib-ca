@@ -106,6 +106,7 @@ sub new
 {
     my $class = shift;
     my $self = {};
+    $self->{session} = undef; # CGI::Session object
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     # Parameters to be copied into client sessions
@@ -208,6 +209,31 @@ sub fromCGI
     $self->{session} = CGI::Session->load($cgi);
     $self->_checkSession();
     $self->{logger}->debug("Session %s established.", $self->id());
+    return 1;
+}
+
+=item established()
+
+Does this object represent an established session? Note that it does
+not check for expiration.
+
+B<Arguments:> None
+
+B<Returns:> 1 if established session, 0 otherwise
+
+=cut
+
+sub established
+{
+    my $self = shift;
+    if (!defined($self->{session}))
+    {
+	return 0;
+    }
+    if (!defined($self->{session}->id()))
+    {
+	return 0;
+    }
     return 1;
 }
 

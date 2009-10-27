@@ -89,6 +89,17 @@ sub test_destroy
 			 sub { $self->{session}->id(); });
 }
 
+sub test_established
+{
+    my $self = shift;
+    my $session = GridShibCA::CGISession->new();
+    $self->assert_equals(0, $session->established());
+    $session->createNew();
+    $self->assert_equals(1, $session->established());
+    $session->destroy();
+    $self->assert_equals(0, $session->established());
+}
+
 # Return true for import/use
 1;
 
