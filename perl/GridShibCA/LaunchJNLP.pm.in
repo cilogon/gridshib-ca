@@ -98,7 +98,7 @@ sub _generateHeader
     # The attachment option is required for Camino (at least) to do the
     # right thing.  However, this option seems to always cause Firefox to
     # ask what to do with the jnlp file, so we do not use it for FireFox.
-    # Not that some Camino user-agent strings contain "like Firefox" hence
+    # Note that some Camino user-agent strings contain "like Firefox" hence
     # the apparently overly complex logic here.  See
     # https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719
     if ($cgi->user_agent("Mozilla") and !$cgi->user_agent("Camino"))
