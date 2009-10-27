@@ -80,13 +80,16 @@ sub doCommand
     my %credRetrieverClients =
 	$self->{config}->getSection("CredRetrieverClients");
     my %mappings = (
-	"id"=>$self->{session}->id(),
-	"UserId"=>$self->{session}->param("UserId"),
 	"SignOnMethods"=>\%signOnMethods,
 	"Commands"=>\%commands,
 	"CredRetrieverClients"=>\%credRetrieverClients,
-	"session"=>$self->{session}->params(),
 	);
+    if ($self->{session}->established())
+    {
+	$mappings{id} = $self->{session}->id();
+	$mappings{UserId} = $self->{session}->param("UserId");
+	$mappings{session} = $self->{session}->params();
+    }
     $self->_displayHTML("DebugTemplate", %mappings);
 }
 
@@ -102,7 +105,7 @@ B<Returns:> Requirements value
 
 sub _requirements
 {
-    return $GridShibCA::WebCommand::REQUIRE_SESSION;
+    return $GridShibCA::WebCommand::ACCEPT_SESSION;
 }
 
 =back
