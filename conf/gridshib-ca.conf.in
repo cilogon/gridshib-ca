@@ -161,7 +161,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   GridShibCA = ${Base}/@GRIDSHIB_CA_URL@
 
   # URL for the GridShibCA.cgi webapp
-  WebApp = ${GridShibCA}/GridShibCA.cgi
+  WebApp = @GRIDSHIB_CA_WEBAPP_URL@
 </URLs>
 
 <Binaries>
