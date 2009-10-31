@@ -1,0 +1,180 @@
+#!/usr/bin/env python
+"""GridShib-CA Credential Retriever Client
+
+Python client for GridShib-CA.
+
+Requires pyOpenSSL from https://launchpad.net/pyopenssl
+
+Credit to Tom Uram <turam@mcs.anl.gov> for Python MyProxy client.
+
+Todo:
+ * Error checking
+
+GridShib-CA Version: @PACKAGE_VERSION_STRING@
+File version: $Id$
+"""
+
+import getpass
+from optparse import OptionParser
+import os
+from OpenSSL import crypto
+import sys
+import urllib
+import urllib2
+
+# Default Server URL (can be overridden with -s on commandline)
+serverURL = "@GRIDSHIB_CA_WEBAPP_URL@";
+
+######################################################################
+#
+# Output utility functions
+
+displayDebug = False
+
+def debug(message):
+    if displayDebug: print message
+
+displayProgress = True
+
+def progress(message):
+    if displayProgress: print message
+
+######################################################################
+#
+# Other utility functions
+
+def defaultGlobusProxyPath():
+    """Return th default location Globus will look for a credential."""
+    # I tried using tempfile.gettempdir() here, but it always returns
+    # 'temporary' directories as opposed to, e.g., .tmp:
+    # e.g. /var/folders/t6/t6puj+oYFsmrOCU8+6+IHU+++TM/-Tmp-
+    if sys.platform == 'win32':
+        tempdir = "C:\temp" # XXX This is my best guess
+    else:
+        tempdir = "/tmp"
+    filename = "x509up_u%d" % os.getuid()
+    return os.path.join(tempdir, filename)
+
+######################################################################
+
+class GridShibCAURL:
+    # TODO: Set User-Agent
+
+    def __init__(self, url):
+        # TODO: Add check for https
+        self.url = url
+
+    def post(self, values):
+        """Post a request given the name/values in values dictionary."""
+        postData = urllib.urlencode(values)
+        debug("Postdata: %s" % postData)
+        connection = urllib2.urlopen(self.url, postData)
+        response = connection.read()
+        return response
+
+class GridShibCACredentialIssuerURL(GridShibCAURL):
+    def requestCertificate(self, authToken):
+        """Request certificate from GridShib-CA. Returns X509Credential object."""
+        credential = X509Credential()
+        requestPEM = credential.generateRequest()
+        debug("Request generated:\n%s" % requestPEM)
+        postFields = {
+            "command" : "IssueCert",
+            "GRIDSHIBCA_SESSION_ID" : authToken,
+            "certificateRequest" : requestPEM,
+            }
+        debug("Posting request")
+        certificatePEM = self.post(postFields)
+        debug("Got response:\n%s" % certificatePEM)
+        certificateX509 = crypto.load_certificate(
+            crypto.FILETYPE_PEM, certificatePEM)
+        credential.setCertificate(certificateX509)
+        return credential
+
+
+class X509Credential:
+
+    def __init__(self):
+        pass
+
+    def generateRequest(self,
+                        keyType = crypto.TYPE_RSA,
+                        bits = 1024,
+                        messageDigest = "sha1"):
+        """Generate a request and return the PEM-encoded PKCS10 object."""
+        progress("Generating private keys and certificate request.")
+        self.request = crypto.X509Req()
+        self.privateKey = crypto.PKey()
+        self.privateKey.generate_key(keyType, bits)
+        self.request.set_pubkey(self.privateKey)
+        self.request.sign(self.privateKey, messageDigest)
+        return crypto.dump_certificate_request(crypto.FILETYPE_PEM,
+                                               self.request)
+    
+    def setCertificate(self, certificate):
+        """Use given OpenSSL.crypto.X509 as certificate."""
+        self.certificate = certificate
+
+    def writeGlobusCredential(self, path):
+        # XXX Check to make sure we have all the parameters
+        certificatePEM = crypto.dump_certificate(crypto.FILETYPE_PEM,
+                                                 self.certificate)
+        privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                               self.privateKey)
+        if os.path.exists(path):
+            os.remove(path)
+        # O_EXCL|O_CREAT to prevent a race condition where someone
+        # else opens the file first.
+        fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_EXCL, 0600)
+        file = os.fdopen(fd, "w")
+        file.write(certificatePEM)
+        file.write(privateKeyPEM)
+        file.close()
+
+def main(argv=None):
+    # Do argv default this way, as doing it in the functional
+    # declaration sets it at compile time.
+    if argv is None:
+        argv = sys.argv
+
+    global displayProgress
+    global displayDebug
+
+    parser = OptionParser(
+        usage="%prog [<options>] <some arg>", # printed with -h/--help
+        version="%prog @PACKAGE_VERSION_STRING@" # printer with --verion
+        )
+    parser.add_option("-a", "--authToken",
+                      dest="authToken", default=None,
+                      help="specify AUTHTOKEN", metavar="AUTHTOKEN")
+    parser.add_option("-d", "--debug",
+                      dest="debug", action="store_true", default=False,
+                      help="show debug messages")
+    parser.add_option("-q", "--quiet",
+                      dest="quiet", action="store_true", default=False,
+                      help="run quietly")
+    parser.add_option("-s", "--server", dest="serverURL", default=serverURL,
+                      help="use URL for server address", metavar="URL")
+    (options, args) = parser.parse_args()
+    displayProgress = not options.quiet
+    displayDebug = options.debug
+    debug("GridShib CA client starting up")
+    if options.authToken:
+        authToken = options.authToken
+    else:
+        authToken = getpass.getpass("Please enter your Authentication token: ");
+    progress("Using GridShib CA server at %s" % options.serverURL)
+    credIssuer = GridShibCACredentialIssuerURL(options.serverURL)
+    try:
+        credential = credIssuer.requestCertificate(authToken)
+    except urllib2.HTTPError, err:
+        print "Error requesting credential:\n", err
+        sys.exit(1)
+    path = defaultGlobusProxyPath()
+    debug("Got credential. Writing.")
+    credential.writeGlobusCredential(path)
+    print "Success. Credential written to %s" % path
+    sys.exit(0)
+
+if __name__ == "__main__":
+    sys.exit(main())

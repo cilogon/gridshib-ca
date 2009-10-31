@@ -272,6 +272,13 @@ PERL_DIST_MODULES="\
 	perl/Globus/MyProxyClient.pm"
 AC_SUBST(PERL_DIST_MODULES)
 
+dnl Python Scripts
+PYTHON_SCRIPTS="\
+	python/gridshibca-client.py \
+	"
+AC_SUBST(PYTHON_SCRIPTS)
+AC_CONFIG_FILES([$PYTHON_SCRIPTS])
+
 dnl Documenation directory
 DOC_DIR="doc"
 AC_SUBST(DOC_DIR)
@@ -519,6 +526,9 @@ AC_ARG_WITH(gridshib-ca-web-path,
 AC_CLEAN_PATH(GRIDSHIB_CA_WEB_PATH)
 AC_SUBST(GRIDSHIB_CA_WEB_PATH)
 AC_MSG_RESULT(${GRIDSHIB_CA_WEB_PATH})
+
+dnl Full URL for GridShibCA.cgi web application
+GRIDSHIB_CA_WEBAPP_URL=${BASE_URL}/${GRIDSHIB_CA_URL}/GridShibCA.cgi
 
 dnl Shibboleth-protected web space URL and path
 
