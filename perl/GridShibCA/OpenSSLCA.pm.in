@@ -300,7 +300,10 @@ sub _signRequest
     my $result = $cmd->exec();
     if (!$result)
     {
-	throw GridShibCA::CAException("Error signing certificate request: OpenSSL returned non-zero ($result).");
+	my $error = $cmd->getError();
+	throw GridShibCA::CAException(
+	    "Error signing certificate request",
+	    -logText => "OpenSSL returned non-zero ($result): " . $result);
     }
 
     my $pemCert =  $cmd->getOutput();
