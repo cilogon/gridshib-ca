@@ -287,6 +287,7 @@ WWW_USER=@WWW_USER@
 INSTALL_BASE=\
 	install-binaries \
 	install-perl \
+	install-python \
 	install-html \
 	install-jar \
 	install-webapps \
@@ -341,6 +342,13 @@ install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
 	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+	done
+
+install-python: $(PYHON_SCRIPTS) $(GRIDSHIB_CA_WEB_PATH)
+	@echo "Installing python scripts to $(GRIDSHIB_CA_WEB_PATH)"
+	@for file in $(PYTHON_SCRIPTS) ; do \
+		echo "Installing $${file}" ;\
+		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
 	done
 
 install-perl: $(PERL_MODULES) $(PERL_DIST_MODULES)
