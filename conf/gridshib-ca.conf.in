@@ -54,6 +54,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
   DebugTemplate = ${Path}/debug.html
 
+  PythonClientTemplate = ${Path}/python.html
+
   # JNLP file template used by launchGSCA.jnlp
   JNLPTemplate = ${Path}/GSCA.jnlp
 </Templaes>
@@ -120,6 +122,9 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
   # Accept and sign a certificate request
   IssueCert = GridShibCA::IssueCert
+
+  # Allow for download of Python client
+  PythonClient = GridShibCA::PythonClient
 
 </Commands>
 

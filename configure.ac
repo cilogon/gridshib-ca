@@ -175,7 +175,9 @@ TEMPLATE_FILES="\
 	templates/debug.html \
 	templates/error.html \
 	templates/GSCA.jnlp \
-	templates/login.html"
+	templates/login.html \
+	templates/python.html \
+	"
 AC_SUBST(TEMPLATE_FILES)
 
 dnl Configuration files that should not be overwritten by installation.
@@ -242,6 +244,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Logon.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/PythonClient.pm \
 	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibSignOn.pm \
 	perl/GridShibCA/Template.pm \

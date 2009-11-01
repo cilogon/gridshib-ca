@@ -1,0 +1,38 @@
+<html>
+<head>
+  <title>GridShib CA Python Client</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
+</head>
+<body>
+<h1>GridShib CA Python Client</h1>
+<hr/>
+<p>
+  To download the GridShib-CA python client, right click on the
+  following link and select "Save link as..."
+</p>
+<p>
+  <a href="{ $pythonClientURL }">GridShib-CA python client</a>
+</p>
+<p>
+  Your authentication token is { $authToken } <br/>
+  Remember to keep your token private.
+</p>
+<p>
+ You can run the python client as follows:
+</p>
+<pre>
+ python gridshibca-client.py -a { $authToken }
+</pre>
+<p>
+  If you want, you can leave the -a option and token off of the
+  commandline and you will be prompted for it.
+</p>
+<p>
+  Note that you will need to have <a
+  href="https://launchpad.net/pyopenssl">pyOpenSSL</a> installed to
+  run this client.
+</p>
+</body>
+</html>
