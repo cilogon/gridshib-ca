@@ -114,7 +114,8 @@ class GridShibCACredentialIssuerURL(GridShibCAURL):
 class X509Credential:
 
     def __init__(self):
-        pass
+        self.privateKey = None
+        self.certificate = None
 
     def generateRequest(self,
                         keyType = crypto.TYPE_RSA,
@@ -135,7 +136,10 @@ class X509Credential:
         self.certificate = certificate
 
     def writeGlobusCredential(self, path):
-        # XXX Check to make sure we have all the parameters
+        if self.privateKey is None:
+            raise GridShibCAException("Attempt to write incomplete credential (private key is missing)")
+        if self.publicKey is None:
+            raise GridShibCAException("Attempt to write incomplete credential (public key is mising)")
         certificatePEM = crypto.dump_certificate(crypto.FILETYPE_PEM,
                                                  self.certificate)
         privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
