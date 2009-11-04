@@ -25,6 +25,9 @@ import urlparse
 # Default Server URL (can be overridden with -s on commandline)
 serverURL = "@GRIDSHIB_CA_WEBAPP_URL@";
 
+# Package version
+version="@PACKAGE_VERSION_STRING@"
+
 ######################################################################
 #
 # make sure OpenSSL is installed.
@@ -79,16 +82,20 @@ class GridShibCAURL:
     # TODO: Set User-Agent
 
     def __init__(self, url):
+        global version
         parsedURL = urlparse.urlparse(url)
         if parsedURL.scheme != 'https':
             raise GridShibCAException("Invalid server URL scheme: " + parsedURL.scheme)
         self.url = url
+        self.userAgent = "GridShibCA-Python/%s" % version
 
     def post(self, values):
         """Post a request given the name/values in values dictionary."""
         postData = urllib.urlencode(values)
         debug("Postdata: %s" % postData)
-        connection = urllib2.urlopen(self.url, postData)
+        headers = { 'User-Agent' : self.userAgent }
+        request = urllib2.Request(self.url, postData, headers)
+        connection = urllib2.urlopen(request)
         response = connection.read()
         return response
 
