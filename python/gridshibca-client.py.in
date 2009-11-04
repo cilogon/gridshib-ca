@@ -20,6 +20,7 @@ import os
 import sys
 import urllib
 import urllib2
+import urlparse
 
 # Default Server URL (can be overridden with -s on commandline)
 serverURL = "@GRIDSHIB_CA_WEBAPP_URL@";
@@ -68,11 +69,19 @@ def defaultGlobusProxyPath():
 
 ######################################################################
 
+class GridShibCAException(Exception):
+    """Exception for GridShibCA-specific errors."""
+    pass
+
+######################################################################
+
 class GridShibCAURL:
     # TODO: Set User-Agent
 
     def __init__(self, url):
-        # TODO: Add check for https
+        parsedURL = urlparse.urlparse(url)
+        if parsedURL.scheme != 'https':
+            raise GridShibCAException("Invalid server URL scheme: " + parsedURL.scheme)
         self.url = url
 
     def post(self, values):
@@ -101,7 +110,6 @@ class GridShibCACredentialIssuerURL(GridShibCAURL):
             crypto.FILETYPE_PEM, certificatePEM)
         credential.setCertificate(certificateX509)
         return credential
-
 
 class X509Credential:
 
@@ -170,12 +178,17 @@ def main(argv=None):
     displayProgress = not options.quiet
     displayDebug = options.debug
     debug("GridShib CA client starting up")
+    try:
+        debug("Server URL is %s" % options.serverURL)
+        credIssuer = GridShibCACredentialIssuerURL(options.serverURL)
+    except Exception, ex:
+        print "Error parsing server URL: %s" % ex
+        sys.exit(1)
     if options.authToken:
         authToken = options.authToken
     else:
         authToken = getpass.getpass("Please enter your Authentication token: ");
     progress("Using GridShib CA server at %s" % options.serverURL)
-    credIssuer = GridShibCACredentialIssuerURL(options.serverURL)
     try:
         credential = credIssuer.requestCertificate(authToken)
     except urllib2.HTTPError, err:
