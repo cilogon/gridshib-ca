@@ -138,7 +138,7 @@ class X509Credential:
     def writeGlobusCredential(self, path):
         if self.privateKey is None:
             raise GridShibCAException("Attempt to write incomplete credential (private key is missing)")
-        if self.publicKey is None:
+        if self.certificate is None:
             raise GridShibCAException("Attempt to write incomplete credential (public key is mising)")
         certificatePEM = crypto.dump_certificate(crypto.FILETYPE_PEM,
                                                  self.certificate)
