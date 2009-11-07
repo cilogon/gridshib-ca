@@ -143,8 +143,8 @@ sub createNew
     my %args = @_;
 
     $self->{logger}->debug("Creating new session");
-    # undef == create new session instead of trying to use CGI
-    $self->{session} = CGI::Session->new();
+    # Empty string == create new session instead of trying to use CGI
+    $self->{session} = CGI::Session->new("");
     if (!defined($self->{session}))
     {
 	throw GridShibCA::SessionException(
