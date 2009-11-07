@@ -85,6 +85,7 @@ use GridShibCA::Exception qw(:try);
 use Carp;
 use CGI;
 use CGI::Session;
+use CGI::Session::Driver::file;  # So we can see FileName
 use File::Spec;
 
 =head2 Methods
@@ -118,6 +119,8 @@ sub new
 	];
     # Define the cookie/parameter name we use
     CGI::Session->name($self->{config}->getParam("Session", "Name"));
+    # Template for session files
+    $CGI::Session::Driver::file::FileName = "gsca-session-%s";
     $self->{defaultLifetime} =
 	$self->{config}->getParam("Session", "DefaultLifetime");
     bless($self, $class);
