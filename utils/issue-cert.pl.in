@@ -162,7 +162,7 @@ my $signon = GridShibCA::FakeSignOn->new((userId=>$userId,
 					  idpId=>$idp));
 my $session = GridShibCA::CGISession->new();
 $session->createNew();
-$session->recordWebSignOn($signon);
+$session->fromWebSignOn($signon);
 
 ######################################################################
 

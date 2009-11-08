@@ -114,16 +114,9 @@ sub doLogon
     $self->{logger}->debug("Creating session.");
     my $session = $self->{config}->getCGISession();
     $session->createNew();
-    $session->recordWebSignOn($signon);
+    $session->fromWebSignOn($signon);
  
     $self->_addCookie($session->cookie());
-
-    $self->{logger}->info("NEW SESSION:UserId %s:IdPId %s:Session %s:IP %s",
-			  $signon->getUserId(),
-			  $signon->getIdP(),
-			  $session->id(),
-			  $signon->getClientHost());
-
     $self->{session} = $session;
 
     return 1;

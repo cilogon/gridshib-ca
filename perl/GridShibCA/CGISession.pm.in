@@ -215,6 +215,40 @@ sub fromCGI
     return 1;
 }
 
+=item fromWebSignOn()
+
+Given a L<GridShibCA::WebSignOn> object, load session from it.
+
+B<Arguments:> WebSignOn object
+
+B<Return:> Nothing
+
+Throws L<GridShibCA::SessionException> on error.
+
+=cut
+
+sub fromWebSignOn
+{
+    my $self = shift;
+    $self->_checkSession();
+    my $signon = shift ||
+	throw GridShibCA::SessionException("signon undefined.");
+
+    $self->param("UserId", $signon->getUserId());
+    $self->param("IdP", $signon->getIdP());
+    $self->param("ClientHost", $signon->getClientHost());
+    $self->param("AuthnMethod", $signon->methodName());
+    $self->flush();
+
+    $self->{logger}->info(
+	"NEW SESSION %s:Method %s:UserId %s:IdPId %s:IP %s",
+	$self->id(),
+	$signon->methodName(),
+	$signon->getUserId(),
+	$signon->getIdP(),
+	$signon->getClientHost());
+}
+
 =item established()
 
 Does this object represent an established session? Note that it does
@@ -355,32 +389,6 @@ sub flush
     my $self = shift;
     $self->_checkSession();
     $self->{session}->flush();
-}
-
-=item recordWebSignOn()
-
-Given a L<GridShibCA::WebSignOn> object, record the sign-on details.
-
-B<Arguments:> WebSignOn object
-
-B<Return:> Nothing
-
-Throws L<GridShibCA::SessionException> on error.
-
-=cut
-
-sub recordWebSignOn
-{
-    my $self = shift;
-    $self->_checkSession();
-    my $signon = shift ||
-	throw GridShibCA::SessionException("signon undefined.");
-
-    $self->param("UserId", $signon->getUserId());
-    $self->param("IdP", $signon->getIdP());
-    $self->param("ClientHost", $signon->getClientHost());
-    $self->param("AuthnMethod", $signon->methodName());
-    $self->flush();
 }
 
 =item createClientSession()
