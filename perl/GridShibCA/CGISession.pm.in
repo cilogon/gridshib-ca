@@ -379,6 +379,7 @@ sub recordWebSignOn
     $self->param("UserId", $signon->getUserId());
     $self->param("IdP", $signon->getIdP());
     $self->param("ClientHost", $signon->getClientHost());
+    $self->param("AuthnMethod", $signon->methodName());
     $self->flush();
 }
 
