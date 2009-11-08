@@ -238,6 +238,11 @@ sub _displayHTML
 
     my $template = $self->{config}->getHTMLTemplate($templateName);
     $template->setCookies($self->{cookies});
+
+    # Add some unbiquitous mappings
+    $mappings{GridShibCAURL} = $self->{config}->getParam("URLs", "WebApp");
+    $mappings{MyURL} = $self->{cgi}->url(-full => 1);
+
     $template->addMappings(%mappings);
 
     my $html = $template->getText();
@@ -414,6 +419,23 @@ sub _checkHTTPS
     return $result;
 }
 
+=item _redirect()
+
+Redirect the user to the given URL.
+
+B<Arguments:> URL as string
+
+B<Returns:> Nothing
+
+=cut
+
+sub _redirect
+{
+    my $self = shift;
+    my $url = shift ||
+	throw GridShibCA::Exception("Missing url argument");
+    print $self->{cgi}->redirect($url);
+}
 
 =item _requirements()
 

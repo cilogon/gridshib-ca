@@ -86,7 +86,6 @@ sub doCommand
     $self->{logger}->debug("Sign-on complete: UserId=%s IdPId=%s",
 			   $signon->getUserId(), $signon->getIdP());
     $self->doLogon($signon);
-    $mappings{GridShibCAURL} = $self->{config}->getParam("URLs", "WebApp");
     $self->_displayHTML("LogonTemplate", %mappings);
 }
 
