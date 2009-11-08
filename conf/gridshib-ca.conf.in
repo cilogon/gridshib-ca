@@ -30,7 +30,6 @@ debug = False
 # Set to "True" to enable debugging in the CredentialRetriever client
 clientDebug = False
 
-
 # URL to show to user after credential acquisition is successful.
 # Set to value NONE to disable.
 redirectURL = NONE
@@ -55,6 +54,12 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   DebugTemplate = ${Path}/debug.html
 
   PythonClientTemplate = ${Path}/python.html
+
+  OpenIdCancel = ${Path}/openid-cancel.html
+
+  OpenIdSuccess = ${Path}/login.html
+
+  OpenIdLogonForm = ${Path}/openid-logon-form.html
 
   # JNLP file template used by launchGSCA.jnlp
   JNLPTemplate = ${Path}/GSCA.jnlp
@@ -131,6 +136,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 <AuthMethods>
   # List of all authentication methods and their end points
   Shibboleth = ${ShibProtectedURL}/login.cgi
+  OpenId = ${GridShibCAURL}/openid.cgi
 </AuthMethods>
 
 <Authorization>

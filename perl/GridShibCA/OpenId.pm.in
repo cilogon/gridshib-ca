@@ -1,0 +1,261 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# WebCommand for doing OpenId SignOn.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::OpenId
+
+Authenticate the user via OpenId. Not that this takes a round trip
+between this application and the user's identity provider.
+
+=cut
+
+package GridShibCA::OpenId;
+
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::Exception qw(:try);
+use GridShibCA::OpenIdSignOn;
+use LWP::UserAgent;
+use Net::OpenID::Consumer;
+
+=head2 Methods
+
+=over 4
+
+=item doCommand()
+
+Override base class with my specific logic.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+
+    my $cgi = $self->{cgi};
+    my $myURL = $cgi->url(-full => 1);
+    my $baseURL = $cgi->url(-base => 1);
+    my $secret = "ABCDEFG"; # XXX
+
+    my $consumer = Net::OpenID::Consumer->new(
+	# The user agent which sends the openid off to the server.
+	ua => LWP::UserAgent->new(),
+	# Require base for return URL
+	required_root => $baseURL,
+	# Our secret for nonces
+	consumer_secret => $secret,
+	# Way for Consumer to get at CGI parameters
+	args => $cgi,
+	);
+
+    # I would use handle_server_response here if there was some way to 
+    # pass $self to the callbacks.
+    if ($consumer->is_server_response())
+    {
+	my $setup_url = $consumer->user_setup_url();
+	my $verifiedId = $consumer->verified_identity();
+	if ($setup_url)
+	{
+	    $self->{logger}->debug("OpenId setup required. Redirecting user to $setup_url");
+	    $self->_redirect($setup_url);
+	}
+	elsif ($consumer->user_cancel())
+	{
+	    $self->{logger}->debug("User canceled OpenId authentication.");
+	    $self->displayHTML("OpenIdCancel");
+	}
+	elsif ($verifiedId)
+	{
+	    $self->{logger}->debug("OpenId authentication successful: " .
+		$verifiedId->url());
+	    my $signon = GridShibCA::OpenIdSignOn->new($verifiedId);
+	    $signon->init();
+
+	    $self->{logger}->debug("Authorizing signon.");
+	    my $authorization = $self->{config}->getAuthorization();
+	    $authorization->authorizeSignon($signon);
+	    $self->{logger}->debug("Authorization complete.");
+
+	    $self->{logger}->debug("Creating session.");
+	    my $session = $self->{config}->getCGISession();
+	    $session->createNew();
+	    $session->fromWebSignOn($signon);
+ 
+	    $self->_addCookie($session->cookie());
+	    $self->{session} = $session;
+	    $self->_displayHTML("OpenIdSuccess", %mappings);
+	}
+	else
+	{
+	    throw GridShibCA::OpenIdException($consumer);
+	}
+    }
+    else
+    {
+	# Not an OpenId response. In this case we either need to
+	# present the user with a login form, or process the result of
+	# that login form. Look for an openid parameter - if present,
+	# then this is the form submission. Otherwise we output the
+	# form.
+	my $openid = $self->{cgi}->param("openid");
+	if ($openid)
+	{
+	    $self->{logger}->debug("Got claimed OpenId: $openid");
+	    my $claimedId = $consumer->claimed_identity($openid);
+	    if (!$claimedId)
+	    {
+		throw GridShibCA::OpenIdException($consumer);
+	    }
+	    $self->{logger}->debug("Redirecting user to OpenId provider.");
+	    my $checkURL = $claimedId->check_url (
+		# The place we go back to.
+		return_to  => $myURL,
+		# Having this simplifies the login process.
+		trust_root => $baseURL,
+		);
+	    $self->_redirect($checkURL);
+	}
+	else
+	{
+	    # Output logon form
+	    $self->{logger}->debug("Providing user OpenId logon form.");
+	    $self->_displayHTML("OpenIdLogonForm");
+	}
+    }
+
+# XXX Add error handling
+#	    my %mappings = ();
+#	    $mappings{errcode} = $consumer->errcode();
+#	    $mappings{errtext} = $consumer->errtext();
+#	    $self->_displayHTML("OpenIdError", %mappings);
+
+    return 1;
+}
+
+
+=item _requirements()
+
+Return protection requirements of this command.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_HTTPS;
+}
+
+=back
+
+=cut
+
+######################################################################
+#
+# GridShibCA::OpenIdException
+
+package GridShibCA::OpenIdException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::OpenIdException
+
+Class for exceptions caused by session errors.
+
+=over 4
+
+=item new()
+
+B<Arguments:> Net::OpenID::Consumer instance
+
+B<Returns:> GridShibCA::OpenIdException instance.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $consumer = shift;
+    
+    my $errcode = $consumer->errcode();
+    my $errtext = $consumer->errtext();
+    my $text = "OpenId error: $errtext ($errcode)";
+
+    my $self = $class->SUPER::new(-text => $text);
+    bless($self, $class);
+    $self->{errcode} = $errcode;
+    $self->{errtext} = $errtext;
+    return $self;
+}
+
+=back
+
+=cut 
+
+######################################################################
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

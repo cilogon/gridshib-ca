@@ -154,6 +154,7 @@ dnl Webapplications to be installed in GRIDSHIB_CA_WEB_PATH
 WEBAPPS="\
 	webapps/GridShibCA.cgi \
 	webapps/launchGSCA.jnlp \
+	webapps/openid.cgi \
 	"
 AC_SUBST(WEBAPPS)
 AC_CONFIG_FILES([$WEBAPPS])
@@ -175,6 +176,8 @@ TEMPLATE_FILES="\
 	templates/debug.html \
 	templates/error.html \
 	templates/GSCA.jnlp \
+	templates/openid-cancel.html \
+	templates/openid-logon-form.html \	
 	templates/login.html \
 	templates/python.html \
 	"
@@ -259,6 +262,8 @@ PERL_MODULES="\
 	perl/GridShibCA/FakeSignOn.pm \
 	perl/GridShibCA/MyProxyCA.pm \
 	perl/GridShibCA/myVocsDBCertRegistry.pm \
+	perl/GridShibCA/OpenId.pm \
+	perl/GridShibCA/OpenIdSignOn.pm \
 	${REQUIRED_PERL_MODULES}"
 AC_SUBST(PERL_MODULES)
 AC_CONFIG_FILES([$PERL_MODULES])
