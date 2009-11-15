@@ -43,6 +43,9 @@ GridShibCAURL = @GRIDSHIB_CA_URL@
 # Relative URL for Shibboleth-protected web space
 ShibProtectedURL = @SHIB_PROTECTED_URL@
 
+# Our Policy file
+PolicyFilename = ${GridShibCAConfDir}/policy.conf
+
 <Templates>
   # Templates for output to client.
   Path = ${GridShibCAConfDir}/templates
@@ -112,9 +115,6 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Base module for Web Applications
   WebCommand = GridShibCA::WebCommand
 
-  # Perl module to use for ShibInterface
-  WebSignOn = GridShibCA::ShibSignOn
-
 </Modules>
 
 <Commands>
@@ -135,7 +135,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
 <AuthMethods>
   # List of all authentication methods and their end points
-  Shibboleth = ${ShibProtectedURL}/login.cgi
+  Shibboleth = ${ShibProtectedURL}/shib.cgi
   OpenId = ${GridShibCAURL}/openid.cgi
 </AuthMethods>
 
@@ -228,13 +228,6 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 <CA>
   # CA Parameters
   # Parameters related to certificate signing.
-
-  # DN of the CA in RFC 2253 format
-  DN = @CA_DN@
-
-  # Relative DN for issued certificates
-  # Must be in RFC 2253 format: e.g. O=NCSA,C=US
-  RelativeDN = @RELATIVE_DN@
 
   # Default credential lifetime in seconds (12 hours)
   DefaultCredLifetime = 43200

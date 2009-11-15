@@ -583,23 +583,6 @@ sub getWebCommand
     return $self->_newModule("WebCommand", @_);
 }
 
-=item getWebSignOn()
-
-Get an instance of the GridShibCA::WebSignOn module by loading it
-and calling its new method with the given arguments.
-See L<GridShibCA::WebSignOn>.
-
-The exact module loaded is controlled by the WebSignOn variable in the
-Modules section of F<gridshib-ca.conf>.
-
-=cut
-
-sub getWebSignOn
-{
-    my $self = shift;
-    return $self->_newModule("WebSignOn", @_);
-}
-
 =back
 
 =cut

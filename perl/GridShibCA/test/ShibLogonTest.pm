@@ -5,11 +5,11 @@
 # GridShibCA Unit tests for ShibSignOn.pm
 #
 ######################################################################
-package GridShibCA::test::ShibSignOnTest;
+package GridShibCA::test::ShibLogonTest;
 
 use base qw(Test::Unit::TestCase);
 
-use GridShibCA::ShibSignOn;
+use GridShibCA::ShibLogon;
 
 my $expectedMethod = "Shibboleth";
 
@@ -22,8 +22,8 @@ sub new
 sub set_up
 {
     my $self = shift;
-    $self->{signon} = GridShibCA::ShibSignOn->new();
-    $self->assert_not_null($self->{signon});
+    $self->{logon} = GridShibCA::ShibLogon->new();
+    $self->assert_not_null($self->{logon});
 }
 
 sub tear_down
@@ -38,10 +38,9 @@ sub test_EPPN
     my $userId = "testuser\@fakeidp.org";
     my $idp = "urn:mace:incommon:fakeidp";
     $self->_setupEnvironment($userId, $idp);
-    $self->{signon}->init();
-    $self->assert_equals($expectedMethod, $self->{signon}->methodName());
-    $self->assert_equals($userId, $self->{signon}->getUserId());
-    $self->assert_equals($idp, $self->{signon}->getIdP());
+    $self->assert_equals($expectedMethod, $self->{logon}->getMethodName());
+    $self->assert_equals($userId, $self->{logon}->getUserId());
+    $self->assert_equals($idp, $self->{logon}->getIdP());
 }
 
 sub test_EPTID
@@ -50,10 +49,9 @@ sub test_EPTID
     my $userId = "eptid:like/id\@fakeidp.org";
     my $idp = "urn:mace:incommon:fakeidp";
     $self->_setupEnvironment($userId, $idp);
-    $self->{signon}->init();
-    $self->assert_equals($expectedMethod, $self->{signon}->methodName());
-    $self->assert_equals($userId, $self->{signon}->getUserId());
-    $self->assert_equals($idp, $self->{signon}->getIdP());
+    $self->assert_equals($expectedMethod, $self->{logon}->getMethodName());
+    $self->assert_equals($userId, $self->{logon}->getUserId());
+    $self->assert_equals($idp, $self->{logon}->getIdP());
 }
 
 sub _setupEnvironment

@@ -3,9 +3,7 @@
 #
 # $Id$
 #
-# This script invokes the Login.pm module, generating a session
-# for the user based on the results of their authentication
-# and displaying the login.html template.
+# Handle Shibboleth logon. This script invokes the ShibLogin.pm module.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -49,11 +47,11 @@
 
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
-use GridShibCA::Logon;
+use GridShibCA::ShibLogon;
 
 try
 {
-    my $logon = GridShibCA::Logon->new();
+    my $logon = GridShibCA::ShibLogon->new();
     $logon->invoke();
 }
 otherwise
@@ -62,7 +60,7 @@ otherwise
     # (misconfiguration or programming error). Do our best to handle
     # it gracefully.
     my $ex = shift;
-    handleError("Failed to invoke Logon application",
+    handleError("Error invoking ShibLogon application",
 		-exception=>$ex);
     # Does not return
  };

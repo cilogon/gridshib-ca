@@ -1,0 +1,282 @@
+######################################################################
+#
+# $Id$
+#
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::Policy
+
+Base class for classes that access policy.conf.
+
+=cut
+
+package GridShibCA::Policy;
+
+use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
+use GridShibCA::UserIdentity;
+
+# Actual Config::General object, will be set first time Policy object
+# is created
+my $policy = undef;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new Policy object.
+
+B<Arguments:> GridShibCA::UserIdentity object represent user from whom
+we will be resolving policy questions.
+
+B<Returns:> Policy instance.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{userId} = shift ||
+	throw GridShibCA::PolicyException("Missing userId argument");
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{filename} = $self->{config}->getParam("PolicyFilename");
+    bless($self, $class);
+    # Make sure our static $policy variable is set.
+    if (!defined($policy))
+    {
+	$policy = $self->_initConfig($self->{filename}, $self->{userId});
+    }
+    $self->{policy} = $policy;
+    return $self;
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item  _initConfig()
+
+Read and return policy for given UserIdentity.
+
+B<Arguments:>
+
+C<$filename>    Filename of policy file to load.
+
+C<$userId>      GridShibCA::UserIdentity object representing user for whom
+                we're going to determining policy for.
+
+B<Returns:> Instance, throws GridShibCA::PolicyException on error.
+
+=cut
+
+sub _initConfig
+{
+    my $self = shift;
+    my $filename = shift ||
+	throw GridhibCA::UserIdentityException("Missing filename argument");
+    my $userId = shift ||
+	throw GridShibCA::UserIdentityException("Missing userId argument");
+    $self->{logger}->debug("Initializing configuration from %s", $filename);
+    # Values to fill in based on user
+    my $defaultConfig = {
+	UserId => $userId->userId(),
+	IdPId => $userId->idpId(),
+    };
+    my %options = (
+	-ConfigFile => $filename,
+	# Allow for variable substitution in values
+	-InterPolateVars => 1,
+	# Allow for OO type access to values
+	-ExtendedAccess => 1,
+	# Automatically parse booleans
+	-AutoTrue => 1,
+	# Allow for running under taint mode
+	-AutoLaunder => 1,
+	# Set default values based on user
+	-DefaultConfig => $defaultConfig,
+	);
+    if ($self->{debug})
+    {
+	# Complain about duplicates values
+	$options{"-AllowMultiOptions"} = 0;
+    }
+    else
+    {
+	# Just use last option given
+	$options{"-MergeDuplicateOptions"} = 1;
+    }
+    my $policy = new Config::General(%options);
+    if (!defined($policy))
+    {
+	my $message = sprintf("Failed to parse policy file %s",
+			      $filename);
+	throw GridShibCA::PolicyException($message);
+    }
+    return $policy;
+}
+
+=item _getIdpPolicy
+
+Return policy for user's idp.
+
+B<Arguments:> None
+
+B<Returns:> Hash representing user's idp policy.
+
+=cut
+
+sub _getIdpPolicy
+{
+    my $self = shift;
+    my $authMethod = $self->{userId}->authMethod();
+    my $idpId = $self->{userId}->idpId();
+
+    $self->{logger}->debug("Looking up policy for %s (%s)",
+			   $idpId, $authMethod);
+
+    if (!$self->{policy}->exists("AuthMethod") ||
+	!$self->{policy}->is_hash("AuthMethod"))
+    {
+	throw GridShibCA::PolicyException(
+	    "Unknown Idp \"$idpId\": No AuthMethod sections founds.");
+    }
+
+    my $authSections = $self->{policy}->obj("AuthMethod");
+
+    if (!$authSections->exists($authMethod) ||
+	!$authSections->is_hash($authMethod))
+    {
+	throw GridShibCA::PolicyException(
+	    "Unknown Idp \"$idpId\": authentication method ($authMethod) not found in policy.");
+    }
+
+    my $authPolicy = $authSections->obj($authMethod);
+
+    if (!$authPolicy->exists("IdPNameSpace") ||
+	!$authPolicy->is_hash("IdPNameSpace"))
+    {
+	throw GridShibCA::PolicyException(
+	    "Unknown Idp \"$idpId\": No IdPs defined for authentication method $authMethod.");
+    }
+
+    my $idpNameSpaces = $authPolicy->obj("IdPNameSpace");
+    my @nameSpaces = $idpNameSpaces->keys();
+    $self->{logger}->debug("Checking %d namespaces...", scalar(@nameSpaces));
+
+    my $idpPolicy = undef;
+    foreach my $namespace (@nameSpaces)
+    {
+	# Convert $namespace to PERL regex form
+	my $regex = $namespace;
+	$regex =~ s/\./\\./g;   # Protect '.'s
+	$regex =~ s/\*/.+/g;    # Conver * -> .+
+	$regex = "^" . $regex . "\$";  # Anchor start and stop
+
+	$self->{logger}->debug("Checking namespace \"$namespace\" (regex: $regex)");
+
+	if ($idpId =~ /$regex/)
+	{
+	    my %policy = $idpNameSpaces->hash($namespace);
+	    $idpPolicy = \%policy;
+	    $self->{logger}->debug("Idp %s (%s) matches namespace %s",
+				   $idpId,
+				   $authMethod,
+				   $namespace);
+	    last;
+	}
+    }
+
+    if (!defined($idpPolicy))
+    {
+	throw GridShibCA::PolicyException(
+	    "Unknown Idp \"$idpId\" (authentication method $authMethod)");
+    }
+
+    $self->{logger}->debug("Hash: " . %$idpPolicy);
+    return $idpPolicy;
+}
+
+
+=back
+
+=cut
+
+######################################################################
+#
+# GridShibCA::AuthorizationException
+
+package GridShibCA::PolicyException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::PolicyException
+
+Class for exceptions caused by policy configuration errors.
+
+=cut
+
+######################################################################
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
+######################################################################

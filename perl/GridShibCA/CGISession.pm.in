@@ -81,6 +81,7 @@ package GridShibCA::CGISession;
 
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
+use GridShibCA::UserIdentity;
 
 use Carp;
 use CGI;
@@ -215,11 +216,11 @@ sub fromCGI
     return 1;
 }
 
-=item fromWebSignOn()
+=item fromUserIdentity()
 
-Given a L<GridShibCA::WebSignOn> object, load session from it.
+Persist L<GridShibCA::UserIdentity> object into session.
 
-B<Arguments:> WebSignOn object
+B<Arguments:> UserIdentity object
 
 B<Return:> Nothing
 
@@ -227,26 +228,26 @@ Throws L<GridShibCA::SessionException> on error.
 
 =cut
 
-sub fromWebSignOn
+sub fromUserIdentity
 {
     my $self = shift;
     $self->_checkSession();
-    my $signon = shift ||
-	throw GridShibCA::SessionException("signon undefined.");
+    my $id = shift ||
+	throw GridShibCA::SessionException("missing identity argyment");
 
-    $self->param("UserId", $signon->getUserId());
-    $self->param("IdP", $signon->getIdP());
-    $self->param("ClientHost", $signon->getClientHost());
-    $self->param("AuthnMethod", $signon->methodName());
+    $self->param("UserId", $id->userId());
+    $self->param("IdP", $id->idpId());
+    $self->param("ClientHost", $id->clientHost());
+    $self->param("AuthnMethod", $id->authMethod());
     $self->flush();
 
     $self->{logger}->info(
 	"NEW SESSION %s:Method %s:UserId %s:IdPId %s:IP %s",
 	$self->id(),
-	$signon->methodName(),
-	$signon->getUserId(),
-	$signon->getIdP(),
-	$signon->getClientHost());
+	$id->authMethod(),
+	$id->userId(),
+	$id->idpId(),
+	$id->clientHost());
 }
 
 =item established()
@@ -350,6 +351,34 @@ sub id
     my $self = shift;
     $self->_checkSession();
     return $self->{session}->id();
+}
+
+=item userIdentity
+
+Extract user identity from session.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::UserIdentity instance.
+
+=cut
+
+sub userIdentity
+{
+    my $self = shift;
+    $self->_checkSession();
+    if (!$self->param("UserId") ||
+	!$self->param("IdP") ||
+	!$self->param("ClientHost") ||
+	!$self->param("AuthnMethod"))
+    {
+	throw GridShibCA::SessionException("User identity not defined in session.");
+    }
+    return GridShibCA::UserIdentity->new(
+	-authMethod => $self->param("AuthnMethod"),
+	-userId => $self->param("UserId"),
+	-clientHost => $self->param("ClientHost"),
+	-idpId => $self->param("IdP"));
 }
 
 =item param

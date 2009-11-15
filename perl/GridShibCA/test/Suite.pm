@@ -21,7 +21,8 @@ GridShibCA::test::CommandTest
 GridShibCA::test::FakeSignOnTest
 GridShibCA::test::ExceptionTest
 GridShibCA::test::HTMLTemplateTest
-GridShibCA::test::ShibSignOnTest
+GridShibCA::test::ShibLogonTest
+GridShibCA::test::UserIdentityTest
 )
 }
 

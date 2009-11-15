@@ -49,256 +49,61 @@ Interface to mapping Shibboleth authentication to X.509 DN.
 
 package GridShibCA::NameMapper;
 
+# Inherit GridShibCA::Policy
+use base qw(GridShibCA::Policy);
+
 use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
+use GridShibCA::X509DN;
 
 =head2 Methods
 
 =over 4
 
-=item new()
-
-Create a new NameMapper object.
-
-B<Arguments:> None
-
-B<Returns:> NameMapper instance
-
-=cut
-
-sub new
-{
-    my $class = shift;
-    my $self = {};
-    $self->{config} = GridShibCA::Config->new();
-    # Maximum number of replacements on names to prevent run away
-    $self->{replacementLimit} = 24;
-    bless($self, $class);
-    return $self;
-}
-
-=item mapUser()
+=item getUserDN()
 
 Return the RFC 2253 formatted DN for the given user.
 
-B<Arguments:> CGISession object
+B<Arguments:> None
 
-B<Returns:> RFC 2253-formatted DN as string. Throws
-GridShibCA::NameMapperException on error.
+B<Returns:> GridShibCA::X509DN instance.
+
+Throws GridShibCA::NameMapperException on error.
 
 =cut
 
-sub mapUser
+sub getUserDN
 {
     my $self = shift;
-    my $session = shift ||
-	throw GridShibCA::NameMapperException("Missing session argument");
 
-    my $dn = $self->getMapping($session);
-    my $userId = $session->param("UserId");
-    my $idp = $session->param("IdP");
-
-    # Maximum number of replacements to revent run-away
-    my $numReplacements = $self->{replacementLimit};
-
-    # Replace all occurances of ${foo} in policy with $ENV{foo}
-    while ($dn =~ /\$\{(\w+)\}/)
+    my $idpPolicy = $self->_getIdpPolicy();
+    # Previous line should throw an exception if idp not found, but
+    # we'll be paranoid her.
+    if (!defined($idpPolicy))
     {
-	my $envVar = $1;
-	my $value = undef;
-
-	# Handle REMOTE_USER and HTTP_SHIB_IDENTITY_PROVIDER as
-	# special cases and use provided values instead of going
-	# directly to environment.
-	if ($envVar eq "REMOTE_USER")
-	{
-	    $value = $userId;
-	}
-	elsif ($envVar eq "HTTP_SHIB_IDENTITY_PROVIDER")
-	{
-	    $value = $idp;
-	}
-	else
-	{
-	    $value = $self->_getenv($envVar);
-	}
-
-	if (!defined($value))
-	{
-	    throw GridShibCA::NameMappingException(
-		"Error mapping name for Idp \"%s\":" .
-		" Environment variable \"%s\" not defined." .
-		" (Policy is %s)",
-		$idp, $envVar, $idpPolicy);
-	}
-
-	$dn =~ s/\$\{$envVar\}/$value/;
-
-	# Prevent run-away replacement with limit on number of replacements
-	$numReplacements -= 1;
-	if ($numReplacements == 0)
-	{
-	    throw GridShibCA::NameMappingException(
-		"Recursion limit (%d) hit for expanding user name for Idp %s",
-		$self->{replacementLimit},
-		$idp);
-	}
+	throw GridShibCA::NameMapperException(
+	    "getIdpPolicy() returned undefined");
+    }
+    
+    my $dn = $idpPolicy->{DN};
+    if (!defined($dn))
+    {
+	my $idp = $self->{userId}->idpId();
+	throw GridShibCA::NameMapperException(
+	    "Idp $idp policy has no DN defined.");
     }
 
-    # And return string
-    return $dn;
-}
-
-=item getMapping()
-
-Given an CGISession object, return the raw (pre-substitution) name
-mapping policy associated with it from the authorizedIdps file.
-
-B<Arguments:> CGISession object.
-
-B<Returns:> Mapping as string. Throws GridShibCA::NameMappingException
-on error.
-
-=cut
-
-sub getMapping
-{
-    my $self = shift;
-    my $session = shift ||
-	throw GridShibCA::NameMappingException("Missing session argument");
-    my $idp = $session->param("IdP");
-    my $filename = $self->{config}->getParam("Authorization", 
-					     "AuthorizedIdpsFile");
-
-    if (!defined($filename))
-    {
-	throw GridShibCA::NameMappingException("AuthorizedIdpsFile is undefined.");
-    }
-    my $fh = new FileHandle;
-    if (!$fh->open("<$filename"))
-    {
-	throw GridShibCA::NameMappingException(
-	    "Could not open authorized Idp file (%s): %s",
-	    $filename, $!);
-    }
-
-    my $policy = undef;
-
-    while (<$fh>)
-    {
-	my $line = $_;
-	chomp($line);
-
-	# Strip comments
-	$line =~ s/#.*$//;
-
-	# Ignore empty lines
-	if ($line =~ /^\s*$/)
-	{
-	    next;
-	}
-
-	# Get initial regex
-	my ($regex, $remainder) = split(/\s+/, $line, 2);
-
-	# Convert to perl regex form
-	$regex =~ s/\*/.+/g;
-	$regex = "^" . $regex . "\$";
-
-	if ($idp !~ /$regex/)
-	{
-	    # No match, go on to next line
-	    next;
-	}
-
-	if (!defined($remainder))
-	{
-	    throw GridShibCA::NameMappingException(
-		"Error parsing naming policy for Idp %s (Matched by %s in %s): No mapping policy provided (0.3.0 style file?)",
-		$idp, $regex, $filename);
-	}
-
-	# Remainder should be double-quote delimited policy
-	if ($remainder =~ /^\"(.+)\"$/)
-	{
-	    # Success. We are done
-	    $policy = $1;
-	    last;
-	}
-	# Some sort of parsing failure, return an error
-	throw GridShibCA::NameMappingException(
-	    "Error parsing naming policy for Idp %s (Matched by %s in %s): %s",
-	    $idp, $regex, $filename, $remainder);
-	return undef;
-    }
-
-    $fh->close();
-
-    # If we have fallen through, policy will be undef
-    if (!defined($policy))
-    {
-	throw GridShibCA::NameMappingException(
-	    "No match for Idp %s in policy mapping file (%s)",
-	    $idp, $filename);
-    }
-
-    return $policy;
-}
-
-=back
-
-=cut
-
-######################################################################
-
-=head2 Internal methods
-
-These internal methods not intended for external use.
-
-=over 4
-
-=item _getenv()
-
-Get a environment variable and untaint it.
-
-B<Arguments:> Variable name to get
-
-B<Returns:> Untainted value. Throws GridShibCA::NameMappingException on error.
-
-=cut
-
-sub _getenv()
-{
-    my $self = shift;
-    my $variable = shift;
-    my $value = $ENV{variable};
-    if (!defined($value))
-    {
-	return undef;
-    }
-    # Clean and untaint
-    if ($value =~ /^([-\/:\@\w.]+)$/)
-    {
-	$value = $1;
-    }
-    else
-    {
-	throw GridShibCA::NameMappingException(
-	    "Invalid characters found in ENV{%s}: \"%s\"",
-	    $name, $value);
-	return undef;
-    }
-    return $value;
+    return GridShibCA::X509DN->new($dn);
 }
 
 
 =back
-
 
 =cut
 
 ######################################################################
 #
-# GridShibCA::AuthorizationFailedException
+# GridShibCA::NameMapperException
 
 package GridShibCA::NameMapperException;
 
@@ -308,6 +113,10 @@ use base qw(GridShibCA::Exception);
 =head2 GridShibCA::NameMapperException
 
 Class for exceptions caused by name mapping failures.
+
+=cut
+
+######################################################################
 
 =head2 Version
 

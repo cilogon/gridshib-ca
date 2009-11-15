@@ -75,8 +75,8 @@ GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
 ######################################################################
 
 use GridShibCA::Config;
+use GridShibCA::X509DN;
 my $config = GridShibCA::Config->new();
-my $ca = $config->getCA();
 
 my $confPath = $config->getParam("GridShibCAConfDir");
 my $openssl = $config->getParam("Binaries", "OpenSSL");
@@ -125,10 +125,12 @@ if ($options{l})
 ######################################################################
 
 # Get our relative DN
-my $relativeDN = $ca->getRelativeOpenSSLDN();
+my $relativeDN = GridShibCA::X509DN->new("@RELATIVE_DN@")->getOpenSSLDN();
+
 
 # Get our CA DN
-my $subject = $ca->getCAOpenSSLDN();
+# XXX convert to OpenSSL format
+my $subject = GridShibCA::X509DN->new("@CA_DN@")->getOpenSSLDN();
 
 ######################################################################
 

@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# Logon WebCommand.
+# Base instance for logon commands.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -58,6 +58,7 @@ package GridShibCA::Logon;
 use base qw(GridShibCA::WebCommand);
 
 use GridShibCA::Exception qw(:try);
+use GridShibCA::UserIdentity;
 
 =head2 Methods
 
@@ -65,7 +66,7 @@ use GridShibCA::Exception qw(:try);
 
 =item doCommand()
 
-Override base class with my specific logic.
+Basic logic common to many Logon methods.
 
 B<Arguments:> None
 
@@ -76,52 +77,201 @@ B<Returns:> True on success, False on error.
 sub doCommand
 {
     my $self = shift;
-    
-    $self->{logger}->info("Connection from %s", $self->{cgi}->remote_addr());
 
-    my %mappings = ();
-    my $signon = $self->{config}->getWebSignOn();
-    $self->{logger}->debug("Performing %s sign-on", $signon->methodName());
-    $signon->init();
-    $self->{logger}->debug("Sign-on complete: UserId=%s IdPId=%s",
-			   $signon->getUserId(), $signon->getIdP());
-    $self->doLogon($signon);
-    $self->_displayHTML("LogonTemplate", %mappings);
+    try {
+	$self->{logger}->debug("Logon module %s invoked.", ref($self));
+	$self->_init();
+	$self->{logger}->info("Performing %s logon from %s",
+			      $self->getMethodName(),
+			      $self->getClientHost());
+	my %mappings = ();
+	my $id = $self->_createUserIdentity();
+	$self->{logger}->debug("Logon complete: UserId=%s IdPId=%s",
+			       $id->userId(), $id->idpId());
+	my $session = $self->_doLogon($id);
+	$self->_displayHTML("LogonTemplate", %mappings);
+    }
+    otherwise
+    {
+	my $ex = shift;
+	$self->{logger}->logException($ex);
+	my $msg = $ex->text() || "Unknow error (see server logs)";
+	$self->_displayHTMLError("Error performing login: $msg");
+    };
+    return 1;
 }
 
-=item doLogon()
 
-Given a WebSignOn object, authorize and create a session.
+=item getUserId()
 
-B<Arguments:> WebSignOn object
+Return the unchecked, tainted user id as reported by sign-on system.
 
-B<Returns:> Nothing. Throws GridShibCA::Exception or descendant on error.
+Should be implemented by child class.
+
+B<Arguments:> None
+
+B<Returns:> User id as string, or undef if unknown
 
 =cut
 
-sub doLogon
+sub getUserId
 {
     my $self = shift;
-    my $signon = shift ||
-	throw GridShibCA::Exception("signon undefined");
+    throw GridShibCA::LogonException("Undefined getUserId() method.");
+}
 
-    $self->{logger}->debug("Authorizing signon.");
-    my $authorization = $self->{config}->getAuthorization();
-    $authorization->authorizeSignon($signon);
+=item getIdP()
+
+Returns the unchecked, tainted identity provider identifier.
+
+Should be immplemented by child class.
+
+B<Arguments:> None
+
+B<Returns:> IdP as string, or undef if unknown
+
+=cut
+
+sub getIdP
+{
+    my $self = shift;
+    throw GridShibCA::LogonException("Undefined getIdP() method.");
+}
+
+=item getClientHost
+
+B<Arguments:> None
+
+B<Returns:> Client hostname or (if hostname unavailable) IP address
+as string.
+
+=cut
+
+sub getClientHost
+{
+    my $self = shift;
+    return $self->{cgi}->remote_host();
+}
+
+=item getMethodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub getMethodName
+{
+    my $self = shift;
+    throw GridShibCA::LogonException("Undefined getMethodName() method.");
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _init()
+
+Check and make sure everyting is OK.
+
+Should be overridden by child class.
+
+B<Arguments:> None
+
+B<Returns:> Nothing. Throws GridShibCA::LogonException on error.
+
+=cut
+
+sub _init
+{
+    my $self = shift;
+}
+
+=item _createUserIdentity()
+
+Create a GridShibCA::UserIdentity object from Logon.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::UserIdentity instance.
+
+=cut
+
+sub _createUserIdentity
+{
+    my $self = shift;
+    return GridShibCA::UserIdentity->new(
+	-authMethod => $self->getMethodName(),
+	-userId => $self->getUserId(),
+	-idpId => $self->getIdP(),
+	-clientHost => $self->getClientHost());
+}
+
+
+=item _doLogon()
+
+Given an UserIdentity object, authorize and create a session.
+
+B<Arguments:> UserIdentity object
+
+B<Returns:> GridShibCA::CGISession.
+
+Throws GridShibCA::Exception or descendant on error.
+
+=cut
+
+sub _doLogon
+{
+    my $self = shift;
+    my $id = shift ||
+	throw GridShibCA::Exception("Missing id argument");
+
+    $self->{logger}->debug("Authorizing logon.");
+    my $authorization = $self->{config}->getAuthorization($id);
+    $authorization->isAuthorized();
     $self->{logger}->debug("Authorization complete.");
 
     $self->{logger}->debug("Creating session.");
     my $session = $self->{config}->getCGISession();
     $session->createNew();
-    $session->fromWebSignOn($signon);
+    $session->fromUserIdentity($id);
  
     $self->_addCookie($session->cookie());
     $self->{session} = $session;
 
-    return 1;
+    return $session;
 }
 
+
 =back
+
+=cut
+
+######################################################################
+
+package GridShibCA::LogonException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::LogonException
+
+Class for exceptions caused by Logon errors.
+
+=cut
+
+######################################################################
 
 =head2 Version
 

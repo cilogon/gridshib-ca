@@ -73,7 +73,7 @@ use File::Temp;
 use GridShibCA::CGISession;
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
-use GridShibCA::FakeSignOn;
+use GridShibCA::UserIdentity;
 use GridShibCA::OpenSSLCA;
 
 ######################################################################
@@ -158,11 +158,24 @@ if (!defined($userId) or !defined($idp))
 print "User: " . $userId . "\n";
 print "Idp: " . $idp . "\n";
 
-my $signon = GridShibCA::FakeSignOn->new((userId=>$userId,
-					  idpId=>$idp));
-my $session = GridShibCA::CGISession->new();
-$session->createNew();
-$session->fromWebSignOn($signon);
+my $session;
+try
+{
+    my $id = GridShibCA::UserIdentity->new(
+	-userId=>$userId,
+	-idpId=>$idp,
+	-authMethod=>"Shibboleth",
+	-clientHost=>"localhost",
+	);
+    $session = GridShibCA::CGISession->new();
+    $session->createNew();
+    $session->fromUserIdentity($id);
+}
+otherwise
+{
+    my $ex = shift;
+    handleException("Failure creating session", $ex);
+};
 
 ######################################################################
 

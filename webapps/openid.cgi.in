@@ -48,11 +48,11 @@
 
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
-use GridShibCA::OpenId;
+use GridShibCA::OpenIdLogon;
 
 try
 {
-    my $logon = GridShibCA::OpenId->new();
+    my $logon = GridShibCA::OpenIdLogon->new();
     $logon->invoke();
 }
 otherwise

@@ -45,20 +45,20 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::OpenId
+=head1 GridShibCA::OpenIdLogon
 
 Authenticate the user via OpenId. Not that this takes a round trip
 between this application and the user's identity provider.
 
 =cut
 
-package GridShibCA::OpenId;
+package GridShibCA::OpenIdLogon;
 
-# Inherit WebCommand
-use base qw(GridShibCA::WebCommand);
+# Inherit Logon
+use base qw(GridShibCA::Logon);
 
 use GridShibCA::Exception qw(:try);
-use GridShibCA::OpenIdSignOn;
+use GridShibCA::UserIdentity;
 use LWP::UserAgent;
 use Net::OpenID::Consumer;
 
@@ -116,21 +116,13 @@ sub doCommand
 	{
 	    $self->{logger}->debug("OpenId authentication successful: " .
 		$verifiedId->url());
-	    my $signon = GridShibCA::OpenIdSignOn->new($verifiedId);
-	    $signon->init();
+	    my $id = GridShibCA::UserIdentity->new(
+		-authMethod => "OpenId",
+		-clientHost => $self->getClientHost(),
+		-userId => $verifiedId->url(),
+		-idpId => $verifiedId->url());
 
-	    $self->{logger}->debug("Authorizing signon.");
-	    my $authorization = $self->{config}->getAuthorization();
-	    $authorization->authorizeSignon($signon);
-	    $self->{logger}->debug("Authorization complete.");
-
-	    $self->{logger}->debug("Creating session.");
-	    my $session = $self->{config}->getCGISession();
-	    $session->createNew();
-	    $session->fromWebSignOn($signon);
- 
-	    $self->_addCookie($session->cookie());
-	    $self->{session} = $session;
+	    my $session = $self->_doLogon($id);
 	    $self->_displayHTML("OpenIdSuccess", %mappings);
 	}
 	else

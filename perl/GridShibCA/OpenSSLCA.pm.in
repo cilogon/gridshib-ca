@@ -96,6 +96,7 @@ use GridShibCA::CA;
 
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
+use GridShibCA::X509DN;
 
 =head2 Methods
 
@@ -133,44 +134,6 @@ sub new
 
     bless($self, $class);
     return $self;
-}
-
-
-=item getCADN()
-
-Return the DN of the CA.
-
-B<Arguments:> None
-
-B<Returns:> CA DN as string, undef on error
-
-=cut
-
-sub getCADN
-{
-    my $self = shift;
-
-    return $self->{config}->getParam("CA", "DN");
-}
-
-
-=item getCAOpenSSLDN()
-
-Return the CA DN in OpenSSL "oneline" format.
-
-B<Arguments:> None
-
-B<Returns:> CA DN as string, undef on error
-
-=cut
-
-sub getCAOpenSSLDN
-{
-    my $self = shift;
-
-    my $rfc2253DN = $self->getCADN();
-
-    return $self->convertRFC2253DNToOpenSSL($rfc2253DN);
 }
 
 =back
@@ -213,6 +176,9 @@ sub _signRequest
 	throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
+    my $userId = $session->userIdentity();
+    my $nameMapper = $self->{config}->getNameMapper($userId);
+
     # If defined, has file containing SAML extension
     my $samlExtFilename = undef;
     my $samlExtFile = undef;
@@ -249,7 +215,7 @@ sub _signRequest
     # write 'random state'" errors
     $ENV{"RANDFILE"} = $self->{randFile};
 
-    my $DN = $self->getProtectedOpenSSLDN($session);
+    my $DN = $nameMapper->getUserDN()->getProtectedOpenSSLDN();
 
     if ($self->{config}->getParamBoolean("OpenSSLCA", "IncludeSAMLInCert"))
     {

@@ -152,6 +152,7 @@ sub invoke
 
     try
     {
+	$self->{logger}->info("Invoking %s module.", ref($self));
 	$self->_handleRequirements();
     }
     otherwise

@@ -3,7 +3,7 @@
 #
 # $Id$
 #
-# GridShib CA interface for Shibboleth.
+# GridShib CA interface for X509 Distinguished Name.
 #
 ######################################################################
 # Copyright 2006 The Board of Trustees of the University of Illinois.
@@ -45,149 +45,157 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
 ######################################################################
 
-=head1 GridShibCA::ShibSignOn
+=head1 GridShibCA::X509DN
 
-GridShib-CA interface to Shibboleth functionality.
+Object wrapper for X509 DN.
 
 =cut
 
-package GridShibCA::ShibSignOn;
+package GridShibCA::X509DN;
 
-# Inherit WebSignOn
-use GridShibCA::WebSignOn;
-@ISA = ("GridShibCA::WebSignOn");
+use GridShibCA::Exception;
 
 =head2 Methods
 
 =over 4
 
-=item _userId()
+=item new()
 
-Return the user id as reported by Shibboleth through REMOTE_USER.
+Create a new X509 DN object.
 
-B<Arguments:> None
+B<Arguments:> RFC 2253-formatted string.
 
-B<Returns:> User id as string, or under if unknown
+B<Returns:> X509DN instance
 
 =cut
 
-sub _userId
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{dn} = shift ||
+	throw GridShibCA::Exception("Missing DN argument");
+    bless($self, $class);
+    return $self;
+}
+
+
+=item getRFC2253DN()
+
+Return the DN in RFC 2553 format.
+
+B<Arguments:> None
+
+B<Returns:> DN as string.
+
+=cut
+
+sub getRFC2253DN()
+{
+    my $self = shift;
+    return $self->{dn};
+}
+
+=item getOpenSSLDN()
+ 
+Return the DN in OpenSSL oneline format (e.g. /C=US/O=Example/CN=John Smith).
+
+B<Arguments:> None
+
+B<Returns:> DN as string, or undef on error
+ 
+=cut
+ 
+sub getOpenSSLDN
+{
+     my $self = shift;
+ 
+     my $rfc2253DN = $self->{dn};
+     my $DN = $self->_convertRFC2253DNToOpenSSL($rfc2253DN);
+ 
+     return $DN;
+}
+ 
+=item getProtectedOpenSSLDN()
+
+Return the DN for the user in OpenSSL format with any forward slahses
+protected so that it can be passed to OpenSSL. E.g.:
+
+/C=US/O=Example/OU=https:\/\/someurl.edu\/foo/CN=John Smith).
+
+B<Arguments:> None
+
+B<Returns:> DN as string, or undef on error
+
+=cut
+
+sub getProtectedOpenSSLDN
 {
     my $self = shift;
 
-    my $remote_user = $self->{cgi}->remote_user();
-    if (!defined($remote_user))
-    {
-	$self->{logger}->err("Cannot determine user identifier (REMOTE_USER undefined)");
-	return undef;
-    }
-    return $remote_user;
-}
+    my $rfc2253DN = $self->{dn};
 
-=item _idPId()
+    # Protect any slashes in the DN with a backslash
+    $rfc2253DN =~ s|/|\\/|g;
 
-Returns the Shibboleth identity provider
+    my $DN = $self->_convertRFC2253DNToOpenSSL($rfc2253DN);
 
-B<Arguments:> None
-
-B<Returns:> IdP as string, or undef if unknown
-
-=cut
-
-sub _idPId()
-{
-    my $self = shift;
-
-    my $idp = $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
-    if (!defined($idp))
-    {
-	$self->{logger}->err("Cannot determine IdP (HTTP_SHIB_IDENTITY_PROVIDER not defined)");
-	return undef;
-    }
-    return $idp;
-}
-
-=item getShibSession()
-
-Returns the Shibboleth session cookie as a "variable=value" string.
-
-B<Arguments:> None
-
-B<Returns:> Shibboleth session or undef if cannot be found
-
-=cut
-
-sub getShibSession
-{
-    my $self = shift;
-
-    use CGI::Cookie;
-
-    my %cookies = fetch CGI::Cookie;
-    my $shibsession = undef;
-    foreach my $key (keys %cookies)
-    {
-	if ($key =~ /_shibsession_/)
-	{
-	    $shibsession = $key . "=" . $cookies{$key}->value;
-	    last;
-	}
-    }
-    return $shibsession;
-}
-
-=item methodName
-
-Return human-readable string identifying sign-on method.
-
-B<Arguments:> None
-
-B<Returns:> String identifying sign-on method.
-
-=cut
-
-sub methodName
-{
-    return "Shibboleth";
-}
-
-=item getSSOResponse()
-
-Return, as a string, the SSO Response, if provided by Shibboleth.
-
-B<Arguments:> None
-
-B<Returns:> String containing SSO Response or undef on error
-
-=cut
-
-sub getSSOResponse
-{
-    my $self = shift;
-
-    use MIME::Base64;
-
-    my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
-
-    if (!defined($base64EncodedSAML))
-    {
-	$self->{logger}->err("No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
-	return undef;
-    }
-
-    my $ssoResponse = decode_base64($base64EncodedSAML);
-
-    # XXX Not clear to me how decode_base64 returns an error.
-    if (!defined($ssoResponse) or ($ssoResponse eq ""))
-    {
-	$self->{logger}->err("Base64 decode of SSO Response failed.");
-	return undef;
-    }
-
-    return $ssoResponse;
+    return $DN;
 }
 
 =back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+=over 4
+
+=item _convertRFC2253DNToOpenSSL()
+
+Convert a DN in RFC 2253 format to OpenSSL "oneline" format as used by
+the Globus Toolkit.
+
+B<Arguments:> DN string in RFC 2253 format
+
+B<Returns:> DN string in OpenSSL "oneline" format
+
+=cut
+sub _convertRFC2253DNToOpenSSL
+{
+    my $self = shift;
+    my $rfc2253DN = shift ||
+	throw GridShibCA::CAException("Missing DN argument");
+
+    my @fields = reverse(split(/, */, $rfc2253DN));
+
+    # Convert component names to uppercase for openssl
+    foreach my $field (@fields)
+    {
+	my ($component, $value) = split(/=/, $field, 2);
+	if (!defined($component) or !defined($value))
+	{
+	    $self->_error("Could not parse DN field \"%s\"", $field);
+	    return undef;
+	}
+
+	$component = uc($component);
+
+	$field = $component . "=" . $value;
+    }
+
+    my $DN = "/" . join("/", @fields);
+
+    return $DN;
+}
+
+=back
+
+=cut
+
+######################################################################
 
 =head2 Version
 

@@ -49,9 +49,10 @@ Authorization system interface.
 
 package GridShibCA::Authorization;
 
-use FileHandle;
+# Inherit GridShibCA::Policy
+use base qw(GridShibCA::Policy);
 
-use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
 
 =head2 Methods
 
@@ -61,7 +62,7 @@ use GridShibCA::Config;
 
 Create a new Authorization object.
 
-B<Arguments:> None
+B<Arguments:> GridShibCA::UserIdentity object
 
 B<Returns:> Authorization instance
 
@@ -70,10 +71,45 @@ B<Returns:> Authorization instance
 sub new
 {
     my $class = shift;
-    my $self = {};
-    $self->{config} = GridShibCA::Config->new();
+    my $self = $class->SUPER::new(@_);
     bless($self, $class);
     return $self;
+}
+
+=item isAuthorized()
+
+Authorize wether or not we should provide credentials to this user.
+
+B<Arguments:> None
+
+B<Returns:> 1 if user authorized.
+
+Throws GridShibCA::AuthorizationFailedException if not authorized
+
+Throws GridShibCA::AuthorizationException on error.
+
+=cut
+
+sub isAuthorized
+{
+    my $self = shift;
+    try
+    {
+	my $idpPolicy = $self->_getIdpPolicy();
+	# Previous line should throw an exception if idp not found, but
+	# we'll be paranoid her.
+	if (!defined($idpPolicy))
+	{
+	    throw GridShibCA::PolicyException("getIdpPolicy() returned undefined");
+	}
+    }
+    otherwise
+    {
+	my $ex = shift;
+	throw GridShibCA::AuthorizationFailedException($ex->text());
+    };
+    
+    return 1;
 }
 
 =item authorizeSession()

@@ -124,7 +124,6 @@ my @modules = (
     "SAMLExtension",
     "Template",
     "WebCommand",
-    "WebSignOn",
     );
 
 my $errorFound = 0;
