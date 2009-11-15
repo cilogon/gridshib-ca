@@ -84,13 +84,13 @@ sub new
     my %args = @_;
     my $self = {};
     $self->{authMethod} = $args{-authMethod} ||
-	throw UserIdentityException("Missing authMethod argument");
+	throw GridShibCA::UserIdentityException("Missing authMethod argument");
     $self->{userId} = $args{-userId} ||
-	throw UserIdentityException("Missing userId argument");
+	throw GridShibCA::UserIdentityException("Missing userId argument");
     $self->{idpId} = $args{-idpId} ||
-	throw UserIdentityException("Missing idpId argument");
+	throw GridShibCA::UserIdentityException("Missing idpId argument");
     $self->{clientHost} = $args{-clientHost} ||
-	throw UserIdentityException("Missing clientHost argument");
+	throw GridShibCA::UserIdentityException("Missing clientHost argument");
     bless($self, $class);
     return $self;
 }

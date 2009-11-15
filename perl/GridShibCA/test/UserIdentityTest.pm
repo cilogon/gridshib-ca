@@ -47,6 +47,20 @@ sub test_default
     $self->assert_equals($clientHost, $id->clientHost());
 }
 
+sub test_userIdentityException
+{
+    my $self = shift;
+    $self->assert_raises(GridShibCA::UserIdentityException,
+			 sub { throw GridShibCA::UserIdentityException("test"); });
+}
+
+sub test_missingArg
+{
+    my $self = shift;
+    $self->assert_raises(GridShibCA::UserIdentityException,
+			 sub { GridShibCA::UserIdentity->new(); });
+}
+
 # Return true for import/use
 1;
 
