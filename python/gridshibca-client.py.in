@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
 """GridShib-CA Credential Retriever Client
 
 Python client for GridShib-CA.

@@ -1,6 +1,7 @@
-dnl $Id$
-dnl See Copyright statement below.
-dnl See file 'LICENSE' for license.
+dnl
+dnl Configure script for GridshibCA.
+dnl
+dnl See file 'LICENSE' for copyright and license.
 
 AC_INIT(gridshib-ca, 2.0.0)
 
@@ -8,9 +9,7 @@ dnl Status of this version, e.g. preview, alpha, beta
 dnl Set to empty string("") for unqualified (e.g. final) release
 PACKAGE_RELEASE_STATUS="preview"
 
-AC_REVISION($Id$)
-
-COPYRIGHT="Copyright 2009 The Board of Trustees of the University of Illinois."
+COPYRIGHT="Copyright 2006-2009 The Board of Trustees of the University of Illinois."
 AC_SUBST(COPYRIGHT)
 AC_COPYRIGHT(${COPYRIGHT})
 

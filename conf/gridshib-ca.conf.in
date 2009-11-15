@@ -1,10 +1,8 @@
 #
 # GridShib CA configuration file
-# $Id$
 #
 # Everything after a "#" is a comment.
-# All declarations should look like "variable = value"
-# Default values are shown, to change, uncomment and modify.
+#
 # Use @GRIDSHIB_CA_CONF_DIR@/check-config.pl
 # to validate file after changing.
 

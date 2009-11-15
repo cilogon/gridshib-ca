@@ -1,13 +1,10 @@
 #!@PERL@ @PERL_CGI_BIN_ARGS@
 ######################################################################
 #
-# $Id$
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
 #
-#
-######################################################################
-# Copyright 2006 The Board of Trustees of the University of Illinois.
-# This file is distributed under the Apache 2.0 License
-# See: http://www.apache.org/licenses/LICENSE-2.0.html
 ######################################################################
 
 =head1 mapapp.pl
@@ -30,7 +27,7 @@ Zero on success, printing DN to STDOUT; one on error.
 
 =head2 Version
 
-GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+GridShib-CA version @PACKAGE_VERSION_STRING@
 
 =cut
 

@@ -1,8 +1,6 @@
 This document describes the format for Plain Old Documentation (POD)
 in GridShibCA perl code.
 
-$Id$
-
 For more information on PERL documentation see:
 
 http://perldoc.perl.org/perlpod.html

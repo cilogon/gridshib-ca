@@ -4,8 +4,6 @@
 # This script is run by the deploy-test make target on the GridShib-CA
 # test system to build and deploy the test GridShib-CA.
 #
-# $Id$
-#
 ######################################################################
 #
 # Exit on any error

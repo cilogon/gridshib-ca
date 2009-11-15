@@ -1,14 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * CredentialInfoFrame.java
- *
- * Created on Jul 17, 2009, 7:55:43 PM
- */
 package edu.ncsa.gridshib.gridshibca;
+/*
+CredentialInfoFrame.java
+
+This file is part of the GridShib-CA distribution.
+
+Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Please see LICENSE at the root of the distribution.
+*/
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

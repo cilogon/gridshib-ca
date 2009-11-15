@@ -1,5 +1,5 @@
 With the following exceptions, this package is licensed under the
-following license.
+license in this file.
 
 Exceptions:
 
@@ -7,20 +7,21 @@ Exceptions:
   (eay@cryptsoft.com). The openssl-ca code in openssl-ca/ is under the
   OpenSSL license. See openssl-ca/LICENSE.
 
-* The Globus CoG kit files in org/globus/util are under the Apache2
+* The Globus CoG kit files in
+  java/GridShibCAClient/src/org/globus/util are under the Apache2
   License. See org/globus/util/LICENSE.txt
 
 ----
 
-Copyright 2007 The Board of Trustees of the University of Illinois.
-All rights reserved.
+Copyright 2006-2009 The Board of Trustees of the University of
+Illinois.  All rights reserved.
 
 Developed by:
 
-  The GridShib Project
+  The GridShib and CILogon Projects
   National Center for Supercomputing Applications
   University of Illinois
-  http://gridshib.globus.org/
+  http://www.cilogon.org/
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

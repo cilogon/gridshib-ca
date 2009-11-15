@@ -5,8 +5,6 @@
 #
 # Run after doing cvs checkout to build initial autoconf stuff.
 #
-# $Id$
-#
 ######################################################################
 
 # Exit on any error

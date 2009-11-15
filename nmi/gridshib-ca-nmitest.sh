@@ -10,8 +10,6 @@
 # Expects to be called from parent directory of unpacked distribution.
 # <dirname> should be the directory name of the unpacked distribution.
 #
-# $Id$
-#
 ######################################################################
 #
 # Exit on any error

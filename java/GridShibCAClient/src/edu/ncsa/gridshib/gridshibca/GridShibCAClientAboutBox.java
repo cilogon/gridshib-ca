@@ -1,7 +1,12 @@
-/*
- * GridShibCAClientAboutBox.java
- */
 package edu.ncsa.gridshib.gridshibca;
+/*
+GridShibCAClientAboutBox.java
+
+This file is part of the GridShib-CA distribution.
+
+Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Please see LICENSE at the root of the distribution.
+*/
 
 import org.jdesktop.application.Action;
 
