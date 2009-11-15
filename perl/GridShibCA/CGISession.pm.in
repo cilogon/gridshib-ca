@@ -85,7 +85,7 @@ use GridShibCA::Exception qw(:try);
 use Carp;
 use CGI;
 use CGI::Session;
-use CGI::Session::Driver::file;  # So we can see FileName
+use CGI::Session::Driver::file;  # So we can set FileName
 use File::Spec;
 
 =head2 Methods
