@@ -137,6 +137,13 @@ PolicyFilename = ${GridShibCAConfDir}/policy.conf
   OpenId = ${GridShibCAURL}/openid.cgi
 </AuthMethods>
 
+<OpenId>
+  # File with consumer secret for OpenId. Should be <= 255 characters.
+  # Changing on the fly will result in any OpenId logons in progress
+  # failing.
+  ConsumerSecretFilename = ${GridShibCAConfDir}/openid-consumer-secret
+</OpenId>
+
 <Authorization>
   # Authorized Idps
   AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf

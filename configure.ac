@@ -196,6 +196,10 @@ AC_SUBST(CONF_SRCS)
 dnl Utilities
 dnl Each AC_CONFIG_FILES must be separate so chmod works.
 UTILS=""
+UTILS="$UTILS utils/create-openid-consumer-secret.pl"
+AC_CONFIG_FILES([utils/create-openid-consumer-secret.pl],
+		[chmod +x utils/create-openid-consumer-secret.pl])
+
 UTILS="$UTILS utils/create-openssl-ca.pl"
 AC_CONFIG_FILES([utils/create-openssl-ca.pl],
 		[chmod +x utils/create-openssl-ca.pl])

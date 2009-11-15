@@ -19,6 +19,7 @@ package GridShibCA::OpenIdLogon;
 # Inherit Logon
 use base qw(GridShibCA::Logon);
 
+use FileHandle;
 use GridShibCA::Exception qw(:try);
 use GridShibCA::UserIdentity;
 use LWP::UserAgent;
@@ -45,7 +46,7 @@ sub doCommand
     my $cgi = $self->{cgi};
     my $myURL = $cgi->url(-full => 1);
     my $baseURL = $cgi->url(-base => 1);
-    my $secret = "ABCDEFG"; # XXX
+    my $secret = $self->_getConsumerSecret();
 
     my $consumer = Net::OpenID::Consumer->new(
 	# The user agent which sends the openid off to the server.
@@ -150,6 +151,46 @@ sub _requirements
     return $GridShibCA::WebCommand::REQUIRE_HTTPS;
 }
 
+=item _getConsumerSecret()
+
+Return static consumer secret
+
+B<Arguments:> None
+
+B<Returns:> Consumer secret as string
+
+=cut
+
+sub _getConsumerSecret
+{
+    my $self = shift;
+    my $secretFilename = $self->{config}->getParam("OpenId",
+						   "ConsumerSecretFilename");
+    if (! -f $secretFilename )
+    {
+	throw GridShibCA::OpenIdException("OpenId Consumer secret file does not exist: $secretFilename");
+    }
+
+    if (! -r $secretFilename )
+    {
+	throw GridShibCA::OpenIdException("OpenId Consumer secret file is not readable: $secretFilename");
+    }
+
+    $self->{logger}->debug("Reading OpenId consumer secret from $secretFilename");
+
+    my $file = FileHandle->new($secretFilename, "r") ||
+	throw GridShibCA::OpenIdException("Error opening OpenId Consumer secret file $secretFilename: $!");
+
+    my $secret = $file->getline() ||
+	throw GridShibCA::OpenIdException("Error reading OpenId Consumer secret from $secretFilename: $!");
+
+    $self->{logger}->debug("Reading OpenId consumer secret is $secret");
+
+    $file->close();
+
+    return $secret;
+}
+
 =back
 
 =cut
@@ -171,7 +212,7 @@ Class for exceptions caused by session errors.
 
 =item new()
 
-B<Arguments:> Net::OpenID::Consumer instance
+B<Arguments:> Net::OpenID::Consumer instance or string.
 
 B<Returns:> GridShibCA::OpenIdException instance.
 
@@ -180,11 +221,15 @@ B<Returns:> GridShibCA::OpenIdException instance.
 sub new
 {
     my $class = shift;
-    my $consumer = shift;
-    
-    my $errcode = $consumer->errcode();
-    my $errtext = $consumer->errtext();
-    my $text = "OpenId error: $errtext ($errcode)";
+    my $text = shift;
+
+    if (ref($test))
+    {
+	# Net::OpenId::Consumer instance
+	my $errcode = $text->errcode();
+	my $errtext = $text->errtext();
+	$text = "OpenId error: $errtext ($errcode)";
+    }
 
     my $self = $class->SUPER::new($text);
     bless($self, $class);

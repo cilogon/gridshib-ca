@@ -62,6 +62,9 @@ sudo make install
 echo "Create CA credentials..."
 sudo utils/create-openssl-ca.pl
 
+echo "Creating OpenId consumer secret..."
+sudo utils/create-openid-consumer-secret.pl
+
 echo "Running post-install tests..."
 sudo make test-post-install
 
