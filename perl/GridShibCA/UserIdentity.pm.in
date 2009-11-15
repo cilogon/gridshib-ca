@@ -1,0 +1,191 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# $Id$
+#
+# GridShib CA interface for user's identity.
+#
+######################################################################
+# Copyright 2006 The Board of Trustees of the University of Illinois.
+# All rights reserved.
+
+# Developed by:
+
+#   The GridShib Project
+#   National Center for Supercomputing Applications
+#   University of Illinois
+#   http://gridshib.globus.org/
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal with the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+
+#   Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimers.
+
+#   Redistributions in binary form must reproduce the above copyright
+#   notice, this list of conditions and the following disclaimers in the
+#   documentation and/or other materials provided with the distribution.
+
+#   Neither the names of the National Center for Supercomputing
+#   Applications, the University of Illinois, nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this Software without specific prior written permission.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+# ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+# CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE SOFTWARE.
+######################################################################
+
+=head1 GridShibCA::UserIdentity
+
+Object wrapper for user's identity.
+
+=cut
+
+package GridShibCA::UserIdentity;
+use GridShibCA::Config;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new UserIdentity object.
+
+B<Arguments:> Dictionary with the following values:
+
+C<-authMethod>  Authentication method
+
+C<-userId>      User identity
+
+C<-idpId>       Identity identity
+
+C<-clientHost>  User's host at authentication time.
+
+B<Returns:> UserIdentity instance
+
+Throws GridShibCA::UserIdentityException on error.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my %args = @_;
+    my $self = {};
+    $self->{authMethod} = $args{-authMethod} ||
+	throw UserIdentityException("Missing authMethod argument");
+    $self->{userId} = $args{-userId} ||
+	throw UserIdentityException("Missing userId argument");
+    $self->{idpId} = $args{-idpId} ||
+	throw UserIdentityException("Missing idpId argument");
+    $self->{clientHost} = $args{-clientHost} ||
+	throw UserIdentityException("Missing clientHost argument");
+    bless($self, $class);
+    return $self;
+}
+
+=item authMethod()
+
+Return a string identifying the authentication method used by the user.
+
+B<Arguments:> None
+
+B<Returns:> Authentication method as string.
+
+=cut
+
+sub authMethod()
+{
+    my $self = shift;
+    return $self->{authMethod};
+}
+
+=item userId()
+
+Return the unchecked, tainted user id.
+
+B<Arguments:> None
+
+B<Returns:> User id as string.
+
+=cut
+
+sub userId
+{
+    my $self = shift;
+    return $self->{userId};
+}
+
+=item idpId()
+
+Returns the unchecked, tainted identity provider identifier.
+
+B<Arguments:> None
+
+B<Returns:> IdP as string.
+
+=cut
+
+sub idpId
+{
+    my $self = shift;
+    return $self->{idpId};
+}
+
+=item clientHost
+
+B<Arguments:> None
+
+B<Returns:> Client hostname at authentication tip.
+
+=cut
+
+sub clientHost
+{
+    my $self = shift;
+    return $self->{clientHost};
+}
+
+=back
+
+=cut
+
+######################################################################
+
+package GridShibCA::UserIdentityException;
+
+# Inherit GridShibCA::Exception
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCA::UserIdentityException
+
+Class for exceptions caused by user identity object errors.
+
+=cut
+
+######################################################################
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
