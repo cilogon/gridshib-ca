@@ -16,7 +16,6 @@ sub include_tests
 GridShibCA::test::CGISessionTest
 GridShibCA::test::ConfigTest
 GridShibCA::test::CommandTest
-GridShibCA::test::FakeSignOnTest
 GridShibCA::test::ExceptionTest
 GridShibCA::test::HTMLTemplateTest
 GridShibCA::test::ShibLogonTest
