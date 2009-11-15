@@ -232,7 +232,7 @@ sub new
     my $errtext = $consumer->errtext();
     my $text = "OpenId error: $errtext ($errcode)";
 
-    my $self = $class->SUPER::new(-text => $text);
+    my $self = $class->SUPER::new($text);
     bless($self, $class);
     $self->{errcode} = $errcode;
     $self->{errtext} = $errtext;
