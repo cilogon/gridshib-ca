@@ -1,0 +1,188 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::ShibSignOn
+
+GridShib-CA interface to Shibboleth functionality.
+
+=cut
+
+package GridShibCA::ShibLogon;
+
+# Inherit Logon
+use base qw(GridShibCA::Logon);
+
+=head2 Methods
+
+=over 4
+
+=item getUserId()
+
+Return the unchecked, tainted user id as reported by Shibboleth.
+
+B<Arguments:> None
+
+B<Returns:> User id as string, or undef if unknown
+
+=cut
+
+sub getUserId
+{
+    my $self = shift;
+    return $self->{cgi}->remote_user();
+}
+
+=item getIdP()
+
+Returns the unchecked, tainted identity provider identifier.
+
+Should be immplemented by child class.
+
+B<Arguments:> None
+
+B<Returns:> IdP as string, or undef if unknown
+
+=cut
+
+sub getIdP
+{
+    my $self = shift;
+    return $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+}
+
+=item getShibSession()
+
+Returns the Shibboleth session cookie as a "variable=value" string.
+
+B<Arguments:> None
+
+B<Returns:> Shibboleth session or undef if cannot be found
+
+=cut
+
+sub getShibSession
+{
+    my $self = shift;
+
+    use CGI::Cookie;
+
+    my %cookies = fetch CGI::Cookie;
+    my $shibsession = undef;
+    foreach my $key (keys %cookies)
+    {
+	if ($key =~ /_shibsession_/)
+	{
+	    $shibsession = $key . "=" . $cookies{$key}->value;
+	    last;
+	}
+    }
+    return $shibsession;
+}
+
+=item methodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub getMethodName
+{
+    return "Shibboleth";
+}
+
+=item getSSOResponse()
+
+Return, as a string, the SSO Response, if provided by Shibboleth.
+
+B<Arguments:> None
+
+B<Returns:> String containing SSO Response or undef on error
+
+=cut
+
+sub getSSOResponse
+{
+    my $self = shift;
+
+    use MIME::Base64;
+
+    my $base64EncodedSAML = $ENV{"HTTP_SHIB_ATTRIBUTES"};
+
+    if (!defined($base64EncodedSAML))
+    {
+	$self->{logger}->err("No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
+	return undef;
+    }
+
+    my $ssoResponse = decode_base64($base64EncodedSAML);
+
+    # XXX Not clear to me how decode_base64 returns an error.
+    if (!defined($ssoResponse) or ($ssoResponse eq ""))
+    {
+	$self->{logger}->err("Base64 decode of SSO Response failed.");
+	return undef;
+    }
+
+    return $ssoResponse;
+}
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _init()
+
+Check and make sure everyting is OK.
+
+Should be overridden by child class.
+
+B<Arguments:> None
+
+B<Returns:> Nothing. Throws GridShibCA::LogonException on error.
+
+=cut
+
+sub _init
+{
+    my $self = shift;
+
+    $self->{logger}->debug("Checking to make sure we are Shib-protected.");
+    if (!$self->getUserId() &&
+	!$self->getIdP())
+    {
+	throw GridShibCA::LogonException("Cannot determine user identity or idenity provider. Shibboleth configuration problem?");
+    }
+}
+
+=back
+
+
+=cut
+
+######################################################################
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
