@@ -260,7 +260,7 @@ sub handleException
     my $ex = shift;
     chomp($message);
     printf(STDERR $message . ": " . $ex->text() . "\n");
-    if ($ex->can("logText"))
+    if ($ex->can("logText") && $ex->logText())
     {
 	print STDERR $ex->logText() . "\n";
     }
