@@ -109,6 +109,9 @@ sub new
     }
     $self->{config} = $config;
     
+    # Now we are set up enough to get our logger
+    $self->{logger} = $self->getLogger();
+    
     $self->_debug("Config objection creation successful.");
 
     return $self;
@@ -484,7 +487,9 @@ in the Modules section of F<gridshib-ca.conf>.
 sub getLogger
 {
     my $self = shift;
-    return $self->_newModule("Logger", @_);
+    # Pass in reference to ourselves to prevent call to Config->new()
+    # which would case an infinite loop.
+    return $self->_newModule("Logger", -config => $self, @_);
 }
 
 =item getNameMapper()
@@ -769,11 +774,16 @@ B<Returns:> Nothing
 sub _debug
 {
     my $self = shift;
+    my $format = shift;
+    my @args = @_;
+
+    if ($self->{logger})
+    {
+	$self->{logger}->debug($format, @args);
+    }
 
     if ($self->{debug})
     {
-	my $format = shift;
-	my @args = @_;
 	chomp($format);
 	print sprintf($format, @_) . "\n";
     }

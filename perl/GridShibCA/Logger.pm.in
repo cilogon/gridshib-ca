@@ -82,7 +82,11 @@ use GridShibCA::Config;
 
 Create a new Logger object.
 
-B<Arguments:> None
+B<Arguments:> Optional dictionary
+
+C<-config>  GridShibCA::Config object to use.
+            This allow us to prevent a loop when constructed by Config
+            and then we call Config->new().
 
 B<Returns:> Logger instance
 
@@ -92,8 +96,9 @@ sub new
 {
     my $class = shift;
     my $self = {};
+    my %args = @_;
 
-    my $config = GridShibCA::Config->new();
+    my $config = $args{-config} || GridShibCA::Config->new();
 
     # Syslog parameters
     my $SYSLOG_ID = $config->getParam("SyslogId");
