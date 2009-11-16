@@ -240,8 +240,8 @@ sub _displayHTML
     my $template = $self->{config}->getHTMLTemplate($templateName);
     $template->setCookies($self->{cookies});
 
-    # Add some unbiquitous mappings
-    $mappings{GridShibCAURL} = $self->{config}->getParam("URLs", "WebApp");
+    # Add some ubiquitous mappings
+    $mappings{GridShibCAURL} = $self->{config}->getParamURL("URLs", "WebApp");
     $mappings{MyURL} = $self->{cgi}->url(-full => 1);
 
     $template->addMappings(%mappings);

@@ -25,6 +25,8 @@ use GridShibCA::Exception qw(:try);
 
 use Carp;
 use Config::General;
+use File::Spec;
+use URI;
 
 # Default value of configuration file to read
 my $configFilename = 
@@ -189,6 +191,65 @@ sub getParamBoolean
 
     # Config::General handles this for us, so we just use normal method
     return $self->getParam(@_);
+}
+
+=item getParamURI()
+
+Return a configuration parameter as a URI object. Cleaning it up in the
+process.
+
+B<Arguments:>
+
+C<$section> Optional section name.
+
+C<$param> Parameter name as string
+
+B<Returns:>
+Value as URI instance, throws GridShibCA::ConfigException if not found.
+
+=cut
+
+sub getParamURI
+{
+    my $self = shift;
+    my $url = $self->getParam(@_);
+
+    # Clean up path. 
+    my $uri;
+    if ($url =~ /^\w+:/)
+    {
+	# Absolute URL, just clean up path portion.
+	$uri = URI->new($url);
+	$uri->path(File::Spec->canonpath($uri->path()));
+    }
+    else
+    {
+	# Relative URL, clean up first to avoid URI confusing "//" at
+	# start as start of host.
+	$uri = URI->new(File::Spec->canonpath($url));
+    }
+    return $uri;
+}
+
+=item getParamURL()
+
+Return a configuration parameter as a cleaned up URL string.
+
+B<Arguments:>
+
+C<$section> Optional section name.
+
+C<$param> Parameter name as string
+
+B<Returns:> URL as string, throws GridShibCA::ConfigException if not found.
+
+=cut
+
+sub getParamURL
+{
+    my $self = shift;
+    my $uri = $self->getParamURI(@_);
+    return $uri->canonical();
 }
 
 =item getSection()

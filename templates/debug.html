@@ -14,7 +14,8 @@
 <ul>
 {
   foreach my $key (keys(%SignOnMethods)) {
-    $OUT .= "<li><a href=\"$SignOnMethods{$key}\">$key</a></li>";
+    my $url = cleanURL($SignOnMethods{$key});
+    $OUT .= "<li><a href=\"$url\">$key</a></li>";
   }
 }
 </ul>
@@ -25,7 +26,7 @@
 <ul>
 {
   foreach my $command (keys(%Commands)) {
-    $OUT .= "<li><a href=\"GridShibCA.cgi?command=$command\">$command</a></li>";
+    $OUT .= "<li><a href=\"GridShibCA.cgi?command=$command\">$command</a></li>\n";
   }
 }
 </ul>
@@ -35,7 +36,8 @@
 <p>
 {
   foreach my $client (keys(%CredRetrieverClients)) {
-    $OUT .= "<p><form action=\"$CredRetrieverClients{$client}\" method=\"get\"><input type=\"submit\" value=\"$client\"/></form></p>";
+    my $url = cleanURL($CredRetrieverClients{$client});
+    $OUT .= "<p><form action=\"$url\" method=\"get\"><input type=\"submit\" value=\"$client\"/></form></p>\n";
   }
 }
 </p>

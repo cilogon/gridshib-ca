@@ -164,7 +164,8 @@ sub getText
     my $text = $template->fill_in(
 	HASH => $self->{hash},
 	BROKEN => \&_broken,
-	BROKEN_ARG => $self
+	BROKEN_ARG => $self,
+	PACKAGE => 'GridShibCA::TemplatePackage',
 	);
 
     if (!defined($text))
@@ -229,6 +230,59 @@ Class for exceptions caused by Template errors.
 GridShib-CA version @PACKAGE_VERSION_STRING@
 
 =cut
+
+######################################################################
+
+package GridShibCA::TemplatePackage;
+
+use File::Spec;
+use URI;
+
+=head1 GridShibCA:TemplatePackage
+
+Package space in which templates are evaluated.
+
+=head2 Methods
+
+These methods are available to templates.
+
+=over 4
+
+=item cleanURL()
+
+Clean  up  a  URL.  The   main  goal  is  to  remove  double  slashes,
+particularly at the start of relative URLs where they will confuse the
+browser into thinking the first path component is the host.
+
+B<Arguments:> URL as string.
+
+B<Returns:> URL as string.
+
+=cut
+
+sub cleanURL
+{
+    my $url = shift;
+    if ($url =~ /^\w+:/)
+    {
+	# Absolute URL, just clean up path portion.
+	$uri = URI->new($url);
+	$uri->path(File::Spec->canonpath($uri->path()));
+    }
+    else
+    {
+	# Relative URL, clean up first to avoid URI confusing "//" at
+	# start as start of host.
+	$uri = URI->new(File::Spec->canonpath($url));
+    }
+    return $uri->canonical();
+}
+
+=back
+
+=cut
+
+######################################################################
 
 # Return true for import/use
 1;

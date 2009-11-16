@@ -167,11 +167,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </LaunchClient>
 
 <URLs>
-  # Protocol and host (e.g. https://somehost.foo.edu)
-  Base = @BASE_URL@
-
-  # URL to GridShib CA directory (e.g. https://somehost.doo.edu/gridshib-ca-2.0)
-  GridShibCA = ${Base}/@GRIDSHIB_CA_URL@
+  # Relative URL to GridShib CA directory
+  GridShibCA = /@GRIDSHIB_CA_URL@
 
   # URL for the GridShibCA.cgi webapp
   WebApp = @GRIDSHIB_CA_WEBAPP_URL@
