@@ -43,6 +43,8 @@ sub doCommand
 	$self->{session},
 	$certificateRequest,
 	%options);
+    # Single use session how now been consumed
+    $self->{session}->destroy();
     $self->_outputCertificate($certificate);
     return 1;
 }
