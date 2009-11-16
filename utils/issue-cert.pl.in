@@ -14,7 +14,9 @@ Intended for testing.
 
 =head2 Usage
 
--issue-cert.pl <userId> <Identity Provider id>
+issue-cert.pl [<options>] <userId> <Identity Provider id>
+
+Run 'issue-cert.pl -h' for options. 
 
 =head2 Return Value
 
@@ -63,6 +65,9 @@ if ($> == 0)
 
 my $config = GridShibCA::Config->new();
 
+# File readable only by us
+umask(0077);
+
 ######################################################################
 #
 # Initialize Logging
@@ -84,10 +89,11 @@ if (!defined($logger))
 use Getopt::Std;
 
 my $usage = <<"EOF";
-Usage: $0 <userId> <Identity Provider Id>
+Usage: $0 [<options>] <userId> <Identity Provider Id>
 
 Options are:
  -h                  Print help
+ -o <path>           Output credential to path.
 EOF
 
 my %options;
@@ -99,12 +105,7 @@ if ($options{h})
     exit(0);
 }
 
-my $credentialFilename = File::Temp::tmpnam();
-
-if (defined($options{o}))
-{
-    $credentialFilename = $options{o};
-}
+my $credentialFilename = $options{o} || File::Temp::tmpnam();
 
 my $userId = shift;
 my $idp = shift;
@@ -195,6 +196,8 @@ while (<$privKeyFile>)
 }
 close($privKeyFile);
 close(CRED);
+close($privKeyFile);
+unlink($privKeyFilename);
 
 # Print parsed certificate
 @args = ();
@@ -209,6 +212,15 @@ if (!$cmd->exec())
     exit(1);
 }
 print $cmd->getOutput();
+
+# If user specified output file for credential, leave it, otherwise
+# clean it up.
+if (!defined($options{o}))
+{
+    print "Cleaning up temporary credential ($credentialFilename)";
+    unlink($credentialFilename);
+}
+
 exit(0);
 
 ######################################################################
