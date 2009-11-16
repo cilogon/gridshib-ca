@@ -9,6 +9,7 @@ package GridShibCA::test::CGISessionTest;
 use base qw(Test::Unit::TestCase);
 
 use GridShibCA::CGISession;
+use GridShibCA::UserIdentity;
 
 sub new
 {
@@ -101,9 +102,20 @@ sub test_established
 sub test_clientSession
 {
     my $self = shift;
+    my $userId = GridShibCA::UserIdentity->new(
+	-authMethod => "AuthMethod",
+	-userId => "Joe User",
+	-idpId => "Jane Idp",
+	-clientHost => "localhost");
+    $self->{session}->fromUserIdentity($userId);
     my $clientSession = $self->{session}->createClientSession();
     $self->assert_not_null($clientSession);
     $self->assert_not_equals($clientSession->id(), $self->{session}->id());
+    my $clientUserId = $clientSession->userIdentity();
+    $self->assert_equals($clientUserId->authMethod(), $userId->authMethod());
+    $self->assert_equals($clientUserId->userId(), $userId->userId());
+    $self->assert_equals($clientUserId->idpId(), $userId->idpId());
+    $self->assert_equals($clientUserId->clientHost(), $userId->clientHost());
 }
 
 # Return true for import/use

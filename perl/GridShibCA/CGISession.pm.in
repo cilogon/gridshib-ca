@@ -77,7 +77,8 @@ sub new
 	[
 	 "UserId",
 	 "IdP",
-	 "ClientHost"
+	 "ClientHost",
+	 "AuthnMethod",
 	];
     # Define the cookie/parameter name we use
     CGI::Session->name($self->{config}->getParam("Session", "Name"));
@@ -396,16 +397,17 @@ sub createClientSession
     $self->_checkSession();
     $self->{logger}->debug("Creating new client session from session %s",
 			   $self->id());
-    my $session = $self->_newCGISession();
+    my $session = GridShibCA::CGISession->new();
     my $lifetime =
 	$self->{config}->getParam("Session",
 				  "CredentialRetrieverClientLifetime");
-    $session->expire($lifetime);
+    $session->createNew(-lifetime => $lifetime);
     $self->{logger}->debug("New client session %s created (lifeime: %d)",
 			   $session->id(), $lifetime);
 
     # Fill in new client session with values from current session
-    foreach my $param ($self->{clientSessionParams})
+    my $params = $self->{clientSessionParams};
+    foreach my $param (@$params)
     {
 	$session->param($param, $self->param($param));
     }
