@@ -45,7 +45,8 @@ sub new
 	throw GridShibCA::PolicyException("Missing userId argument");
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
-    $self->{filename} = $self->{config}->getParam("PolicyFilename");
+    $self->{filename} = $self->{config}->getParam("Authorization",
+						  "PolicyFilename");
     bless($self, $class);
     # Make sure our static $policy variable is set.
     if (!defined($policy))

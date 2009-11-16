@@ -41,9 +41,6 @@ GridShibCAURL = @GRIDSHIB_CA_URL@
 # Relative URL for Shibboleth-protected web space
 ShibProtectedURL = @SHIB_PROTECTED_URL@
 
-# Our Policy file
-PolicyFilename = ${GridShibCAConfDir}/policy.conf
-
 <Templates>
   # Templates for output to client.
   Path = ${GridShibCAConfDir}/templates
@@ -145,8 +142,8 @@ PolicyFilename = ${GridShibCAConfDir}/policy.conf
 </OpenId>
 
 <Authorization>
-  # Authorized Idps
-  AuthorizedIdpsFile = ${GridShibCAConfDir}/authorizedIdps.conf
+  # Our Policy file
+  PolicyFilename = ${GridShibCAConfDir}/policy.conf
 </Authorization>
 
 <CredRetrieverClients>
