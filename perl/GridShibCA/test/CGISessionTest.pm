@@ -98,6 +98,14 @@ sub test_established
     $self->assert_equals(0, $session->established());
 }
 
+sub test_clientSession
+{
+    my $self = shift;
+    my $clientSession = $self->{session}->createClientSession();
+    $self->assert_not_null($clientSession);
+    $self->assert_not_equals($clientSession->id(), $self->{session}->id());
+}
+
 # Return true for import/use
 1;
 

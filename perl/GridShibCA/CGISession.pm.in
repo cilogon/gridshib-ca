@@ -108,8 +108,7 @@ sub createNew
     my %args = @_;
 
     $self->{logger}->debug("Creating new session");
-    # Empty string == create new session instead of trying to use CGI
-    $self->{session} = CGI::Session->new("");
+    $self->{session} = $self->_newCGISession();
     if (!defined($self->{session}))
     {
 	throw GridShibCA::SessionException(
@@ -397,7 +396,7 @@ sub createClientSession
     $self->_checkSession();
     $self->{logger}->debug("Creating new client session from session %s",
 			   $self->id());
-    my $session = CGI::Session->new();
+    my $session = $self->_newCGISession();
     my $lifetime =
 	$self->{config}->getParam("Session",
 				  "CredentialRetrieverClientLifetime");
@@ -463,6 +462,23 @@ sub cookie
 These internal methods not intended for external use.
 
 =over 4
+
+=item _newCGISession()
+
+Create a new CGI::Session object, handling all its details.
+
+B<Arguments:> None
+
+B<Returns:> CGI::Session instance.
+
+=cut
+
+sub _newCGISession
+{
+    my $self = shift;
+    # Empty string == create new session instead of trying to use CGI
+    return CGI::Session->new("");
+}
 
 =item _checkSession()
 
