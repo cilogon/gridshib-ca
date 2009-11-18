@@ -155,6 +155,17 @@ sub invoke
 	$self->{logger}->info("Invoking %s module.", ref($self));
 	$self->_handleRequirements();
     }
+    catch GridShibCA::SessionExpiredException with
+    {
+	my $ex = shift;
+	$ex->flush();
+	$self->_handleExpiredSession();
+    }
+    catch GridShibCA::SessionException with
+    {
+	my $ex = shift;
+	handleError("No authentication session", $ex);
+    }
     otherwise
     {
 	my $ex = shift;
@@ -197,6 +208,31 @@ sub doCommand
 These internal methods not intended for external use.
 
 =over 4
+
+=item _handleExpiredSession
+
+Handle situation when session is required but has expired.
+Displays SessionExpired template.
+
+B<Arguments:> None
+
+B<Returns:> Doesn't
+
+=cut
+
+sub _handleExpiredSession
+{
+    my $self = shift;
+
+    $self->{logger}->debug("Handling expired session");
+    my $authnMethod = $self->{session}->param("AuthnMethod");
+    my $authnURL = $self->{config}->getParam("AuthMethods", $authnMethod);
+    $self->_displayHTML(
+	"SessionExpired",
+	AuthnMethod => $authnMethod,
+	AuthnURL => $authnURL);
+    $self->_exit();
+}
 
 =item _addCookie()
 
@@ -290,9 +326,7 @@ command.
 
 B<arguments:> None
 
-B<Returns:> Nothing. 
-
-Throws GridShibCA::RequirementsException on Error.
+B<Returns:> Nothing, throws exception on error.
 
 =cut
 sub _handleRequirements
@@ -324,24 +358,19 @@ sub _handleRequirements
     {
 	try
 	{
+	    $self->{logger}->debug("Checking for required session.");
 	    $self->{session} = $self->{config}->getCGISession();
 	    $self->{session}->fromCGI($self->{cgi});
 	}
 	catch GridShibCA::SessionExpiredException with
 	{
-	    # XXX should redirect to login.cgi here
 	    my $ex = shift;
-	    $self->{logger}->logException($ex);
-	    throw GridShibCA::RequirementsException(
-		"Session expired.");
+	    $ex->throw();
 	}
 	catch GridShibCA::SessionException with
 	{
-	    # XXX Should redirect use to login.cgi here
 	    my $ex = shift;
-	    $self->{logger}->logException($ex);
-	    throw GridShibCA::RequirementsException(
-		"Failed to establish session.");
+	    $ex->throw();
 	}
 	otherwise
 	{
@@ -359,8 +388,6 @@ sub _handleRequirements
 	    $self->{logger}->debug("Checking for optional session.");
 	    $self->{session} = $self->{config}->getCGISession();
 	    $self->{session}->fromCGI($self->{cgi});
-	    $self->{logger}->debug("Session accepted: %s",
-		$self->{session}->id());
 	}
 	catch GridShibCA::SessionExpiredException with
 	{
@@ -436,6 +463,24 @@ sub _redirect
     my $url = shift ||
 	throw GridShibCA::Exception("Missing url argument");
     print $self->{cgi}->redirect($url);
+}
+
+=item _exit()
+
+Exit. Does nothing special, just here for future hook point.
+
+B<Arguments:> Options status, zero is default.
+
+B<Returns:> Doesn't.
+
+=cut
+
+sub _exit
+{
+    my $self = shift;
+    my $status = shift || 0;
+    $self->{logger}->debug("Exiting.");
+    exit($status);
 }
 
 =item _requirements()

@@ -1,0 +1,26 @@
+<html>
+<!--
+This template is used when the user has an expired session.
+
+Values filled in for this page (besides default values):
+ AuthnMethod - name of method used previously used to authentication.
+ AuthnURL - url used to authenticate via AuthMethod.
+-->
+<head>
+  <title>GridShib CA: Session expired</title>
+</head>
+<body>
+<center>
+<h1>GridShib CA</h1>
+(Version {$Version})
+<p>
+Your session has expired. Please re-authenticated via
+<a href="{ cleanURL($AuthnURL); }">{ $AuthnMethod }</a>
+</p>
+<p>
+For help you can contact the administrator of this GridShib-CA at
+{$ContactAddress}
+</p>
+</center>
+</body>
+</html>

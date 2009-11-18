@@ -179,6 +179,7 @@ TEMPLATE_FILES="\
 	templates/openid-logon-form.html \	
 	templates/login.html \
 	templates/python.html \
+	templates/session-expired.html \
 	"
 AC_SUBST(TEMPLATE_FILES)
 

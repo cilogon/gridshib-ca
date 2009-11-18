@@ -59,6 +59,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
   OpenIdLogonForm = ${Path}/openid-logon-form.html
 
+  SessionExpired = ${Path}/session-expired.html
+
   # JNLP file template used by launchGSCA.jnlp
   JNLPTemplate = ${Path}/GSCA.jnlp
 </Templaes>
