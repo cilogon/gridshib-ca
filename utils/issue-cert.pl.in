@@ -217,7 +217,7 @@ print $cmd->getOutput();
 # clean it up.
 if (!defined($options{o}))
 {
-    print "Cleaning up temporary credential ($credentialFilename)";
+    print "Cleaning up temporary credential ($credentialFilename)\n";
     unlink($credentialFilename);
 }
 
