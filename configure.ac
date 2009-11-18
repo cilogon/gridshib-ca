@@ -178,8 +178,10 @@ TEMPLATE_FILES="\
 	templates/openid-cancel.html \
 	templates/openid-logon-form.html \	
 	templates/login.html \
+	templates/logout.html \
 	templates/python.html \
 	templates/session-expired.html \
+	templates/session-missing.html \
 	"
 AC_SUBST(TEMPLATE_FILES)
 
@@ -249,6 +251,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/Logon.pm \
+	perl/GridShibCA/Logout.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
 	perl/GridShibCA/Policy.pm \	

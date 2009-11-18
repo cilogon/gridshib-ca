@@ -164,7 +164,8 @@ sub invoke
     catch GridShibCA::SessionException with
     {
 	my $ex = shift;
-	handleError("No authentication session", $ex);
+	$ex->flush();
+	$self->_handleMissingSession();
     }
     otherwise
     {
@@ -231,6 +232,29 @@ sub _handleExpiredSession
 	"SessionExpired",
 	AuthnMethod => $authnMethod,
 	AuthnURL => $authnURL);
+    $self->_exit();
+}
+
+=item _handleMissingSession
+
+Handle situation when session is required but is missing.
+Displays SessionMissing template.
+
+B<Arguments:> None
+
+B<Returns:> Doesn't
+
+=cut
+
+sub _handleMissingSession
+{
+    my $self = shift;
+
+    $self->{logger}->debug("Handling missing session");
+    my %signOnMethods = $self->{config}->getSection("AuthMethods");
+    $self->_displayHTML(
+	"SessionMissing",
+	"SignOnMethods" => \%signOnMethods);
     $self->_exit();
 }
 

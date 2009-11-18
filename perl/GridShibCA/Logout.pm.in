@@ -1,0 +1,75 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::Logout
+
+Destory any existing session.
+
+=cut
+
+package GridShibCA::Logout;
+
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::Exception qw(:try);
+
+=head2 Methods
+
+=over 4
+
+=item doCommand()
+
+Handle logout.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+    if ($self->{session}->established())
+    {
+	$self->{session}->destroy();
+    }
+    $self->_displayHTML("LogoutTemplate");
+}
+
+=item _requirements()
+
+Return protection requirements of this command.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::ACCEPT_SESSION;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

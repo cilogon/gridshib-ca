@@ -49,6 +49,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   
   LogonTemplate = ${Path}/login.html
 
+  LogoutTemplate = ${Path}/logout.html
+
   DebugTemplate = ${Path}/debug.html
 
   PythonClientTemplate = ${Path}/python.html
@@ -60,6 +62,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   OpenIdLogonForm = ${Path}/openid-logon-form.html
 
   SessionExpired = ${Path}/session-expired.html
+
+  SessionMissing = ${Path}/session-missing.html
 
   # JNLP file template used by launchGSCA.jnlp
   JNLPTemplate = ${Path}/GSCA.jnlp
@@ -128,6 +132,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Allow for download of Python client
   PythonClient = GridShibCA::PythonClient
 
+  Logout = GridShibCA::Logout
 </Commands>
 
 <AuthMethods>
