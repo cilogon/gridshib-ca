@@ -31,7 +31,11 @@ sub set_up
 
 sub tear_down
 {
-    # Fixture cleanup
+    my $self = shift;
+    if ($self->{session}->established())
+    {
+	$self->{session}->destroy();
+    }
 }
 
 sub test_sessionException
@@ -60,6 +64,7 @@ sub test_fromId
     my $session2 = GridShibCA::CGISession->new();
     $self->assert_not_null($session2);
     $session2->fromId($id);
+    $session2->destroy();
 }
 
 sub test_param
