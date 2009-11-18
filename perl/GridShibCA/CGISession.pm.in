@@ -69,7 +69,7 @@ sub new
 {
     my $class = shift;
     my $self = {};
-    $self->{session} = undef; # CGI::Session object
+    $self->{session} = undef; # will be CGI::Session object
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     # Parameters to be copied into client sessions
@@ -117,7 +117,7 @@ sub createNew
 	    -logText => "Failed to create new session object: " . CGI::Session->errstr());
     }
     my $lifetime = $args{-lifetime} || $self->{defaultLifetime};
-    $self->{session}->expire($lifetime);
+    $self->param("lifetime", $lifetime);
     $self->{logger}->debug("Session established: %s (lifetime %d)",
 			   $self->id(), $lifetime);
 }
@@ -145,6 +145,10 @@ sub fromId
     $self->{logger}->debug("Loading session (%s)", $id);
     $self->{session} = CGI::Session->load($id);
     $self->_checkSession();
+    if ($self->isExpired())
+    {
+	throw GridShibCA::SessionExpiredException("Session expired");
+    }
     $self->{logger}->debug("Session (%s) loaded.", $id);
     return 1;
 }
@@ -172,6 +176,10 @@ sub fromCGI
 
     $self->{logger}->debug("CGISession: Loading session via CGI");
     $self->{session} = CGI::Session->load($cgi);
+    if ($self->isExpired())
+    {
+	throw GridShibCA::SessionExpiredException("Session expired");
+    }
     $self->_checkSession();
     $self->{logger}->debug("Session %s established.", $self->id());
     return 1;
@@ -225,20 +233,24 @@ B<Returns:> 1 if established session, 0 otherwise
 sub established
 {
     my $self = shift;
-    if (!defined($self->{session}))
+    try
+    {
+	$self->_checkSession();
+	return 1;
+    }
+    otherwise
     {
 	return 0;
-    }
-    if (!defined($self->{session}->id()))
-    {
-	return 0;
-    }
-    return 1;
+    };
+    # Return result of try or otherwise block
 }
 
 =item isExpired()
 
 Is the session expired?
+
+Note: CGI::Session determins expiration as time elapsed since last
+access, but we determine it as session since creation (ctime).
 
 B<Arguments:> None
 
@@ -249,8 +261,21 @@ B<Returns:> 1 if session expired, 0 otherwise.
 sub isExpired
 {
     my $self = shift;
-    $self->_checkSession();
-    return $self->{session}->is_expired();
+    if (!defined($self->{session}))
+    {
+	throw GridShibCA::SessionException("Session parameter undefined");
+    }
+    my $ctime = $self->{session}->ctime();
+    my $lifetime = $self->param("lifetime");
+    my $age = time() - $ctime;
+    if ($age > $lifetime)
+    {
+	$self->{logger}->debug("Session (%s) has expired (age %d seconds)",
+			       $self->{session}->id(),
+			       $age);
+	return 1;
+    }
+    return 0;
 }
 
 =item checkExpired()
@@ -288,12 +313,12 @@ B<Returns:> Nothing
 sub destroy
 {
     my $self = shift;
-    $self->_checkSession();
-
-    $self->{logger}->debug("Destroying session: %s", $self->{session}->id());
-    $self->{session}->delete();
+    my $session = $self->{session} || return;
+    $self->{logger}->debug("Destroying session: %s",
+			   $session->id());
+    $session->delete();
     # Recommended practice says use flush() after delete().
-    $self->{session}->flush();
+    $session->flush();
     $self->{session} = undef;
 }
 
@@ -486,6 +511,8 @@ sub _newCGISession
 
 Check and make sure we have a valid session.
 
+Does not check expiration.
+
 B<Arguments>: None
 
 B<Returns:> Nothing.
@@ -497,39 +524,23 @@ Throws GridShibCA::SessionException or descendant on error.
 sub _checkSession
 {
     my $self = shift;
-
-    if (!defined($self->{session}))
-    {
-	$self->{logger}->debug("Internal error: Session parameter is undefined");
+    my $session = $self->{session} ||
 	throw GridShibCA::SessionException("Internal error: session not defined");
-    }
 
-    my $id = $self->{session}->id();
-    if (!defined($id))
-    {
-	$self->{logger}->debug("Session has undefined id.");
-	throw GridShibCA::SessionException("Session id not defined");
-    }
-
-    if ($self->{session}->is_expired())
-    {
-	$self->{logger}->debug("Session (%s) has expired", $id);
-
-	throw GridShibCA::SessionExpiredException("Session expired");
-    }
-
-    if ($self->{session}->is_empty())
+    if ($session->is_empty())
     {
 	my $errstr = $self->{session}->errstr() || "No error information.";
 
-	my $logText = sprintf("Session (%s) is empty: %s", $id, $errstr);
-
-	$self->{logger}->debug($logText);
+	my $logText = sprintf("Session is empty: %s", $errstr);
 
 	throw GridShibCA::SessionInvalidException(
 	    "Invalid session.",
 	    -logText => $logText);
     }
+
+    # Final sanity check
+    my $id = $session->id() ||
+	throw GridShibCA::SessionException("Session id not defined");
 }
 
 =back
