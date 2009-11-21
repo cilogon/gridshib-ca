@@ -345,6 +345,7 @@ dnl perl, but don't always seem to be
 PERL_MODULES_TO_CHECK=" \
 			CGI \
 			Config::General \
+			Date::Parse \
 			File::Basename \
 			FreezeThaw \
 			FileHandle \

@@ -32,6 +32,7 @@ Directory in which to store certificates.
 
 package GridShibCA::CertRegistry;
 
+use Date::Parse;  # provides str2time()
 use File::Spec;
 use FileHandle;
 
@@ -89,9 +90,7 @@ sub registerCert()
     my $hash = $x509->hash();
     my $timeString = localtime();
     my $timeSeconds = time();
-    # TODO: $x509->notAfter() returns a string of the form "Jun 20
-    # 11:50:06 2009 GMT". Convert to seconds with Date::Parse
-    my $expires = $x509->notAfter();
+    my $expires = str2time($x509->notAfter());
     my $certPem = $x509->as_string();
 
     my $registryDir = $self->{config}->getParam("CertRegistry", "Path");
