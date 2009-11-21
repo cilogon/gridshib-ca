@@ -176,6 +176,24 @@ sub err
     $self->log("err", @_);
 }
 
+=item error()
+
+Log an error message. Alias for err().
+
+B<Arguments:>
+
+I<$format, @args> - as would be presented to sprintf()
+
+B<Returns:> Nothing
+
+=cut
+
+sub error
+{
+    my $self = shift;
+    $self->err(@_);
+}
+
 =item logException()
 
 Handle logging of an GridShibCA::Exception.
