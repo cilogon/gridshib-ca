@@ -86,7 +86,6 @@ class GridShibCAException(Exception):
 ######################################################################
 
 class GridShibCAURL:
-    # TODO: Set User-Agent
 
     def __init__(self, url):
         global version
