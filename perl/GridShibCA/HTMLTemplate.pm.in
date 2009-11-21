@@ -66,14 +66,43 @@ Throws GridShibCA::TemplateException on error.
 sub getText
 {
     my $self = shift;
+    my %params = ();
 
-    my $header = $self->{cgi}->header(
-	-cookies=>$self->{cookies}
-	);
+    if (defined($self->{cookies}))
+    {
+	$params{-cookies} = $self->{cookies};
+    }
+
+    if (defined($self->{status}))
+    {
+	$params{-status} = $self->{status};
+    }
+	    
+    my $header = $self->{cgi}->header(%params);
     my $text = $self->SUPER::getText();
 
     return $header . $text;
 }
+
+=item setStatus()
+
+Set status to be returns.
+
+B<Arguments:> Status as integer or string (e.g. "401 Authorized denied")
+
+B<Returns:> Nothing
+
+=cut
+
+sub setStatus
+{
+    my $self = shift;
+    my $status = shift ||
+	throw GridShibCA::Exception("Undefined status argument");
+
+    $self->{status} = $status;
+}
+
 
 =item setCookies()
 
