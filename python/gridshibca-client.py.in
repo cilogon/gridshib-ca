@@ -154,10 +154,19 @@ class GridShibCACredentialIssuerURL(GridShibCAURL):
             "certificateRequest" : requestPEM,
             }
         debug("Posting request")
-        certificatePEM = self.post(postFields)
+        try:
+            certificatePEM = self.post(postFields)
+        except urllib2.HTTPError, err:
+            if err.code == 401:
+                raise GridShibCAException("Authentication failed.")
+            else:
+                raise err
         debug("Got response:\n%s" % certificatePEM)
-        certificateX509 = crypto.load_certificate(
-            crypto.FILETYPE_PEM, certificatePEM)
+        try:
+            certificateX509 = crypto.load_certificate(
+                crypto.FILETYPE_PEM, certificatePEM)
+        except:
+            raise GridShibCAException("Error processing cerificate from server")
         credential.setCertificate(certificateX509)
         return credential
 
@@ -248,8 +257,8 @@ def main(argv=None):
     progress("Using GridShib CA server at %s" % options.serverURL)
     try:
         credential = credIssuer.requestCertificate(authToken)
-    except urllib2.HTTPError, err:
-        print "Error requesting credential:\n", err
+    except Exception, err:
+        print "Error retrieving credential: ", err
         sys.exit(1)
     path = GSI.defaultProxyPath()
     debug("Got credential. Writing.")
