@@ -18,7 +18,6 @@ Todo:
  * Error checking
 
 GridShib-CA Version: @PACKAGE_VERSION_STRING@
-File version: $Id$
 """
 
 import getpass
@@ -62,20 +61,27 @@ def progress(message):
     if displayProgress: print message
 
 ######################################################################
-#
-# Other utility functions
 
-def defaultGlobusProxyPath():
-    """Return th default location Globus will look for a credential."""
-    # I tried using tempfile.gettempdir() here, but it always returns
-    # 'temporary' directories as opposed to, e.g., .tmp:
-    # e.g. /var/folders/t6/t6puj+oYFsmrOCU8+6+IHU+++TM/-Tmp-
-    if sys.platform == 'win32':
-        tempdir = "C:\temp" # XXX This is my best guess
-    else:
-        tempdir = "/tmp"
-    filename = "x509up_u%d" % os.getuid()
-    return os.path.join(tempdir, filename)
+class GSI:
+    """Grid Security Infrastucture utility functions."""
+
+    @staticmethod
+    def defaultProxyPath():
+        """Return the default location Globus will look for a credential."""
+        # I tried using tempfile.gettempdir() here, but it always returns
+        # 'temporary' directories as opposed to, e.g., .tmp:
+        # e.g. /var/folders/t6/t6puj+oYFsmrOCU8+6+IHU+++TM/-Tmp-
+        if sys.platform == 'win32':
+            tempdir = "C:\temp" # XXX This is my best guess
+        else:
+            tempdir = "/tmp"
+        filename = "x509up_u%d" % os.getuid()
+        return os.path.join(tempdir, filename)
+
+    @staticmethod
+    def userCertificatesPath():
+         """Return path to users certificates directory."""
+         return os.path.expanduser(os.path.join("~", ".globus", ".certificates"))
 
 ######################################################################
 
@@ -105,6 +111,37 @@ class GridShibCAURL:
         response = connection.read()
         return response
 
+class GridShibCATrustRootsURL(GridShibCAURL):
+    """Download trust roots and store in ~/.globus/certificates."""
+
+    def retrieveTrustRoots(self):
+        """Download trust roots and store in ~/.globus/certificates."""
+        debug("Requesting trust roots")
+        postFields  = {
+            "command" : "TrustRoots",
+            }
+        trustRoots = self.post(postFields).splitlines()
+        certsPath = GSI.userCertificatesPath()
+        debug("Writing trust roots to %s" % certsPath)
+        if not os.path.isdir(certsPath):
+            os.makedirs(certsPath, 0700)
+        file = None
+        while len(trustRoots):
+            line = trustRoots.pop(0)
+            if line.startswith("-----File:"):
+                filename = os.path.basename(line[10:])
+                debug("New file: %s" % filename)
+                path = os.path.join(certsPath, filename)
+                if file:
+                    file.close()
+                file = open(path, "w")
+            else:
+                if file:
+                    file.write(line)
+                # If file not open yes, silently ignore line
+        if file:
+            file.close()
+            
 class GridShibCACredentialIssuerURL(GridShibCAURL):
     def requestCertificate(self, authToken):
         """Request certificate from GridShib-CA. Returns X509Credential object."""
@@ -191,6 +228,9 @@ def main(argv=None):
                       help="run quietly")
     parser.add_option("-s", "--server", dest="serverURL", default=serverURL,
                       help="use URL for server address", metavar="URL")
+    parser.add_option("-T", "--trustroots",
+                      dest="getTrustRoots", action="store_true", default=False,
+                      help="download trust roots")
     (options, args) = parser.parse_args()
     displayProgress = not options.quiet
     displayDebug = options.debug
@@ -211,10 +251,19 @@ def main(argv=None):
     except urllib2.HTTPError, err:
         print "Error requesting credential:\n", err
         sys.exit(1)
-    path = defaultGlobusProxyPath()
+    path = GSI.defaultProxyPath()
     debug("Got credential. Writing.")
     credential.writeGlobusCredential(path)
-    print "Success. Credential written to %s" % path
+    print "Credential written to %s" % path
+    if options.getTrustRoots:
+        try:
+            print "Retrieving trust roots."
+            url = GridShibCATrustRootsURL(options.serverURL)
+            url.retrieveTrustRoots()
+        except urllib2.HTTPError, err:
+            print "Error retrieving trust roots:\n", err
+            sys.exit(1)
+    print "Success."
     sys.exit(0)
 
 if __name__ == "__main__":
