@@ -347,12 +347,11 @@ PERL_MODULES_TO_CHECK=" \
 			Config::General \
 			Date::Parse \
 			File::Basename \
-			FreezeThaw \
-			FileHandle \
 			File::Copy \
 			File::Path \
 			File::Spec \
 			File::Temp \
+			FileHandle \
 			Getopt::Std \
 			IPC::Open3 \
 			MIME::Base64 \
