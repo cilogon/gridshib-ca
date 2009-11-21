@@ -39,27 +39,18 @@ B<Returns:> 1 on success, 0 on error.
 sub doCommand
 {
     my $self = shift;
+    my $status = 1;
 
     try
     {
-	my $provideTrustroots = $config->getParamBoolean(
-	    "TrustRoots", "ProvideTrustRoots");
+	my $provideTrustroots =
+	    $self->{config}->getParamBoolean("TrustRoots",
+						 "ProvideTrustRoots");
 	if (!$provideTrustroots)
 	{
-	    throw GridShibCA::Exception("Configured not to provide trust roots");
+	    throw GridShibCA::Exception("Trust roots disabled.");
 	}
-    }
-    otherwise
-    {
-	my $ex = shift;
-	$self->{logger}->info("Trusts requested but disabled.",
-	    -logText => $ex->text());
-	print $self->{cgi}->header(-type => "text/plain", 
-				   -status => "401 Proving of trust roots disabled.");
-    };
 
-    try
-    {
 	my $trustrootsPath = $self->{config}->getParam("TrustRoots",
 						       "TrustRootsPath");
 	print $self->{cgi}->header("text/plain");
@@ -68,13 +59,16 @@ sub doCommand
     otherwise
     {
 	my $ex = shift;
-	# Too late to return error to client, just log.
+	# XXX Some possibility here we already printed a header.
+	print $self->{cgi}->header(-type => "text/plain", 
+				   -status => "401 Providing of trust roots disabled.");
+
 	$self->{logger}->error(
 	    "Error providing trust roots: " . $ex->text());
-	exit();
+	$status = 0;
     };
 
-    return 1;
+    return $status;
 }
 
 =item _handleDirectory
