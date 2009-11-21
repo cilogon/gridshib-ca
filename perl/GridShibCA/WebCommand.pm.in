@@ -231,7 +231,8 @@ sub _handleExpiredSession
     $self->_displayHTML(
 	"SessionExpired",
 	AuthnMethod => $authnMethod,
-	AuthnURL => $authnURL);
+	AuthnURL => $authnURL,
+	"-status" => 401);
     $self->_exit();
 }
 
@@ -254,7 +255,8 @@ sub _handleMissingSession
     my %signOnMethods = $self->{config}->getSection("AuthMethods");
     $self->_displayHTML(
 	"SessionMissing",
-	"SignOnMethods" => \%signOnMethods);
+	"SignOnMethods" => \%signOnMethods,
+	"-status" => 401);
     $self->_exit();
 }
 
@@ -285,7 +287,8 @@ B<Arguments:>
 
 C<$filename> Name of HTML template in gridshib-ca.conf Templates section.
 
-C<%mappings> Mappings for subsitution
+C<%mappings> Mappings for subsitution.  Can include -status, which
+will be used for the HTTP status of the response.
 
 B<Returns:> True on success, False on error.
 
@@ -299,7 +302,13 @@ sub _displayHTML
 
     my $template = $self->{config}->getHTMLTemplate($templateName);
     $template->setCookies($self->{cookies});
-
+    if (defined($mappings{-status}))
+    {
+	$self->{logger}->debug("Setting response status to %s",
+			       $mappings{-status});
+	$template->setStatus($mappings{-status});
+    }
+    
     # Add some ubiquitous mappings
     $mappings{GridShibCAURL} = $self->{config}->getParamURL("URLs", "WebApp");
     $mappings{MyURL} = $self->{cgi}->url(-full => 1);
@@ -318,9 +327,11 @@ Display HTML template with given name.
 
 B<Arguments:>
 
-C<$message> Error message
+C<$message> Error message. 
 
-C<%mappings> Optional additional mappings for subsitution
+C<%mappings> Optional additional mappings for subsitution.  Can
+include -status, which will be used for the HTTP status of the
+response. If a status is not give, 501 is used.
 
 B<Returns:> Nothing
 
@@ -340,6 +351,10 @@ sub _displayHTMLError
 	%mappings = ();
     }
     $mappings{Error} = $message;
+    if (!defined($mappings{-status}))
+    {
+	$mappings{-status} = 501;
+    }
     $self->_displayHTML("ErrorTemplate", %mappings);
 }
 
