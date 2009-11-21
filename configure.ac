@@ -259,6 +259,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/SAMLExtension.pm \
 	perl/GridShibCA/ShibLogon.pm \
 	perl/GridShibCA/Template.pm \
+	perl/GridShibCA/TrustRoots.pm \
 	perl/GridShibCA/UserIdentity.pm \
 	perl/GridShibCA/WebApp.pm \
 	perl/GridShibCA/WebCommand.pm \

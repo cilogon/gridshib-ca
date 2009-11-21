@@ -18,10 +18,6 @@ ConfigVersion = 2
 # by default. (Should be "False" to disallow, or "True" to allow.)
 allowPortalDelegation = False
 
-# Directory of trusted CA certificates to pass to client
-# Can be set to /dev/null to not pass any
-TrustedCADirectory = /etc/grid-security/certificates
-
 # Set to "True" to enable debugging on server
 debug = False
 
@@ -132,6 +128,9 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Allow for download of Python client
   PythonClient = GridShibCA::PythonClient
 
+  # Download trust roots
+  TrustRoots = GridShibCA::TrustRoots
+
   Logout = GridShibCA::Logout
 </Commands>
 
@@ -207,6 +206,16 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   Name = GRIDSHIBCA_SESSION_ID
 
 </Session>
+
+<TrustRoots>
+  # Trust roots to provide to clients
+
+  # Do we provide trust roots to clients?
+  ProvideTrustRoots = true
+
+  # Directory of trusted CA certificates to pass to client
+  TrustRootsPath = /etc/grid-security/certificates
+</TrustRoots>
 ######################################################################
 #
 # Configuration files

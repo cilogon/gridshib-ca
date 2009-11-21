@@ -1,0 +1,210 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::TrustRoots
+
+Provide trust roots.
+
+=cut
+
+package GridShibCA::TrustRoots;
+
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
+use DirHandle;
+use FileHandle;
+use File::Spec;
+use GridShibCA::Exception qw(:try);
+
+=head2 Methods
+
+=over 4
+
+=item doCommand()
+
+Provide trust roots to client.
+
+B<Arguments:> None
+
+B<Returns:> 1 on success, 0 on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+
+    try
+    {
+	my $provideTrustroots = $config->getParamBoolean(
+	    "TrustRoots", "ProvideTrustRoots");
+	if (!$provideTrustroots)
+	{
+	    throw GridShibCA::Exception("Configured not to provide trust roots");
+	}
+    }
+    otherwise
+    {
+	my $ex = shift;
+	$self->{logger}->info("Trusts requested but disabled.",
+	    -logText => $ex->text());
+	print $self->{cgi}->header(-type => "text/plain", 
+				   -status => "401 Proving of trust roots disabled.");
+    };
+
+    try
+    {
+	my $trustrootsPath = $self->{config}->getParam("TrustRoots",
+						       "TrustRootsPath");
+	print $self->{cgi}->header("text/plain");
+	$self->_handleDirectory($trustrootsPath);
+    }
+    otherwise
+    {
+	my $ex = shift;
+	# Too late to return error to client, just log.
+	$self->{logger}->error(
+	    "Error providing trust roots: " . $ex->text());
+	exit();
+    };
+
+    return 1;
+}
+
+=item _handleDirectory
+
+Output the trustroots in the given directory to the client.
+
+B<Arguments:> Path
+
+B<Returns:> Nothing. Fails silently and logs error.
+
+=cut
+
+sub _handleDirectory
+{
+    my $self = shift;
+    my $path = shift ||
+	throw GridShibCA::Exception("Missing path argument");
+
+    if (! -x $path)
+    {
+	$self->{logger}->error("Trust roots path does not exist: $path");
+	return;
+    }
+
+    if (! -d $path)
+    {
+	$self->{logger}->error("Trust roots path is not directory: $path");
+	return;
+    }
+
+    if (! -r $path)
+    {
+	$self->{logger}->error("Trust roots path is not readable: $path");
+	return;
+    }
+
+    my $dir = new DirHandle($path);
+    if (!defined($dir))
+    {
+	$self->{logger}->error("Error openig trust roots path $path: $!");
+	return;
+    }
+
+    while (defined(my $filename = $dir->read()))
+    {
+	# Skip "." and ".."
+	if (($filename eq ".") ||
+	    ($filename eq ".."))
+	{
+	    next;
+	}
+	my $filepath = File::Spec->catfile($path, $filename);
+	$self->_handleFile($filepath);
+    }
+}
+
+=item _handleFile
+
+Outputs the trustroot information in the given file.
+
+B<Arguments:> Path
+
+B<Returns:> Nothing. Fails silently and logs error.
+
+=cut
+
+sub _handleFile
+{
+    my $self = shift;
+    my $filename = shift ||
+	throw GridShibCA::Exception("Missing file path argument");
+
+    # If it's not a normal file, skip it
+    if (! -f $filename)
+    {
+	$self->{logger}->debug("Trusted CA file not a normal file: $filename");
+	return;
+    }
+
+    if (! -r $filename)
+    {
+	$self->{logger}->debug("Trusted CA file not readable: $filename");
+	return;
+    }
+
+    my $file = new FileHandle($filename);
+    if (!defined($file))
+    {
+	$self->{logger}->error("Trusted CA file open failed: $filename: $!");
+	return;
+    }
+    my @lines = $file->getlines();
+    $file->close();
+
+    print "-----File: $filename\n";
+    foreach (@lines)
+    {
+	# Make sure we have a carriage return at the end of the line
+	chomp($_);
+	print $_ . "\n";
+    }
+}
+
+=item _requirements()
+
+Return protection requirements of this command.
+
+B<Arguments:> None
+
+B<Returns:> Requirements value
+
+=cut
+
+sub _requirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_HTTPS;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
