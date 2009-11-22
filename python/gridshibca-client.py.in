@@ -253,7 +253,8 @@ def main(argv=None):
     if options.authToken:
         authToken = options.authToken
     else:
-        authToken = getpass.getpass("Please enter your Authentication token: ");
+        # Strip string since put'n'paste seems to add occassional whitespace
+        authToken = getpass.getpass("Please enter your Authentication token: ").strip();
     progress("Using GridShib CA server at %s" % options.serverURL)
     try:
         credential = credIssuer.requestCertificate(authToken)
