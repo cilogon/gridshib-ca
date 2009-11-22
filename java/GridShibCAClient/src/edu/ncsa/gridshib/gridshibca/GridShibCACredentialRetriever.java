@@ -153,19 +153,17 @@ public class GridShibCACredentialRetriever
         this.message("Successfully wrote credential to disk.");
         view.displayCredentalInfo(credential);
 
-        if (GridShibCAProperties.isSet("trustURL"))
+        if (GridShibCAProperties.isSet("DownloadCAs"))
         {
-            GridShibCATrustRootsURL trustRootsURL;
-
             try
             {
                 message("Retrieving trusted CAs.");
-                URL trustURL = GridShibCAProperties.getPropertyAsURL("trustURL");
-                String shibSession = GridShibCAProperties.getProperty("shibsession");
-                trustRootsURL = new GridShibCATrustRootsURL(trustURL);
+                URL gridshibCAURL = GridShibCAProperties.getPropertyAsURL("WebAppURL");
+                GridShibCATrustRootsURL trustRootsURL = new GridShibCATrustRootsURL(gridshibCAURL);
+                trustRootsURL.getTrustRoots();
             } catch (java.net.MalformedURLException e)
             {
-                error("Could not parse redirect URL", e);
+                error("Could not parse web application URL", e);
                 return;
             } catch (Exception e)
             {

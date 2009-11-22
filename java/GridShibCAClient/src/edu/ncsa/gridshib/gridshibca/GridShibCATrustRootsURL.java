@@ -14,12 +14,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.HashMap;
 import org.globus.util.ConfigUtil;
 
 /**
  * URL for GridShibCA trusted CA server.
  */
-public class GridShibCATrustRootsURL extends GridShibCAURL
+public class GridShibCATrustRootsURL
+        extends GridShibCAURL
 {
     // String used to separate files in stream
     private String prefix = "-----File:";
@@ -30,14 +32,19 @@ public class GridShibCATrustRootsURL extends GridShibCAURL
     }
 
     public void getTrustRoots()
-        throws IOException
+            throws IOException
     {
         File trustedCAPath = getUserCADir();
         GridShibCAClientLogger.debugMessage("Writing trusted CAs to " + trustedCAPath);
-        this.openConnection();
 
+
+        GridShibCAClientLogger.debugMessage("Writing request to server for trust roots...");
+        this.openConnection();
+        this.writeRequest();
+
+        GridShibCAClientLogger.debugMessage("Reading trust roots...");
         BufferedReader trustedCAStream =
-                new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                new BufferedReader(new InputStreamReader(this.conn.getInputStream()));
         String line;
         FileOutputStream out = null;
         while ((line = trustedCAStream.readLine()) != null)
@@ -45,13 +52,13 @@ public class GridShibCATrustRootsURL extends GridShibCAURL
             if (line.startsWith(prefix))
             {
                 // Start of new file
-                String filename = line.substring(prefix.length()).trim();
+                File origFile = new File(line.substring(prefix.length()).trim());
                 if (out != null)
                 {
                     out.close();
                     out = null;
                 }
-                File file = new File(trustedCAPath + File.separator + filename);
+                File file = new File(trustedCAPath + File.separator + origFile.getName());
                 if (file.exists())
                 {
                     GridShibCAClientLogger.debugMessage("File " + file + " already exists. Skipping.");
@@ -76,8 +83,20 @@ public class GridShibCATrustRootsURL extends GridShibCAURL
         }
     }
 
+    /**
+     * Send a request to the GridShibCA server for Trust Roots.
+     * @throws java.io.IOException
+     */
+    private void writeRequest()
+            throws IOException
+    {
+        HashMap values = new HashMap();
+        values.put("command", "TrustRoots");
+        this.post(values);
+    }
+
     private File getUserCADir()
-        throws IOException
+            throws IOException
     {
         File trustedCAPath = new File(ConfigUtil.globus_dir + "certificates" + File.separator);
         if (!trustedCAPath.exists())

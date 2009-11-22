@@ -17,6 +17,8 @@ package GridShibCA::LaunchJNLP;
 # Inherit WebCommand
 use base qw(GridShibCA::LaunchClient);
 
+use GridShibCA::Exception qw(:try);
+
 =head2 Methods
 
 =over 4
@@ -99,6 +101,19 @@ sub _setTemplateMappings
     my $codebase =
 	$self->{cgi}->url(-base => 1) .
 	$self->{config}->getParam("GridShibCAURL");
+    my @Arguments = ();
+    try
+    {
+	my $provideTrustRoots = $self->{config}->getParam("TrustRoots",
+							  "ProvideTrustRoots");
+	push(@Arguments, "DownloadCAs=$provideTrustRoots");
+    }
+    otherwise
+    {
+	my $ex = shift;
+	$self->{logger}->debug("Error getting ProvideTrustRoots: " . $ex->text());
+    };
+    $template->addMapping("Arguments", \@Arguments);
     $template->addMapping("CodeBase", $codebase);
 }
 
