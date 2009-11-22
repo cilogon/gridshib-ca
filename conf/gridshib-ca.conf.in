@@ -17,15 +17,14 @@ ConfigVersion = 2
 # Set to "True" to enable debugging on server
 debug = False
 
-# Set to "True" to enable debugging in the CredentialRetriever client
-clientDebug = False
-
-# URL to show to user after credential acquisition is successful.
-# Set to value NONE to disable.
-redirectURL = NONE
+# Contact address for this deployment
+ContactAddress = ContactAddressNotConfigured
 
 # GridShib CA configuration directory
 GridShibCAConfDir = @GRIDSHIB_CA_CONF_DIR@
+
+# The following two values are used in more than one of the following
+# blocks, so they are at the top level.
 
 # Relative URL for GridShibCA web space
 GridShibCAURL = @GRIDSHIB_CA_URL@
@@ -111,9 +110,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </Modules>
 
 <Commands>
-  #
   # Modules invokable by GridShibCA.cgi
-  #
 
   # No command given
   DEFAULT = GridShibCA::Debug
@@ -153,9 +150,10 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </CredRetrieverClients>
 
 <LaunchClient>
-  # This section containsb mappings that will be made in any scripts/
+  # This section contains mappings that will be made in any scripts/
   # configuration files (e.g. JNLP file) that launch GSCA clients.
 
+  # Jar for JWS client
   JarName = @JAR_NAME@
 
   # The jar file includes a bundle of CA certificates (i.e. a
@@ -165,18 +163,17 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # the web server certificate isn't recognized, the user will be
   # prompted if they want to trust the web site.
   UseBundledCAs = True
-
 </LaunchClient>
 
 <URLs>
-  # Relative URL to GridShib CA directory
-  GridShibCA = /@GRIDSHIB_CA_URL@
-
   # URL for the GridShibCA.cgi webapp
   WebApp = @GRIDSHIB_CA_WEBAPP_URL@
 </URLs>
 
 <Binaries>
+  # Globus Location to use (not actually used at the moment)
+  GlobusLocation = @GLOBUS_LOCATION@
+
   # OpenSSL binary to use
   OpenSSL = @OPENSSL@
 
@@ -212,29 +209,6 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Directory of trusted CA certificates to pass to client
   TrustRootsPath = /etc/grid-security/certificates
 </TrustRoots>
-######################################################################
-#
-# Configuration files
-# Various files used by the GridShib-CA.
-
-# HTML header to include on web pages
-HTMLHeader = ${GridShibCAConfDir}/header.html
-
-# HTML footer to include on web pages
-HTMLFooter = ${GridShibCAConfDir}/footer.html
-
-######################################################################
-#
-# URLs
-#
-
-# Hostname to use in URLs
-WWWHostname = @WWW_HOSTNAME@
-
-
-
-# Relative URL to Shibboleth-protected CGI-BIN directory
-ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
 
 <CA>
   # CA Parameters
@@ -268,7 +242,6 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
   # Include Shibboleth SAML assertion in certificate
   # If True, need to set JavaHome and GridShibSAMLToolsPath in <Binaries>
   IncludeSAMLInCert = false
-
 </OpenSSLCA>
 
 <CertRegistry>
@@ -278,73 +251,18 @@ ShibbolethProtectedCGIBinURL = @SHIB_PROTECTED_CGI_BIN_URL@
   Path = ${GridShibCAConfDir}/certs/
 </CertRegistry>
 
+<MyProxyCA>
+  # Configuration for MyproxyCA client (if in use)
+  Server = localhost
+  Port = 7512
+  ClientCert = ${GridShibCAConfDir}/myproxy-client-cert.pem
+  ClientKey = ${GridShibCAConfDir}/myproxy-client-key.pem
+</MyProxyCA>
 
-######################################################################
-#
-# Configuration for MyproxyCA client (if in use)
-#
+<Syslog>
+  # Cofiguration for syslog
+  Id = @SYSLOG_ID@
+  Facility = @SYSLOG_FACILITY@
+  Opts = pid
+</Syslog>
 
-# Hostname where MyProxy server is to be found
-MyProxyHostname = localhost
-
-# Port of MyProxy server
-MyProxyPort = 7512
-
-# Certificate to use to authenticate to MyProxy server
-MyProxyClientCert = ${GridShibCAConfDir}/myproxy-client-cert.pem
-
-# Key to use to authenticate to MyProxy server
-MyProxyClientKey = ${GridShibCAConfDir}/myproxy-client-key.pem
-
-######################################################################
-#
-# Logging Parameters
-#
-
-# ID to use for syslog
-SyslogId = @SYSLOG_ID@
-
-# Facility to use for logging
-SyslogFacility = @SYSLOG_FACILITY@
-
-######################################################################
-#
-# Certificate Registry Parameters
-#
-
-######################################################################
-#
-# myVocs DB Certificate Registry Parameters (if in use)
-#
-
-# Database name
-myVocsDBName = sympa
-
-# Table name
-myVocsDBTable = GridShib_Name_Mapping
-
-# Host on which database resides
-myVocsDBHostname = localhost
-
-# Port on which database is to be contacted
-myVocsDBPort = 9999
-
-# Username and password to use for database
-myVocsDBUsername = dummy
-myVocsDBPassword = dummy
-
-######################################################################
-#
-# Binaries
-#
-
-# Globus Location to use
-GlobusLocation = @GLOBUS_LOCATION@
-
-######################################################################
-#
-# HTML Template configuration
-#
-
-# Contact address for this deployment
-ContactAddress = ContactAddressNotConfigured

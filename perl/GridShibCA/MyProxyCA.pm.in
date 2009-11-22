@@ -13,23 +13,24 @@ See that Module for a description of methods.
 
 =head2 Configuration Parameters
 
-This class uses the following values from F<gridshib-ca.conf>:
+This class uses the following values from the MyProxyCA section of
+F<gridshib-ca.conf>:
 
 =over 4
 
-=item MyProxyHostname
+=item Server
 
 Hostname of MyProxy Server
 
-=item MyProxyPort
+=item Port
 
 Port of MyProxy Server
 
-=item MyProxyClientCert
+=item ClientCert
 
 Certificate to use to authenticate to MyProxy
 
-=item MyProxyClientKey
+=item ClientKey
 
 Key to use to authenticate to MyProxy
 
@@ -71,10 +72,10 @@ sub new
     my $self = $class->SUPER::new(@_);
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
-    $self->{host} = $self->{config}->getParam("MyProxyHostname");
-    $self->{port} = $self->{config}->getParam("MyProxyPort");
-    $self->{cert} = $self->{config}->getParam("MyProxyClientCert");
-    $self->{key} = $self->{config}->getParam("MyProxyClientKey");
+    $self->{host} = $self->{config}->getParam("MyProxyCA", "Server");
+    $self->{port} = $self->{config}->getParam("MyProxyCA", "Port");
+    $self->{cert} = $self->{config}->getParam("MyProxyCA", "ClientCert");
+    $self->{key} = $self->{config}->getParam("MyProxyCA", "ClientKey");
     bless($self, $class);
     return $self;
 }

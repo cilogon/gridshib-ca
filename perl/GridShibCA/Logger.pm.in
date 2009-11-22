@@ -63,9 +63,9 @@ sub new
     my $config = $args{-config} || GridShibCA::Config->new();
 
     # Syslog parameters
-    my $SYSLOG_ID = $config->getParam("SyslogId");
-    my $SYSLOG_OPTS = "pid";
-    my $SYSLOG_FACILITY = $config->getParam("SyslogFacility");
+    my $SYSLOG_ID = $config->getParam("Syslog", "Id");
+    my $SYSLOG_OPTS = $config->getParam("Syslog", "Opts"); 
+    my $SYSLOG_FACILITY = $config->getParam("Syslog", "Facility");
 
     my $id = sprintf("%s (%s)", $SYSLOG_ID, basename($0));
     openlog($id, $SYSLOG_OPTS, $SYSLOG_FACILITY);
