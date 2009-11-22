@@ -63,8 +63,8 @@ sub new
     $self->{hash} = {
 	Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
 	ContactAddress => $self->{config}->getParam("ContactAddress"),
-	ShibbolethProtectedCGIBinURL =>
-	    $self->{config}->getParam("ShibbolethProtectedCGIBinURL"),
+	ShibProtectedURL =>
+	    $self->{config}->getParam("ShibProtectedURL"),
     };
     bless($self, $class);
     return $self;

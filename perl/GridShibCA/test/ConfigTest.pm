@@ -100,13 +100,13 @@ sub test_getSectionparam
 sub test_getParamURI
 {
     my $self = shift;
-    $self->assert_not_null($self->{config}->getParamURI("URLs", "GridShibCA"));
+    $self->assert_not_null($self->{config}->getParamURI("URLs", "WebApp"));
 }
 
 sub test_getParamURL
 {
     my $self = shift;
-    $self->assert_not_null($self->{config}->getParamURL("URLs", "GridShibCA"));
+    $self->assert_not_null($self->{config}->getParamURL("URLs", "WebApp"));
 }
 
 sub test_getSectionparamShouldFail
