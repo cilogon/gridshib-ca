@@ -96,8 +96,10 @@ sub _setTemplateMappings
     my $template = shift;
 
     $self->SUPER::_setTemplateMappings($template);
-    $template->addMapping("CodeBase",
-			  $self->{config}->getParam("URLs", "GridShibCA"));
+    my $codebase =
+	$self->{cgi}->url(-base => 1) .
+	$self->{config}->getParam("GridShibCAURL");
+    $template->addMapping("CodeBase", $codebase);
 }
 
 =back
