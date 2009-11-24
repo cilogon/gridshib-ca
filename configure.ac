@@ -353,6 +353,7 @@ PERL_MODULES_TO_CHECK=" \
 			FileHandle \
 			Getopt::Std \
 			IPC::Open3 \
+			LWP::UserAgent \
 			MIME::Base64 \
 			Sys::Syslog \
 			"
@@ -367,6 +368,7 @@ EXTRA_PERL_MODULES="\
 	Crypt::OpenSSL::X509 \
 	Date::Parse \
 	IO::Socket::SSL \
+	NET::OpenID::Consumer \
 	Text::Template \
 "
 AC_MSG_RESULT([Checking for extra PERL modules...])
