@@ -345,8 +345,6 @@ dnl check for perl modules that should be on any reasonably recent
 dnl perl, but don't always seem to be
 PERL_MODULES_TO_CHECK=" \
 			CGI \
-			Config::General \
-			Date::Parse \
 			File::Basename \
 			File::Copy \
 			File::Path \
@@ -361,10 +359,13 @@ PERL_MODULES_TO_CHECK=" \
 AC_MSG_RESULT([Checking for basic PERL modules...])
 AC_PROG_PERL_MODULES([${PERL_MODULES_TO_CHECK}])
 
-dnl Extra perls modules that need to be installed.
+dnl Extra perls modules, not included with PERL by default, that need
+dnl to be installed.
 EXTRA_PERL_MODULES="\
 	CGI::Session \
+	Config::General \
 	Crypt::OpenSSL::X509 \
+	Date::Parse \
 	IO::Socket::SSL \
 	Text::Template \
 "
