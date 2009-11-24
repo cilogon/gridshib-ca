@@ -298,7 +298,7 @@ EXTRA_PERL_MODULES="\
 	Crypt::OpenSSL::X509 \
 	Date::Parse \
 	IO::Socket::SSL \
-	NET::OpenID::Consumer \
+	Net::OpenID::Consumer \
 	Text::Template \
 "
 AC_MSG_RESULT([Checking for extra PERL modules...])
