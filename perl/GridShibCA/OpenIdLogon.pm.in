@@ -44,97 +44,175 @@ sub doCommand
     my $self = shift;
 
     my $cgi = $self->{cgi};
-    my $myURL = $cgi->url(-full => 1);
     my $baseURL = $cgi->url(-base => 1);
     my $secret = $self->_getConsumerSecret();
+    my $status = 1;
 
-    my $consumer = Net::OpenID::Consumer->new(
-	# The user agent which sends the openid off to the server.
-	ua => LWP::UserAgent->new(),
-	# Require base for return URL
-	required_root => $baseURL,
-	# Our secret for nonces
-	consumer_secret => $secret,
-	# Way for Consumer to get at CGI parameters
-	args => $cgi,
-	);
-
-    # I would use handle_server_response here if there was some way to 
-    # pass $self to the callbacks.
-    if ($consumer->is_server_response())
+    try
     {
-	my $setup_url = $consumer->user_setup_url();
-	my $verifiedId = $consumer->verified_identity();
-	if ($setup_url)
+	my $consumer = Net::OpenID::Consumer->new(
+	    # The user agent which sends the openid off to the server.
+	    ua => LWP::UserAgent->new(),
+	    # Require base for return URL
+	    required_root => $baseURL,
+	    # Our secret for nonces
+	    consumer_secret => $secret,
+	    # Way for Consumer to get at CGI parameters
+	    args => $cgi,
+	    );
+	
+	# I would use handle_server_response here if there was some way to 
+	# pass $self to the callbacks.
+	if ($consumer->is_server_response())
 	{
-	    $self->{logger}->debug("OpenId setup required. Redirecting user to $setup_url");
-	    $self->_redirect($setup_url);
-	}
-	elsif ($consumer->user_cancel())
-	{
-	    $self->{logger}->debug("User canceled OpenId authentication.");
-	    $self->displayHTML("OpenIdCancel");
-	}
-	elsif ($verifiedId)
-	{
-	    $self->{logger}->debug("OpenId authentication successful: " .
-		$verifiedId->url());
-	    my $id = GridShibCA::UserIdentity->new(
-		-authMethod => "OpenId",
-		-clientHost => $self->getClientHost(),
-		-userId => $verifiedId->url(),
-		-idpId => $verifiedId->url());
-
-	    my $session = $self->_doLogon($id);
-	    $self->_displayHTML("OpenIdSuccess", %mappings);
+	    $self->_handleServerResponse($consumer);
 	}
 	else
 	{
-	    throw GridShibCA::OpenIdException($consumer);
+	    # Not an OpenId response. In this case we either need to
+	    # present the user with a login form, or process the result of
+	    # that login form. Look for an openid parameter - if present,
+	    # then this is the form submission. Otherwise we output the
+	    # form.
+	    my $openid = $self->{cgi}->param("openid");
+	    if ($openid)
+	    {
+		$self->_handleClaim($consumer, $openid);
+	    }
+	    else
+	    {
+		# Output logon form
+		$self->{logger}->debug("Providing user OpenId logon form.");
+		$self->_displayHTML("OpenIdLogonForm");
+	    }
 	}
+    }
+    catch GridShibCA::OpenIdException with
+    {
+	my $ex = shift;
+	$self->_handleOpenIdException($ex);
+	$status = 0;
+    }
+    otherwise
+    {
+	my $ex = shift;
+	$self->_displayHTMLError("OpenId authentication failed: " . $ex->text());
+	$status = 0;
+    };
+
+    return $status;
+}
+
+=item _handleServerResponse()
+
+Handle a OpenID Idp server response.
+
+B<Arguments:> Net::OpenID:Consumer object
+
+B<Returns:> Nothing
+
+=cut
+
+sub _handleServerResponse
+{
+    my $self = shift;
+    my $consumer = shift ||
+	throw GridShibCA::Exception("Missing consumer argument");
+
+    my $setup_url = $consumer->user_setup_url();
+    my $verifiedId = $consumer->verified_identity();
+    if ($setup_url)
+    {
+	$self->{logger}->debug("OpenId setup required. Redirecting user to $setup_url");
+	$self->_redirect($setup_url);
+    }
+    elsif ($consumer->user_cancel())
+    {
+	$self->{logger}->info("User canceled OpenId authentication.");
+	$self->displayHTML("OpenIdCancel");
+    }
+    elsif ($verifiedId)
+    {
+	$self->{logger}->info("OpenId authentication successful: " .
+			       $verifiedId->url());
+	my $id = GridShibCA::UserIdentity->new(
+	    -authMethod => "OpenId",
+	    -clientHost => $self->getClientHost(),
+	    -userId => $verifiedId->url(),
+	    -idpId => $verifiedId->url());
+	
+	my $session = $self->_doLogon($id);
+	my %mappings = ();
+	$self->_displayHTML("OpenIdSuccess", %mappings);
     }
     else
     {
-	# Not an OpenId response. In this case we either need to
-	# present the user with a login form, or process the result of
-	# that login form. Look for an openid parameter - if present,
-	# then this is the form submission. Otherwise we output the
-	# form.
-	my $openid = $self->{cgi}->param("openid");
-	if ($openid)
-	{
-	    $self->{logger}->debug("Got claimed OpenId: $openid");
-	    my $claimedId = $consumer->claimed_identity($openid);
-	    if (!$claimedId)
-	    {
-		throw GridShibCA::OpenIdException($consumer);
-	    }
-	    $self->{logger}->debug("Redirecting user to OpenId provider.");
-	    my $checkURL = $claimedId->check_url (
-		# The place we go back to.
-		return_to  => $myURL,
-		# Having this simplifies the login process.
-		trust_root => $baseURL,
-		);
-	    $self->_redirect($checkURL);
-	}
-	else
-	{
-	    # Output logon form
-	    $self->{logger}->debug("Providing user OpenId logon form.");
-	    $self->_displayHTML("OpenIdLogonForm");
-	}
+	# Unknown state
+	throw GridShibCA::OpenIdException($consumer);
     }
-
-# XXX Add error handling
-#	    my %mappings = ();
-#	    $mappings{errcode} = $consumer->errcode();
-#	    $mappings{errtext} = $consumer->errtext();
-#	    $self->_displayHTML("OpenIdError", %mappings);
-
-    return 1;
 }
 
+=item _handleClaim()
+
+Handle a claimed openid (result of a form submission).
+
+B<Arguments:>
+
+C<$consumer> Net::OpenID::Consumer instance.
+
+C<$openid> Claimed OpenId as string.
+
+B<Returns:> Nothing
+
+=cut
+
+sub _handleClaim
+{
+    my $self = shift;
+    my $consumer = shift ||
+	throw GridShibCA::Exception("Missing consumer argument");
+    my $openid = shift ||
+	throw GridShibCA::Exception("Missing openid argument");
+
+    my $myURL = $self->{cgi}->url(-full => 1);
+    my $baseURL = $self->{cgi}->url(-base => 1);
+
+    $self->{logger}->info("Got claimed OpenId: $openid");
+    my $claimedId = $consumer->claimed_identity($openid);
+    if (!$claimedId)
+    {
+	throw GridShibCA::OpenIdException($consumer);
+    }
+    $self->{logger}->debug("Redirecting user to OpenId provider.");
+    my $checkURL = $claimedId->check_url (
+	# The place we go back to.
+	return_to  => $myURL,
+	# Having this simplifies the login process.
+	trust_root => $baseURL,
+	);
+    $self->_redirect($checkURL);
+}
+
+=item _handleOpenIdException()
+
+Handle an OpenId error.
+
+B<Arguments:> GridShibCA::OpenIdException
+
+B<Returns:> Nothing
+
+=cut
+
+sub _handleOpenIdException
+{
+    my $self = shift;
+    my $ex = shift;
+
+    my $message = $ex->text();
+    my %mappings = ( -status => "401 OpenID Authentication Failed" );
+    $self->{logger}->error($message);
+    $self->_displayHTMLError($message, %mappings);
+}
 
 =item _requirements()
 
@@ -223,7 +301,7 @@ sub new
     my $class = shift;
     my $text = shift;
 
-    if (ref($test))
+    if (ref($text))
     {
 	# Net::OpenId::Consumer instance
 	my $errcode = $text->errcode();
@@ -233,8 +311,6 @@ sub new
 
     my $self = $class->SUPER::new($text);
     bless($self, $class);
-    $self->{errcode} = $errcode;
-    $self->{errtext} = $errtext;
     return $self;
 }
 
