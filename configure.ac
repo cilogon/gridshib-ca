@@ -121,15 +121,6 @@ dnl Generated binaries
 BINARIES=""
 AC_SUBST(BINARIES)
 
-dnl Included HTML files that are installed in the configuration directory
-HTML_HEADER=$srcdir/webdocs/header.html
-AC_SUBST_FILE(HTML_HEADER)
-HTML_FOOTER=$srcdir/webdocs/footer.html
-AC_SUBST_FILE(HTML_FOOTER)
-HTML_INCS="${HTML_HEADER} ${HTML_FOOTER}"
-AC_SUBST(HTML_INCS)
-AC_CONFIG_FILES([${HTML_INCS}])
-
 dnl Shib-protected webapps
 SHIB_WEBAPPS="webapps/shib.cgi"
 AC_SUBST(SHIB_WEBAPPS)
@@ -147,16 +138,6 @@ AC_SUBST(WEBAPPS)
 AC_CONFIG_FILES([$WEBAPPS])
 AC_SRC_FILES(WEBAPPS, WEBAPP_SRCS)
 AC_SUBST(WEBAPP_SRCS)
-
-dnl Files to be installed in unprotected html directory
-HTML_FILES="webdocs/index.html \
-	webdocs/checkPrerequisites.html \
-	webdocs/GridShibCA.css \
-	webdocs/GridShibCATester.jnlp"
-AC_SUBST(HTML_FILES)
-AC_CONFIG_FILES([$HTML_FILES])
-AC_SRC_FILES(HTML_FILES, HTML_SRCS)
-AC_SUBST(HTML_SRCS)
 
 TEMPLATE_FILES="\
 	templates/CredentialRetriever.jnlp \
@@ -615,33 +596,6 @@ AC_MSG_CHECKING([for the DN of the GridShib-ca])
 CA_DN="CN=GridShib CA,O=Certificate Authority,${BASE_DN}"
 AC_MSG_RESULT(${CA_DN})
 AC_SUBST(CA_DN)
-
-dnl ------------------------------------------------------------
-dnl CGI-BIN demo scripts.
-
-CGI_DEMO_SCRIPTS="\
-	webdocs/gridshib-ca-demo-portal.cgi"
-AC_CONFIG_FILES([$CGI_DEMO_SCRIPTS])
-AC_SUBST(CGI_DEMO_SCRIPTS)
-AC_SRC_FILES(CGI_DEMO_SCRIPTS, CGI_DEMO_SRCS)
-AC_SUBST(CGI_DEMO_SRCS)
-
-AC_ARG_ENABLE(demos,
-	AC_HELP_STRING([--enable-demos],
-		[Build demos. (Default: Disabled)]),
-	[ENABLE_DEMOS=true],
-	[ENABLE_DEMOS=false])
-AC_SUBST(ENABLE_DEMOS)
-
-if test ${ENABLE_DEMOS} = "true" ; then
-   AC_PROG_PERL_MODULES([Crypt::OpenSSL::PKCS10])
-
-   AC_GLOBUS_LOCATION()
-
-   if test "X${GLOBUS_LOCATION}" = "X" ; then
-      AC_MSG_ERROR([Could not find GLOBUS_LOCATION needed for demos. Please specify using --with-globus-location])
-   fi
-fi
 
 dnl ------------------------------------------------------------
 dnl Development mode

@@ -11,9 +11,6 @@ prefix = @prefix@
 # Mode: "build" if build is enabled; "dist" otherwise
 MODE=@MODE@
 
-# Enable demos, "true" or "false"
-ENABLE_DEMOS=@ENABLE_DEMOS@
-
 ######################################################################
 #
 # Groups of files
@@ -31,18 +28,13 @@ IMAGES=\
 	images/*.gif \
 	images/*.png
 
-# Files include in runtime generated HTML through CGIinterface.pm
-HTML_INCS = @HTML_INCS@
-
 # Source files
 WEBAPP_SRCS = @WEBAPP_SRCS@
 SHIB_WEBAPP_SRCS = @SHIB_WEBAPP_SRCS@
-HTML_SRCS = @HTML_SRCS@
 CONF_SRCS = @CONF_SRCS@
 UTIL_SRCS = @UTIL_SRCS@
 PERL_MODULE_SRCS = @PERL_MODULE_SRCS@
 OPENSSL_CA_SRCS = @OPENSSL_CA_SRCS@
-CGI_DEMO_SRCS = @CGI_DEMO_SRCS@
 TEST_SRCS = @TEST_SRCS@
 PYTHON_SCRIPT_SRCS = @PYTHON_SCRIPT_SRCS@
 
@@ -53,7 +45,6 @@ DEV_UTILS=@DEV_UTILS@
 BINARIES=@BINARIES@
 WEBAPPS=@WEBAPPS@
 SHIB_WEBAPPS=@SHIB_WEBAPPS@
-HTML_FILES=@HTML_FILES@
 PERL_MODULES = @PERL_MODULES@
 PYTHON_SCRIPTS = @PYTHON_SCRIPTS@
 REQUIRED_PERL_MODULES = @REQUIRED_PERL_MODULES@
@@ -66,13 +57,11 @@ DIST_FILES=\
 	$(IMAGES) \
 	$(WEBAPP_SRCS) \
 	$(SHIB_WEBAPP_SRCS) \
-	$(HTML_SRCS) \
 	$(CONF_SRCS) \
 	$(UTIL_SRCS) \
 	$(PERL_MODULES_SRCS) \
 	$(PYTHON_SCRIPT_SRCS) \
 	$(OPENSSL_CA_SRCS) \
-	$(CGI_DEMO_SRCS) \
 	$(TEMPLATE_FILES) \
 	$(TEST_SRCS) \
 	$(JAR_PATH)
@@ -84,10 +73,8 @@ BUILD_ALL =\
 	$(BINARIES) \
 	$(PERL_MODULES) \
 	$(PYTHON_SCRIPTS) \
-	$(HTML_FILES) \
 	$(WEBAPPS) \
 	$(SHIB_WEBAPPS) \
-	$(CGI_DEMO_SCRIPTS) \
 	$(DEV_UTILS) \
 	$(TEST_SCRIPTS)
 
@@ -137,7 +124,6 @@ clean::
 	rm -f $(HTML_FILES)
 	rm -f $(WEBAPPS)
 	rm -f $(SHIB_WEBAPPS)
-	rm -f $(HTML_INCS)
 	rm -f $(BINARIES)
 
 # Clean up everything
@@ -147,13 +133,6 @@ realclean:: clean
 
 build-dist: subdirs $(BUILD_ALL)
 	@echo Build complete. Run \"make install\" to install.
-
-######################################################################
-#
-# Various extra dependencies
-#
-
-webdocs/checkPrerequisites.html webdocs/index.html: $(HTML_INCS)
 
 ######################################################################
 #
@@ -248,17 +227,17 @@ INSTALL_BASE=\
 	install-binaries \
 	install-perl \
 	install-python \
-	install-html \
 	install-jar \
 	install-webapps \
-	install-shib-webapps \
-	install-demos
+	install-shib-webapps
 
+# install-conf and install-templates will not overwrite existing files
 INSTALL_ALL=\
 	$(INSTALL_BASE) \
         install-conf \
         install-templates
 
+# install-*-force will overwrite existing files
 INSTALL_FORCE=\
 	$(INSTALL_BASE) \
         install-conf-force \
@@ -324,14 +303,6 @@ $(GRIDSHIB_CA_WEB_PATH):
 	@echo "Creating $(GRIDSHIB_CA_WEB_PATH)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_WEB_PATH)
 
-install-html: $(GRIDSHIB_CA_WEB_PATH) $(HTML_FILES) $(IMAGES)
-	@echo "Installing html to $(GRIDSHIB_CA_WEB_PATH)"
-	@for file in $(HTML_FILES) $(IMAGES) ; do \
-		f=`basename $${file}` ;\
-		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
-	done
-
 install-jar:  $(JAR_PATH)
 	@echo "Installing $(JAR_PATH) to $(GRIDSHIB_CA_WEB_PATH)"
 	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JAR_PATH) $(GRIDSHIB_CA_WEB_PATH)/$(JAR_NAME)
@@ -380,15 +351,6 @@ install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_PATH) ;\
 	done
-
-install-demos: $(CGI_DEMO_SCRIPTS) $(CGI_BIN_DIR)
-	@if test $(ENABLE_DEMOS) = "true"; then \
-		echo "Installing demo scripts to $(CGI_BIN_DIR)" ;\
-		for file in $(CGI_DEMO_SCRIPTS) ; do \
-			echo "Installing $${file}" ;\
-			$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(CGI_BIN_DIR) ;\
-		done ;\
-	fi
 
 ######################################################################
 #
