@@ -166,6 +166,9 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </LaunchClient>
 
 <URLs>
+  # Relative URL for GridShibCA web space
+  GridShibCA = ${GridShibCAURL}
+
   # URL for the GridShibCA.cgi webapp
   WebApp = @GRIDSHIB_CA_WEBAPP_URL@
 </URLs>
