@@ -92,6 +92,7 @@ TOUCH = @TOUCH@
 OPENSSL = @OPENSSL@
 RM = @RM@
 XSLTPROC = @XSLTPROC@
+GPG = @GPG@
 
 CONFIG_STATUS = ./config.status
 ENV = @ENV@
@@ -489,6 +490,9 @@ DIST_FILES += $(DIST_EXTRA_FILES)
 # Distribution file
 DIST_FILE=@DIST_TARBALL_NAME@
 
+# Distribution signature
+DIST_SIG_FILE=${DIST_FILE}.asc
+
 dist:	build-mode $(DIST_FILE)
 
 $(DIST_FILE): $(DIST_FILES)
@@ -512,6 +516,15 @@ clean::
 
 realclean::
 	$(RM) -f $(DIST_FILE)
+
+#
+# Allow for gpg signing of file
+#
+dist-sign: dist $(DIST_SIG_FILE)
+
+$(DIST_SIG_FILE): $(DIST_FILE)
+	$(RM) -f $(DIST_SIG_FILE)
+	$(GPG) --detach-sign --armor $(DIST_FILE) && ls -l $(DIST_SIG_FILE)
 
 ######################################################################
 #

@@ -649,6 +649,7 @@ if test ${MODE} = "build" ; then
    AC_PATH_PROG(ANT, ant)
    AC_PATH_PROG(CVS, cvs)
    AC_PATH_PROG(MAKE, make)
+   AC_PATH_PROG(GPG, gpg)
 
    dnl findbugs test
    FINDBUGS_HOME="/usr/local/findbugs"
