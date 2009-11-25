@@ -7,7 +7,7 @@ AC_INIT(gridshib-ca, 2.0.0)
 
 dnl Status of this version, e.g. preview, alpha, beta
 dnl Set to empty string("") for unqualified (e.g. final) release
-PACKAGE_RELEASE_STATUS="preview"
+PACKAGE_RELEASE_STATUS="preview1"
 
 COPYRIGHT="Copyright 2006-2009 The Board of Trustees of the University of Illinois."
 AC_SUBST(COPYRIGHT)
