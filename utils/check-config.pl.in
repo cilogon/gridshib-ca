@@ -123,21 +123,17 @@ my $errorFound = 0;
 for $command (keys(%commands))
 {
     print "Loading $command ...";
-    my $className = $commands{$command};
-    if (!defined($className))
+    try
     {
-	print "Failed. Undefined module \"%s\"\n", $command;
-	$errorFound = 1;
-	next;
+	my $commandModule = $config->getCommandModule($command);
+	print "Success.\n";
     }
-    eval "use $className;";
-    if ($@)
+    otherwise
     {
-	print "Failed: $@\n";
+	my $ex = shift;
+	print "Error loading $command: " . $ex->text() . "\n";
 	$errorFound = 1;
-	next;
-    }
-    print "Success.\n";
+    };
 }
 
 if ($errorFound)
