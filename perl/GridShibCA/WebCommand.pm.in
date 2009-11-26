@@ -77,7 +77,7 @@ $REQUIRE_CSRF_CHECK = 0x0008;
 
 Create a new WebCommand object.
 
-B<Arguments:> None
+B<Arguments:> Hash, currently ignored.
 
 B<Returns:> WebCommand instance. Throws GridShibCA::Exception on error.
 
@@ -86,6 +86,7 @@ B<Returns:> WebCommand instance. Throws GridShibCA::Exception on error.
 sub new
 {
     my $class = shift;
+    my %args = @_;
     my $self = {};
     bless($self, $class);
     $self->{config} = GridShibCA::Config->new();

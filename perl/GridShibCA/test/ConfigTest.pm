@@ -88,7 +88,25 @@ sub test_getSection
 {
     my $self = shift;
     my %section = $self->{config}->getSection("Commands"); 
-    $self->assert_not_null($section{IssueCert});
+    $self->assert_not_null($section{DEFAULT});
+}
+
+sub test_getSubSection
+{
+    my $self = shift;
+    %section = $self->{config}->getSection("Commands", "IssueCert");
+    $self->assert_not_null($section{class});
+}
+
+sub test_getSectionShouldFail
+{
+    my $self = shift;
+    # Need at least one argument
+    $self->assert_raises(GridShibCA::ConfigException,
+			 sub { $self->{config}->getSection(); });
+    # Bogus section name
+    $self->assert_raises(GridShibCA::ConfigException,
+			 sub { $self->{config}->getSection($bogusSection); });
 }
 
 sub test_getSectionparam
@@ -132,6 +150,21 @@ sub test_getCommand
     $self->assert_not_null($openssl);
     $command = $self->{config}->getCommand($openssl);
     $self->assert_not_null($command);
+}
+
+sub test_getCommandModuleDEFAULT
+{
+    my $self = shift;
+    my $module = $self->{config}->getCommandModule("DEFAULT");
+    $self->assert_not_null($module);
+}
+
+
+sub test_getCommandModule
+{
+    my $self = shift;
+    my $module = $self->{config}->getCommandModule("IssueCert");
+    $self->assert_not_null($module);
 }
 
 # This test fails if GSCA not installed because templates will not be

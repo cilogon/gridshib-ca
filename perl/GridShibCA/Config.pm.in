@@ -254,9 +254,10 @@ sub getParamURL
 
 =item getSection()
 
-Return a hash representing a whole section.
+Return a hash representing a section
 
-B<Arguments:> Section name as string.
+B<Arguments:> One or more section names representing a set of section
+names to walk down.
 
 B<Returns:> Hash representing section.
 
@@ -267,17 +268,41 @@ Throws GridShibCA::ConfigException if section not found.
 sub getSection
 {
     my $self = shift;
-    my $section = shift
-	|| throw GridShibCA::ConfigException("Missing section name");
+    my @sectionNames = @_;
+    if (scalar(@sectionNames) < 1)
+    {
+	throw GridShibCA::ConfigException("Missing section name argument");
+    }
     my $config = $self->{config};
 
-    if (!$config->exists($section) ||
-	!$config->is_hash($section))
+    # String representing path of sections we've walked
+    my $path = undef;
+    # We keep a hash in addition to obj of each config level we walk
+    # so we can return this if needed.
+    my %hash = ();
+
+    foreach my $section (@sectionNames)
     {
-	throw GridShibCA::ConfigException("Request for non-existant section \"$section\"");
+	if (defined($path))
+	{
+	    $path = $path . "/" . $section;
+	}
+	else
+	{
+	    $path = $section;
+	}
+
+	if (!$config->exists($section) ||
+	    !$config->is_hash($section))
+	{
+	    throw GridShibCA::ConfigException("Request for non-existant section \"$path\"");
+	}
+
+	%hash = $config->hash($section);
+	$config = $config->obj($section);
     }
 
-    return $config->hash($section);
+    return %hash;
 }
 
 =item dump()
@@ -320,12 +345,22 @@ sub getCommandModule
 	throw GridShibCA::InternalException("Undefined command");
     }
 
-    my $className = $self->getParam("Commands", $command);
-    if (!defined($className))
+    if ($command eq "DEFAULT")
     {
-	throw GridShibCA::ModuleException("Unrecognized command \"$command\"");
+	# DEFAULT is an alias to real command name
+	$command = $self->getParam("Commands", "DEFAULT");
     }
-    return $self->_newInstance($className, @_);
+
+    my %commandHash = $self->getSection("Commands", $command);
+
+    my $class = $commandHash{class};
+    if (!defined($class))
+    {
+	throw GridShibCA::ModuleException("No class defined for command \"$command\"");
+    }
+    $self->{logger}->debug("Loading class \"$class\" for command $command");
+    
+    return $self->_newInstance($class, %commandHash);
 }
 
 =back

@@ -112,19 +112,30 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 <Commands>
   # Modules invokable by GridShibCA.cgi
 
-  # No command given
-  DEFAULT = GridShibCA::Debug
+  # No command given, what command should be execute?
+  DEFAULT = Debug
+  <Debug>
+    class = GridShibCA::Debug
+  </Debug>
 
-  # Accept and sign a certificate request
-  IssueCert = GridShibCA::IssueCert
+  <IssueCert>
+    # Accept and sign a certificate request
+    class = GridShibCA::IssueCert
+  </IssueCert>
 
-  # Allow for download of Python client
-  PythonClient = GridShibCA::PythonClient
+  <PythonClient>
+    # Allow for download of Python client
+    class = GridShibCA::PythonClient
+  </PythonClient>
 
-  # Download trust roots
-  TrustRoots = GridShibCA::TrustRoots
+  <TrustRoots>
+    # Download trust roots
+    class = GridShibCA::TrustRoots
+  </TrustRoots>
 
-  Logout = GridShibCA::Logout
+  <Logout>
+    class = GridShibCA::Logout
+  </Logout>
 </Commands>
 
 <AuthMethods>
