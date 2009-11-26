@@ -14,7 +14,7 @@ test-dist: dist test/test-dist.sh
 #
 # PERL unit tests
 
-perl-unit-tests: $(PERL_MODULES)
+perl-unit-tests: $(PERL_MODULES) $(CONF_FILES)
 	@echo "Running PERL unit tests:"
 	env GRIDSHIB_CA_CONFIG_FILENAME=conf/gridshib-ca.conf $(PERL) -I perl/ test/TestRunner.pl perl/GridShibCA/test/Suite.pm
 	@echo "PERL unit tests complete."
