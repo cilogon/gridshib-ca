@@ -91,7 +91,6 @@ CP = @CP@
 TOUCH = @TOUCH@
 OPENSSL = @OPENSSL@
 RM = @RM@
-XSLTPROC = @XSLTPROC@
 GPG = @GPG@
 
 CONFIG_STATUS = ./config.status
