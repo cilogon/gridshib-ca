@@ -531,7 +531,7 @@ $(DIST_SIG_FILE): $(DIST_FILE)
 #
 
 # Command to run perl scripts so they can get to modules in build directory
-PERL_TEST=${ENV} PERLLIB=./perl/
+PERL_TEST=${ENV} PERLLIB=./perl/ PERL5LIB=./perl/
 
 test-openssl-ca: openssl-ca/openssl-ca-test.sh openssl-ca
 	@chmod 755 openssl-ca/openssl-ca-test.sh
