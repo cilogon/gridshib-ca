@@ -28,7 +28,7 @@ RelativeDN @RELATIVE_DN@
 
 #
 # Configuration for OpenId IdPs
-<AuthMethod OpenId>
+<AuthMethod OpenId2.0>
   OpenIdRelativeDN "o=OpenId, ${RelativeDN}"
   <IdPNameSpace *>
     Comment OpenId Catchall
