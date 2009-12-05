@@ -163,7 +163,8 @@ sub _handleFile
     my @lines = $file->getlines();
     $file->close();
 
-    print "-----File: $filename\n";
+    my ($volume, $directories, $basename) = File::Spec->splitpath($filename);
+    print "-----File: $basename\n";
     foreach (@lines)
     {
 	# Make sure we have a carriage return at the end of the line
