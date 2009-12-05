@@ -157,9 +157,7 @@ AC_SUBST(TEMPLATE_FILES)
 dnl Configuration files that should not be overwritten by installation.
 CONF_FILES="\
 	conf/gridshib-ca.conf \
-	conf/authorizedPortals.conf \
-	conf/policy.conf \
-	${HTML_INCS}"
+	conf/policy.conf"
 AC_SUBST(CONF_FILES)
 AC_CONFIG_FILES([$CONF_FILES])
 AC_SRC_FILES(CONF_FILES, CONF_SRCS)
