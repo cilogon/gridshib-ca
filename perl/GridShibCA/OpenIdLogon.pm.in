@@ -189,6 +189,8 @@ sub _handleClaim
 	return_to  => $myURL,
 	# Having this simplifies the login process.
 	trust_root => $baseURL,
+	# IdP can redirect user if needed
+	delayed_return => 1.
 	);
     $self->_redirect($checkURL);
 }
