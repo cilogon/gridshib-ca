@@ -6,9 +6,9 @@
 # Build GridShib-CA tarball and test it. Intended to be run by
 # buildbot.
 #
-# Usage: gridshib-ca-nmitest.sh
+# Usage: gridshib-ca-test.sh
 #
-# Expects to be called top level directory of gridshib checkout.
+# Expects to be called top level directory of gridshib-ca checkout.
 #
 ######################################################################
 #
@@ -46,14 +46,6 @@ OPENSSL=`which openssl`
 echo "openssl: ${OPENSSL}"
 echo ""
 
-if test -d gridshib-ca ; then
-    cd gridshib-ca
-else
-    echo "Cannot find gridshib-ca directory."
-    ls -l
-    exit 1
-fi
-
 ######################################################################
 #
 # configure
@@ -61,6 +53,14 @@ fi
 
 echo ""
 echo "Building GridShib-CA Distribution."
+
+if test -f ./bootstrap ; then
+    :
+else
+    echo "Cannot find bootstrap file"
+    ls -l
+    exit 1
+fi
 
 echo ""
 echo "Bootstraping..."
