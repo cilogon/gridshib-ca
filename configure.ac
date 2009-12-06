@@ -288,13 +288,14 @@ PERL_MODULES_TO_CHECK=" \
 AC_MSG_RESULT([Checking for basic PERL modules...])
 AC_PROG_PERL_MODULES([${PERL_MODULES_TO_CHECK}])
 
-dnl Extra perls modules, not included with PERL by default, that need
+dnl Extra PERL modules, not included with PERL by default, that need
 dnl to be installed.
 EXTRA_PERL_MODULES="\
 	CGI::Session \
 	Config::General \
 	Crypt::OpenSSL::X509 \
 	Date::Parse \
+	Error \
 	IO::Socket::SSL \
 	Net::OpenID::Consumer \
 	Text::Template \
