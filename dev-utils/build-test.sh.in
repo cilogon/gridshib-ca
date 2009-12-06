@@ -16,9 +16,10 @@ gscaDirName="gridshib-ca-test-@PACKAGE_VERSION_STRING@"
 
 ######################################################################
 
-wwwDir=/var/www/${gscaDirName}
+wwwDir=/var/www/html/${gscaDirName}
 confDir=/usr/local/${gscaDirName}
-cgiDir=/usr/lib/cgi-bin/shib-protected/${gscaDirName}
+cgiDir=/var/www/html/secure/${gscaDirName}
+wwwUser=apache
 
 echo "Removing any old deployment..."
 for dir in ${wwwDir} ${confDir} ${cgiDir} ; do 
@@ -37,7 +38,7 @@ conf_opts="\
 --with-gridshib-ca-conf-dir=${confDir} \
 --with-globus-location=/usr/local/globus \
 --with-openssl-path=/usr/bin/ \
---with-www-user=www-data \
+--with-www-user=${wwwUser} \
 "
 
 if test -f Makefile ; then

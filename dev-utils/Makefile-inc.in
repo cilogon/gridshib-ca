@@ -25,7 +25,7 @@ test:: perl-unit-tests
 #
 # Name of test host
 
-TEST_HOST=computer.ncsa.uiuc.edu
+TEST_HOST=shibber.ncsa.uiuc.edu
 
 # Path on test host to use for building
 TMP_DIR=/tmp/gridshib-ca-test-deploy-@PACKAGE_VERSION_STRING@
