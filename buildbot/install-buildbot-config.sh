@@ -12,7 +12,7 @@ scp gridshib-buildbot.cfg ${host}:/tmp
 
 echo "Installing configuration..."
 ssh ${ssh_opts} ${host} \
-    "sudo -u buildmaster cp /tmp/gridshib-buildbot.cfg ~buildmaster/Buildbot/"
+    "sudo -u buildmaster cp /tmp/gridshib-buildbot.cfg ~buildmaster/Buildbot/gridshib-ca-buildbot.cfg"
 
 echo "Restarting buildbot..."
 ssh ${ssh_opts} ${host} \
