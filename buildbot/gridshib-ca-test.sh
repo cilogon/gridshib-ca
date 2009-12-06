@@ -54,7 +54,7 @@ echo ""
 echo ""
 echo "Building GridShib-CA Distribution."
 
-if test -f ./bootstrap ; then
+if test -f ./bootstrap.sh ; then
     :
 else
     echo "Cannot find bootstrap file"
