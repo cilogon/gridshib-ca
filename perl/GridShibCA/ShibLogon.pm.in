@@ -165,6 +165,16 @@ sub _init
     {
 	throw GridShibCA::LogonException("Cannot determine user identity or idenity provider. Shibboleth configuration problem?");
     }
+
+    if (!$self->getUserId())
+    {
+	throw GridShibCA::LogonException("Cannot determine user identity. Shibboleth configuration problem?");
+    }
+
+    if (!$self->getIdP())
+    {
+	throw GridShibCA::LogonException("Cannot determine identity provider. Shibboleth configuration problem?");
+    }
 }
 
 =back
