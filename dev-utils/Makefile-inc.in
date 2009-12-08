@@ -50,6 +50,7 @@ TEST_URL=https://${TEST_HOST}/gridshib-ca-test-@PACKAGE_VERSION_STRING@
 
 deploy-test: $(DIST_FILES) dev-utils/build-test.sh
 	@echo "Syncing distribution files to ${TEST_HOST}:${TMP_DIR}..."
+	@ssh $(TEST_HOST) "rm -rf ${TMP_DIR}"
 	@$(RSYNC) $(DIST_FILES) dev-utils/build-test.sh ${TEST_HOST}:${TMP_DIR}
 	@echo "Launching build..."
 	@ssh $(TEST_HOST) "(cd ${TMP_DIR}; dev-utils/build-test.sh)"
