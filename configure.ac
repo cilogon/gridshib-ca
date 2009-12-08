@@ -508,17 +508,6 @@ AC_CLEAN_PATH(SHIB_PROTECTED_PATH)
 AC_SUBST(SHIB_PROTECTED_PATH)
 AC_MSG_RESULT(${SHIB_PROTECTED_PATH})
 
-dnl CSS URL
-
-AC_MSG_CHECKING([for CSS URL to use])
-AC_ARG_WITH(css-url,
-	AC_HELP_STRING([--with-css-url],
-		[Specify the URL for the CSS file to use. (Default: <gridshib-ca-dir-name>/GridShibCA.css]),
-	[CSS_URL=$withval],
-	[CSS_URL=${GRIDSHIB_CA_URL}/GridShibCA.css])
-AC_SUBST(CSS_URL)
-AC_MSG_RESULT(${CSS_URL})
-
 dnl ----------------------------------------------------------------------
 dnl Miscellaneous Install parameters
 
