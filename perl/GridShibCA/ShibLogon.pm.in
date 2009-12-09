@@ -10,6 +10,14 @@
 
 GridShib-CA interface to Shibboleth functionality.
 
+For a list of environment variables set by Shibboleth see:
+
+L<https://spaces.internet2.edu/display/SHIB2/NativeSPAttributeAccess>
+
+B<NOTE:> PERL changes dashes (-) in environment variables names to
+underscores (_). So C<Shib-Identity-Provider> becomes
+C<Shib_Identity_Provider>.
+
 =cut
 
 package GridShibCA::ShibLogon;
@@ -52,7 +60,7 @@ B<Returns:> IdP as string, or undef if unknown
 sub getIdP
 {
     my $self = shift;
-    return $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+    return $ENV{"Shib_Identity_Provider"};
 }
 
 =item getShibSession()
