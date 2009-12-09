@@ -66,6 +66,12 @@ Require CSRF protection.
 
 $REQUIRE_CSRF_CHECK = 0x0008;
 
+=item Require POST (as opposed to GET or HEAD)
+
+=cut
+
+$REQUIRE_POST = 0x0010;
+
 =back
 
 =head2 Methods
@@ -415,6 +421,17 @@ sub _handleRequirements
     {
 	throw GridShibCA::RequirementsException(
 	    "CSRF protection not implemented yet.");
+    }
+
+    if ($requirements & $REQUIRE_POST)
+    {
+	$self->{logger}->debug("Checking for POST");
+	my $method = $self->{cgi}->request_method();
+	if ($method ne "POST")
+	{
+	    throw GridShibCA::RequirementsException(
+		"POST required but \"$method\" used.");
+	}
     }
     $self->{logger}->debug("Requirements check done.");
 }
