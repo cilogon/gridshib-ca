@@ -80,7 +80,9 @@ B<Returns:> Requirements value
 
 sub _requirements
 {
-    return $GridShibCA::WebCommand::REQUIRE_SESSION;
+    return
+	$GridShibCA::WebCommand::REQUIRE_SESSION |
+	$GridShibCA::WebCommand::REQUIRE_POST;
 }
 
 =item _getTemplate()
