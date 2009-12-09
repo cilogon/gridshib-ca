@@ -27,7 +27,7 @@ sub set_up
 sub tear_down
 {
     delete $ENV{"REMOTE_USER"};
-    delete $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"};
+    delete $ENV{"Shib_Identity_Provider"};
 }
 
 sub test_EPPN
@@ -58,7 +58,7 @@ sub _setupEnvironment
     my $userId = shift;
     my $idp = shift;
     $ENV{"REMOTE_USER"} = $userId;
-    $ENV{"HTTP_SHIB_IDENTITY_PROVIDER"} = $idp;
+    $ENV{"Shib_Identity_Provider"} = $idp;
 }
 
 # Return a bas64-encode SAML reponse
