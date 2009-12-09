@@ -38,6 +38,10 @@ Path to file containing the serial number.
 
 Path to file to store random state.
 
+=item LockFile
+
+File to use for locking ability to issue certificate.
+
 =item IncludeSAMLInCert
 
 Boolean - use GridShib SAML Tools to include SAML in issued certificates.
@@ -48,6 +52,7 @@ Boolean - use GridShib SAML Tools to include SAML in issued certificates.
 
 package GridShibCA::OpenSSLCA;
 
+use Fcntl qw(:flock);
 use File::Temp;
 
 # Inherit CA class
@@ -85,11 +90,13 @@ sub new
 	$self->{key} = $self->{config}->getParam("OpenSSLCA", "CAKey");
 	$self->{serialFile} = $self->{config}->getParam("OpenSSLCA", "SerialFile");
 	$self->{randFile} = $self->{config}->getParam("OpenSSLCA", "RandFile");
+	$self->{lockFile} = $self->{config}->getParam("OpenSSLCA", "LockFile");
+	$self->{lockFileHandle} = undef;
     }
     catch GridShibCA::ConfigException with
     {
 	my $ex = shift;
-	throw GridShibCA::CAException("CA configuration error: " . $ex->getText());
+	throw GridShibCA::CAException("CA configuration error: " . $ex->text());
     };
 
     bless($self, $class);
@@ -202,7 +209,6 @@ sub _signRequest
 	}
     }
 
-    # XXX Need to have locking here to serialize access to the serial file
     my $status;
     my @opensslArgs = ();
 
@@ -219,11 +225,16 @@ sub _signRequest
 	push(@opensslArgs, "-samlExt", $samlExtFilename);
     }
 
+    $self->_getIssueLock();
+
     my $cmd = $self->{config}->getCommand($self->{caProg}, @opensslArgs);
     $self->{logger}->debug("Executing: %s %s",
 			   $self->{caProg}, join(" ", @opensslArgs));
     $cmd->setInput($certificateRequest);
     my $result = $cmd->exec();
+
+    $self->_releaseIssueLock();
+
     if (!$result)
     {
 	my $error = $cmd->getError();
@@ -235,6 +246,65 @@ sub _signRequest
     my $pemCert =  $cmd->getOutput();
     my $x509 = $self->_X509fromPEM($pemCert);
     return $x509;
+}
+
+=item _getIssueLock()
+
+Grab a lock to issue a certificate.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub _getIssueLock()
+{
+    my $self = shift;
+
+    $self->{logger}->debug("Grabbing Issue lock...");
+    if (defined($self->{lockFileHandle}))
+    {
+	$self->{logger}->debug("Already have Issue lock.");
+	return;
+    }
+    my $lockFileHandle;
+    if (!open($lockFileHandle, ">", $self->{lockFile}))
+    {
+	throw GridShibCA::CAException("Failed to open Issue lock file (" . $self->{lockFile} . "): " . $! );
+    }
+    if (!flock($lockFileHandle, LOCK_EX))
+    {
+	close($lockFileHandle);
+	throw GridShibCA::CAException("Failed to obtain Issue lock (" . $self->{lockFile} . "): " . $! );
+    }
+    $self->{lockFileHandle} = $lockFileHandle;
+    $self->{logger}->debug("Obtained Issue lock.");
+}
+
+=item _releaseIssueLock()
+
+Release lock to issue a certificate.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+sub _releaseIssueLock
+{
+    my $self = shift;
+
+    if (defined($self->{lockFileHandle}))
+    {
+	$self->{logger}->debug("Releasing Issue lock.");
+	if (!flock($self->{lockFileHandle}, LOCK_UN))
+	{
+	    throw GridShibCA::CAException("Failed to release Issue lock: $!");
+	}
+	close($self->{lockFileHandle});
+	$self->{lockFileHandle} = undef;
+    }
 }
 
 =item _getSAMLExt()

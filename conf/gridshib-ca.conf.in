@@ -250,6 +250,11 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Serial number file for OpenSSL-based CA
   SerialFile = ${GridShibCAConfDir}/serial
 
+  # File to use to lock access for running openssl to issue a certificate
+  # Only us this file for locking as it is overwritten as zero-length
+  # file for each lock.
+  LockFile = ${GridShibCAConfDir}/openssl-ca.lock
+
   # Where OpenSSL can store its random state
   RandFile = ${GridShibCAConfDir}/.rand
 
