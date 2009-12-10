@@ -540,7 +540,7 @@ Class for exceptions caused by requirement errors.
 
 =head2 Version
 
-GridShib-CA version @PACKAGE_VERSION_STRING@ ($Id$)
+GridShib-CA version @PACKAGE_VERSION_STRING@
 
 =cut
 
