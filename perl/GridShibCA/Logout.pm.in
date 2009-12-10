@@ -40,6 +40,7 @@ sub doCommand
     {
 	$self->{session}->destroy();
     }
+    # TODO: Destroy session cookie here
     $self->_displayHTML("LogoutTemplate");
 }
 
