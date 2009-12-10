@@ -37,7 +37,7 @@
 {
   foreach my $client (keys(%CredRetrieverClients)) {
     my $url = cleanURL($CredRetrieverClients{$client});
-    $OUT .= "<p><form action=\"$url\" method=\"get\"><input type=\"submit\" value=\"$client\"/></form></p>\n";
+    $OUT .= "<p><form action=\"$url\" method=\"POST\"><input type=\"submit\" value=\"$client\"/></form></p>\n";
   }
 }
 </p>
