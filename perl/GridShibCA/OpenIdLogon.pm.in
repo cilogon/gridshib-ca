@@ -142,19 +142,11 @@ sub _handleServerResponse
 	my $idpId = $claimedId->identity_server();
 
 	my $protocolVersion = $claimedId->protocol_version();
-	my $authMethod;
-	if ($protocolVersion == 1)
-	{
-	    $authMethod = "OpenId1.1";
-	}
-	elsif ($protocolVersion == 2)
-	{
-	    $authMethod = "OpenId2.0";
-	}
-	else
-	{
-	    throw GridShibCA::OpenIdException("Unrecognized OpenId protocol version \"$protocolVersion\"");
-	}
+	my $authMethod = "OpenId";
+
+	# At some point, save specific version, which is:
+	# $protocolVersion == 1 => OpenId1.1
+	# $protocolVersion == 2 => OpenId2.0
 	
 	my $id = GridShibCA::UserIdentity->new(
 	    -authMethod => $authMethod,
