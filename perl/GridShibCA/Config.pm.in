@@ -495,6 +495,22 @@ sub getCommand
     return $self->_newModule("Command", @_);
 }
 
+=item getCSRF()
+
+Get an instance of the GridShibCA::CSRF module by loading it and
+calling its new method with the given arguments. See L<GridShibCA::CSRF>.
+
+The exact module loaded is controlled by the CSRF variable
+in the Modules section of F<gridshib-ca.conf>.
+
+=cut
+
+sub getCSRF
+{
+    my $self = shift;
+    return $self->_newModule("CSRF", @_);
+}
+
 =item getHTMLError()
 
 Get an instance of the GridShibCA::Error module by loading it and

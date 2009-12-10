@@ -211,6 +211,10 @@ sub _doLogon
     $self->_addCookie($session->cookie());
     $self->{session} = $session;
 
+    # Add our CSRF protection cookie
+    my $csrf = $self->{config}->getCSRF();
+    $self->_addCookie($csrf->createCookie());
+
     return $session;
 }
 

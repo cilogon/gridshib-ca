@@ -83,6 +83,9 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Perl module to execute processes
   Command = GridShibCA::Command
 
+  # Perl module to provide CSRF protection
+  CSRF = GridShibCA::CSRF
+
   # Perl module to produce HTML error mesages
   HTMLError = GridShibCA::HTMLError
 

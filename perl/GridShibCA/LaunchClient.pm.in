@@ -82,7 +82,7 @@ sub _requirements
 {
     return
 	$GridShibCA::WebCommand::REQUIRE_SESSION |
-	$GridShibCA::WebCommand::REQUIRE_POST;
+	$GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
 }
 
 =item _getTemplate()

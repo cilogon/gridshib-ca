@@ -3,10 +3,10 @@
   <title>GridShib CA Debug Page</title>
   <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
   <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
-  <link rel=\"stylesheet\" type=\"text/css\" href=\"@CSS_URL@\" />
 </head>
 <body>
 <h1>GridShib CA Debug Page</h1>
+Version { $Version }
 <p>
 <hr/>
 <h2>Sign-On Methods</h2>
@@ -37,7 +37,10 @@
 {
   foreach my $client (keys(%CredRetrieverClients)) {
     my $url = cleanURL($CredRetrieverClients{$client});
-    $OUT .= "<p><form action=\"$url\" method=\"POST\"><input type=\"submit\" value=\"$client\"/></form></p>\n";
+    $OUT .= "<p><form action=\"$url\" method=\"POST\">";
+    $OUT .= $CSRF->getFormElement();
+    $OUT .= "<input type=\"submit\" value=\"$client\"/>";
+    $OUT .= "</form></p>\n";
   }
 }
 </p>

@@ -1,0 +1,246 @@
+#####################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::CSRF
+
+Implement Cross-Site Request Forgery protection.
+
+=cut
+
+package GridShibCA::CSRF;
+
+use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new CSRF object.
+
+B<Arguments:> None
+
+B<Returns:> CSRF instance
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+    $self->{config} = GridShibCA::Config->new();
+    $self->{logger} = $self->{config}->getLogger();
+    $self->{cgi} = $self->{config}->getCGI();
+
+    # Name to use for cookie and form firld for CSRF protection
+    $self->{TokenName} = "CSRFProtection";
+
+    # Length of CSRF token in alphanumeric characters
+    $self->{TokenLen} = 40;
+
+    bless($self, $class);
+
+    # Our CSRF token. If in cookie use that, otherwise create.
+    $self->{Token} = $self->getCookieToken() || $self->createToken();
+
+    return $self;
+}
+
+=item createCookie()
+
+Create and return a cookie suitable for protection against CSRF attacks.
+
+B<Arguments:> None
+
+B<Returns:> Cookie object, undef on error.
+
+=cut
+
+sub createCookie
+{
+    my $self = shift;
+
+    my $cookie = $self->{cgi}->cookie(-name=>$self->{TokenName},
+				      -value=>$self->{Token},
+				      -secure=>1);
+    if (!defined($cookie))
+    {
+	# XXX Some error to be pulled from cgi instance here?
+	throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
+    }
+    return $cookie;
+}
+
+=item expiredCookie()
+
+Create an expired CSRF protection cookie.
+
+B<Arguments:> None
+
+B<Returns:> Cookie object, or undef on error.
+
+=cut
+
+sub expiredCookie
+{
+    my $self = shift;
+
+    my $cookie = $self->cookie(-name=>$self->{TokenName},
+			       -value=>"Expired!",
+			       # Delete
+			       -expires=>"-1d");
+
+    if (!defined($cookie))
+    {
+	# XXX Some error to be pulled from cgi instance here?
+	throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
+    }
+
+    return $cookie;
+}
+
+=item getCookieToken
+
+Return the contents of the CSRF cookie.
+
+B<Arguments:> None
+
+B<Returns:> Cookie value as string, undef if not defined.
+
+=cut
+
+sub getCookieToken
+{
+    my $self = shift;
+
+    my $name = $self->{TokenName};
+    my $cookieValue = $self->{cgi}->cookie($name);
+    return $cookieValue;
+}
+
+=item getFormElement
+
+Return a form element with our CSRF protection.
+
+B<Arguments:> None
+
+B<Returns:> Form element as string, undef on error.
+
+=cut
+
+sub getFormElement
+{
+    my $self = shift;
+
+    my $token = $self->{Token};
+    my $name = $self->{TokenName};
+
+    my $element = sprintf("<input type=\"hidden\" name=\"%s\" value=\"%s\" />",
+			  $name, $token);
+    return $element;
+}
+
+=item createToken
+
+Return a token for use in CSDRF prevention.
+
+B<Arguments:> None
+
+B<Returns:> Token as string, undef on error
+
+=cut
+
+sub createToken
+{
+    my $self = shift;
+
+    my @chars = ( "A" .. "Z", "a" .. "z", 0 .. 9 );
+    $token = "";
+    # Simple varible works better then self reference in for loop
+    my $len = $self->{TokenLen};
+    for (1 .. $len)
+    {
+	$token .= @chars[int(rand(@chars))];
+    }
+    return $token;
+}
+
+=item check()
+
+Check against CSRF attacks. This means checking for a matching form value
+and cookie to make sure user came to us via the form.
+
+B<Arguments:> None
+
+B<Returns:> Nothing, throws GridShibCA::CSRFException on error.
+
+=cut
+
+sub check
+{
+    my $self = shift;
+
+    my $method = $self->{cgi}->request_method();
+    if (!defined($method))
+    {
+	throw GridShibCA::CSRFException("CSRF check failed: could not determine request method.");
+    }
+    if ($method ne "POST")
+    {
+	throw GridShibCA::CSRFException("CSRF check failed: wrong method \"$method\"");
+    }
+
+    my $name = $self->{TokenName};
+
+    my $formValue = $self->{cgi}->param($name);
+    if (!defined($formValue))
+    {
+	throw GridShibCA::CSRFException("Failed to retrieve CSRF form value.");
+    }
+    my $cookieValue = $self->getCookieToken();
+    if (!defined($cookieValue))
+    {
+	throw GridShibCA::CSRFException("Failed to retrieve CSRF cookie value.");
+    }
+    if ($formValue ne $cookieValue)
+    {
+	throw GridShibCA::CSRFException("CSRF check failed. Cookie value ($cookieValue) != form value value ($formValue).");
+    }
+}
+
+
+=back
+
+=cut
+
+##################################################################
+
+package GridShibCA::CSRFException;
+
+# Inherit Error
+use base qw(GridShibCA::Exception);
+
+=head1 GridShibCSRF::CAException
+
+Class for exceptions caused by CSRF errors.
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

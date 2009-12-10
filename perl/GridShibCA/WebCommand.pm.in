@@ -419,8 +419,9 @@ sub _handleRequirements
 
     if ($requirements & $REQUIRE_CSRF_CHECK)
     {
-	throw GridShibCA::RequirementsException(
-	    "CSRF protection not implemented yet.");
+	$self->{logger}->debug("CSRF check");
+	my $csrf = $self->{config}->getCSRF();
+	$csrf->check();
     }
 
     if ($requirements & $REQUIRE_POST)
