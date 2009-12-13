@@ -82,7 +82,7 @@ $REQUIRE_POST = 0x0010;
 
 Create a new WebCommand object.
 
-B<Arguments:> Hash, currently ignored.
+B<Arguments:> Hash of elements from Commands entry.
 
 B<Returns:> WebCommand instance. Throws GridShibCA::Exception on error.
 
@@ -97,6 +97,7 @@ sub new
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     $self->{cgi} = $self->{config}->getCGI();
+    $self->{args} = \%args;
     # Cookies to be added to output HTML
     $self->{cookies} = [];
     return $self;
