@@ -470,7 +470,9 @@ sub cookie
 {
     my $self = shift;
     $self->_checkSession();
-    return CGI::cookie($self->{session}->name() => $self->{session}->id());
+    return CGI::cookie(-name => $self->{session}->name(),
+		       -value => $self->{session}->id(),
+		       -secure => 1);
 }
 
 =back
