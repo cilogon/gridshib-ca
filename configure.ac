@@ -210,7 +210,6 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Command.pm \
 	perl/GridShibCA/Config.pm \
 	perl/GridShibCA/CSRF.pm \
-	perl/GridShibCA/Debug.pm \
 	perl/GridshibCA/DisplayTemplate.pm \
 	perl/GridShibCA/ErrorHandler.pm \
 	perl/GridShibCA/Exception.pm \
