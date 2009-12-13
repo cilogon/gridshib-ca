@@ -53,21 +53,6 @@ sub doCommand
     $self->_displayHTML($templateName, %mappings);
 }
 
-=item _requirements()
-
-Return protection requirements of this command.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return $GridShibCA::WebCommand::ACCEPT_SESSION;
-}
-
 =back
 
 =head2 Version

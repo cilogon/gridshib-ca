@@ -230,21 +230,6 @@ sub _handleOpenIdException
     $self->_displayHTMLError($message, %mappings);
 }
 
-=item _requirements()
-
-Return protection requirements of this command.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return $GridShibCA::WebCommand::REQUIRE_HTTPS;
-}
-
 =item _getConsumerSecret()
 
 Return static consumer secret

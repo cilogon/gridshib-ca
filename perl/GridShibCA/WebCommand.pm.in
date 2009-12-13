@@ -20,59 +20,67 @@ use GridShibCA::Config;
 use GridShibCA::ErrorHandler qw(handleError);
 use GridShibCA::Exception qw(:try);
 
-=head2 Constants
+=head2 Configuration
 
-The following are flags which are OR'ed together and used by
-_requirements().
+A WebCommand is configued in gridshib-ca.conf as with a block in the
+I<Commands> section as follows:
+
+  <Commands>
+    <Debug>
+      class = GridshibCA::DisplayTemplate
+      # Class-specific parameter
+      template = DebugTemplate
+      # Requirements
+      requirements = session_optional
+    </Debug>
+  </Command>
+
+Options for requirements are:
 
 =over 4
 
-=item $REQUIRE_NOTHING
+=item nothing
 
-=cut
+No requirements.
 
-$REQUIRE_NOTHING = 0x0000;
+=item https_optional
 
-=item $REQUIRE_HTTPS
+HTTPS is not required for this command. If this option is not given,
+HTTPS is required.
 
-Require HTTPS as opposed to HTTP.
+=item session_optional
 
-=cut
+Session is established if possible, but not required.  WebCommand is
+responsible for any logic that requires a session. If this option is
+not given, a valid session is required.
 
-$REQUIRE_HTTPS = 0x0001;
+=item csrf
 
-=item $REQUIRE_SESSION
+CSRF check required. see L<GridShibCA::CSRF>.
 
-Require an established session.
+=item post
 
-=cut
-
-$REQUIRE_SESSION = 0x0002;
-
-=item $ACCEPT_SESSION
-
-Process a session if presented, but do not require it. WebCommand
-implementation is responsible for checking for established session.
-
-=cut
-
-$ACCEPT_SESSION = 0x0004;
-
-=item $REQUIRE_CSRF_CHECK
-
-Require CSRF protection.
-
-=cut
-
-$REQUIRE_CSRF_CHECK = 0x0008;
-
-=item Require POST (as opposed to GET or HEAD)
-
-=cut
-
-$REQUIRE_POST = 0x0010;
+Method must be POST.
 
 =back
+
+=cut
+
+our $DEFAULT_REQUIREMENTS = 0x0000;
+our $OPTIONAL_HTTPS = 0x001;
+# 0x0002 is currenly unused
+our $OPTIONAL_SESSION = 0x0004;
+our $REQUIRE_CSRF_CHECK = 0x0008;
+our $REQUIRE_POST = 0x0010;
+
+%RequirementsMappings = (
+    none => $REQUIRE_NOTHING,
+    https_optional => $OPTIONAL_HTTPS,
+    session => $REQUIRE_SESSION,
+    session_optional => $OPTIONAL_SESSION,
+    csrf => $REQUIRE_CSRF_CHECK,
+    post => $REQUIRE_POST,
+    );
 
 =head2 Methods
 
@@ -98,11 +106,11 @@ sub new
     $self->{logger} = $self->{config}->getLogger();
     $self->{cgi} = $self->{config}->getCGI();
     $self->{args} = \%args;
+    $self->{requirements} = $self->{args}->{requirements};
     # Cookies to be added to output HTML
     $self->{cookies} = [];
     return $self;
 }
-
 
 =item invoke()
 
@@ -281,7 +289,8 @@ sub _displayHTML
     # Add some ubiquitous mappings
     $mappings{GridShibCAURL} = $self->{config}->getParamURL("URLs", "WebApp");
     $mappings{MyURL} = $self->{cgi}->url(-full => 1);
-    if ($self->{session}->established())
+    if (defined($self->{session}) and
+	$self->{session}->established())
     {
 	$mappings{id} = $self->{session}->id();
 	$mappings{UserId} = $self->{session}->param("UserId");
@@ -332,29 +341,65 @@ sub _displayHTMLError
     $self->_displayHTML("ErrorTemplate", %mappings);
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    our $DEFAULT_REQUIREMENTS;
+    return $DEFAULT_REQUIREMENTS;
+}
+
 =item _handleRequirements()
 
-Handle the requirements, as returned by _getRequirements(), of this
-command.
+Handle the requirements of this command as specified by the
+'requirements' element of the configuration for the command in
+gridshib-ca.conf or as set by setRequirements().
 
-B<arguments:> None
+B<Arguments:> None
 
 B<Returns:> Nothing, throws exception on error.
 
 =cut
+
 sub _handleRequirements
 {
     my $self = shift;
 
-    my $requirements = $self->_requirements();
+    our (
+	$OPTIONAL_HTTPS,
+	$OPTIONAL_SESSION,
+	$REQUIRE_CSRF_CHECK,
+	$REQUIRE_POST,
+	);
+
+    my $requirements = $self->_defaultRequirements();
+    my $requirementsString = $self->{requirements};
+    if (defined($requirementsString))
+    {
+	$requirements = $self->_parseRequirementsString($requirementsString);
+
+    }
+    # else just use defaults.
+
+    # Sanity check
     if (!defined($requirements))
     {
-	throw GridShibCA::RequirementsException("Requirements undefined.");
+	throw GridShibCA::RequirementsException("Requirements is undefined.");
     }
+
     $self->{logger}->debug("Checking request requirements (0x%X)",
 			   $requirements);
 
-    if ($requirements & $REQUIRE_HTTPS)
+    # Check for HTTPS
+    if (!($requirements & $OPTIONAL_HTTPS))
     {
 	if ($self->_checkHTTPS())
 	{
@@ -367,61 +412,51 @@ sub _handleRequirements
 	}
     }
 
-    if ($requirements & $REQUIRE_SESSION)
+    # Check for Session: We always try to establish session, but it's
+    # only a fatal error if $OPTIONAL_SESSION is not set or something
+    # unexpected happens.
+    try
     {
-	try
-	{
-	    $self->{logger}->debug("Checking for required session.");
-	    $self->{session} = $self->{config}->getCGISession();
-	    $self->{session}->fromCGI($self->{cgi});
-	}
-	catch GridShibCA::SessionExpiredException with
-	{
-	    my $ex = shift;
-	    $ex->throw();
-	}
-	catch GridShibCA::SessionException with
-	{
-	    my $ex = shift;
-	    $ex->throw();
-	}
-	otherwise
-	{
-	    my $ex = shift;
-	    $self->{logger}->logException($ex);
-	    throw GridShibCA::RequirementsException(
-		"Unexpected error establishing session: " . $ex->text());
-	};
+	$self->{logger}->debug("Checking for session.");
+	$self->{session} = $self->{config}->getCGISession();
+	$self->{session}->fromCGI($self->{cgi});
     }
-
-    if ($requirements & $ACCEPT_SESSION)
+    catch GridShibCA::SessionExpiredException with
     {
-	try
+	my $ex = shift;
+	if ($requirements & $OPTIONAL_SESSION)
 	{
-	    $self->{logger}->debug("Checking for optional session.");
-	    $self->{session} = $self->{config}->getCGISession();
-	    $self->{session}->fromCGI($self->{cgi});
-	}
-	catch GridShibCA::SessionExpiredException with
-	{
-	    # Ignore exception
-	    my $ex = shift;
+	    # TODO: I think we really want to still set $self->{session}
+	    # here so that we have access to the old session information.
+	    # But that requires changes to CGISession.pm
+	    $self->{logger}->debug("Session expired.");
 	    $ex->flush();
 	}
-	catch GridShibCA::SessionException with
+	else
 	{
-	    # Ignore exception
-	    my $ex = shift;
+	    $ex->throw();
+	}
+    }
+    catch GridShibCA::SessionException with
+    {
+	my $ex = shift;
+	if ($requirements & $OPTIONAL_SESSION)
+	{
+	    $self->{logger}->debug("Failed to establish session.");
 	    $ex->flush();
 	}
-	otherwise
+	else
 	{
-	    my $ex = shift;
-	    $self->{logger}->logException($ex);
-	    throw GridShibCA::RequirementsException(
-		"Unexpected error establishing session: " . $ex->text());
-	};
+	    $ex->throw();
+	}
     }
+    otherwise
+    {
+	my $ex = shift;
+	$self->{logger}->logException($ex);
+	throw GridShibCA::RequirementsException(
+	    "Unexpected error establishing session: " . $ex->text());
+    };
 
     if ($requirements & $REQUIRE_CSRF_CHECK)
     {
@@ -441,6 +476,41 @@ sub _handleRequirements
 	}
     }
     $self->{logger}->debug("Requirements check done.");
+}
+
+=item _parseRequirementsString()
+
+Parse the requirments string from out configuration and return
+its bitmask value. String is expected to be comma-delimed set of
+tokens which are valid keys to %RequiremetsMappings.
+
+B<Arguments:> Requirement string
+
+B<Returns:> Requirements as bitmask.
+
+=cut
+
+sub _parseRequirementsString
+{
+    my $self = shift;
+    my $string = shift ||
+	throw GridShibCA::RequirementsExceptions("Missing requirements string argument");
+
+    our %RequirementsMappings;
+    our $DEFAULT_REQUIREMENTS;
+
+    my $requirements = $DEFAULT_REQUIREMENTS;
+    my @tokens = split(/,/, $string);
+    foreach my $token (@tokens)
+    {
+	my $requirement = $RequirementsMappings{$token};
+	if (!defined($requirement))
+	{
+	    throw GridShibCA::RequirementsException("Unrecognized requirement \"$token\"");
+	}
+	$requirements |= $requirement;
+    }
+    return $requirements;
 }
 
 =item _checkHTTPS
@@ -506,23 +576,6 @@ sub _exit
     my $status = shift || 0;
     $self->{logger}->debug("Exiting.");
     exit($status);
-}
-
-=item _requirements()
-
-Return the requirements of the command, which should be an bitwise OR
-of the REQUIRE_* and ACCEPT_* constants.  This method should be
-overridden by the child class.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return $GridShibCA::WebCommand::REQUIRE_NOTHING;
 }
 
 =back

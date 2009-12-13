@@ -49,6 +49,21 @@ sub doCommand
     return 1;
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
+}
+
 =item _outputCertificate()
 
 Output the certificate to return it to the client.
@@ -73,23 +88,6 @@ sub _outputCertificate
     
     print $self->{cgi}->header("text/plain");
     print $pem;
-}
-
-=item _requirements()
-
-Return protection requirements of this command.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return
-	$GridShibCA::WebCommand::REQUIRE_SESSION |
-	$GridShibCA::WebCommand::REQUIRE_POST;
 }
 
 =back

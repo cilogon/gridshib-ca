@@ -159,6 +159,22 @@ sub _init
     my $self = shift;
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    # Session is optional so that use without session can create one
+    return $GridShibCA::WebCommand::OPTIONAL_SESSION;
+}
+
 =item _createUserIdentity()
 
 Create a GridShibCA::UserIdentity object from Logon.

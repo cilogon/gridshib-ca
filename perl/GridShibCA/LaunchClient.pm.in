@@ -67,24 +67,6 @@ sub doCommand
     return 1;
 }
 
-
-=item _requirements()
-
-Return protection requirements of this command.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return
-	$GridShibCA::WebCommand::REQUIRE_SESSION |
-	$GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
-}
-
 =item _getTemplate()
 
 Return the Template object. Should be overridden by child class.

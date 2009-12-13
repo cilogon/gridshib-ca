@@ -71,6 +71,22 @@ sub doCommand
     return $status;
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    # Session not required to download trust roots
+    return $GridShibCA::WebCommand::OPTIONAL_SESSION;
+}
+
 =item _handleDirectory
 
 Output the trustroots in the given directory to the client.
@@ -171,21 +187,6 @@ sub _handleFile
 	chomp($_);
 	print $_ . "\n";
     }
-}
-
-=item _requirements()
-
-Return protection requirements of this command.
-
-B<Arguments:> None
-
-B<Returns:> Requirements value
-
-=cut
-
-sub _requirements
-{
-    return $GridShibCA::WebCommand::REQUIRE_HTTPS;
 }
 
 =back
