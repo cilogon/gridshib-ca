@@ -38,6 +38,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
   ErrorTemplate = ${Path}/error.html
   
+  JNLPLaunchTemplate = ${Path}/jnlp-launch.html
+
   LogonTemplate = ${Path}/login.html
 
   LogoutTemplate = ${Path}/logout.html
@@ -127,6 +129,11 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
     # Accept and sign a certificate request
     class = GridShibCA::IssueCert
   </IssueCert>
+
+  <JNLPLaunch>
+    class = GridShibCA::DisplayTemplate
+    template = JNLPLaunchTemplate
+  </JNLPLaunch>
 
   <PythonClient>
     # Allow for download of Python client

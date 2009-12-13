@@ -1,0 +1,47 @@
+<html>
+<head>
+  <title>GridShib CA Credential Downloader Launch</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+</head>
+<body>
+<h1>GridShib CA Credential Downloader Launch</h1>
+<p>
+{
+  my $url = cleanURL($Config->getParamURL("CredRetrieverClients",
+                                          "JavaWebStart"));
+  $OUT .= "<form action=\"$url\" method=\"POST\">";
+  $OUT .= $CSRF->getFormElement();
+  $OUT .= "<noscript><input type=\"submit\" value=\"Continue\"/></noscript>";
+  $OUT .= "</form>";
+}
+</p>
+
+<!-- Submit form automatically -->
+<script type="text/javascript">
+{q{  window.onload = function() { document.forms[0].submit(); } }}
+</script>
+
+<!-- Backup in case above script fails -->
+<script type="text/javascript">
+  <!--  
+  document.write("<div style=\"font-weight: bolder; font-size: larger\">The Credential Retriever is launching...</div>");
+  document.write("<p>If it seems to take more than about 15 seconds before you see some progress, try reloading the page.</p>");
+  // -->
+</script>
+
+<noscript>
+  <p>
+    <strong>Note:</strong> Since your browser does not appear 
+    to support JavaScript, you must press the Continue button 
+    once to complete the request.
+  </p>
+</noscript>
+<p>
+  {
+    my $url = cleanURL($Config->getParamURL("URLs", "GridShibCA"));
+    $OUT .= "<a href=\"$url\">Return to GridShib-CA</a>";
+  }
+</p>
+</body>
+</html>

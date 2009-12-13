@@ -144,6 +144,7 @@ TEMPLATE_FILES="\
 	templates/debug.html \
 	templates/error.html \
 	templates/GSCA.jnlp \
+	templates/jnlp-launch.html \
 	templates/openid-cancel.html \
 	templates/openid-logon-form.html \	
 	templates/login.html \
