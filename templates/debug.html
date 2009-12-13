@@ -13,6 +13,7 @@ Version { $Version }
 <p>
 <ul>
 {
+  my %SignOnMethods = $Config->getSection("AuthMethods");
   foreach my $key (keys(%SignOnMethods)) {
     my $url = cleanURL($SignOnMethods{$key});
     $OUT .= "<li><a href=\"$url\">$key</a></li>";
@@ -25,6 +26,7 @@ Version { $Version }
 <p>
 <ul>
 {
+  my %Commands = $Config->getSection("Commands");
   foreach my $command (keys(%Commands)) {
     $OUT .= "<li><a href=\"GridShibCA.cgi?command=$command\">$command</a></li>\n";
   }
@@ -35,6 +37,7 @@ Version { $Version }
 <h2>Credential Retriever Clients</h2>
 <p>
 {
+  my %CredRetrieverClients = $Config->getSection("CredRetrieverClients");
   foreach my $client (keys(%CredRetrieverClients)) {
     my $url = cleanURL($CredRetrieverClients{$client});
     $OUT .= "<p><form action=\"$url\" method=\"POST\">";

@@ -118,7 +118,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # No command given, what command should be execute?
   DEFAULT = Debug
   <Debug>
-    class = GridShibCA::Debug
+    class = GridShibCA::DisplayTemplate
+    template = DebugTemplate
   </Debug>
 
   <IssueCert>
