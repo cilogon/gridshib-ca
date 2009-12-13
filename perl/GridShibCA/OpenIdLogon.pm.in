@@ -190,6 +190,7 @@ sub _handleClaim
     my $myURL = $self->{cgi}->url(-full => 1);
     my $baseURL = $self->{cgi}->url(-base => 1);
 
+    # Net::OpenId untaints the openid variable and sanity checks it.
     $self->{logger}->info("Got claimed OpenId: $openid");
     my $claimedId = $consumer->claimed_identity($openid);
     if (!$claimedId)
