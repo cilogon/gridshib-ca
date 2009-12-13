@@ -281,7 +281,12 @@ sub _displayHTML
     # Add some ubiquitous mappings
     $mappings{GridShibCAURL} = $self->{config}->getParamURL("URLs", "WebApp");
     $mappings{MyURL} = $self->{cgi}->url(-full => 1);
-
+    if ($self->{session}->established())
+    {
+	$mappings{id} = $self->{session}->id();
+	$mappings{UserId} = $self->{session}->param("UserId");
+	$mappings{session} = $self->{session}->params();
+    }
     $template->addMappings(%mappings);
 
     my $html = $template->getText();
