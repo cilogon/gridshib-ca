@@ -286,14 +286,14 @@ sub _displayHTML
 	$template->setStatus($mappings{-status});
     }
     
-    # Add some ubiquitous mappings
-    $mappings{GridShibCAURL} = $self->{config}->getParamURL("URLs", "WebApp");
-    $mappings{MyURL} = $self->{cgi}->url(-full => 1);
+    # If we have an established session, add session values to mappings
+    # for the template.
     if (defined($self->{session}) and
 	$self->{session}->established())
     {
-	$mappings{id} = $self->{session}->id();
+	$mappings{SessionId} = $self->{session}->id();
 	$mappings{UserId} = $self->{session}->param("UserId");
+	$mappings{IdpId} = $self->{session}->param("Idp");
 	$mappings{session} = $self->{session}->params();
     }
     $template->addMappings(%mappings);

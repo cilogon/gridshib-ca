@@ -48,6 +48,11 @@ sub new
 
     # Reference to array of cookies to add to HTML
     $self->{cookies} = undef;
+
+    # Add HTML-specific initial mappings
+    my $hash = $self->{hash};
+    $hash->{MyURL} = $self->{cgi}->url(-full => 1);
+
     return $self;
 }
 

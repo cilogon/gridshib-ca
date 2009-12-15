@@ -63,7 +63,7 @@ sub new
     $self->{hash} = {
 	Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
 	ContactAddress => $self->{config}->getParam("ContactAddress"),
-	ShibProtectedURL => $self->{config}->getParam("ShibProtectedURL"),
+	GridShibCAURL => $self->{config}->getParamURL("URLs", "WebApp"),
     };
     # Set up some objects in Template Package
     $GridShibCA::TemplatePackage::Config = $self->{config},
