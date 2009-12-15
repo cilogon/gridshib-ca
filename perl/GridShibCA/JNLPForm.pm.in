@@ -1,0 +1,117 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::JNLPForm
+
+Handle display form to user for getting their desire credential
+parameters for the Java Credential Retriever. Also handle CSRF
+protection for the process.
+
+=cut
+
+package GridShibCA::JNLPForm;
+
+# Inherit WebCommand
+use base qw(GridShibCA::WebCommand);
+
+use GridShibCA::CSRF;  # For CSRFException
+use GridShibCA::ErrorHandler qw(handleError);
+use GridShibCA::Exception qw(:try);
+
+=head2 Methods
+
+=over 4
+
+=item doCommand()
+
+Override base class with my specific logic.
+
+B<Arguments:> None
+
+B<Returns:> True on success, False on error.
+
+=cut
+
+sub doCommand
+{
+    my $self = shift;
+    my $args = $self->{args};
+
+    my $templateName = undef;
+    my %mappings = ();
+
+    # Are we being called as a result of form submission?
+    if (defined($self->{cgi}->param("lifetime")))
+    {
+	# Yes, go ahead and output template to launch JNLP
+
+	try
+	{
+	    # But first do CSRF check to ensure user actually
+	    # submitted us via form.
+	    my $csrf = $self->{config}->getCSRF();
+	    $csrf->check();
+
+	    # Success, go ahead and send use to template that launches
+	    # JWS via JNLP file.
+	    $templateName = "JNLPLaunchTemplate";
+	    
+	    # Make sure lifetime is legal
+	    my $lifetime = $self->{cgi}->getRequestedCredLifetime();
+	    my $maxLifetime = $self->{config}->getParam("CA", "MaximumCredLifetime");
+	    if ($lifetime > $maxLifetime)
+	    {
+		$self->{logger}->error("Requested lifetime ($lifetime) greater than maximum ($maxLifetime). Truncating.");
+		$lifetime = $maxLifetime;
+	    }
+	    $self->{logger}->debug("Requested lifetime is $lifetime");
+	    $mappings{Lifetime} = $lifetime;
+	    
+	    my $installTrustedCAs = $self->{cgi}->requestedTrustedCAUpdate();
+	    $self->{logger}->debug("installTrustedCAs = $installTrustedCAs");
+	    $mappings{InstallTrustedCAs} = $installTrustedCAs;
+	}
+	catch GridShibCA::CSRFException with
+	{
+	    # CSRF failed, send user to form
+	    my $ex = shift;
+	    $self->{logger}->error("CSRF check failed for JNLPForm: " . $ex->text());
+	    $templateName = "JNLPLaunchFormTemplate";
+	}
+	otherwise
+	{
+	    # Some other failure, error out
+	    my $ex = shift;
+	    handleError("Error launch Java client: " . $ex->text(),
+			-exception=>$ex);
+	};
+    }
+    else
+    {
+	# No, output template to display form to the user
+	$templateName = "JNLPLaunchFormTemplate";
+    }
+
+    $self->_displayHTML($templateName, %mappings);
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

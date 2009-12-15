@@ -40,6 +40,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   
   JNLPLaunchTemplate = ${Path}/jnlp-launch.html
 
+  JNLPLaunchFormTemplate = ${Path}/jnlp-launch-form.html
+
   LogonTemplate = ${Path}/login.html
 
   LogoutTemplate = ${Path}/logout.html
@@ -131,8 +133,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   </IssueCert>
 
   <JNLPLaunch>
-    class = GridShibCA::DisplayTemplate
-    template = JNLPLaunchTemplate
+    class = GridShibCA::JNLPForm
   </JNLPLaunch>
 
   <PythonClient>

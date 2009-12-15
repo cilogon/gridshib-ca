@@ -78,7 +78,7 @@ sub getRequestedCredLifetime
     my $lifetime = $self->param("lifetime");
     if (!defined($lifetime) or ($lifetime eq "default"))
     {
-	$lifetime = $self->{config}->getParam("DefaultCredLifetime");
+	$lifetime = $self->{config}->getParam("CA", "DefaultCredLifetime");
     }
     elsif ($lifetime eq "specified")
     {
@@ -97,7 +97,7 @@ sub getRequestedCredLifetime
     else
     {
 	$self->{logger}->err("Illegal characters detected in lifetime ($lifetime)");
-	return $self->{config}->getParam("DefaultCredLifetime");
+	return $self->{config}->getParam("CA", "DefaultCredLifetime");
     }
     return $lifetime;
 }
@@ -115,7 +115,7 @@ B<Returns:> 1 if yes, 0 otherwise
 sub requestedTrustedCAUpdate
 {
     my $self = shift;
-    my $requestedCAUpdate = $self->param("installTrustedCAs");
+    my $requestedCAUpdate = $self->param("TrustRoots", "ProvideTrustRoots");
     if (defined($requestedCAUpdate) and
 	($requestedCAUpdate eq "true"))
     {

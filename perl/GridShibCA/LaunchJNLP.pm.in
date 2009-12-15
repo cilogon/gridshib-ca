@@ -104,8 +104,7 @@ sub _setTemplateMappings
     my @Arguments = ();
     try
     {
-	my $provideTrustRoots = $self->{config}->getParam("TrustRoots",
-							  "ProvideTrustRoots");
+	my $provideTrustRoots = $self->{cgi}->param("DownloadTrustroots");
 	push(@Arguments, "DownloadCAs=$provideTrustRoots");
     }
     otherwise
@@ -113,6 +112,11 @@ sub _setTemplateMappings
 	my $ex = shift;
 	$self->{logger}->debug("Error getting ProvideTrustRoots: " . $ex->text());
     };
+    my $lifetime = $self->{cgi}->param("RequestedLifetime");
+    if (defined($lifetime))
+    {
+	push(@Arguments, "lifetime=$lifetime");
+    }
     $template->addMapping("Arguments", \@Arguments);
     $template->addMapping("CodeBase", $codebase);
 }

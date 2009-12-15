@@ -12,6 +12,8 @@
                                           "JavaWebStart"));
   $OUT .= "<form action=\"$url\" method=\"POST\">";
   $OUT .= $CSRF->getFormElement();
+  $OUT .= $CGI->hidden("RequestedLifetime", $Lifetime);
+  $OUT .= $CGI->hidden("DownloadTrustroots", $InstallTrustedCAs);
   $OUT .= "<noscript><input type=\"submit\" value=\"Continue\"/></noscript>";
   $OUT .= "</form>";
 }

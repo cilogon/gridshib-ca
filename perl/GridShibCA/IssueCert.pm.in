@@ -39,6 +39,20 @@ sub doCommand
     my $certificateRequest = $self->{cgi}->getCertificateRequest();
     my $ca = $self->{config}->getCA();
     my %options = ();
+    my $lifetime = $self->{cgi}->param("lifetime");
+    if (defined($lifetime))
+    {
+	# Need to untaint lifetime
+	if ($lifetime =~ /^(\d+)$/)
+	{
+	    $lifetime = $1;
+	}
+	else
+	{
+	    throw GridShibCA::Exception("Illegal characters in lifetime ($lifetime)");
+	}
+	$options{requestedLifetime} = $lifetime;
+    }
     my $certificate = $ca->handleRequest(
 	$self->{session},
 	$certificateRequest,
@@ -47,21 +61,6 @@ sub doCommand
     $self->{session}->destroy();
     $self->_outputCertificate($certificate);
     return 1;
-}
-
-=item _defaultRequirements()
-
-Return the default requirements for this command.
-
-B<Arguments:> None
-
-B<Returns:> Default requirements as bitmask
-
-=cut
-
-sub _defaultRequirements
-{
-    return $GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
 }
 
 =item _outputCertificate()

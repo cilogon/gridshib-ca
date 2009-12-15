@@ -145,6 +145,7 @@ TEMPLATE_FILES="\
 	templates/error.html \
 	templates/GSCA.jnlp \
 	templates/jnlp-launch.html \
+	templates/jnlp-launch-form.html \
 	templates/openid-cancel.html \
 	templates/openid-logon-form.html \	
 	templates/login.html \
@@ -216,6 +217,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Exception.pm \
 	perl/GridShibCA/HTMLTemplate.pm \
 	perl/GridShibCA/IssueCert.pm \
+	perl/GridShibCA/JNLPForm.pm \
 	perl/GridShibCA/LaunchClient.pm \
 	perl/GridShibCA/LaunchJNLP.pm \
 	perl/GridShibCA/Logger.pm \

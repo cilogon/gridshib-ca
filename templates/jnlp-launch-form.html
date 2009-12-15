@@ -1,0 +1,37 @@
+<html>
+<head>
+  <title>GridShib CA Credential Launcher</title>
+  <META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">
+  <META HTTP-EQUIV=\"Expires\" CONTENT=\"-1\">
+</head>
+<body>
+<h1>GridShib CA Credential Launcher</h1>
+{
+  my $secsPerHour = 3600;
+  my $defaultLifetime = $Config->getParam("CA", "DefaultCredLifetime") / $secsPerHour;
+  my $maximumLifetime = $Config->getParam("CA", "MaximumCredLifetime") / $secsPerHour;
+
+  $OUT .= $CGI->start_form(-method=>"POST", -action=>$GridShibCAURL);
+  $OUT .= $CGI->hidden("command", "JNLPLaunch");
+  $OUT .= $CSRF->getFormElement();
+  $OUT .= "Credential Lifetime:";
+  $OUT .= '<input type="radio" name="lifetime" value="default" checked>';
+  $OUT .= "Default ($defaultLifetime hours)";
+  $OUT .= '<input type="radio" name="lifetime" value="specified">';
+  $OUT .= "Other:";
+  $OUT .= "<input type=\"text\" name=\"specifiedLifetime\" value=\"$defaultLifetime\" size=4>";
+  $OUT .= "Hours ($maximumLifetime max) <br/>";
+  $OUT .= $CGI->hidden("lifetimeUnit", "hours");
+  $OUT .= "<br/>";
+
+  # Do we have trust roots to provide to client?
+  if ($Config->getParamBoolean("TrustRoots", "ProvideTrustRoots"))
+  {
+    $OUT .= $CGI->checkbox(-name=>installTrustedCAs, -checked=>1, -value=>"true", -label=>"Update my trusted CAs");
+    $OUT .= "<br/>";
+  }
+  $OUT .= $CGI->submit("submit", "Press here to generate and download Grid credential.");
+  $OUT .= $CGI->endform();
+}
+</body>
+</html>

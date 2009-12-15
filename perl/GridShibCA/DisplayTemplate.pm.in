@@ -47,7 +47,7 @@ sub doCommand
     my $args = $self->{args};
     if (!defined($args->{template}))
     {
-	throw GridShibCA::ConfigException("argument element for DisplayTemplate missing.");
+	throw GridShibCA::ConfigException("template element for DisplayTemplate missing.");
     }
     my $templateName = $args->{template};
     $self->_displayHTML($templateName, %mappings);
