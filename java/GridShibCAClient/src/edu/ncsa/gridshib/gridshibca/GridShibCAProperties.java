@@ -37,6 +37,7 @@ public class GridShibCAProperties
         "UseBundledCAs", // Use CAs in JWS jar to validate HTTPs connections.
         "RedirectURL", // URL to redirect browser to on success
         "TestLaunch", // Just test launch and exit
+        "lifetime" // Requested credential lifetime
     };
 
     /**
@@ -54,6 +55,7 @@ public class GridShibCAProperties
         properties.setProperty("UseBundledCAs", "true");
         properties.setProperty("TestLaunch", "false");
         properties.setProperty("DownloadCAs", "true");
+        properties.setProperty("lifetime", "0"); // 0 == default
         
         // Load from our JWS Jar
         properties.load(propertiesResource.asStream());
@@ -181,7 +183,7 @@ public class GridShibCAProperties
             } else
             {
                 throw new IllegalArgumentException(
-                        "Unrecognized variable: " + var);
+                        "Unrecognized argument: " + var);
             }
         }
     }

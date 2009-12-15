@@ -120,7 +120,8 @@ public class GridShibCACredentialRetriever
         this.message("Requesting credential from GridShib-CA server.");
         try
         {
-            credential = credIssuerURL.requestCredential();
+            int lifetime = GridShibCAProperties.getPropertyAsInt("lifetime");
+            credential = credIssuerURL.requestCredential(lifetime);
         } catch (javax.net.ssl.SSLHandshakeException e)
         {
             fatalError("SSL error communicating with server. Unrecognized HTTPS certificate?", e);

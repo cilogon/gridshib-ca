@@ -11,6 +11,7 @@ Please see LICENSE at the root of the distribution.
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.lang.Integer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -51,6 +52,36 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
 
     /**
      * Request a credential from the GridShibCA.
+     * @param Requested lifetime in seconds.
+     * @return Credential object.
+     * @throws java.io.IOException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws NoSuchProviderException
+     * @throws SignatureException
+     * @throws InvalidKeyException
+     */
+    public Credential requestCredential(int lifetime)
+        throws IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, SignatureException, InvalidKeyException
+    {
+        this.openConnection();
+
+        Credential cred = new Credential();
+        GridShibCAClientLogger.debugMessage("Generating certificate request");
+        String requestPEM = cred.generatePEMCertificateRequest();
+
+        GridShibCAClientLogger.debugMessage("Writing certificate request");
+        this.writeRequest(requestPEM, lifetime);
+
+        GridShibCAClientLogger.debugMessage("Reading certificate");
+        this.readCertificate(cred);
+
+        this.closeConnection();
+        return cred;
+    }
+
+    /**
+     * Request a credential from the GridShibCA with default lifetime.
      * @return Credential object.
      * @throws java.io.IOException
      * @throws NoSuchAlgorithmException
@@ -62,29 +93,17 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
     public Credential requestCredential()
         throws IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, SignatureException, InvalidKeyException
     {
-        this.openConnection();
-
-        Credential cred = new Credential();
-        GridShibCAClientLogger.debugMessage("Generating certificate request");
-        String requestPEM = cred.generatePEMCertificateRequest();
-
-        GridShibCAClientLogger.debugMessage("Writing certificate request");
-        this.writeRequest(requestPEM);
-
-        GridShibCAClientLogger.debugMessage("Reading certificate");
-        this.readCertificate(cred);
-
-        this.closeConnection();
-        return cred;
+        return this.requestCredential(0);
     }
 
 
     /**
      * Send a POST request to the GridShibCA server.
      * @param requestPEM PEM-encoded certificate request.
+     * @param lifetime Requested lifetime in seconds (0 == default).
      * @throws java.io.IOException
      */
-    private void writeRequest(String requestPEM)
+    private void writeRequest(String requestPEM, int lifetime)
         throws IOException
     {
         OutputStreamWriter postWriter =
@@ -93,6 +112,10 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
         values.put("command", "IssueCert");
         values.put("GRIDSHIBCA_SESSION_ID", this.authenticationToken);
         values.put("certificateRequest", requestPEM);
+        if (lifetime > 0)
+        {
+            values.put("lifetime", Integer.toString(lifetime));
+        }
         this.post(values);
     }
 
