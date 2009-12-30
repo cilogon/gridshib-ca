@@ -446,6 +446,16 @@ AC_CLEAN_PATH(GRIDSHIB_CA_CONF_DIR)
 AC_SUBST(GRIDSHIB_CA_CONF_DIR)
 AC_MSG_RESULT(${GRIDSHIB_CA_CONF_DIR})
 
+default=/var/run/gridshib-ca
+AC_MSG_CHECKING([for path to GridShib CA run-time directory])
+AC_ARG_WITH(gridshib-ca-runtime-path,
+	AC_HELP_STRING([--with-gridshib-ca-runtime-path],
+		[Specify the full path to the gridshib-ca runtime directory. This is where session files are stored. (Default: /var/run/gridshib-ca)]),
+	[GRIDSHIB_CA_RUNTIME_PATH=$withval],
+	[GRIDSHIB_CA_RUNTIME_PATH=$default])
+AC_SUBST(GRIDSHIB_CA_RUNTIME_PATH)
+AC_MSG_RESULT(${GRIDSHIB_CA_RUNTIME_PATH})
+
 AC_MSG_CHECKING([for path to Apache doc root])
 default=/var/www/
 AC_ARG_WITH(apache-docroot,

@@ -219,6 +219,7 @@ GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
 TEMPLATE_DIR=@TEMPLATE_DIR@
 GRIDSHIB_CA_WEB_PATH=@GRIDSHIB_CA_WEB_PATH@
 SHIB_PROTECTED_PATH=@SHIB_PROTECTED_PATH@
+GRIDSHIB_CA_RUNTIME_PATH=@GRIDSHIB_CA_RUNTIME_PATH@
 
 # User that httpd runs under
 WWW_USER=@WWW_USER@
@@ -229,7 +230,8 @@ INSTALL_BASE=\
 	install-python \
 	install-jar \
 	install-webapps \
-	install-shib-webapps
+	install-shib-webapps \
+	install-runtime
 
 # install-conf and install-templates will not overwrite existing files
 INSTALL_ALL=\
@@ -351,6 +353,12 @@ install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
 		echo "Installing $${file}" ;\
 		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_PATH) ;\
 	done
+
+install-runtime: $(GRIDSHIB_CA_RUNTIME_PATH)
+
+$(GRIDSHIB_CA_RUNTIME_PATH):
+	@echo "Creating $(GRIDSHIB_CA_RUNTIME_PATH)"
+	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_RUNTIME_PATH)
 
 ######################################################################
 #

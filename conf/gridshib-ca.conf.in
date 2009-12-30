@@ -225,6 +225,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # clients are still hard-coded.
   Name = GRIDSHIBCA_SESSION_ID
 
+  # Directory in which to store sessions
+  Directory = @GRIDSHIB_CA_RUNTIME_PATH@
 </Session>
 
 <TrustRoots>

@@ -86,6 +86,15 @@ sub new
     $CGI::Session::Driver::file::FileName = "gsca-session-%s";
     $self->{defaultLifetime} =
 	$self->{config}->getParam("Session", "DefaultLifetime");
+
+    # Driver to use for CGI::Session objects
+    $self->{driver} = undef; # Use default
+
+    # Arguments to driver (reference to hash)
+    # We set the directory to use to store sessions
+    my $runtimePath = $self->{config}->getParam("Session", "Directory");
+    $self->{driverArguments} = {Directory=>$runtimePath};
+
     bless($self, $class);
     return $self;
 }
@@ -110,12 +119,6 @@ sub createNew
 
     $self->{logger}->debug("Creating new session");
     $self->{session} = $self->_newCGISession();
-    if (!defined($self->{session}))
-    {
-	throw GridShibCA::SessionException(
-	    "Session creation failed.",
-	    -logText => "Failed to create new session object: " . CGI::Session->errstr());
-    }
     my $lifetime = $args{-lifetime} || $self->{defaultLifetime};
     $self->param("Expires", $lifetime + time());
     $self->{logger}->debug("Session established: %s (lifetime %d)",
@@ -143,7 +146,7 @@ sub fromId
 	throw GridShibCA::SessionException("Missing id argument");
 
     $self->{logger}->debug("Loading session (%s)", $id);
-    $self->{session} = CGI::Session->load($id);
+    $self->{session} = $self->_loadCGISession($id);
     $self->_checkSession();
     if ($self->isExpired())
     {
@@ -175,7 +178,7 @@ sub fromCGI
 	throw GridShibCA::SessionException("Missing cgi argument");
 
     $self->{logger}->debug("CGISession: Loading session via CGI");
-    $self->{session} = CGI::Session->load($cgi);
+    $self->{session} = $self->_loadCGISession($cgi);
     if ($self->isExpired())
     {
 	throw GridShibCA::SessionExpiredException("Session expired");
@@ -502,8 +505,46 @@ B<Returns:> CGI::Session instance.
 sub _newCGISession
 {
     my $self = shift;
-    # Empty string == create new session instead of trying to use CGI
-    return CGI::Session->new("");
+
+    # Empty string == create new session instead of trying to use CGI module
+    my $sid = "";
+
+    my $session = CGI::Session->new($self->{driver}, $sid, $self->{driverArguments});
+    if (!defined($session))
+    {
+	throw GridShibCA::SessionException(
+	    "Session creation failed.",
+	    -logText => "Failed to create session object: " . CGI::Session->errstr());
+    }
+    return $session;
+}
+
+=item _loadCGISession()
+
+Load an existing CGI::Session object, handling all its details.
+
+B<Arguments:> Session Id or CGI object.
+
+B<Returns:> CGI::Session instance.
+
+=cut
+
+sub _loadCGISession
+{
+    my $self = shift;
+    # Single argument is either session identifer or CGI instance. 
+    # We treat it identically in either case.
+    my $arg = shift ||
+	throw GridShibCA::Exception("Missing argument");
+
+    my $session = CGI::Session->load($self->{driver}, $arg, $self->{driverArguments});
+    if (!defined($session))
+    {
+	throw GridShibCA::SessionException(
+	    "Session load failed.",
+	    -logText => "Failed to load session object: " . CGI::Session->errstr());
+    }
+    return $session;
 }
 
 =item _checkSession()
