@@ -16,10 +16,17 @@ test-dist: dist test/test-dist.sh
 
 perl-unit-tests: $(PERL_MODULES) $(CONF_FILES)
 	@echo "Running PERL unit tests:"
-	env GRIDSHIB_CA_CONFIG_FILENAME=conf/gridshib-ca.conf $(PERL) -I perl/ test/TestRunner.pl perl/GridShibCA/test/Suite.pm
+	env GRIDSHIB_CA_CONFIG_FILENAME=conf/gridshib-ca.conf $(PERL) -I perl/ test/TestRunner.pl perl/GridShibCA/test/UnitTestSuite.pm
 	@echo "PERL unit tests complete."
 
 test:: perl-unit-tests
+
+# TODO: Add a test to make sure we are running with appropriate permissions
+perl-post-install-tests:
+	@echo "Running PERL post-install tests:"
+	$(PERL) -I $(GRIDSHIB_CA_CONF_DIR)/perl -I perl/ \
+		test/TestRunner.pl perl/GridShibCA/test/PostInstallTestSuite.pm
+	@echo "PERL unit tests complete."
 
 ######################################################################
 #

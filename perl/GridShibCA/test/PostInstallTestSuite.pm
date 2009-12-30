@@ -1,25 +1,21 @@
 ######################################################################
 #
-# Test suite for GridShib-CA PERL modules.
+# Post-install test suite for GridShib-CA PERL modules.
+#
+# These tests require root privileges to run.
 #
 ######################################################################
 
-package GridShibCA::test::Suite;
+package GridShibCA::test::PostInstallTestSuite;
 
 use base qw(Test::Unit::TestSuite);
 
-sub name { 'GridShib-CA Test Suite' } 
+sub name { 'GridShib-CA Post-install Test Suite' } 
 
 sub include_tests
 {
     qw(
-GridShibCA::test::ConfigTest
-GridShibCA::test::CommandTest
-GridShibCA::test::ExceptionTest
-GridShibCA::test::HTMLTemplateTest
-GridShibCA::test::LoggerTest
-GridShibCA::test::ShibLogonTest
-GridShibCA::test::UserIdentityTest
+GridShibCA::test::CGISessionTest
 )
 }
 
