@@ -145,7 +145,7 @@ package GridShibCA::CertRegistryException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::CertRegistryException
+=head2 GridShibCA::CertRegistryException
 
 Class for exceptions caused by certificate registration errors.
 

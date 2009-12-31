@@ -225,11 +225,11 @@ package GridShibCA::TemplateException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::TemplateException
+=head2 GridShibCA::TemplateException
 
 Class for exceptions caused by Template errors.
 
-=head1 Version
+=head2 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@
 

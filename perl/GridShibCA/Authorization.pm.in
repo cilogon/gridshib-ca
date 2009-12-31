@@ -290,7 +290,7 @@ package GridShibCA::AuthorizationException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::AuthorizationException
+=head2 GridShibCA::AuthorizationException
 
 Class for exceptions caused by authorization errors (besides failure).
 
@@ -305,7 +305,7 @@ package GridShibCA::AuthorizationFailedException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::AuthorizationFailedException
+=head2 GridShibCA::AuthorizationFailedException
 
 Class for exceptions caused by authorization failure.
 

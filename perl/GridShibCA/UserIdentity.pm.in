@@ -129,7 +129,7 @@ package GridShibCA::UserIdentityException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::UserIdentityException
+=head2 GridShibCA::UserIdentityException
 
 Class for exceptions caused by user identity object errors.
 

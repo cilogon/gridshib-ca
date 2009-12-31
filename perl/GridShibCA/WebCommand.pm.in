@@ -616,7 +616,7 @@ package GridShibCA::RequirementsException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::RequirementsException
+=head2 GridShibCA::RequirementsException
 
 Class for exceptions caused by requirement errors.
 

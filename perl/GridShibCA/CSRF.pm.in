@@ -227,7 +227,7 @@ package GridShibCA::CSRFException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCSRF::CAException
+=head2 GridShibCSRF::CAException
 
 Class for exceptions caused by CSRF errors.
 

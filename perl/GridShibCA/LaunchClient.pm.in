@@ -149,7 +149,7 @@ sub _setTemplateMappings
 
 =back
 
-=head1 Version
+=head2 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@
 

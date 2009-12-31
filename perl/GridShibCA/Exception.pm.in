@@ -99,7 +99,7 @@ package GridShibCA::InternalException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::InternalException
+=head2 GridShibCA::InternalException
 
 Class for exceptions caused by internal GridShibCA errors that caused
 by code, misconfiguration, etc.

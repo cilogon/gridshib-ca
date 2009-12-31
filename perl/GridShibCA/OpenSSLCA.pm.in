@@ -109,12 +109,11 @@ sub new
 
 ######################################################################
 
-=head1 Internal methods
+=head2 Internal methods
 
 These internal methods not intended for external use.
 
 =over 4
-
 
 =item _signRequest()
 
@@ -338,7 +337,7 @@ sub _getSAMLExt
 
 =back
 
-=head1 Version
+=head2 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@
 

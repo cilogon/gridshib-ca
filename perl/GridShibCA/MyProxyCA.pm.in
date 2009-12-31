@@ -48,9 +48,9 @@ use Globus::MyProxyClient;
 
 use GridShibCA::Config;
 
-=head1 Methods
+=head2 Methods
 
-=pver 4
+=over 4
 
 =item new()
 
@@ -143,7 +143,7 @@ sub signRequest
 
 ######################################################################
 
-=head1 Internal methods
+=head2 Internal methods
 
 These internal methods not intended for external use.
 
@@ -209,7 +209,7 @@ sub _convertCertDERtoPEM {
 
 =back
 
-=head1 Version
+=head2 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@
 

@@ -272,6 +272,10 @@ sub _getMaximumLifetime
     return $self->{config}->getParam("CA", "MaximumCredLifetime");
 }
 
+=back
+
+=cut
+
 ##################################################################
 
 package GridShibCA::CAException;
@@ -279,11 +283,11 @@ package GridShibCA::CAException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::CAException
+=head2 GridShibCA::CAException
 
 Class for exceptions caused by CA errors.
 
-=head1 Version
+=head2 Version
 
 GridShib-CA version @PACKAGE_VERSION_STRING@
 

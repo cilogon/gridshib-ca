@@ -703,7 +703,7 @@ package GridShibCA::SessionException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::SessionException
+=head2 GridShibCA::SessionException
 
 Class for exceptions caused by session errors.
 
@@ -717,7 +717,7 @@ package GridShibCA::SessionExpiredException;
 
 use base qw(GridShibCA::SessionException);
 
-=head1 GridShibCA::SessionExpiredException
+=head2 GridShibCA::SessionExpiredException
 
 The client session has expired.
 
@@ -731,7 +731,7 @@ package GridShibCA::SessionInvalidException;
 
 use base qw(GridShibCA::SessionException);
 
-=head1 GridShibCA::SessionInvalidException
+=head2 GridShibCA::SessionInvalidException
 
 The client session is invalid.
 

@@ -879,7 +879,7 @@ package GridShibCA::ConfigException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::ConfigException
+=head2 GridShibCA::ConfigException
 
 Class for exceptions caused by configuration errors.
 
@@ -892,7 +892,7 @@ package GridShibCA::ModuleException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::ModuleException
+=head2 GridShibCA::ModuleException
 
 Class for exceptions caused by module loading errors.
 

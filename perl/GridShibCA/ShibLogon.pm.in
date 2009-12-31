@@ -143,6 +143,10 @@ sub getSSOResponse
     return $ssoResponse;
 }
 
+=back
+
+=cut
+
 ######################################################################
 
 =head2 Internal methods
@@ -186,7 +190,6 @@ sub _init
 }
 
 =back
-
 
 =cut
 

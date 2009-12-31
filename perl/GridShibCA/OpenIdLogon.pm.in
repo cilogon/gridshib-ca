@@ -283,7 +283,7 @@ package GridShibCA::OpenIdException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::OpenIdException
+=head2 GridShibCA::OpenIdException
 
 Class for exceptions caused by session errors.
 

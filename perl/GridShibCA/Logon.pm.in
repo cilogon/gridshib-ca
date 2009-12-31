@@ -246,7 +246,7 @@ package GridShibCA::LogonException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::LogonException
+=head2 GridShibCA::LogonException
 
 Class for exceptions caused by Logon errors.
 

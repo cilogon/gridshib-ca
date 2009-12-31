@@ -6,7 +6,7 @@
 #
 ######################################################################
 
-=head1 Command class
+=head1 GridShibCA::Command
 
 Interface to executing command, controling its STDIN and getting
 its STDOUT and STDERR.
@@ -212,6 +212,10 @@ sub getStatus
     return $self->{status};
 }
 
+=back
+
+=cut
+
 ######################################################################
 #
 # GridShibCA::CommandException
@@ -221,11 +225,9 @@ package GridShibCA::CommandException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::CommandException
+=head2 GridShibCA::CommandException
 
 Class for exceptions caused by command execution errors.
-
-=back
 
 =head2 Version
 

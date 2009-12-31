@@ -225,7 +225,7 @@ package GridShibCA::PolicyException;
 # Inherit GridShibCA::Exception
 use base qw(GridShibCA::Exception);
 
-=head1 GridShibCA::PolicyException
+=head2 GridShibCA::PolicyException
 
 Class for exceptions caused by policy configuration errors.
 
