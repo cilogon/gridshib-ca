@@ -204,7 +204,7 @@ $(GRIDSHIBCACLIENT_PATH)/resources/properties: $(GRIDSHIBCACLIENT_PATH)/resource
 
 clean:: javaclean
 
-realcleam:: javaclean
+realclean:: javaclean
 
 .PHONY: subdirs $(SUBDIRS) jar javaclean $(GRIDSHIBCACLIENT_PATH)
 
