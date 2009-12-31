@@ -558,8 +558,7 @@ test-cert-issue:
 	@echo "Testing with ePTID-like Id:"
 	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl eptid:like/id@fakeidp.org  urn:mace:incommon:fakeidp
 
-test-post-install: test-cert-issue
-	@echo "Post install tests successful."
+test-post-install:: test-cert-issue
 
 test-myproxy-mapapp: utils/myproxy-mapapp.pl
 	@chmod 755 utils/myproxy-mapapp.pl

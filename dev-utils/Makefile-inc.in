@@ -28,6 +28,8 @@ perl-post-install-tests:
 		test/TestRunner.pl perl/GridShibCA/test/PostInstallTestSuite.pm
 	@echo "PERL unit tests complete."
 
+test-post-install:: perl-post-install-tests
+
 ######################################################################
 #
 # Name of test host
