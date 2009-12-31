@@ -466,7 +466,7 @@ $(PERL_SCRIPTS_DOC_DIR):
 $(PERL_MODULES_DOC_DIR):
 	@$(INSTALL) -d -m 0755 $(PERL_MODULES_DOC_DIR)
 
-POD2HTML_ROOT=/
+POD2HTML_ROOT=/gridshib-ca/docs/gridshib-ca-2.0.0/perl/
 
 # Program to cleanup pod2html output
 # Currently this removes the xml header
