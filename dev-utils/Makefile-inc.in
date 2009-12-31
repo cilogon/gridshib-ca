@@ -68,20 +68,25 @@ deploy-test: $(DIST_FILES) dev-utils/build-test.sh
 
 ######################################################################
 #
-# Install documentation on gridshib.globus.org
+# Publish documentation and distribution
 #
+# See: http://sourceforge.net/apps/trac/sourceforge/wiki/Rsync%20over%20SSH
 
-install-doc: doc
-	@echo Rsyncing docs to gridshib.globus.org
-	@chmod -R ag+r $(DOC_DIR)
-	@rsync -auvp $(DOC_FILES) $(DOC_IMAGES) $(PERL_DOC_DIR) welch@cvs.globus.org:gridshib.globus.org/docs/$(DOC_INSTALL_DIR)
+PUBLISH_TARGET=@PUBLISH_TARGET@
 
-install-dist: dist
-	@echo Rsyncing $(DIST_FILE) to gridshib.globus.org
+# Paths on PUBLISH_HOST to publish to
+DOC_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/docs/@DIST_DOC_DIR@
+DIST_PUBLISH_TARGET=$(PUBLISH_TARGET):gridshib-ca/downloads
+
+publish-doc: doc
+	@echo Rsyncing documentation to $(DOC_PUBLISH_TARGET)
+	rsync -auvp $(DOC_DIR)/* $(DOC_PUBLISH_TARGET)
+
+publish-dist: dist
+	@echo Rsyncing $(DIST_FILE) to $(DIST_PUBLISH_TARGET)
 	@chmod g+rw $(DIST_FILE)
 	@chmod o+r $(DIST_FILE)
-	@rsync -auv $(DIST_FILE) cvs.globus.org:/www/gridshib.globus.org/downloads/
-	@ssh gridshib.globus.org chgrp gridshib /www/gridshib.globus.org/downloads/$(DIST_FILE)
+	@rsync -auv $(DIST_FILE) $(DIST_PUBLISH_TARGET)
 
 ######################################################################
 #
