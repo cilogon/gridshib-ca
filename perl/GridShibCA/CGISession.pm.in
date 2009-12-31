@@ -18,6 +18,11 @@ Defined parameters that should be stored in the session.
 
 =over 4
 
+=item Type
+
+There are two types of sessions: "Browser" sessions and
+"CredentialIssuer" sessions. Type must be one of those two strings.
+
 =item UserId
 
 User identifier as returned by L<GridShibCA::WebSignOn>.
@@ -107,6 +112,9 @@ B<Arguments:>
 
 C<-lifetime> <value>         lifetime of session in seconds
 
+C<-type> <value>             value should be one of "Browser" or
+                             "CredentialIssuer". Default is "Browser".
+
 B<Returns:> Nothing. Throws GridShibCA::SessionException on error.
 reason.
 
@@ -119,10 +127,16 @@ sub createNew
 
     $self->{logger}->debug("Creating new session");
     $self->{session} = $self->_newCGISession();
+
+    # Must set type before calling param() method to avoid undefined type error.
+    my $type = $args{-type} || "Browser";
+    $self->_setType($type);
+
     my $lifetime = $args{-lifetime} || $self->{defaultLifetime};
     $self->param("Expires", $lifetime + time());
-    $self->{logger}->debug("Session established: %s (lifetime %d)",
-			   $self->id(), $lifetime);
+
+    $self->{logger}->debug("Session established: %s (lifetime %d, type %s)",
+			   $self->id(), $lifetime, $type);
 }
 
 
@@ -426,7 +440,7 @@ sub createClientSession
     my $lifetime =
 	$self->{config}->getParam("Session",
 				  "CredentialRetrieverClientLifetime");
-    $session->createNew(-lifetime => $lifetime);
+    $session->createNew(-lifetime => $lifetime, -type => "CredentialIssuer");
     $self->{logger}->debug("New client session %s created (lifeime: %d)",
 			   $session->id(), $lifetime);
 
@@ -476,6 +490,40 @@ sub cookie
     return CGI::cookie(-name => $self->{session}->name(),
 		       -value => $self->{session}->id(),
 		       -secure => 1);
+}
+
+=item isBrowserSession()
+
+Is this session a Browser session?
+
+B<Arguments:> None
+
+B<Returns:> True if Browser session, False otherwise.
+
+=cut
+
+sub isBrowserSession
+{
+    my $self = shift;
+    $self->_checkSession();
+    return ($self->_getType() eq "Browser");
+}
+
+=item isCredentialIssuerSession()
+
+Is this session a CredentialIssuer session?
+
+B<Arguments:> None
+
+B<Returns:> True if Credential Issuer session, False otherwise.
+
+=cut
+
+sub isCredentialIssuerSession
+{
+    my $self = shift;
+    $self->_checkSession();
+    return ($self->_getType() eq "CredentialIssuer");
 }
 
 =back
@@ -578,9 +626,68 @@ sub _checkSession
 	    -logText => $logText);
     }
 
-    # Final sanity check
+    # Sanity check session id
     my $id = $session->id() ||
 	throw GridShibCA::SessionException("Session id not defined");
+
+    # Sanity check session type
+    # Don't use $self->param() here as that would result in a infinite loop
+    my $type = $self->{session}->param("Type");
+    if (!defined($type))
+    {
+	throw GridShibCA::SessionException("Session type not defined");
+    }
+    if (($type ne "Browser") and ($type ne "CredentialIssuer"))
+    {
+	throw GridShibCA::SessionException("Session is of unknown type: $type");
+    }
+}
+
+=item _setType()
+
+Set the type of the Session.
+
+B<Arguments:> Type, must be "Browser" or "CredentialIssuer"
+
+B<Returns:> Nothing
+
+=cut
+
+sub _setType
+{
+    my $self = shift;
+    my $type = shift ||
+	throw GridShibCA::SessionException("Missing type argument");
+
+    if (($type eq "Browser") || ($type eq "CredentialIssuer"))
+    {
+	$self->{session}->param("Type", $type);
+    }
+    else
+    {
+	throw GridShibCA::SessionException("Bad type \"$type\"");
+    }
+}
+
+=item _getType()
+
+Return the type of this session.
+
+B<Arguments:> None
+
+B<Returns:> Type as string
+
+=cut
+
+sub _getType
+{
+    my $self = shift;
+    my $type = $self->{session}->param("Type");
+    if (!defined($type))
+    {
+	throw GridShibCA::SessionException("Session type undefined");
+    }
+    return $type;
 }
 
 =back

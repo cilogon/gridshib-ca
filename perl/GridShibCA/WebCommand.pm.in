@@ -54,6 +54,11 @@ Session is established if possible, but not required.  WebCommand is
 responsible for any logic that requires a session. If this option is
 not given, a valid session is required.
 
+=item credential_issuer_session
+
+Require a session specifically intended for a credential issuance.
+Note that this also provides CSRF protection.
+
 =item csrf
 
 CSRF check required. see L<GridShibCA::CSRF>.
@@ -68,7 +73,7 @@ Method must be POST.
 
 our $DEFAULT_REQUIREMENTS = 0x0000;
 our $OPTIONAL_HTTPS = 0x001;
-# 0x0002 is currenly unused
+our $REQUIRE_CREDENTIAL_ISSUER_SESSION = 0x0002;
 our $OPTIONAL_SESSION = 0x0004;
 our $REQUIRE_CSRF_CHECK = 0x0008;
 our $REQUIRE_POST = 0x0010;
@@ -80,6 +85,7 @@ our $REQUIRE_POST = 0x0010;
     https_optional => $OPTIONAL_HTTPS,
     session => $REQUIRE_SESSION,
     session_optional => $OPTIONAL_SESSION,
+    credential_issuer_session => $REQUIRE_CREDENTIAL_ISSUER_SESSION,
     csrf => $REQUIRE_CSRF_CHECK,
     post => $REQUIRE_POST,
     );
@@ -422,6 +428,25 @@ sub _handleRequirements
 	$self->{logger}->debug("Checking for session.");
 	$self->{session} = $self->{config}->getCGISession();
 	$self->{session}->fromCGI($self->{cgi});
+	if ($requirements & $REQUIRE_CREDENTIAL_ISSUER_SESSION)
+	{
+	    if (!$self->{session}->isCredentialIssuerSession())
+	    {
+		my $msg = "Session is not CredentialIssuer session";
+		$self->{logger}->err($msg);
+		throw GridShibCA::SessionException($msg);
+	    }
+	}
+	else
+	{
+	    # Must be browser session
+	    if (!$self->{session}->isBrowserSession())
+	    {
+		my $msg = "Session is not Browser session";
+		$self->{logger}->err($msg);
+		throw GridShibCA::SessionException($msg);
+	    }
+	}
     }
     catch GridShibCA::SessionExpiredException with
     {

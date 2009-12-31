@@ -24,6 +24,8 @@ sub set_up
     $self->assert_not_null($self->{session});
     $self->{session}->createNew();
     $self->assert_not_null($self->{session}->id());
+    $self->assert_equals(1, $self->{session}->isBrowserSession());
+    $self->assert_equals(0, $self->{session}->isCredentialIssuerSession());
     $self->{session}->param("Variable1", "Value1");
     $self->{session}->param("Variable2", "Value2");
     $self->{session}->flush();
@@ -113,9 +115,13 @@ sub test_clientSession
 	-idpId => "Jane Idp",
 	-clientHost => "localhost");
     $self->{session}->fromUserIdentity($userId);
+    $self->assert_equals(1, $self->{session}->isBrowserSession());
+    $self->assert_equals(0, $self->{session}->isCredentialIssuerSession());
     my $clientSession = $self->{session}->createClientSession();
     $self->assert_not_null($clientSession);
     $self->assert_not_equals($clientSession->id(), $self->{session}->id());
+    $self->assert_equals(0, $clientSession->isBrowserSession());
+    $self->assert_equals(1, $clientSession->isCredentialIssuerSession());
     my $clientUserId = $clientSession->userIdentity();
     $self->assert_equals($clientUserId->authMethod(), $userId->authMethod());
     $self->assert_equals($clientUserId->userId(), $userId->userId());

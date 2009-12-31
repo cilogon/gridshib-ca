@@ -63,6 +63,21 @@ sub doCommand
     return 1;
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    return $GridShibCA::WebCommand::REQUIRE_CREDENTIAL_ISSUER_SESSION;
+}
+
 =item _outputCertificate()
 
 Output the certificate to return it to the client.
