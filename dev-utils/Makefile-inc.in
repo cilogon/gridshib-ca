@@ -78,9 +78,11 @@ PUBLISH_TARGET=@PUBLISH_TARGET@
 DOC_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/docs/@DIST_DOC_DIR@
 DIST_PUBLISH_TARGET=$(PUBLISH_TARGET):gridshib-ca/downloads
 
+# Seems like we have to explicitly include .htaccess here to get
+# it do sync
 publish-doc: doc
 	@echo Rsyncing documentation to $(DOC_PUBLISH_TARGET)
-	rsync -auvp $(DOC_DIR)/* $(DOC_PUBLISH_TARGET)
+	rsync -auvp $(DOC_DIR)/* $(DOC_DIR)/.htaccess $(DOC_PUBLISH_TARGET)
 
 publish-dist: dist
 	@echo Rsyncing $(DIST_FILE) to $(DIST_PUBLISH_TARGET)

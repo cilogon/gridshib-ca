@@ -1,0 +1,7 @@
+Options Indexes FollowSymLinks
+IndexOptions FancyIndexing
+# Put header.html at top of output
+HeaderName header.html
+# And do not put header.html in directory listing.
+IndexIgnore header.html
+
