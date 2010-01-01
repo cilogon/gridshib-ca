@@ -10,9 +10,11 @@
 
 Generate ouput from a template file and runtime variables.
 
-Based on Text::Template - see its documentation. Briefly template
-files have strings such as "{$variable}" which are filled in at
-runtime with values and then the result is output.
+Based on Text::Template
+(L<http://search.cpan.org/dist/Text-Template/lib/Text/Template.pm>) -
+see its documentation. Briefly template files have strings such as
+"{$variable}" which are filled in at runtime with values and then the
+result is output.
 
 =cut
 
