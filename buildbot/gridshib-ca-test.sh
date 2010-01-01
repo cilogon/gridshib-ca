@@ -74,6 +74,8 @@ keystore=`pwd`/test/test.pkcs12
 # Note that 0_5_0 branch doesn't support --with-jarsigner-keystore
 # and uses ~/.keystore
 confOpts="${confOpts} --with-jarsigner-keystore=${keystore}"
+# Installing as non-root, so cannot write to default /var/run/gridshib-ca
+confOpts="${confOpts} --with-gridshib-ca-runtime-path=/tmp/gridshib-ca-runtime"
 
 echo "Configure options: ${confOpts}"
 
