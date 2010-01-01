@@ -8,9 +8,8 @@
 
 =head1 GridShibCA::CGIinterface
 
-Wrapper around standard PERL CGI
-(L<http://search.cpan.org/dist/CGI.pm/CGI.pm>) interface with
-convienence functions for the GridShibCA.
+Wrapper around standard PERL CGI (L<http://perldoc.perl.org/CGI.html>)
+interface with convienence functions for the GridShibCA.
 
 =cut
 
