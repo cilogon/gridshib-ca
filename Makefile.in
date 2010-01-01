@@ -356,6 +356,10 @@ install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
 
 install-runtime: $(GRIDSHIB_CA_RUNTIME_PATH)
 
+# TODO: install returns a misleading error if it cannot create this
+# directory ("cannot change owner and permissions of
+# `/var/run/gridshib-ca': No such file or directory"). Add a test to
+# verify install won't fail.
 $(GRIDSHIB_CA_RUNTIME_PATH):
 	@echo "Creating $(GRIDSHIB_CA_RUNTIME_PATH)"
 	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_RUNTIME_PATH)
