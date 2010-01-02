@@ -98,6 +98,25 @@ ENV = @ENV@
 
 ######################################################################
 #
+# Installation short cuts
+#
+
+# Root user
+ROOT_USER=@ROOT_USER@
+
+# User and group that httpd runs under
+WWW_USER=@WWW_USER@
+WWW_GROUP=@WWW_GROUP@
+
+INSTALL_ROOT_OWNED = $(INSTALL) -o $(ROOT_USER) -g $(WWW_GROUP) -m 0640
+INSTALL_APACHE_OWNED = $(INSTALL) -o $(WWW_USER) -g $(WWW_GROUP) -m 0640
+INSTALL_ROOT_EXECUTABLE = $(INSTALL) -o $(ROOT_USER) -g $(WWW_GROUP) -m 0700
+INSTALL_APACHE_EXECUTABLE = $(INSTALL) -o $(ROOT_USER) -g $(WWW_GROUP) -m 0750
+MKDIR_ROOT_OWNED = $(INSTALL) -d -o $(ROOT_USER) -g $(WWW_GROUP) -m 0750
+MKDIR_APACHE_OWNED = $(INSTALL) -d -o $(WWW_USER) -g $(WWW_GROUP) -m 0750
+
+######################################################################
+#
 # Tools needed for building and distribution
 #
 
@@ -214,15 +233,21 @@ realclean:: javaclean
 # Installation
 #
 
-# Installation directories
+# Configuration directory and subdirectories
 GRIDSHIB_CA_CONF_DIR=@GRIDSHIB_CA_CONF_DIR@
-TEMPLATE_DIR=@TEMPLATE_DIR@
+INSTALL_CERTS_DIR=@INSTALL_CERTS_DIR@
+INSTALL_TEMPLATES_DIR=@INSTALL_TEMPLATES_DIR@
+INSTALL_CONF_DIR=@INSTALL_CONF_DIR@
+INSTALL_BIN_DIR=@INSTALL_BIN_DIR@
+INSTALL_PERL_DIR=@INSTALL_PERL_DIR@
+INSTALL_MYPROXY_DIR=@INSTALL_MYPROXY_DIR@
+INSTALL_OPENSSL_CA_DIR=@INSTALL_OPENSSL_CA_DIR@
+
+# Directories under Apache docroot
 GRIDSHIB_CA_WEB_PATH=@GRIDSHIB_CA_WEB_PATH@
 SHIB_PROTECTED_PATH=@SHIB_PROTECTED_PATH@
-GRIDSHIB_CA_RUNTIME_PATH=@GRIDSHIB_CA_RUNTIME_PATH@
 
-# User that httpd runs under
-WWW_USER=@WWW_USER@
+GRIDSHIB_CA_RUNTIME_PATH=@GRIDSHIB_CA_RUNTIME_PATH@
 
 INSTALL_BASE=\
 	install-binaries \
@@ -231,7 +256,10 @@ INSTALL_BASE=\
 	install-jar \
 	install-webapps \
 	install-shib-webapps \
-	install-runtime
+	install-runtime \
+	install-openssl-ca \
+	install-myproxy \
+	$(INSTALL_CERTS_DIR)
 
 # install-conf and install-templates will not overwrite existing files
 INSTALL_ALL=\
@@ -252,106 +280,136 @@ install: $(INSTALL_ALL)
 install-force: $(INSTALL_FORCE) 
 	@echo "Installation done."
 
+# Base directory, owned by root, readable by Apache
 $(GRIDSHIB_CA_CONF_DIR):
-	@echo "Creating $(GRIDSHIB_CA_CONF_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)
+	@echo "Creating $@"
+	@$(MKDIR_ROOT_OWNED) $@
 
-install-conf: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
-	@echo "Installing configuration in $(GRIDSHIB_CA_CONF_DIR)"
+# These directories are owned by root and readable by Apache
+ROOT_OWNED_DIRS=\
+	$(INSTALL_TEMPLATES_DIR) \
+	$(INSTALL_CONF_DIR) \
+	$(INSTALL_BIN_DIR) \
+	$(INSTALL_PERL_DIR) \
+	$(INSTALL_MYPROXY_DIR) \
+	$(INSTALL_OPENSSL_CA_DIR)
+
+$(ROOT_OWNED_DIRS): $(GRIDSHIB_CA_CONF_DIR)
+	@echo "Creating $@"
+	@$(MKDIR_ROOT_OWNED) $@
+
+# These directories are owned by Apache
+APACHE_OWNED_DIRS=\
+	$(INSTALL_CERTS_DIR)
+
+$(APACHE_OWNED_DIRS): $(GRIDSHIB_CA_CONF_DIR)
+	@echo "Creating $@"
+	@$(MKDIR_APACHE_OWNED) $@
+
+install-conf: $(INSTALL_CONF_DIR) $(CONF_FILES)
+	@echo "Installing configuration in $(INSTALL_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
-		target=$(GRIDSHIB_CA_CONF_DIR)/$${f} ;\
+		target=$(INSTALL_CONF_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
 		if test -f $${target} ; then \
 			echo "  Avoiding overwriting existing file." ;\
 			target=$${target}.new ;\
 		fi ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $${target} ;\
+		$(INSTALL_ROOT_OWNED) $${file} $${target} ;\
         done
 
 install-conf-force: $(GRIDSHIB_CA_CONF_DIR) $(CONF_FILES)
 	@echo "Force installing configuration to $(GRIDSHIB_CA_CONF_DIR)"
 	@for file in $(CONF_FILES) ; do \
 		f=`basename $${file}` ;\
-		target=$(GRIDSHIB_CA_CONF_DIR)/$${f} ;\
+		target=$(INSTALL_CONF_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $${target} ;\
+		$(INSTALL_ROOT_OWNED) $${file} $${target} ;\
 	done
 
-install-binaries: $(GRIDSHIB_CA_CONF_DIR) $(UTILS) $(BINARIES)
-	@echo "Installing binaries to $(GRIDSHIB_CA_CONF_DIR)"
+# TODO: This results in openssl-ca also being installed in bin dir,
+#       duplicating the install in INSTALL_OPENSSL_CA_DIR. Make this
+#       not so for hygiene reasons.
+install-binaries: $(INSTALL_BIN_DIR) $(UTILS) $(BINARIES)
+	@echo "Installing binaries to $(INSTALL_BIN_DIR)"
 	@for file in $(UTILS) $(BINARIES) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR) ;\
+		$(INSTALL_ROOT_EXECUTABLE) $${file} $(INSTALL_BIN_DIR) ;\
 	done
+
+OPENSSL_CA_BINARY = openssl-ca/openssl-ca
+
+install-openssl-ca: $(INSTALL_OPENSSL_CA_DIR) $(OPENSSL_CA_BINARY)
+	@echo "Installing openssl-ca binary in $(INSTALL_OPENSSL_CA_DIR)"
+	@$(INSTALL_APACHE_EXECUTABLE) openssl-ca/openssl-ca $(INSTALL_OPENSSL_CA_DIR)
+
+# We don't actually install anything for MyProxy, just create the
+# directory for the installer.
+install-myproxy: $(INSTALL_MYPROXY_DIR)
 
 install-python: $(PYHON_SCRIPTS) $(GRIDSHIB_CA_WEB_PATH)
 	@echo "Installing python scripts to $(GRIDSHIB_CA_WEB_PATH)"
 	@for file in $(PYTHON_SCRIPTS) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0600 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
+		$(INSTALL_ROOT_OWNED) $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
 	done
 
-install-perl: $(PERL_MODULES) $(PERL_DIST_MODULES)
-	@echo "Installing perl modules to $(GRIDSHIB_CA_CONF_DIR)"
+install-perl: $(INSTALL_PERL_DIR) $(PERL_MODULES) $(PERL_DIST_MODULES)
+	@echo "Installing perl modules to $(INSTALL_PERL_DIR)"
 	@for file in $(PERL_MODULES) $(PERL_DIST_MODULES) ; do \
 		echo "Installing $${file}" ;\
 		d=`dirname $${file}` ;\
-		$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_CONF_DIR)/$${d} ;\
-		$(INSTALL) -o $(WWW_USER) -m 0700 $${file} $(GRIDSHIB_CA_CONF_DIR)/$${file} ;\
+		$(MKDIR_ROOT_OWNED) $(GRIDSHIB_CA_CONF_DIR)/$${d} ;\
+		$(INSTALL_ROOT_OWNED) $${file} $(GRIDSHIB_CA_CONF_DIR)/$${file} ;\
 	done
 
 $(GRIDSHIB_CA_WEB_PATH):
 	@echo "Creating $(GRIDSHIB_CA_WEB_PATH)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(GRIDSHIB_CA_WEB_PATH)
+	@$(MKDIR_ROOT_OWNED) $(GRIDSHIB_CA_WEB_PATH)
 
-install-jar:  $(JAR_PATH)
+install-jar: $(GRIDSHIB_CA_WEB_PATH) $(JAR_PATH)
 	@echo "Installing $(JAR_PATH) to $(GRIDSHIB_CA_WEB_PATH)"
-	@$(INSTALL) -o $(WWW_USER) -m 0644 $(JAR_PATH) $(GRIDSHIB_CA_WEB_PATH)/$(JAR_NAME)
+	@$(INSTALL_ROOT_OWNED) $(JAR_PATH) $(GRIDSHIB_CA_WEB_PATH)
 
 install-webapps: $(GRIDSHIB_CA_WEB_PATH) $(WEBAPPS)
 	@echo "Installing webapps to $(GRIDSHIB_CA_WEB_PATH)"
 	@for file in $(WEBAPPS) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
+		$(INSTALL_APACHE_EXECUTABLE) $${file} $(GRIDSHIB_CA_WEB_PATH) ;\
 	done
 
-$(TEMPLATE_DIR): $(GRIDSHIB_CA_CONF_DIR)
-	@echo "Creating $(TEMPLATE_DIR)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(TEMPLATE_DIR)
-
-
-install-templates: $(TEMPLATE_DIR)
-	@echo "Installing templates to $(TEMPLATE_DIR)"
+install-templates: $(INSTALL_TEMPLATES_DIR)
+	@echo "Installing templates to $(INSTALL_TEMPLATES_DIR)"
 	@for file in $(TEMPLATE_FILES) ; do \
 		f=`basename $${file}` ;\
-		target=$(TEMPLATE_DIR)/$${f} ;\
+		target=$(INSTALL_TEMPLATES_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
 		if test -f $${target} ; then \
 			echo "  Avoiding overwriting existing file." ;\
 			target=$${target}.new ;\
 		fi ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $${target} ;\
+		$(INSTALL_ROOT_OWNED) $${file} $${target} ;\
 	done
 
-install-templates-force: $(TEMPLATE_DIR)
-	@echo "Installing templates to $(TEMPLATE_DIR)"
+install-templates-force: $(INSTALL_TEMPLATES_DIR)
+	@echo "Installing templates to $(INSTALL_TEMPLATES_DIR)"
 	@for file in $(TEMPLATE_FILES) ; do \
 		f=`basename $${file}` ;\
-		target=$(TEMPLATE_DIR)/$${f} ;\
+		target=$(INSTALL_TEMPLATES_DIR)/$${f} ;\
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0644 $${file} $${target} ;\
+		$(INSTALL_ROOT_OWNED) $${file} $${target} ;\
 	done
 
 $(SHIB_PROTECTED_PATH):
 	@echo "Creating $(SHIB_PROTECTED_PATH)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0755 $(SHIB_PROTECTED_PATH)
+	@$(MKDIR_ROOT_OWNED) $(SHIB_PROTECTED_PATH)
 
 install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
 	@echo "Installing Shibboleth-protected cgi-bin scripts to $(SHIB_PROTECTED_PATH)"
 	@for file in $(SHIB_WEBAPPS) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL) -o $(WWW_USER) -m 0755 $${file} $(SHIB_PROTECTED_PATH) ;\
+		$(INSTALL_ROOT_OWNED) $${file} $(SHIB_PROTECTED_PATH) ;\
 	done
 
 install-runtime: $(GRIDSHIB_CA_RUNTIME_PATH)
@@ -362,7 +420,7 @@ install-runtime: $(GRIDSHIB_CA_RUNTIME_PATH)
 # verify install won't fail.
 $(GRIDSHIB_CA_RUNTIME_PATH):
 	@echo "Creating $(GRIDSHIB_CA_RUNTIME_PATH)"
-	@$(INSTALL) -d -o $(WWW_USER) -m 0700 $(GRIDSHIB_CA_RUNTIME_PATH)
+	@$(MKDIR_APACHE_OWNED) $(GRIDSHIB_CA_RUNTIME_PATH)
 
 ######################################################################
 #
@@ -579,9 +637,9 @@ test:: test-config
 
 test-cert-issue:
 	@echo "Testing basic certificate issuance:"
-	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl testuser@fakeidp.org  urn:mace:incommon:fakeidp
+	${INSTALL_BIN_DIR}/issue-cert.pl testuser@fakeidp.org  urn:mace:incommon:fakeidp
 	@echo "Testing with ePTID-like Id:"
-	${GRIDSHIB_CA_CONF_DIR}/issue-cert.pl eptid:like/id@fakeidp.org  urn:mace:incommon:fakeidp
+	${INSTALL_BIN_DIR}/issue-cert.pl eptid:like/id@fakeidp.org  urn:mace:incommon:fakeidp
 
 test-post-install:: test-cert-issue
 

@@ -158,15 +158,21 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 </AuthMethods>
 
 <OpenId>
+  # Path to OpenId files
+  Path = ${GridShibCAConfDir}/openid
+
   # File with consumer secret for OpenId. Should be <= 255 characters.
   # Changing on the fly will result in any OpenId logons in progress
   # failing.
-  ConsumerSecretFilename = ${GridShibCAConfDir}/openid-consumer-secret
+  ConsumerSecretFilename = ${Path}/openid-consumer-secret
 </OpenId>
 
 <Authorization>
+  # Path to configuration files
+  Path = ${GridShibCAConfDir}/conf
+
   # Our Policy file
-  PolicyFilename = ${GridShibCAConfDir}/policy.conf
+  PolicyFilename = ${Path}/policy.conf
 </Authorization>
 
 <CredRetrieverClients>
@@ -253,25 +259,31 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 <OpenSSLCA>
   # Parameters specific to the OpenSSL-based CA
 
+  # Path OpenSSL static files
+  Path = ${GridShibCAConfDir}/openssl-ca
+
+  # Path to runtime files
+  RuntimePath = ${GridShibCAConfDir}/openssl-ca-runtime
+
   # Binary to use
-  Program = ${GridShibCAConfDir}/openssl-ca
+  Program = ${Path}/openssl-ca
 
   # Certificate for OpenSSL-based CA
-  CACert = ${GridShibCAConfDir}/gridshib-ca-cert.pem
+  CACert = ${Path}/gridshib-ca-cert.pem
 
   # Certificate for OpenSSL-based CA
-  CAKey = ${GridShibCAConfDir}/gridshib-ca-key.pem
+  CAKey = ${Path}/gridshib-ca-key.pem
 
   # Serial number file for OpenSSL-based CA
-  SerialFile = ${GridShibCAConfDir}/serial
+  SerialFile = ${RuntimePath}/serial
 
   # File to use to lock access for running openssl to issue a certificate
   # Only us this file for locking as it is overwritten as zero-length
   # file for each lock.
-  LockFile = ${GridShibCAConfDir}/openssl-ca.lock
+  LockFile = ${RuntimePath}/openssl-ca.lock
 
   # Where OpenSSL can store its random state
-  RandFile = ${GridShibCAConfDir}/.rand
+  RandFile = ${RuntimePath}/openssl-random-state
 
   # Include Shibboleth SAML assertion in certificate
   # If True, need to set JavaHome and GridShibSAMLToolsPath in <Binaries>
@@ -287,10 +299,11 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
 <MyProxyCA>
   # Configuration for MyproxyCA client (if in use)
+  Path = ${GridShibCAConfDir}/myproxy/
   Server = localhost
   Port = 7512
-  ClientCert = ${GridShibCAConfDir}/myproxy-client-cert.pem
-  ClientKey = ${GridShibCAConfDir}/myproxy-client-key.pem
+  ClientCert = ${Path}/myproxy-client-cert.pem
+  ClientKey = ${Path}/myproxy-client-key.pem
 </MyProxyCA>
 
 <Syslog>

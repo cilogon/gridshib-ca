@@ -62,8 +62,10 @@ confOpts=""
 confOpts="${confOpts} --with-gridshib-ca-conf-dir=${tmpDir}/gridshib-ca/"
 confOpts="${confOpts} --with-shib-protected-path=${tmpDir}/gridshib-ca-shib-cgi/"
 confOpts="${confOpts} --with-gridshib-ca-web-path=${tmpDir}/gridshib-ca-html/"
-# Make web user "us" so that chown() during installation work
+# Install everything as use (as opposed to root and Apache)
+confOpts="${confOpts} --with-root-user=${USER}"
 confOpts="${confOpts} --with-www-user=${USER}"
+confOpts="${confOpts} --with-www-group=${GROUP}"
 # Pass through some values from our build
 confOpts="${confOpts} --with-hostname=@HOSTNAME@"
 confOpts="${confOpts} --with-openssl=@OPENSSL@"

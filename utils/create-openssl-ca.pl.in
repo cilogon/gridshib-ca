@@ -36,11 +36,14 @@ GridShib-CA version @PACKAGE_VERSION_STRING@
 
 ######################################################################
 
+use File::Path;
+
 use GridShibCA::Config;
 use GridShibCA::X509DN;
 my $config = GridShibCA::Config->new();
 
-my $confPath = $config->getParam("GridShibCAConfDir");
+my $confPath = $config->getParam("OpenSSLCA", "Path");
+my $runtimePath = $config->getParam("OpenSSLCA", "RuntimePath");
 my $openssl = $config->getParam("Binaries", "OpenSSL");
 my $certFile = $config->getParam("OpenSSLCA", "CACert");
 my $keyFile = $config->getParam("OpenSSLCA", "CAKey");
@@ -89,9 +92,7 @@ if ($options{l})
 # Get our relative DN
 my $relativeDN = GridShibCA::X509DN->new("@RELATIVE_DN@")->getOpenSSLDN();
 
-
 # Get our CA DN
-# XXX convert to OpenSSL format
 my $subject = GridShibCA::X509DN->new("@CA_DN@")->getOpenSSLDN();
 
 ######################################################################
@@ -110,6 +111,21 @@ print " DN for CA is $subject\n";
 print " Relative DN is $relativeDN\n";
 print " Lifetime is $lifetime\n";
 print "\n";
+
+if ( ! -d $confPath)
+{
+    print "Creating directory $confPath\n";
+    File::Path::mkpath($confPath) ||
+	die "Failed to create directory $confPath: $!";
+}
+
+if ( ! -d $runtimePath)
+{
+    print "Creating directory $runtimePath\n";
+    File::Path::mkpath($runtimePath) ||
+	die "Failed to create directory $runtimePath: $!";
+}
+
 print "Generating keys. This may take a minute...\n";
 
 my @args = ();
@@ -196,7 +212,7 @@ close(FH);
 
 ######################################################################
 
-my $serialFile = "${confPath}/serial";
+my $serialFile = "${runtimePath}/serial";
 
 print "Creating $serialFile\n";
 
@@ -211,25 +227,61 @@ close(FH);
 
 ######################################################################
 #
-# Change ownership of all created files
+# Set ownership and permission of created files
 #
 
-print "Setting ownership of created files.\n";
 my $wwwUser = "@WWW_USER@";
-my ($login,$pass,$uid,$gid) = getpwnam($wwwUser);
-if (!defined($uid))
+my $wwwUID = getpwnam($wwwUser);
+# Use defined() instead of "!!" here since uid could be 0
+if (!defined($wwwUID))
 {
-    print "Failure. Cannot determine uid for $wwwUser.";
-    exit(1);
+    die "Cannot determine uid for $wwwUser";
 }
-my $status = chown($uid, $gid, 
-		   $certFile, $keyFile, $hashFile,
-		   $policyFile, $serialFile);
 
-if (!$status)
+my $wwwGroup = "@WWW_GROUP@";
+my $wwwGID = getgrnam($wwwGroup);
+# Use defined() instead of "!!" here since gid could be 0
+if (!defined($wwwGID))
 {
-    print "chown() failed: " . $!;
-    exit(1);
+    die "Cannot determine gid for group $wwwGroup";
+}
+
+my $rootUser = "@ROOT_USER@";
+my $rootUID = getpwnam($rootUser);
+# Use defined() instead of "!!" here since uid could be 0
+if (!defined($rootUID))
+{
+    die "Cannot determine uid for $rootUser";
+}
+
+print "Settings ownership and permissions of files in $confPath\n";
+
+chown($rootUID, $wwwGID, $confPath)
+    || die "chown($rootUID, $wwwGID, $confPath) failed: $!";
+chmod(0750, $confPath)
+    || die "chmod(0750, $confPath) failed: $!";
+
+foreach my $file ($certFile, $keyFile, $hashFile, $policyFile)
+{
+    chown($rootUID, $wwwGID, $file)
+	|| die "chown($rootUID, $wwwGID, $file) failed: $!";
+    chmod(0640, $file)
+	|| die "chmod(0640, $file) failed: $!";
+}
+
+print "Setting ownership of files in $runtimePath\n";
+
+chown($wwwUID, $wwwGID, $runtimePath)
+    || die "chown($wwwUID, $wwwGID, $runtimePath) failed: $!";
+chmod(0700, $runtimePath)
+    || die "chmod(0700, $runtimePath) failed: $!";
+
+foreach my $file ($serialFile)
+{
+    chown($wwwUID, $wwwGID, $file)
+	|| die "chown($wwwUID, $wwwGID, $file) failed: $!";
+    chmod(0600, $file)
+	|| die "chmod(0600, $file) failed: $!";
 }
 
 ######################################################################

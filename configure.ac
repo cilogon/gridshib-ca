@@ -533,7 +533,7 @@ AC_MSG_RESULT(${SHIB_PROTECTED_PATH})
 dnl ----------------------------------------------------------------------
 dnl Miscellaneous Install parameters
 
-AC_MSG_CHECKING([for owner of www files])
+AC_MSG_CHECKING([for Apache user])
 AC_ARG_WITH(www-user,
 	AC_HELP_STRING([--with-www-user],
 		[Specify the username that the httpd runs under. (Default: apache)]),
@@ -541,6 +541,24 @@ AC_ARG_WITH(www-user,
 	[WWW_USER=apache])
 AC_MSG_RESULT(${WWW_USER})
 AC_SUBST(WWW_USER)
+
+AC_MSG_CHECKING([for Apache group])
+AC_ARG_WITH(www-group,
+	AC_HELP_STRING([--with-www-group],
+		[Specify the group that the httpd runs under. (Default: apache)]),
+	[WWW_GROUP=$withval],
+	[WWW_GROUP=apache])
+AC_MSG_RESULT(${WWW_GROUP})
+AC_SUBST(WWW_GROUP)
+
+AC_MSG_CHECKING([for ROOT user])
+AC_ARG_WITH(root-user,
+	AC_HELP_STRING([--with-root-user],
+		[Specify the username for ROOT. (Default: root)]),
+	[ROOT_USER=$withval],
+	[ROOT_USER=root])
+AC_MSG_RESULT(${ROOT_USER})
+AC_SUBST(ROOT_USER)
 
 dnl Figure out our base DN
 AC_MSG_CHECKING([for our base DN])
@@ -606,6 +624,41 @@ AC_MSG_CHECKING([for the DN of the GridShib-ca])
 CA_DN="CN=GridShib CA,O=Certificate Authority,${BASE_DN}"
 AC_MSG_RESULT(${CA_DN})
 AC_SUBST(CA_DN)
+
+dnl ------------------------------------------------------------
+dnl Install paths
+
+INSTALL_CERTS_DIR=${GRIDSHIB_CA_CONF_DIR}/certs
+AC_SUBST(INSTALL_CERTS_DIR)
+
+INSTALL_TEMPLATES_DIR=${GRIDSHIB_CA_CONF_DIR}/templates
+AC_SUBST(INSTALL_TEMPLATES_DIR)
+
+INSTALL_CONF_DIR=${GRIDSHIB_CA_CONF_DIR}/conf
+AC_SUBST(INSTALL_CONF_DIR)
+
+dnl Installed path of the configuration file
+GRIDSHIB_CA_CONFIG_FILE=${INSTALL_CONF_DIR}/gridshib-ca.conf
+AC_CLEAN_PATH(GRIDSHIB_CA_CONFIG_FILE)
+AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)
+
+INSTALL_MYPROXY_DIR=${GRIDSHIB_CA_CONF_DIR}/myproxy
+AC_SUBST(INSTALL_MYPROXY_DIR)
+
+INSTALL_OPENSSL_CA_DIR=${GRIDSHIB_CA_CONF_DIR}/openssl-ca
+AC_SUBST(INSTALL_OPENSSL_CA_DIR)
+
+INSTALL_OPENSSL_CA_RUNTIME_DIR=${GRIDSHIB_CA_CONF_DIR}/openssl-ca-runtime
+AC_SUBST(INSTALL_OPENSSL_CA_RUNTIME_DIR)
+
+INSTALL_BIN_DIR=${GRIDSHIB_CA_CONF_DIR}/bin
+AC_SUBST(INSTALL_BIN_DIR)
+
+INSTALL_PERL_DIR=${GRIDSHIB_CA_CONF_DIR}/perl
+AC_SUBST(INSTALL_PERL_DIR)
+
+INSTALL_OPENID_DIR=${GRIDSHIB_CA_CONF_DIR}/openid
+AC_SUBST(INSTALL_OPENID_DIR)
 
 dnl ------------------------------------------------------------
 dnl Development mode
@@ -745,22 +798,12 @@ if test ${MODE} = "build" ; then
 fi
 dnl End development mode.
 
-dnl ------------------------------------------------------------
-dnl Installed path of the configuration file
-
-GRIDSHIB_CA_CONFIG_FILE=${GRIDSHIB_CA_CONF_DIR}/gridshib-ca.conf
-AC_CLEAN_PATH(GRIDSHIB_CA_CONFIG_FILE)
-AC_SUBST(GRIDSHIB_CA_CONFIG_FILE)
-
-dnl Path to template directory
-TEMPLATE_DIR=${GRIDSHIB_CA_CONF_DIR}/templates
-AC_SUBST(TEMPLATE_DIR)
 
 dnl ------------------------------------------------------------
 dnl PERL arguments
 dnl I would like to put quotes around ${GRIDSHIB_CA_CONF_DIR} here but
 dnl they get carried over into @INC and screw up Perl.
-PERL_ARGS="-I ${GRIDSHIB_CA_CONF_DIR}/perl"
+PERL_ARGS="-I ${INSTALL_PERL_DIR}"
 AC_SUBST(PERL_ARGS)
 
 dnl PERL arguments for CGI-BIN scripts
