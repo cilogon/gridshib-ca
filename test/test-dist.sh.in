@@ -62,7 +62,9 @@ confOpts=""
 confOpts="${confOpts} --with-gridshib-ca-conf-dir=${tmpDir}/gridshib-ca/"
 confOpts="${confOpts} --with-shib-protected-path=${tmpDir}/gridshib-ca-shib-cgi/"
 confOpts="${confOpts} --with-gridshib-ca-web-path=${tmpDir}/gridshib-ca-html/"
-# Install everything as use (as opposed to root and Apache)
+# Install everything as user (as opposed to root and Apache)
+USER=`id -un`
+GROUP=`id -gn`
 confOpts="${confOpts} --with-root-user=${USER}"
 confOpts="${confOpts} --with-www-user=${USER}"
 confOpts="${confOpts} --with-www-group=${GROUP}"
