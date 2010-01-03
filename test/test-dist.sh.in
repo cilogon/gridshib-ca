@@ -68,6 +68,8 @@ GROUP=`id -gn`
 confOpts="${confOpts} --with-root-user=${USER}"
 confOpts="${confOpts} --with-www-user=${USER}"
 confOpts="${confOpts} --with-www-group=${GROUP}"
+# Use a runtime directory we can create as non-root
+confOpts="${confOpts} --with-gridshib-ca-runtime-path=${tmpDir}/runtime/"
 # Pass through some values from our build
 confOpts="${confOpts} --with-hostname=@HOSTNAME@"
 confOpts="${confOpts} --with-openssl=@OPENSSL@"
