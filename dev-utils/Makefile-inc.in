@@ -76,7 +76,7 @@ PUBLISH_TARGET=@PUBLISH_TARGET@
 
 # Paths on PUBLISH_HOST to publish to
 DOC_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/docs/@DIST_DOC_DIR@
-DIST_PUBLISH_TARGET=$(PUBLISH_TARGET):gridshib-ca/downloads
+DIST_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/downloads
 
 # Seems like we have to explicitly include .htaccess here to get
 # it do sync
@@ -84,11 +84,11 @@ publish-doc: doc
 	@echo Rsyncing documentation to $(DOC_PUBLISH_TARGET)
 	rsync -auvp $(DOC_DIR)/* $(DOC_DIR)/.htaccess $(DOC_PUBLISH_TARGET)
 
-publish-dist: dist
+publish-dist: dist dist-sign
 	@echo Rsyncing $(DIST_FILE) to $(DIST_PUBLISH_TARGET)
-	@chmod g+rw $(DIST_FILE)
-	@chmod o+r $(DIST_FILE)
-	@rsync -auv $(DIST_FILE) $(DIST_PUBLISH_TARGET)
+	@chmod g+rw $(DIST_FILE) $(DIST_SIG_FILE)
+	@chmod o+r $(DIST_FILE) $(DIST_SIG_FILE)
+	@rsync -auvp $(DIST_FILE) $(DIST_SIG_FILE) $(DIST_PUBLISH_TARGET)
 
 ######################################################################
 #
