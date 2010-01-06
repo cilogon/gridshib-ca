@@ -68,21 +68,31 @@ deploy-test: $(DIST_FILES) dev-utils/build-test.sh
 
 ######################################################################
 #
-# Publish documentation and distribution
+# Publish documentation
 #
-# See: http://sourceforge.net/apps/trac/sourceforge/wiki/Rsync%20over%20SSH
+# See:
+# http://sourceforge.net/apps/trac/sourceforge/wiki/Rsync%20over%20SSH
+# http://sourceforge.net/apps/trac/sourceforge/wiki/Project%20web
 
 PUBLISH_TARGET=@PUBLISH_TARGET@
 
 # Paths on PUBLISH_HOST to publish to
 DOC_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/docs/@DIST_DOC_DIR@
-DIST_PUBLISH_TARGET=$(PUBLISH_TARGET):htdocs/gridshib-ca/downloads
 
 # Seems like we have to explicitly include .htaccess here to get
 # it do sync
 publish-doc: doc
 	@echo Rsyncing documentation to $(DOC_PUBLISH_TARGET)
 	rsync -auvp $(DOC_DIR)/* $(DOC_DIR)/.htaccess $(DOC_PUBLISH_TARGET)
+
+######################################################################
+#
+# Publish distributions
+#
+# See: http://sourceforge.net/apps/trac/sourceforge/wiki/Release%20files%20for%20download
+
+DIST_PUBLISH_TARGET=\
+	$(PUBLISH_TARGET):/home/frs/project/c/ci/cilogon/gridshib-ca/
 
 publish-dist: dist dist-sign
 	@echo Rsyncing $(DIST_FILE) to $(DIST_PUBLISH_TARGET)
