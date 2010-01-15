@@ -85,18 +85,19 @@ sub new
 
     try
     {
-	$self->{caProg} = $self->{config}->getParam("OpenSSLCA", "Program");
-	$self->{cert} = $self->{config}->getParam("OpenSSLCA", "CACert");
-	$self->{key} = $self->{config}->getParam("OpenSSLCA", "CAKey");
-	$self->{serialFile} = $self->{config}->getParam("OpenSSLCA", "SerialFile");
-	$self->{randFile} = $self->{config}->getParam("OpenSSLCA", "RandFile");
-	$self->{lockFile} = $self->{config}->getParam("OpenSSLCA", "LockFile");
-	$self->{lockFileHandle} = undef;
+      $self->{caProg} = $self->{config}->getParam("OpenSSLCA", "Program");
+      $self->{cert} = $self->{config}->getParam("OpenSSLCA", "CACert");
+      $self->{key} = $self->{config}->getParam("OpenSSLCA", "CAKey");
+      $self->{serialFile}= $self->{config}->getParam("OpenSSLCA", "SerialFile");
+      $self->{randFile} = $self->{config}->getParam("OpenSSLCA", "RandFile");
+      $self->{lockFile} = $self->{config}->getParam("OpenSSLCA", "LockFile");
+      $self->{lockFileHandle} = undef;
     }
     catch GridShibCA::ConfigException with
     {
-	my $ex = shift;
-	throw GridShibCA::CAException("CA configuration error: " . $ex->text());
+      my $ex = shift;
+      throw GridShibCA::CAException("OpenSSLCA configuration error: " . 
+                                    $ex->text());
     };
 
     bless($self, $class);
@@ -137,9 +138,9 @@ sub _signRequest
 {
     my $self = shift;
     my $session = shift ||
-	throw GridShibCA::CAException("Missing session argument");
+      throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
-	throw GridShibCA::CAException("Missing certificate request argument");
+      throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
     my $userId = $session->userIdentity();
@@ -151,30 +152,30 @@ sub _signRequest
 
     if (! -x $self->{caProg})
     {
-	throw GridShibCA::CAException(
-	    "CA configuration error (missing program)",
-	    -logText=>"Program " . $self->{caProg} . " not found/executable");
+      throw GridShibCA::CAException(
+          "CA configuration error (missing program)",
+          -logText=>"Program " . $self->{caProg} . " not found/executable");
     }
 
     if (! -r $self->{cert})
     {
-	throw GridShibCA::CAException(
-	    "CA configuration error (missing certificate)",
-	    -logText=>"Certificate " . $self->{cert} . " not found/readable");
+      throw GridShibCA::CAException(
+          "CA configuration error (missing certificate)",
+          -logText=>"Certificate " . $self->{cert} . " not found/readable");
     }
 
     if (! -r $self->{key})
     {
-	throw GridShibCA::CAException(
-	    "CA configuration error (missing key)",
-	    -logText=>"Key " . $self->{key} . " not found/readable");
+      throw GridShibCA::CAException(
+          "CA configuration error (missing key)",
+          -logText=>"Key " . $self->{key} . " not found/readable");
     }
 
     if (! -r $self->{serialFile})
     {
-	throw GridShibCA::CAException(
-	    "CA configuration error (missing serial file)",
-	    -logText=>"Serial file " . $self->{serialFile} . " not found/readable");
+      throw GridShibCA::CAException(
+          "CA configuration error (missing serial file)",
+          -logText=>"Serial file " . $self->{serialFile} . " not found/readable");
     }
 
     # Allow openssl to save random number state to avoid "unable to
@@ -185,27 +186,27 @@ sub _signRequest
 
     if ($self->{config}->getParamBoolean("OpenSSLCA", "IncludeSAMLInCert"))
     {
-	$self->{logger}->debug("Including SAML in certificate");
+      $self->{logger}->debug("Including SAML in certificate");
 
-	try
-	{
-	    my $samlExt = $self->_getSAMLExt($session);
-	    $self->{logger}->debug("SAML extension: %s", $samlExt);
-	    # Create temporary file and put extension in it
-	    ($samlExtFile, $samlExtFilename) =
-		File::Temp::tempfile(UNLINK => 1);
-	    print $samlExtFile $samlExt;
-	    close($samlExtFile);
-	}
-	otherwise
-	{
-	    my $ex = shift;
-	    $self->{logger}->warn("SAML generation failed.");
-	    if (defined($ex))
-	    {
-		$self->{logger}->logException($ex);
-	    }
-	}
+      try
+      {
+          my $samlExt = $self->_getSAMLExt($session);
+          $self->{logger}->debug("SAML extension: %s", $samlExt);
+          # Create temporary file and put extension in it
+          ($samlExtFile, $samlExtFilename) =
+            File::Temp::tempfile(UNLINK => 1);
+          print $samlExtFile $samlExt;
+          close($samlExtFile);
+      }
+      otherwise
+      {
+          my $ex = shift;
+          $self->{logger}->warn("SAML generation failed.");
+          if (defined($ex))
+          {
+            $self->{logger}->logException($ex);
+          }
+      }
     }
 
     my $status;
@@ -221,14 +222,14 @@ sub _signRequest
     push(@opensslArgs, "-CAcreateserial");
     if (defined($samlExtFilename))
     {
-	push(@opensslArgs, "-samlExt", $samlExtFilename);
+      push(@opensslArgs, "-samlExt", $samlExtFilename);
     }
 
     $self->_getIssueLock();
 
     my $cmd = $self->{config}->getCommand($self->{caProg}, @opensslArgs);
     $self->{logger}->debug("Executing: %s %s",
-			   $self->{caProg}, join(" ", @opensslArgs));
+                     $self->{caProg}, join(" ", @opensslArgs));
     $cmd->setInput($certificateRequest);
     my $result = $cmd->exec();
 
@@ -236,10 +237,10 @@ sub _signRequest
 
     if (!$result)
     {
-	my $error = $cmd->getError();
-	throw GridShibCA::CAException(
-	    "Error signing certificate request",
-	    -logText => "OpenSSL returned non-zero ($result): " . $result);
+      my $error = $cmd->getError();
+      throw GridShibCA::CAException(
+          "Error signing certificate request",
+          -logText => "OpenSSL returned non-zero ($result): " . $result);
     }
 
     my $pemCert =  $cmd->getOutput();
@@ -264,18 +265,18 @@ sub _getIssueLock()
     $self->{logger}->debug("Grabbing Issue lock...");
     if (defined($self->{lockFileHandle}))
     {
-	$self->{logger}->debug("Already have Issue lock.");
-	return;
+      $self->{logger}->debug("Already have Issue lock.");
+      return;
     }
     my $lockFileHandle;
     if (!open($lockFileHandle, ">", $self->{lockFile}))
     {
-	throw GridShibCA::CAException("Failed to open Issue lock file (" . $self->{lockFile} . "): " . $! );
+      throw GridShibCA::CAException("Failed to open Issue lock file (" . $self->{lockFile} . "): " . $! );
     }
     if (!flock($lockFileHandle, LOCK_EX))
     {
-	close($lockFileHandle);
-	throw GridShibCA::CAException("Failed to obtain Issue lock (" . $self->{lockFile} . "): " . $! );
+      close($lockFileHandle);
+      throw GridShibCA::CAException("Failed to obtain Issue lock (" . $self->{lockFile} . "): " . $! );
     }
     $self->{lockFileHandle} = $lockFileHandle;
     $self->{logger}->debug("Obtained Issue lock.");
@@ -296,13 +297,13 @@ sub _releaseIssueLock
 
     if (defined($self->{lockFileHandle}))
     {
-	$self->{logger}->debug("Releasing Issue lock.");
-	if (!flock($self->{lockFileHandle}, LOCK_UN))
-	{
-	    throw GridShibCA::CAException("Failed to release Issue lock: $!");
-	}
-	close($self->{lockFileHandle});
-	$self->{lockFileHandle} = undef;
+      $self->{logger}->debug("Releasing Issue lock.");
+      if (!flock($self->{lockFileHandle}, LOCK_UN))
+      {
+          throw GridShibCA::CAException("Failed to release Issue lock: $!");
+      }
+      close($self->{lockFileHandle});
+      $self->{lockFileHandle} = undef;
     }
 }
 
@@ -326,9 +327,8 @@ sub _getSAMLExt
 
     if (!defined($samlExtensionModule))
     {
-	$self->_warn("Could not initialize SAMLExtension module: "
-		     . $config->getError());
-	return undef;
+      $self->_warn("Could not initialize SAMLExtension module. ");
+      return undef;
     }
 
     my $saml = $samlExtensionModule->generateSAML($self->getDN($session));

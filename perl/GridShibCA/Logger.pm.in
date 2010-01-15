@@ -242,7 +242,7 @@ sub logException
     }
 
     my $stackTrace = $ex->stacktrace();
-    if (defined($strackTrace))
+    if (defined($stackTrace))
     {
 	$self->err("Exception stacktrace: " . $stackTrace);
     }

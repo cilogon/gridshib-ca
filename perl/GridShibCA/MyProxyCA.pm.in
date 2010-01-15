@@ -47,6 +47,8 @@ use GridShibCA::CA;
 use Globus::MyProxyClient;
 
 use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
+use GridShibCA::X509DN;
 
 =head2 Methods
 
@@ -71,11 +73,18 @@ sub new
     my $class = shift;
     my $self = $class->SUPER::new(@_);
     $self->{config} = GridShibCA::Config->new();
-    $self->{logger} = $self->{config}->getLogger();
-    $self->{host} = $self->{config}->getParam("MyProxyCA", "Server");
-    $self->{port} = $self->{config}->getParam("MyProxyCA", "Port");
-    $self->{cert} = $self->{config}->getParam("MyProxyCA", "ClientCert");
-    $self->{key} = $self->{config}->getParam("MyProxyCA", "ClientKey");
+
+    try {
+      $self->{host} = $self->{config}->getParam("MyProxyCA", "Server");
+      $self->{port} = $self->{config}->getParam("MyProxyCA", "Port");
+      $self->{cert} = $self->{config}->getParam("MyProxyCA", "ClientCert");
+      $self->{key} = $self->{config}->getParam("MyProxyCA", "ClientKey");
+    } catch  GridShibCA::ConfigException with {
+      my $ex = shift;
+      throw GridShibCA::CAException("MyProxyCA configuration error: " . 
+          $ex->text());
+    };
+
     bless($self, $class);
     return $self;
 }
@@ -133,7 +142,7 @@ sub signRequest
 	throw GridShibCA::CAException("Got a certificate chain from MyProxy of length greater than 1 (%d)", $#certs);
     }
     my $cert = $self->_convertCertDERtoPEM($certs[0]);
-    my $x509 = $self->_X509fromPEM($pemCert);
+    my $x509 = $self->_X509fromPEM($cert);
     return $x509;
 }
 
