@@ -103,6 +103,23 @@ sub doCommand
     return $status;
 }
 
+=item createSessionPassively()
+
+OpenID cannot create a session passively. This method always throws an
+exception.
+
+B<Arguments:> None
+
+B<Returns:> Throws GridShibCA::LogonException
+
+=cut
+
+sub createSessionPassively
+{
+    my $self = shift;
+    throw GridShibCA::LogonException("OpenID cannot create session passively.");
+}
+
 =item _handleServerResponse()
 
 Handle a OpenID Idp server response.

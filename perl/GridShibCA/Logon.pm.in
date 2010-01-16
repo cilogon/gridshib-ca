@@ -27,7 +27,10 @@ use GridShibCA::UserIdentity;
 
 =item doCommand()
 
-Basic logic common to many Logon methods.
+Basic implementation that accomplished logon using
+createSessionPassively(). Implementations that need to interact with
+the user should override this method to achieve that (e.g. see
+OpenIdLogon.pm).
 
 B<Arguments:> None
 
@@ -41,15 +44,8 @@ sub doCommand
 
     try {
 	$self->{logger}->debug("Logon module %s invoked.", ref($self));
-	$self->_init();
-	$self->{logger}->info("Performing %s logon from %s",
-			      $self->getMethodName(),
-			      $self->getClientHost());
+	my $session = $self->createSessionPassively();
 	my %mappings = ();
-	my $id = $self->_createUserIdentity();
-	$self->{logger}->debug("Logon complete: UserId=%s IdPId=%s",
-			       $id->userId(), $id->idpId());
-	my $session = $self->_doLogon($id);
 	$self->_displayHTML("LogonTemplate", %mappings);
     }
     otherwise
@@ -62,6 +58,37 @@ sub doCommand
     return 1;
 }
 
+=over 4
+
+=item createSessionPassively()
+
+Create a session passively, i.e. without interaction with the
+user. The expectation is the session will be created solely from
+information available in the environment (e.g. REMOTE_USER).
+
+If unable to accomplish this, GridShibCA::LogonException will be
+thrown.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::CGISession instance.
+
+=cut
+
+sub createSessionPassively
+{
+    my $self = shift;
+
+    $self->_init();
+    $self->{logger}->info("Performing %s logon from %s",
+			  $self->getMethodName(),
+			  $self->getClientHost());
+    my $id = $self->_createUserIdentity();
+    $self->{logger}->debug("Logon complete: UserId=%s IdPId=%s",
+			   $id->userId(), $id->idpId());
+    my $session = $self->_doLogon($id);
+    return $session;
+}
 
 =item getUserId()
 
