@@ -466,10 +466,10 @@ AC_SUBST(GRIDSHIB_CA_RUNTIME_PATH)
 AC_MSG_RESULT(${GRIDSHIB_CA_RUNTIME_PATH})
 
 AC_MSG_CHECKING([for path to Apache doc root])
-default=/var/www/
+default=/var/www/html/
 AC_ARG_WITH(apache-docroot,
 	AC_HELP_STRING([--with-apache-docroot=<path>],
-		[Specify the Apache docroot. (Default: /var/www/)]),
+		[Specify the Apache docroot. (Default: /var/www/html/)]),
 	[APACHE_DOCROOT=$withval],
 	[APACHE_DOCROOT=$default])
 AC_CLEAN_PATH(APACHE_DOCROOT)
