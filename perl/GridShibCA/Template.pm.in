@@ -67,10 +67,10 @@ sub new
 	ContactAddress => $self->{config}->getParam("ContactAddress"),
 	GridShibCAURL => $self->{config}->getParamURL("URLs", "WebApp"),
     };
-    # Set up some objects in Template Package
-    $GridShibCA::TemplatePackage::Config = $self->{config},
-    $GridShibCA::TemplatePackage::CGI = $self->{config}->getCGI(),
-    $GridShibCA::TemplatePackage::CSRF = $self->{config}->getCSRF(),
+
+    # Initialize the Template Package. This is the namespace the
+    # template code runs it.
+    GridShibCA::TemplatePackage::init();
 
     bless($self, $class);
     return $self;
@@ -248,6 +248,38 @@ use URI;
 
 Package space in which templates are evaluated.
 
+=head2 Variables
+
+The following variables will be available to templates.
+
+=over 4
+
+=item $Config
+
+A GridShibCA::Config instance.
+
+=cut
+
+$Config = undef;
+
+=item $CGI
+
+A GridShibCA::CGIinterface instance.
+
+=cut
+
+$CGI = undef;
+
+=item $CSRF
+
+A GridShibCA::CSRF instance.
+
+=cut
+
+$CSRF = undef;
+
+=back
+
 =head2 Methods
 
 These methods are available to templates.
@@ -284,6 +316,24 @@ sub cleanURL
     return $uri->canonical();
 }
 
+=item init()
+
+This should be called before the template is invoked. It will
+initialize variables and other aspects of the TemplatePackage
+namespace for the template.
+
+B<Arguments:> None
+
+B<Returns:> Nothing.
+
+=cut
+
+sub init
+{
+    $Config = GridShibCA::Config->new();
+    $CGI = $Config->getCGI(),
+    $CSRF = $Config->getCSRF(),
+}
 =back
 
 =cut
