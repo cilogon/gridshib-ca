@@ -97,7 +97,9 @@ sub html
 package GridShibCA::InternalException;
 
 # Inherit Error
-use base qw(GridShibCA::Exception);
+# Do not 'use GridShibCA::Exception' or 'use base...' or we will get
+# warnings about multiple definitions for methods above.
+@ISA = qw(GridShibCA::Exception);
 
 =head2 GridShibCA::InternalException
 

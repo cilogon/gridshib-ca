@@ -20,7 +20,7 @@ L<GridShibCA::Constants> module.
 
 package GridShibCA::Config;
 
-use GridShibCA::Constants;
+use GridShibCA::Constants qw($CONFIG_FILE);
 use GridShibCA::Exception qw(:try);
 
 use Carp;
@@ -31,7 +31,7 @@ use URI;
 # Default value of configuration file to read
 my $configFilename = 
     $ENV{"GRIDSHIB_CA_CONFIG_FILENAME"} ||
-    $GridShibCA::Constants::CONFIG_FILE;
+    $CONFIG_FILE;
 
 # Actual Config::General object, will be set first time Config object
 # is created

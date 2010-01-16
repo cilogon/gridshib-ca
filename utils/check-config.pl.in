@@ -119,7 +119,7 @@ print "Attempting to load all web commands...\n";
 
 my %commands = $config->getSection("Commands");
 
-my $errorFound = 0;
+$errorFound = 0;
 for $command (keys(%commands))
 {
     print "Loading $command ...";

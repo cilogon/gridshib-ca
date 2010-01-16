@@ -50,6 +50,7 @@ sub doCommand
 	throw GridShibCA::ConfigException("template element for DisplayTemplate missing.");
     }
     my $templateName = $args->{template};
+    my %mappings = ();
     $self->_displayHTML($templateName, %mappings);
 }
 

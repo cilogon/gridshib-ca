@@ -22,8 +22,7 @@ This class provides the following values:
 package GridShibCA::Constants;
 
 # Allow for exporting of variables diectly into 
-require Exporter;
-@ISA = qw(Exporter);
+use base qw(Exporter);
 @EXPORT_OK = qw(
 $CONFIG_FILE
 $GRIDSHIBCA_VERSION_STRING
@@ -37,6 +36,7 @@ Full path to GridShib-CA configuration file.
 
 =cut
 
+our $CONFIG_FILE; # Two lines to avoid "used only once" warning
 $CONFIG_FILE = "@GRIDSHIB_CA_CONFIG_FILE@";
 
 =item $GRIDSHIBCA_VERSION_STRING
@@ -46,6 +46,7 @@ status suffix, e.g. "0.6.0-rc1".
 
 =cut
 
+our $GRIDSHIBCA_VERSION_STRING;  # Two lines to avoid "used only once" warning
 $GRIDSHIBCA_VERSION_STRING = "@PACKAGE_VERSION_STRING@";
 
 =item $GRIDSHIDSHIBCA_VERSION_NUMBER
@@ -54,6 +55,7 @@ Version number without any status suffix, e.g. "0.6.0".
 
 =cut
 
+our $GRIDSHIBCA_VERSION_NUMBER; # Two lines to avoid "used only once" warning
 $GRIDSHIBCA_VERSION_NUMBER = "@PACKAGE_VERSION@";
 
 =item %BINARY
@@ -62,6 +64,7 @@ Binary paths
 
 =cut
 
+our %BINARY; # Two lines to avoid "used only once" warning
 %BINARY = 
     (
      "cat" => "@CAT@",
