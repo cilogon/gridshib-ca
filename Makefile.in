@@ -476,7 +476,7 @@ DIST_FILES += $(PERL_MODULE_SRCS)
 check-perl: $(PERL_SCRIPTS) $(REQUIRED_PERL_MODULES)
 	@for script in $^ ; do \
 		echo Checking $${script} ;\
-		$(PERL) -c -T -I./perl/ $${script} || exit 1 ;\
+		$(PERL) -wc -T -I./perl/ $${script} || exit 1 ;\
 	done
 
 test:: check-perl
