@@ -81,9 +81,7 @@ our $REQUIRE_POST = 0x0010;
 # These are mappings from the requirement strings in gridshib-ca.conf
 # to our bitmasks.
 %RequirementsMappings = (
-    none => $REQUIRE_NOTHING,
     https_optional => $OPTIONAL_HTTPS,
-    session => $REQUIRE_SESSION,
     session_optional => $OPTIONAL_SESSION,
     credential_issuer_session => $REQUIRE_CREDENTIAL_ISSUER_SESSION,
     csrf => $REQUIRE_CSRF_CHECK,
