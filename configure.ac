@@ -492,7 +492,7 @@ AC_MSG_CHECKING([for path to GridShib-CA web space])
 default=${APACHE_DOCROOT}/${GRIDSHIB_CA_URL}
 AC_ARG_WITH(gridshib-ca-web-path,
 	AC_HELP_STRING([--with-gridshib-ca-web-path=<path>],
-		[Specify the path for the GridShib-CA web space. This is the path that corresponds the the GridShib-CA base URL. (Default: <www-dir>/<gridshib-ca-cgi-bin-url>)]),
+		[Specify the path for the GridShib-CA web space. This is the path that corresponds the the GridShib-CA base URL. (Default: <www-dir>/<gridshib-ca-url>)]),
 	[GRIDSHIB_CA_WEB_PATH=$withval],
 	[GRIDSHIB_CA_WEB_PATH=$default])
 AC_CLEAN_PATH(GRIDSHIB_CA_WEB_PATH)
