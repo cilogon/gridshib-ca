@@ -409,7 +409,7 @@ install-shib-webapps: $(SHIB_PROTECTED_PATH) $(SHIB_WEBAPPS)
 	@echo "Installing Shibboleth-protected cgi-bin scripts to $(SHIB_PROTECTED_PATH)"
 	@for file in $(SHIB_WEBAPPS) ; do \
 		echo "Installing $${file}" ;\
-		$(INSTALL_ROOT_OWNED) $${file} $(SHIB_PROTECTED_PATH) ;\
+		$(INSTALL_ROOT_EXECUTABLE) $${file} $(SHIB_PROTECTED_PATH) ;\
 	done
 
 install-runtime: $(GRIDSHIB_CA_RUNTIME_PATH)
