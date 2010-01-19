@@ -146,7 +146,7 @@ sub _handleServerResponse
     elsif ($consumer->user_cancel())
     {
 	$self->{logger}->info("User canceled OpenId authentication.");
-	$self->displayHTML("OpenIdCancel");
+	$self->_displayHTML("OpenIdCancel");
     }
     elsif ($verifiedId)
     {
