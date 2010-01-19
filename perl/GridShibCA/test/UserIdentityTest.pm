@@ -29,20 +29,32 @@ sub tear_down
 sub test_default
 {
     my $self = shift;
-    my $userId = "Jane User";
+    my $userId = "juser\@example.com";
     my $authMethod = "Shibboleth";
     my $idpId = "urn:some:idp";
     my $clientHost = "somewhere.example.com";
+    my $attributes = {
+	"realName" => "Jane User",
+	"assurance" => "some",
+    };
     my $id = GridShibCA::UserIdentity->new(
 	-authMethod => $authMethod,
 	-userId => $userId,
 	-idpId => $idpId,
 	-clientHost => $clientHost,
+	-attributes => $attributes
 	);
     $self->assert_equals($authMethod, $id->authMethod());
     $self->assert_equals($userId, $id->userId());
     $self->assert_equals($idpId, $id->idpId());
     $self->assert_equals($clientHost, $id->clientHost());
+    my $a = $id->attributes();
+    $self->assert_not_null($a);
+    $self->assert_equals(scalar(keys(%$attributes)), scalar(keys(%$a)));
+    for my $key (keys(%$attributes))
+    {
+	$self->assert_equals($attributes->{$key}, $a->{$key});
+    }
 }
 
 sub test_userIdentityException

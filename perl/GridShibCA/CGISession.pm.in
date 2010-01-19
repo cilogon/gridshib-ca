@@ -35,6 +35,10 @@ Identity provider identifier as returned by L<GridShibCA::WebSignOn>.
 
 Client hostname or IP address as returned by L<GridShibCA::WebSignOn>.
 
+=item Attributes
+
+Hash containing user attributes.
+
 =back
 
 =head2 Configuration Parameters
@@ -84,6 +88,7 @@ sub new
 	 "IdP",
 	 "ClientHost",
 	 "AuthnMethod",
+	 "Attributes",
 	];
     # Define the cookie/parameter name we use
     CGI::Session->name($self->{config}->getParam("Session", "Name"));
@@ -225,6 +230,7 @@ sub fromUserIdentity
     $self->param("IdP", $id->idpId());
     $self->param("ClientHost", $id->clientHost());
     $self->param("AuthnMethod", $id->authMethod());
+    $self->param("Attributes", $id->attributes());
     $self->flush();
 
     $self->{logger}->info(
@@ -378,7 +384,8 @@ sub userIdentity
 	-authMethod => $self->param("AuthnMethod"),
 	-userId => $self->param("UserId"),
 	-clientHost => $self->param("ClientHost"),
-	-idpId => $self->param("IdP"));
+	-idpId => $self->param("IdP"),
+	-attributes => $self->param("Attributes"));
 }
 
 =item param

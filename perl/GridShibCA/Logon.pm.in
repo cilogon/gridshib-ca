@@ -157,6 +157,23 @@ sub getMethodName
     throw GridShibCA::LogonException("Undefined getMethodName() method.");
 }
 
+=item getAttributes
+
+Return reference to hash containing user attributes.
+
+B<Arguments:> None
+
+B<Returns:> Reference to hash.
+
+=cut
+
+sub getAttributes
+{
+    my $self = shift;
+    my $attributes = {};
+    return $attributes;
+}
+
 =back
 
 =cut
@@ -219,7 +236,8 @@ sub _createUserIdentity
 	-authMethod => $self->getMethodName(),
 	-userId => $self->getUserId(),
 	-idpId => $self->getIdP(),
-	-clientHost => $self->getClientHost());
+	-clientHost => $self->getClientHost(),
+	-attributes => $self->getAttributes());
 }
 
 

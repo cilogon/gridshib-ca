@@ -109,11 +109,16 @@ sub test_established
 sub test_clientSession
 {
     my $self = shift;
+    my $attributes = {
+	"realName" => "Jane User",
+	"assurance" => "some",
+    };
     my $userId = GridShibCA::UserIdentity->new(
 	-authMethod => "AuthMethod",
 	-userId => "Joe User",
 	-idpId => "Jane Idp",
-	-clientHost => "localhost");
+	-clientHost => "localhost",
+	-attributes => $attributes);
     $self->{session}->fromUserIdentity($userId);
     $self->assert_equals(1, $self->{session}->isBrowserSession());
     $self->assert_equals(0, $self->{session}->isCredentialIssuerSession());
@@ -127,6 +132,13 @@ sub test_clientSession
     $self->assert_equals($clientUserId->userId(), $userId->userId());
     $self->assert_equals($clientUserId->idpId(), $userId->idpId());
     $self->assert_equals($clientUserId->clientHost(), $userId->clientHost());
+    my $a = $clientUserId->attributes();
+    $self->assert_not_null($a);
+    $self->assert_equals(scalar(keys(%$attributes)), scalar(keys(%$a)));
+    for my $key (keys(%$attributes))
+    {
+	$self->assert_equals($attributes->{$key}, $a->{$key});
+    }
 }
 
 # Return true for import/use

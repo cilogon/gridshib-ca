@@ -301,6 +301,7 @@ sub _displayHTML
 	$mappings{UserId} = $self->{session}->param("UserId");
 	$mappings{IdpId} = $self->{session}->param("Idp");
 	$mappings{session} = $self->{session}->params();
+	$mappings{Attributes} = $self->{session}->param("Attributes");
     }
     $template->addMappings(%mappings);
 

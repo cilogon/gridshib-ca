@@ -107,6 +107,37 @@ sub getMethodName
     return "Shibboleth";
 }
 
+=item getAttributes
+
+Return reference to hash containing user attributes.
+
+B<Arguments:> None
+
+B<Returns:> Reference to hash.
+
+=cut
+
+sub getAttributes
+{
+    my $self = shift;
+    my $attributes = {};
+    foreach my $var (keys(%ENV))
+    {
+	# Including what makes sense based on what I see
+	# here. Almost certainly room for improvement here.
+	if (($var =~ /^HTTP_SHIB_/) ||
+	    ($var =~ /^Shib_/) ||  # Same variables as HTTP_SHIB_*
+	    ($var eq "HTTP_ENTITLEMENT") ||
+	    ($var eq "HTTP_EPPN") ||
+	    ($var eq "HTTP_TARGETED_ID") ||
+	    ($var eq "HTTP_UNSCOPED_AFFILIATION"))
+	{
+	    $attributes->{$var} = $ENV{$var};
+	}
+    }
+    return $attributes;
+}
+
 =item getSSOResponse()
 
 Return, as a string, the SSO Response, if provided by Shibboleth.

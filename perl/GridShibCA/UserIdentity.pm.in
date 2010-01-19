@@ -33,6 +33,8 @@ C<-idpId>       Identity identity
 
 C<-clientHost>  User's host at authentication time.
 
+C<-attributes>  Optional reference to dictionary of attributes (key/value pairs)
+
 B<Returns:> UserIdentity instance
 
 Throws GridShibCA::UserIdentityException on error.
@@ -52,6 +54,7 @@ sub new
 	throw GridShibCA::UserIdentityException("Missing idpId argument");
     $self->{clientHost} = $args{-clientHost} ||
 	throw GridShibCA::UserIdentityException("Missing clientHost argument");
+    $self->{attributes} = $args{-attributes} || {};
     bless($self, $class);
     return $self;
 }
@@ -116,6 +119,23 @@ sub clientHost
 {
     my $self = shift;
     return $self->{clientHost};
+}
+
+=item attributes
+
+Returns reference to dictionary of attributes, which are unconstrained
+key/value combinations.
+
+B<Arguments:> None
+
+B<Returns:> Hash reference.
+
+=cut
+
+sub attributes
+{
+    my $self = shift;
+    return $self->{attributes};
 }
 
 =back

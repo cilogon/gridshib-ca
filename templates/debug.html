@@ -36,12 +36,22 @@ Version { $Version }
 <hr/>
 <h2>Session Dump</h2>
 <p>
-Session Id: {$SessionId}<br/>
+{ if ($SessionId) { $OUT .= "Session Id: $SessionId\n"; } }
 </p>
 <table>
 {
   foreach my $key (keys(%session)) {
      $OUT .= "<tr><td>$key</td><td>$session{$key}</td></tr>\n";
+  }
+}
+</table>
+<p>
+<h3>Attributes</h3>
+</p>
+<table>
+{
+  foreach my $key (sort(keys(%Attributes))) {
+     $OUT .= "<tr><td>$key</td><td>$Attributes{$key}</td></tr>\n";
   }
 }
 </table>

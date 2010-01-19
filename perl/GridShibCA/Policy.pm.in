@@ -97,6 +97,11 @@ sub _initConfig
 	UserId => $userId->userId(),
 	IdPId => $userId->idpId(),
     };
+    my $attributes = $userId->attributes();
+    foreach my $attributeName (keys(%$attributes))
+    {
+	$defaultConfig->{$attributeName} = $attributes->{$attributeName};
+    }
     my %options = (
 	-ConfigFile => $filename,
 	# Allow for variable substitution in values
