@@ -480,6 +480,26 @@ sub params
     return $self->{session}->dataref();
 }
 
+=item cookieName()
+
+Return the name of the cookie containing the session identifer.
+
+A caller could create the cookie using this method and id(), which
+return the name and value of the session cookie respectively.
+
+B<Arguments:> None
+
+B<Returns:> String with session cookie name.
+
+=cut
+
+sub cookieName
+{
+    my $self = shift;
+    $self->_checkSession();
+    return $self->{session}->name();
+}
+
 =item cookie()
 
 Return a CGI::cookie() object for the session.

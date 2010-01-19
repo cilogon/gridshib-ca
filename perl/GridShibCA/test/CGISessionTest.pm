@@ -141,6 +141,14 @@ sub test_clientSession
     }
 }
 
+sub test_cookie
+{
+    my $self = shift;
+    $self->assert_euqals($self->{config}->getParam("Session", "Name"),
+			 $self->{session}->cookieName());
+    $self->assert_not_null($self->{session}->cookie());
+}
+
 # Return true for import/use
 1;
 
