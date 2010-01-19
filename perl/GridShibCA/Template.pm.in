@@ -212,12 +212,10 @@ sub _broken
 {
     my %hash = @_;
     my $self = $hash{arg};
-    $self->{logger}->err("Template error: File %s line %d: %s : %s",
-			 $self->{template},
-			 $hash{lineno},
-			 $hash{error},
-			 $hash{text});
-    return sprintf("<b>Unknown variable \"%s\"</b>", $hash{text});
+    # Also have access to $self->{templateFile}, $hash{lineno}, $hash{text}
+    # but $hash{error} seems sufficient.
+    $self->{logger}->err("Template error: %s", $hash{error});
+    return sprintf("<b>Template error. See Logs for details.</b>");
 }
 
 ##################################################################
