@@ -89,20 +89,50 @@ sub new
     return $self;
 }
 
-=item signRequest()
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _signRequest()
 
 Given a certificate request return a certificate
 
-B<Arguments:> PEM-encoded PKCS10 certificate request as string.
+B<Arguments:>
+
+C<$session> CGISession instance (Required)
+
+C<$certificateRequest> PKCS10 certificate request as PEM-ncoded string.
+
+Optional dictionary with the following optional values:
+
+C<requestedLifetime> Requested lifetime in seconds.
 
 B<Returns:> Certificate as Crypt::OpenSSL::X509 object
 
 =cut
 
-sub signRequest
+sub _signRequest
 {
     my $self = shift;
-    my $certificateRequest = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+    my $certificateRequest = shift ||
+      throw GridShibCA::CAException("Missing certificate request argument");
+    my %options = @_;
+
+    my $userId = $session->userIdentity();
+    my $nameMapper = $self->{config}->getNameMapper($userId);
+
+    my $dn = $nameMapper->getUserDN()->getProtectedOpenSSLDN();
+    my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
 
     my $client = Globus::MyProxyClient->new(
 	ServerHost => $self->{host},
@@ -115,12 +145,11 @@ sub signRequest
 	throw GridShibCA::CAException("Error creating MyProxyClient object: %s",
 				      Globus::MyProxyClient::errstr());
     }
-    my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
-    my $lifetime = $self->{lifetime};
-    my $dn = $self->getOpenSSLDN();
+
     # This isn't used since we're authenticating with a certificate
     # and private key
     my $passphrase = "Dummy";
+    my $lifetime = $options{requestedLifetime};
     $self->{logger}->debug("MyProxy request: DN = %s lifetime = %d",
 			   $dn, $lifetime);
     my $cred = $client->getCred(
@@ -145,18 +174,6 @@ sub signRequest
     my $x509 = $self->_X509fromPEM($cert);
     return $x509;
 }
-
-=back
-
-=cut
-
-######################################################################
-
-=head2 Internal methods
-
-These internal methods not intended for external use.
-
-=over 4
 
 =item _convertReqPEMtoDER
 
