@@ -789,12 +789,13 @@ if test ${MODE} = "build" ; then
    JARSIGNER_STORETYPE="pkcs12"
    AC_SUBST(JARSIGNER_STORETYPE)
 
-   AC_MSG_CHECKING([for path to jarsigner password file])
+   AC_MSG_CHECKING([for path to jarsigner keystore])
    AC_ARG_WITH(jarsigner-keystore,
 	AC_HELP_STRING([--with-jarsigner-keystore=<path>],
 		[Provide path to keystore to use for signing jar. (Default: ~/.keystore)]),
 	[JARSIGNER_KEYSTORE=$withval],
 	[JARSIGNER_KEYSTORE=${HOME}/.keystore])
+  AC_MSG_RESULT(${JARSIGNER_KEYSTORE})	
   AC_SUBST(JARSIGNER_KEYSTORE)
 fi
 dnl End development mode.
