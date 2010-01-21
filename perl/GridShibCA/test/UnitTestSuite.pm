@@ -15,6 +15,7 @@ sub name { 'GridShib-CA Unit Test Suite' }
 sub include_tests
 {
     qw(
+GridShibCA::test::CGISessionTest
 GridShibCA::test::ConfigTest
 GridShibCA::test::CommandTest
 GridShibCA::test::ExceptionTest

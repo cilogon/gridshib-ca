@@ -20,6 +20,8 @@ sub new
 sub set_up
 {
     my $self = shift;
+    # Use directory we can write to or we'll get permission errors
+    GridShibCA::CGISession->setDirectory("/tmp");
     $self->{session} = GridShibCA::CGISession->new();
     $self->assert_not_null($self->{session});
     $self->{session}->createNew();
