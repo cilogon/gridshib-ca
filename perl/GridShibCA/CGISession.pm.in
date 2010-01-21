@@ -59,6 +59,10 @@ use CGI::Session;
 use CGI::Session::Driver::file;  # So we can set FileName
 use File::Spec;
 
+# Directory in which to store session files
+# If set, overrides configuration value.
+my $_directory = undef;
+
 =head2 Methods
 
 =over 4
@@ -102,7 +106,8 @@ sub new
 
     # Arguments to driver (reference to hash)
     # We set the directory to use to store sessions
-    my $runtimePath = $self->{config}->getParam("Session", "Directory");
+    my $runtimePath = $_directory || 
+	$self->{config}->getParam("Session", "Directory");
     $self->{driverArguments} = {Directory=>$runtimePath};
 
     bless($self, $class);
@@ -551,6 +556,29 @@ sub isCredentialIssuerSession
     my $self = shift;
     $self->_checkSession();
     return ($self->_getType() eq "CredentialIssuer");
+}
+
+=item setDirectory()
+
+Specify the directory in which to store session files.
+Overrides value from GridShib-CA configuration.
+
+Example use:
+
+GridShibCA::CGISession->setDirectory("/tmp")
+
+Arguments: String with path to directory
+
+Returns: Nothing
+
+=cut
+
+sub setDirectory
+{
+    my $class = shift;
+    my $path = shift ||
+	throw GridShibCA::Exception("Missing path argument");
+    $_directory = $path;
 }
 
 =back
