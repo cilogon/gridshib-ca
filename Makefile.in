@@ -64,7 +64,8 @@ DIST_FILES=\
 	$(OPENSSL_CA_SRCS) \
 	$(TEMPLATE_FILES) \
 	$(TEST_SRCS) \
-	$(JAR_PATH)
+	$(JAR_PATH) \
+	$(TRUSTSTORE)
 
 # All files to be build by default
 BUILD_ALL =\
