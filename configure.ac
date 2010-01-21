@@ -776,8 +776,8 @@ if test ${MODE} = "build" ; then
    AC_MSG_CHECKING([for path to jarsigner password file])
    default=${HOME}/.keystore-password
    AC_ARG_WITH(jarsigner-password-file,
-	AC_HELP_STRING([--with-jarsigner-password-file],
-		[Specify path to file with jarsigner password. (Default: ~/.jarsigner.password)]),
+	AC_HELP_STRING([--with-jarsigner-password-file=<path>],
+		[Specify path to file with jarsigner password. (Default: ~/.keystore-password)]),
 		[JARSIGNER_PASSWORD_FILE=$withval],
 		[JARSIGNER_PASSWORD_FILE=$default])
    AC_MSG_RESULT(${JARSIGNER_PASSWORD_FILE})
@@ -789,9 +789,10 @@ if test ${MODE} = "build" ; then
    JARSIGNER_STORETYPE="pkcs12"
    AC_SUBST(JARSIGNER_STORETYPE)
 
+   AC_MSG_CHECKING([for path to jarsigner password file])
    AC_ARG_WITH(jarsigner-keystore,
-	AC_HELP_STRING([--with-jarsigner-keystore=<url>],
-		[Provide url to keystore to use for signing jar.]),
+	AC_HELP_STRING([--with-jarsigner-keystore=<path>],
+		[Provide path to keystore to use for signing jar. (Default: ~/.keystore)]),
 	[JARSIGNER_KEYSTORE=$withval],
 	[JARSIGNER_KEYSTORE=${HOME}/.keystore])
   AC_SUBST(JARSIGNER_KEYSTORE)
