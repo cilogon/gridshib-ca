@@ -500,9 +500,7 @@ B<Returns:> String with session cookie name.
 
 sub cookieName
 {
-    my $self = shift;
-    $self->_checkSession();
-    return $self->{session}->name();
+    return CGI::Session->name();
 }
 
 =item cookie()

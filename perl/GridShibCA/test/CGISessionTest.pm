@@ -8,6 +8,7 @@ package GridShibCA::test::CGISessionTest;
 
 use base qw(Test::Unit::TestCase);
 
+use GridShibCA::Config;
 use GridShibCA::CGISession;
 use GridShibCA::UserIdentity;
 
@@ -20,6 +21,7 @@ sub new
 sub set_up
 {
     my $self = shift;
+    $self->{config} = GridShibCA::Config->new();
     # Use directory we can write to or we'll get permission errors
     GridShibCA::CGISession->setDirectory("/tmp");
     $self->{session} = GridShibCA::CGISession->new();
@@ -146,9 +148,18 @@ sub test_clientSession
 sub test_cookie
 {
     my $self = shift;
-    $self->assert_euqals($self->{config}->getParam("Session", "Name"),
-			 $self->{session}->cookieName());
     $self->assert_not_null($self->{session}->cookie());
+}
+
+sub test_cookieName
+{
+    my $self = shift;
+    $self->assert_equals($self->{config}->getParam("Session", "Name"),
+			 $self->{session}->cookieName());
+    # Make sure we can call cookieName() on uninitialized session
+    my $session = GridShibCA::CGISession->new();
+    $self->assert_equals($self->{config}->getParam("Session", "Name"),
+			 $session->cookieName());
 }
 
 # Return true for import/use
