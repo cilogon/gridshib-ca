@@ -104,6 +104,11 @@ GridhibCA::CAException on error.
 
 =cut
 
+# This method sanity checks all the arguments and then calls
+# _signRequest() which does the real work. The goal is that this
+# method is agnostic to the underlying CA implementation and hence
+# doesn't need to be implemented by the child class.
+
 sub signRequest
 {
     my $self = shift;
