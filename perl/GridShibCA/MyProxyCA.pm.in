@@ -194,7 +194,7 @@ sub _convertReqPEMtoDER {
     push(@args, "req");
     push(@args, "-inform", "PEM");
     push(@args, "-outform", "DER");
-    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $openssl = $self->{config}->getParam("Binaries","OpenSSL");
     my $cmd = $self->{config}->getCommand($openssl, @args);
     $cmd->setInput($reqPEM);
     if (!$cmd->exec())
