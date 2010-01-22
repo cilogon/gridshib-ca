@@ -128,10 +128,7 @@ sub _signRequest
       throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
-    my $userId = $session->userIdentity();
-    my $nameMapper = $self->{config}->getNameMapper($userId);
-
-    my $dn = $nameMapper->getUserDN()->getProtectedOpenSSLDN();
+    my $dn = $self->_getMyProxyUsername($session);
     my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
 
     my $client = Globus::MyProxyClient->new(
@@ -161,18 +158,41 @@ sub _signRequest
 
     if (!defined($cred))
     {
-	throw GridShibCA::CAException("Error getting credential from MyProxy: %s",
+	throw GridShibCA::CAException("Error getting credential from MyProxy: " .
 				      $client->errstr());
     }
 
     my @certs = $cred->getDERCerts();
     if ($#certs > 1)
     {
-	throw GridShibCA::CAException("Got a certificate chain from MyProxy of length greater than 1 (%d)", $#certs);
+	throw GridShibCA::CAException("Got a certificate chain from MyProxy of length greater than 1 (" . $#certs . ")");
     }
     my $cert = $self->_convertCertDERtoPEM($certs[0]);
     my $x509 = $self->_X509fromPEM($cert);
     return $x509;
+}
+
+=item _getMyProxyUsername
+
+Returns a username to be sent to the MyProxy server when
+getting a credential.  In this method, the returned string
+is a DN.
+
+B<Arguments:> A Session object.
+
+B<Returns:> The username to pass to the MyProxy server.
+
+=cut
+
+sub _getMyProxyUsername
+{
+    my $self = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+
+    my $userId = $session->userIdentity();
+    my $nameMapper = $self->{config}->getNameMapper($userId);
+    return $nameMapper->getUserDN()->getProtectedOpenSSLDN();
 }
 
 =item _convertReqPEMtoDER
@@ -223,7 +243,7 @@ sub _convertCertDERtoPEM {
     push(@args, "x509");
     push(@args, "-inform", "DER");
     push(@args, "-outform", "PEM");
-    my $openssl = $self->{config}->getParam("OpenSSL");
+    my $openssl = $self->{config}->getParam("Binaries","OpenSSL");
     my $cmd = $self->{config}->getCommand($openssl, @args);
     $cmd->setInput($certDER);
     if (!$cmd->exec())
