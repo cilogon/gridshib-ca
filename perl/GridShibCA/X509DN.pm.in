@@ -138,7 +138,8 @@ sub _convertRFC2253DNToOpenSSL
 	my ($component, $value) = split(/=/, $field, 2);
 	if (!defined($component) or !defined($value))
 	{
-	    $self->_error("Could not parse DN field \"%s\"", $field);
+      throw GridShibCA::CAException('Could not parse DN field "' . 
+                                    $field . '" ');
 	    return undef;
 	}
 
