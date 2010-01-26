@@ -78,6 +78,22 @@ sub createCookie
     return $cookie;
 }
 
+=item getToken()
+
+Return the CSRF token.
+
+B<Arguments:> None
+
+B<Returns:> Token as string
+
+=cut
+
+sub getToken
+{
+    my $self = shift;
+    return $self->{Token};
+}
+
 =item expiredCookie()
 
 Create an expired CSRF protection cookie.
