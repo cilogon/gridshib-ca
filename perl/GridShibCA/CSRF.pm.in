@@ -92,10 +92,10 @@ sub expiredCookie
 {
     my $self = shift;
 
-    my $cookie = $self->cookie(-name=>$self->{TokenName},
-			       -value=>"Expired!",
-			       # Delete
-			       -expires=>"-1d");
+    my $cookie = $self->{cgi}->cookie(-name=>$self->{TokenName},
+				      -value=>"Expired!",
+				      # Delete
+				      -expires=>"-1d");
 
     if (!defined($cookie))
     {
@@ -227,7 +227,7 @@ package GridShibCA::CSRFException;
 # Inherit Error
 use base qw(GridShibCA::Exception);
 
-=head2 GridShibCSRF::CAException
+=head2 GridShibCSRF::CSRFException
 
 Class for exceptions caused by CSRF errors.
 
