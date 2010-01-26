@@ -392,18 +392,21 @@ sub _handleRequirements
     if (defined($requirementsString))
     {
 	$requirements = $self->_parseRequirementsString($requirementsString);
+	$self->{logger}->debug("Checking requirements 0x%X (%s)",
+			       $requirements, $requirementsString);
 
     }
-    # else just use defaults.
+    else
+    {
+	$self->{logger}->debug("Checking default requirements 0x%X",
+			       $requirements);
+    }
 
     # Sanity check
     if (!defined($requirements))
     {
 	throw GridShibCA::RequirementsException("Requirements is undefined.");
     }
-
-    $self->{logger}->debug("Checking request requirements (0x%X)",
-			   $requirements);
 
     # Check for HTTPS
     if (!($requirements & $OPTIONAL_HTTPS))
