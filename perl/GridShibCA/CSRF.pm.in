@@ -10,12 +10,22 @@
 
 Implement Cross-Site Request Forgery protection.
 
+Note that all instances returned in a given process will always return
+the same token value. The token value will be read from a cookie if
+present, if not generated. In either case, after first retrieval from
+cookie or generation, the value will be stashed as a static value and
+returned by all subsequent instantiations of the class.
+
 =cut
 
 package GridShibCA::CSRF;
 
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
+
+# Static, cached value so the multiple instanteations of this class
+# always use the same value.
+my $CachedToken = undef;
 
 =head2 Methods
 
@@ -47,9 +57,15 @@ sub new
 
     bless($self, $class);
 
-    # Our CSRF token. If in cookie use that, otherwise create.
-    $self->{Token} = $self->getCookieToken() || $self->createToken();
+    # Our CSRF token value. We prefer cached value, cookie value, new
+    # in that order.
+    our $CachedToken;
+    $self->{Token} = $CachedToken ||
+	$self->getCookieToken() ||
+	$self->createToken();
 
+    $CachedToken = $self->{Token};
+    
     return $self;
 }
 
