@@ -18,6 +18,7 @@ sub include_tests
 GridShibCA::test::CGISessionTest
 GridShibCA::test::ConfigTest
 GridShibCA::test::CommandTest
+GridShibCA::test::CSRFTest
 GridShibCA::test::ExceptionTest
 GridShibCA::test::HTMLTemplateTest
 GridShibCA::test::LoggerTest
