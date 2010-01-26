@@ -35,7 +35,13 @@ use GridShibCA::Exception qw(:try);
 
 Override base class with my specific logic.
 
-B<Arguments:> None
+B<Arguments:> Hash with arguments from gridshib-ca.conf
+
+Values used:
+
+C<template>: Name of template to display.
+
+C<addCSRF>: If set to "true", adds CSRF cookie to output.
 
 B<Returns:> True on success, False on error.
 
@@ -50,6 +56,14 @@ sub doCommand
 	throw GridShibCA::ConfigException("template element for DisplayTemplate missing.");
     }
     my $templateName = $args->{template};
+    my $addCSRF = $args->{addCSRF};
+    # Note Config automatically converts "true" to 1
+    if (defined($addCSRF) and ($addCSRF = 1))
+    {
+	$self->{logger}->debug("Adding CSRF cookie to displayed template");
+	my $csrf = $self->{config}->getCSRF();
+	$self->_addCookie($csrf->createCookie());
+    }
     my %mappings = ();
     $self->_displayHTML($templateName, %mappings);
 }
