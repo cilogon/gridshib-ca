@@ -126,7 +126,10 @@ BINARIES=""
 AC_SUBST(BINARIES)
 
 dnl Shib-protected webapps
-SHIB_WEBAPPS="webapps/shib.cgi"
+SHIB_WEBAPPS="\
+	webapps/shib.cgi \
+	webapps/shibLaunchGSCA.jnlp \
+	"
 AC_SUBST(SHIB_WEBAPPS)
 AC_CONFIG_FILES([$SHIB_WEBAPPS])
 AC_SRC_FILES(SHIB_WEBAPPS, SHIB_WEBAPP_SRCS)
@@ -137,6 +140,7 @@ WEBAPPS="\
 	webapps/GridShibCA.cgi \
 	webapps/launchGSCA.jnlp \
 	webapps/openid.cgi \
+	webapps/shibLaunchGSCA.jnlp \
 	"
 AC_SUBST(WEBAPPS)
 AC_CONFIG_FILES([$WEBAPPS])
@@ -232,6 +236,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Policy.pm \	
 	perl/GridShibCA/PythonClient.pm \
 	perl/GridShibCA/SAMLExtension.pm \
+	perl/GridShibCA/ShibLaunchJNLP.pm \
 	perl/GridShibCA/ShibLogon.pm \
 	perl/GridShibCA/Template.pm \
 	perl/GridShibCA/TrustRoots.pm \

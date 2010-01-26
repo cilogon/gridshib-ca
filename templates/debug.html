@@ -33,6 +33,13 @@ Version { $Version }
 }
 </ul>
 </p>
+<h2>Special Commands</h2>
+<p>
+  <form method="POST" action="{$ShibProtectedURL}/shibLaunchGSCA.jnlp">
+    { $CSRF->getFormElement(); }
+    <input type="submit" value="Shibboleth-protected JWS Launch"/>
+  </form>
+</p>
 <hr/>
 <h2>Session Dump</h2>
 <p>

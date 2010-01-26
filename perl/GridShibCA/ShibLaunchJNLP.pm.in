@@ -1,0 +1,88 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::ShibLaunchJNLP
+
+Handles generation of jnlp file to launch Java Web Start application.
+
+As opposed to LaunchJNLP, ShibLaunchJNLP gets user information from
+directory from Shibboleth, so it does not need a session. Intended for
+use with webapplications that don't use GridShib-CA sessions
+otherwise.
+
+=cut
+
+package GridShibCA::ShibLaunchJNLP;
+
+# Inherit LaunchJNLP
+use base qw(GridShibCA::LaunchJNLP);
+
+use GridShibCA::Exception qw(:try);
+use GridShibCA::ShibLogon;
+
+=head2 Methods
+
+=over 4
+
+=item _getClientSession
+
+Return a CGISession object representing the client session that should
+be passed to the launched client.
+
+This implementation creates the new session directly from information
+from Shibboleth and does not need a pre-existing session.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::CGISession instance.
+
+=cut
+
+sub _getClientSession
+{
+    my $self = shift;
+    my $logon = GridShibCA::ShibLogon->new();
+    my $session = $logon->createSessionPassively();
+    my $clientSession = $session->createClientSession();
+    # Session no longer needed, destroy to tidy up
+    $session->destroy();
+    return $clientSession;
+}
+
+=item _defaultRequirements()
+
+Return the default requirements for this command, which is to not
+require a session and to require CSRF protection.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    return $GridShibCA::WebCommand::OPTIONAL_SESSION |
+	$GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

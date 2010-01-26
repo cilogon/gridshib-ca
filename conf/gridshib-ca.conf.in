@@ -124,6 +124,8 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   <Debug>
     class = GridShibCA::DisplayTemplate
     template = DebugTemplate
+    # Add CSRF cookie for ShibLaunchGSCA.jnlp
+    addCSRF = True
     requirements = session_optional
   </Debug>
 
