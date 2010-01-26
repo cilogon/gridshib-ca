@@ -66,6 +66,7 @@ sub new
 	Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
 	ContactAddress => $self->{config}->getParam("ContactAddress"),
 	GridShibCAURL => $self->{config}->getParamURL("URLs", "WebApp"),
+	ShibProtectedURL => $self->{config}->getParamURL("ShibProtectedURL"),
     };
 
     # Initialize the Template Package. This is the namespace the
