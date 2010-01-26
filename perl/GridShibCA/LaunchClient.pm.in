@@ -41,7 +41,7 @@ sub doCommand
 
     try
     {
-	$self->{clientSession} = $self->{session}->createClientSession();
+	$self->{clientSession} = $self->_getClientSession();
     }
     otherwise
     {
@@ -65,6 +65,23 @@ sub doCommand
 
     # Success
     return 1;
+}
+
+=item _getClientSession
+
+Return a CGISession object representing the client session that should
+be passed to the launched client.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::CGISession instance.
+
+=cut
+
+sub _getClientSession
+{
+    my $self = shift;
+    return $self->{session}->createClientSession();
 }
 
 =item _getTemplate()
