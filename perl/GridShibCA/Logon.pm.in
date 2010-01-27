@@ -58,8 +58,6 @@ sub doCommand
     return 1;
 }
 
-=over 4
-
 =item createSessionPassively()
 
 Create a session passively, i.e. without interaction with the
