@@ -18,6 +18,39 @@ B<NOTE:> PERL changes dashes (-) in environment variables names to
 underscores (_). So C<Shib-Identity-Provider> becomes
 C<Shib_Identity_Provider>.
 
+=head2 Attributes
+
+This class makes the following Shibboleth-related environment
+variables availblle to policies in policy.conf:
+
+=over 4
+
+=item *
+
+Any variable starting with C<HTTP_SHIB_>
+
+=item *
+
+Any variable starting with C<Shib_>
+
+=item *
+
+HTTP_ENTITLEMENT
+
+=item *
+
+HTTP_EPPN
+
+=item *
+
+HTTP_TARGETED_ID
+
+=item *
+
+HTTP_UNSCOPE_AFFILIATION
+
+=back
+
 =cut
 
 package GridShibCA::ShibLogon;
