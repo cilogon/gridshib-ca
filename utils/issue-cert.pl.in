@@ -35,7 +35,6 @@ use GridShibCA::CGISession;
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
 use GridShibCA::UserIdentity;
-use GridShibCA::OpenSSLCA;
 
 ######################################################################
 #
@@ -170,7 +169,7 @@ my $certificate = undef;
 
 try
 {
-    my $ca = GridShibCA::OpenSSLCA->new();
+    my $ca = $config->getCA();
     $certificate = $ca->handleRequest($session, $reqPEM);
 }
 otherwise
