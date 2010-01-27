@@ -17,6 +17,7 @@ package GridShibCA::IssueCert;
 # Inherit WebCommand
 use base qw(GridShibCA::WebCommand);
 
+use GridShibCA::Authorization;  # For AuthorizationException
 use GridShibCA::Exception qw(:try);
 
 =head2 Methods
@@ -36,30 +37,49 @@ B<Returns:> 1 on success, 0 on error.
 sub doCommand
 {
     my $self = shift;
-    my $certificateRequest = $self->{cgi}->getCertificateRequest();
     my $ca = $self->{config}->getCA();
     my %options = ();
-    my $lifetime = $self->{cgi}->param("lifetime");
-    if (defined($lifetime))
+
+    try 
     {
-	# Need to untaint lifetime
-	if ($lifetime =~ /^(\d+)$/)
+	my $certificateRequest = $self->{cgi}->getCertificateRequest();
+	my $lifetime = $self->{cgi}->param("lifetime");
+	if (defined($lifetime))
 	{
-	    $lifetime = $1;
+	    # Need to untaint lifetime
+	    if ($lifetime =~ /^(\d+)$/)
+	    {
+		$lifetime = $1;
+	    }
+	    else
+	    {
+		throw GridShibCA::Exception(
+		    "Illegal characters in lifetime ($lifetime)");
+	    }
+	    $options{requestedLifetime} = $lifetime;
 	}
-	else
-	{
-	    throw GridShibCA::Exception("Illegal characters in lifetime ($lifetime)");
-	}
-	$options{requestedLifetime} = $lifetime;
+	my $certificate = $ca->handleRequest(
+	    $self->{session},
+	    $certificateRequest,
+	    %options);
+	# Single use session has now been used, destroy
+	$self->{session}->destroy();
+	$self->_outputCertificate($certificate);
     }
-    my $certificate = $ca->handleRequest(
-	$self->{session},
-	$certificateRequest,
-	%options);
-    # Single use session how now been consumed
-    $self->{session}->destroy();
-    $self->_outputCertificate($certificate);
+    catch GridShibCA::AuthorizationFailedException with
+    {
+	my $ex = shift;
+	$self->{logger}->err($ex->text());
+	$self->_outputError(401, "Authorization failure");
+	exit(1);
+    }
+    otherwise
+    {
+	my $ex = shift;
+	$self->{logger}->err($ex->text());
+	$self->_outputError(500, "Server error issuing certificate");
+	exit(1);
+    };
     return 1;
 }
 
@@ -102,6 +122,30 @@ sub _outputCertificate
     
     print $self->{cgi}->header("text/plain");
     print $pem;
+}
+
+=item _outputError()
+
+Output an error back to the client.
+
+B<Arguments:>
+
+C<$status> Status value to return
+
+C<$message> error message
+
+B<Returns:> Nothing
+
+=cut
+
+sub _outputError
+{
+    my $self = shift;
+    my $status = shift || 500;
+    my $message = shift || "No error message given";
+
+    print $self->{cgi}->header(-type=>"text/plain",
+			       -status=>$status . " " .  $message);
 }
 
 =back
