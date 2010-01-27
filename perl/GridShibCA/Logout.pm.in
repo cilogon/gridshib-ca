@@ -44,6 +44,23 @@ sub doCommand
     $self->_displayHTML("LogoutTemplate");
 }
 
+=item _defaultRequirements()
+
+Return the default requirements for this command, which is to not
+require a session so that users with expired or no session don't
+get an error trying to log out.
+
+B<Arguments:> None
+
+B<Returns:> Default requirements as bitmask
+
+=cut
+
+sub _defaultRequirements
+{
+    return $GridShibCA::WebCommand::OPTIONAL_SESSION;
+}
+
 =back
 
 =head2 Version
