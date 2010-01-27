@@ -223,7 +223,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Parameters related to client sessions
 
   # Default lifetime in seconds for web browser client
-  DefaultLifetime = 300
+  DefaultLifetime = 3600
 
   # Credential Retriever client lifetime
   CredentialRetrieverClientLifetime = 300
