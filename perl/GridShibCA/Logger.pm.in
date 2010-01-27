@@ -8,7 +8,23 @@
 
 =head1 GridShibCA::Logger
 
-Interface to logging based on Perl Sys::Syslog Module.
+Default logging implmentation for the GridShib CA based on Syslog (via
+the Perl Sys::Syslog module). By default the GridShib-CA will log via
+syslog using the "local0" facility (changable via gridshib-ca.conf -
+see following section on B<Configuration Parameters>). It logs at
+levels from 'debug' to 'error'.
+
+A standard syslog configuration might look like:
+
+ # Send anything notice or higher to system log
+ local0.notice   /var/log/messages
+
+ # Send all messages to /tmp/gridshib-ca-debug.log for debugging
+ local0.*        /tmp/gridshib-ca-debug.log
+
+By default the GridShib-CA will use a syslog identifier of
+"GridShib-CA". This is also configurable via gridshib-ca.conf if you
+have multiple GridShib-CA deployments on a given system.
 
 =head2 Configuration Parameters
 
