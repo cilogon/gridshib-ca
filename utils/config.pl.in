@@ -25,10 +25,10 @@ To set a value, give argument as for retrieving and add "=I<new value>".
 Example usage:
 
 % config.pl ContactAddress
-root@exmaple.com
-% config.pl ContactAddress=root@exmaple.org
+root@example.com
+% config.pl ContactAddress=root@example.org
 % config.pl ContactAddress
-root@exmaple.org
+root@example.org
 % config.pl Modules/Authorization
 GridShibCA::Authorization
 % config.pl Modules/Authorization=GridShibCA::MyAuthorization
