@@ -6,13 +6,29 @@
 # Given a distribution file, trying unpacking, building and installing
 # it.
 #
-# Usage: test-dist.sh <dist-file>
+# Usage: test-dist.sh [-m <path to myproxy creds>] <dist-file>
 #
 ######################################################################
 #
 # Exit on any error
 
 set -e
+
+######################################################################
+
+myproxy_cred_path=""
+
+usage="$0 [-h] [-m <myproxy credential path>] <distribution tarball>"
+
+while getopts "hm:" opt
+do
+    case "$opt" in
+	h) echo $usage; exit 0;;
+	m) myproxy_cred_path=$OPTARG;;
+	?) echo $usage; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
 
 ######################################################################
 
@@ -91,8 +107,15 @@ make test
 echo "Installing:"
 make install
 
-echo "Running create-openssl-ca.pl:"
-utils/create-openssl-ca.pl
+if test -n "$myproxy_cred_path" ; then
+    echo "Reconfiguring for MyProxy-CA testing"
+    utils/config.pl Modules/CA=GridShibCA::MyProxyCA
+    utils/config.pl MyProxyCA/Path=${myproxy_cred_path}
+else
+    # Test with openssl CA
+    echo "Running create-openssl-ca.pl:"
+    utils/create-openssl-ca.pl
+fi
 
 echo "Running 'make test-post-install':"
 make test-post-install

@@ -17,6 +17,20 @@
 set -e
 
 ######################################################################
+do_myproxy="false"
+
+usage="$0 [-m]"
+
+while getopts "m" opt
+do
+    case "$opt" in
+	m) do_myproxy="true"
+	?) echo $usage; exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+######################################################################
 
 echo "GridShib-CA Test Script running..."
 echo "Script path: $0"
@@ -97,8 +111,17 @@ make dist
 tarFile=`ls *.tar.gz`
 ls -l ${tarFile}
 
-echo "Running test-dist.sh:"
-test/test-dist.sh ${tarFile}
+test_dist_opts=""
+if test $do_myproxy = "true"; then
+    if -z "$MYRPOXY_CRED_PATH"; then
+	echo "MyProxy testing requested and MYPROXY_CRED_PATH not defined."
+	exit 1
+    fi
+    test_dist_opts="${test_dist_opts} -m ${MYPROXY_CRED_PATH}"
+fi
+
+echo "Running test-dist.sh ${test_dist_opts}:"
+test/test-dist.sh ${test_dist_opts} ${tarFile}
 
 echo "Success."
 date
