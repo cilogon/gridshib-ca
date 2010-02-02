@@ -24,7 +24,7 @@ usage="$0 [-m]"
 while getopts "m" opt
 do
     case "$opt" in
-	m) do_myproxy="true"
+	m) do_myproxy="true" ;;
 	?) echo $usage; exit 1;;
     esac
 done
