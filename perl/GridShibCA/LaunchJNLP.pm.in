@@ -55,8 +55,8 @@ sub _generateHeader
     my $cgi = $self->{cgi};
 
     my %headerArgs = (
-	-type=>"Application/X-Java-Jnlp-File"
-	);
+        -type=>"Application/X-Java-Jnlp-File"
+        );
 
     # The attachment option is required for Camino (at least) to do the
     # right thing.  However, this option seems to always cause Firefox to
@@ -66,12 +66,12 @@ sub _generateHeader
     # https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=6719
     if ($cgi->user_agent("Mozilla") and !$cgi->user_agent("Camino"))
     {
-	# Firefox - do nothing
+        # Firefox - do nothing
     }
     else
     {
-	# Not Firefox
-	$headerArgs{"-attachment"} = "launch.jnlp";
+        # Not Firefox
+        $headerArgs{"-attachment"} = "launch.jnlp";
     }
 
     my $header = $cgi->header(\%headerArgs);
@@ -99,23 +99,23 @@ sub _setTemplateMappings
 
     $self->SUPER::_setTemplateMappings($template);
     my $codebase =
-	$self->{cgi}->url(-base => 1) .
-	$self->{config}->getParam("GridShibCAURL");
+        $self->{cgi}->url(-base => 1) .
+        $self->{config}->getParam("GridShibCAURL");
     my @Arguments = ();
     try
     {
-	my $provideTrustRoots = $self->{cgi}->param("DownloadTrustroots");
-	push(@Arguments, "DownloadCAs=$provideTrustRoots");
+        my $provideTrustRoots = $self->{cgi}->param("DownloadTrustroots");
+        push(@Arguments, "DownloadCAs=$provideTrustRoots");
     }
     otherwise
     {
-	my $ex = shift;
-	$self->{logger}->debug("Error getting ProvideTrustRoots: " . $ex->text());
+        my $ex = shift;
+        $self->{logger}->debug("Error getting ProvideTrustRoots: ".$ex->text());
     };
     my $lifetime = $self->{cgi}->param("RequestedLifetime");
     if (defined($lifetime))
     {
-	push(@Arguments, "lifetime=$lifetime");
+        push(@Arguments, "lifetime=$lifetime");
     }
     $template->addMapping("Arguments", \@Arguments);
     $template->addMapping("CodeBase", $codebase);

@@ -46,16 +46,16 @@ sub getUserDN
     # we'll be paranoid her.
     if (!defined($idpPolicy))
     {
-	throw GridShibCA::NameMapperException(
-	    "getIdpPolicy() returned undefined");
+        throw GridShibCA::NameMapperException(
+            "getIdpPolicy() returned undefined");
     }
     
     my $dn = $idpPolicy->{DN};
     if (!defined($dn))
     {
-	my $idp = $self->{userId}->idpId();
-	throw GridShibCA::NameMapperException(
-	    "Idp $idp policy has no DN defined.");
+        my $idp = $self->{userId}->idpId();
+        throw GridShibCA::NameMapperException(
+            "Idp $idp policy has no DN defined.");
     }
 
     return GridShibCA::X509DN->new($dn);

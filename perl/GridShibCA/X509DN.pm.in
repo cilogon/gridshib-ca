@@ -35,7 +35,7 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{dn} = shift ||
-	throw GridShibCA::Exception("Missing DN argument");
+        throw GridShibCA::Exception("Missing DN argument");
     bless($self, $class);
     return $self;
 }
@@ -128,24 +128,24 @@ sub _convertRFC2253DNToOpenSSL
 {
     my $self = shift;
     my $rfc2253DN = shift ||
-	throw GridShibCA::CAException("Missing DN argument");
+        throw GridShibCA::CAException("Missing DN argument");
 
     my @fields = reverse(split(/, */, $rfc2253DN));
 
     # Convert component names to uppercase for openssl
     foreach my $field (@fields)
     {
-	my ($component, $value) = split(/=/, $field, 2);
-	if (!defined($component) or !defined($value))
-	{
+        my ($component, $value) = split(/=/, $field, 2);
+        if (!defined($component) or !defined($value))
+        {
       throw GridShibCA::CAException('Could not parse DN field "' . 
                                     $field . '" ');
-	    return undef;
-	}
+            return undef;
+        }
 
-	$component = uc($component);
+        $component = uc($component);
 
-	$field = $component . "=" . $value;
+        $field = $component . "=" . $value;
     }
 
     my $DN = "/" . join("/", @fields);

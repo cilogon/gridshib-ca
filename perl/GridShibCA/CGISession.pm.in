@@ -87,19 +87,19 @@ sub new
     $self->{logger} = $self->{config}->getLogger();
     # Parameters to be copied into client sessions
     $self->{clientSessionParams} =
-	[
-	 "UserId",
-	 "IdP",
-	 "ClientHost",
-	 "AuthnMethod",
-	 "Attributes",
-	];
+        [
+         "UserId",
+         "IdP",
+         "ClientHost",
+         "AuthnMethod",
+         "Attributes",
+        ];
     # Define the cookie/parameter name we use
     CGI::Session->name($self->{config}->getParam("Session", "Name"));
     # Template for session files
     $CGI::Session::Driver::file::FileName = "gsca-session-%s";
     $self->{defaultLifetime} =
-	$self->{config}->getParam("Session", "DefaultLifetime");
+        $self->{config}->getParam("Session", "DefaultLifetime");
 
     # Driver to use for CGI::Session objects
     $self->{driver} = undef; # Use default
@@ -107,7 +107,7 @@ sub new
     # Arguments to driver (reference to hash)
     # We set the directory to use to store sessions
     my $runtimePath = $_directory || 
-	$self->{config}->getParam("Session", "Directory");
+        $self->{config}->getParam("Session", "Directory");
     $self->{driverArguments} = {Directory=>$runtimePath};
 
     bless($self, $class);
@@ -146,7 +146,7 @@ sub createNew
     $self->param("Expires", $lifetime + time());
 
     $self->{logger}->debug("Session established: %s (lifetime %d, type %s)",
-			   $self->id(), $lifetime, $type);
+                           $self->id(), $lifetime, $type);
 }
 
 
@@ -167,14 +167,14 @@ sub fromId
 {
     my $self = shift;
     my $id = shift ||
-	throw GridShibCA::SessionException("Missing id argument");
+        throw GridShibCA::SessionException("Missing id argument");
 
     $self->{logger}->debug("Loading session (%s)", $id);
     $self->{session} = $self->_loadCGISession($id);
     $self->_checkSession();
     if ($self->isExpired())
     {
-	throw GridShibCA::SessionExpiredException("Session expired");
+        throw GridShibCA::SessionExpiredException("Session expired");
     }
     $self->{logger}->debug("Session (%s) loaded.", $id);
     return 1;
@@ -199,13 +199,13 @@ sub fromCGI
 {
     my $self = shift;
     my $cgi = shift ||
-	throw GridShibCA::SessionException("Missing cgi argument");
+        throw GridShibCA::SessionException("Missing cgi argument");
 
     $self->{logger}->debug("CGISession: Loading session via CGI");
     $self->{session} = $self->_loadCGISession($cgi);
     if ($self->isExpired())
     {
-	throw GridShibCA::SessionExpiredException("Session expired");
+        throw GridShibCA::SessionExpiredException("Session expired");
     }
     $self->_checkSession();
     $self->{logger}->debug("Session %s established.", $self->id());
@@ -229,7 +229,7 @@ sub fromUserIdentity
     my $self = shift;
     $self->_checkSession();
     my $id = shift ||
-	throw GridShibCA::SessionException("missing identity argyment");
+        throw GridShibCA::SessionException("missing identity argument");
 
     $self->param("UserId", $id->userId());
     $self->param("IdP", $id->idpId());
@@ -239,12 +239,12 @@ sub fromUserIdentity
     $self->flush();
 
     $self->{logger}->info(
-	"NEW SESSION %s:Method %s:UserId %s:IdPId %s:IP %s",
-	$self->id(),
-	$id->authMethod(),
-	$id->userId(),
-	$id->idpId(),
-	$id->clientHost());
+        "NEW SESSION %s:Method %s:UserId %s:IdPId %s:IP %s",
+        $self->id(),
+        $id->authMethod(),
+        $id->userId(),
+        $id->idpId(),
+        $id->clientHost());
 }
 
 =item established()
@@ -263,12 +263,12 @@ sub established
     my $self = shift;
     try
     {
-	$self->_checkSession();
-	return 1;
+        $self->_checkSession();
+        return 1;
     }
     otherwise
     {
-	return 0;
+        return 0;
     };
     # Return result of try or otherwise block
 }
@@ -291,14 +291,14 @@ sub isExpired
     my $self = shift;
     if (!defined($self->{session}))
     {
-	throw GridShibCA::SessionException("Session parameter undefined");
+        throw GridShibCA::SessionException("Session parameter undefined");
     }
     my $expires = $self->param("Expires");
     if (time() > $expires)
     {
-	$self->{logger}->debug("Session (%s) has expired",
-			       $self->{session}->id());
-	return 1;
+        $self->{logger}->debug("Session (%s) has expired",
+                               $self->{session}->id());
+        return 1;
     }
     return 0;
 }
@@ -321,7 +321,7 @@ sub checkExpired
     $self->_checkSession();
     if ($self->isExpired())
     {
-	throw GridShibCA::SessionExpiredException("Session expired");
+        throw GridShibCA::SessionExpiredException("Session expired");
     }
 }
 
@@ -340,7 +340,7 @@ sub destroy
     my $self = shift;
     my $session = $self->{session} || return;
     $self->{logger}->debug("Destroying session: %s",
-			   $session->id());
+                           $session->id());
     $session->delete();
     # Recommended practice says use flush() after delete().
     $session->flush();
@@ -379,18 +379,19 @@ sub userIdentity
     my $self = shift;
     $self->_checkSession();
     if (!$self->param("UserId") ||
-	!$self->param("IdP") ||
-	!$self->param("ClientHost") ||
-	!$self->param("AuthnMethod"))
+        !$self->param("IdP") ||
+        !$self->param("ClientHost") ||
+        !$self->param("AuthnMethod"))
     {
-	throw GridShibCA::SessionException("User identity not defined in session.");
+        throw GridShibCA::SessionException(
+            "User identity not defined in session.");
     }
     return GridShibCA::UserIdentity->new(
-	-authMethod => $self->param("AuthnMethod"),
-	-userId => $self->param("UserId"),
-	-clientHost => $self->param("ClientHost"),
-	-idpId => $self->param("IdP"),
-	-attributes => $self->param("Attributes"));
+        -authMethod => $self->param("AuthnMethod"),
+        -userId => $self->param("UserId"),
+        -clientHost => $self->param("ClientHost"),
+        -idpId => $self->param("IdP"),
+        -attributes => $self->param("Attributes"));
 }
 
 =item param
@@ -447,20 +448,20 @@ sub createClientSession
     my $self = shift;
     $self->_checkSession();
     $self->{logger}->debug("Creating new client session from session %s",
-			   $self->id());
+                           $self->id());
     my $session = GridShibCA::CGISession->new();
     my $lifetime =
-	$self->{config}->getParam("Session",
-				  "CredentialRetrieverClientLifetime");
+        $self->{config}->getParam("Session",
+                                  "CredentialRetrieverClientLifetime");
     $session->createNew(-lifetime => $lifetime, -type => "CredentialIssuer");
     $self->{logger}->debug("New client session %s created (lifeime: %d)",
-			   $session->id(), $lifetime);
+                           $session->id(), $lifetime);
 
     # Fill in new client session with values from current session
     my $params = $self->{clientSessionParams};
     foreach my $param (@$params)
     {
-	$session->param($param, $self->param($param));
+        $session->param($param, $self->param($param));
     }
     $session->flush();
     return $session;
@@ -518,8 +519,8 @@ sub cookie
     my $self = shift;
     $self->_checkSession();
     return CGI::cookie(-name => $self->{session}->name(),
-		       -value => $self->{session}->id(),
-		       -secure => 1);
+                       -value => $self->{session}->id(),
+                       -secure => 1);
 }
 
 =item isBrowserSession()
@@ -575,7 +576,7 @@ sub setDirectory
 {
     my $class = shift;
     my $path = shift ||
-	throw GridShibCA::Exception("Missing path argument");
+        throw GridShibCA::Exception("Missing path argument");
     $_directory = $path;
 }
 
@@ -613,9 +614,10 @@ sub _newCGISession
     my $session = CGI::Session->new($self->{driver}, $sid, $self->{driverArguments});
     if (!defined($session))
     {
-	throw GridShibCA::SessionException(
-	    "Session creation failed.",
-	    -logText => "Failed to create session object: " . CGI::Session->errstr());
+        throw GridShibCA::SessionException(
+            "Session creation failed.",
+            -logText => "Failed to create session object: " . 
+                        CGI::Session->errstr());
     }
     return $session;
 }
@@ -636,14 +638,16 @@ sub _loadCGISession
     # Single argument is either session identifer or CGI instance. 
     # We treat it identically in either case.
     my $arg = shift ||
-	throw GridShibCA::Exception("Missing argument");
+        throw GridShibCA::Exception("Missing argument");
 
-    my $session = CGI::Session->load($self->{driver}, $arg, $self->{driverArguments});
+    my $session = CGI::Session->load($self->{driver}, $arg, 
+                                     $self->{driverArguments});
     if (!defined($session))
     {
-	throw GridShibCA::SessionException(
-	    "Session load failed.",
-	    -logText => "Failed to load session object: " . CGI::Session->errstr());
+        throw GridShibCA::SessionException(
+            "Session load failed.",
+            -logText => "Failed to load session object: " . 
+                         CGI::Session->errstr());
     }
     return $session;
 }
@@ -666,33 +670,34 @@ sub _checkSession
 {
     my $self = shift;
     my $session = $self->{session} ||
-	throw GridShibCA::SessionException("Internal error: session not defined");
+        throw GridShibCA::SessionException(
+            "Internal error: session not defined");
 
     if ($session->is_empty())
     {
-	my $errstr = $self->{session}->errstr() || "No error information.";
+        my $errstr = $self->{session}->errstr() || "No error information.";
 
-	my $logText = sprintf("Session is empty: %s", $errstr);
+        my $logText = sprintf("Session is empty: %s", $errstr);
 
-	throw GridShibCA::SessionInvalidException(
-	    "Invalid session.",
-	    -logText => $logText);
+        throw GridShibCA::SessionInvalidException(
+            "Invalid session.",
+            -logText => $logText);
     }
 
     # Sanity check session id
     my $id = $session->id() ||
-	throw GridShibCA::SessionException("Session id not defined");
+        throw GridShibCA::SessionException("Session id not defined");
 
     # Sanity check session type
     # Don't use $self->param() here as that would result in a infinite loop
     my $type = $self->{session}->param("Type");
     if (!defined($type))
     {
-	throw GridShibCA::SessionException("Session type not defined");
+        throw GridShibCA::SessionException("Session type not defined");
     }
     if (($type ne "Browser") and ($type ne "CredentialIssuer"))
     {
-	throw GridShibCA::SessionException("Session is of unknown type: $type");
+        throw GridShibCA::SessionException("Session is of unknown type: $type");
     }
 }
 
@@ -710,15 +715,15 @@ sub _setType
 {
     my $self = shift;
     my $type = shift ||
-	throw GridShibCA::SessionException("Missing type argument");
+        throw GridShibCA::SessionException("Missing type argument");
 
     if (($type eq "Browser") || ($type eq "CredentialIssuer"))
     {
-	$self->{session}->param("Type", $type);
+        $self->{session}->param("Type", $type);
     }
     else
     {
-	throw GridShibCA::SessionException("Bad type \"$type\"");
+        throw GridShibCA::SessionException("Bad type \"$type\"");
     }
 }
 
@@ -738,7 +743,7 @@ sub _getType
     my $type = $self->{session}->param("Type");
     if (!defined($type))
     {
-	throw GridShibCA::SessionException("Session type undefined");
+        throw GridShibCA::SessionException("Session type undefined");
     }
     return $type;
 }

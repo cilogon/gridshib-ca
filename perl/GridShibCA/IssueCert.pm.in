@@ -42,43 +42,43 @@ sub doCommand
 
     try 
     {
-	my $certificateRequest = $self->{cgi}->getCertificateRequest();
-	my $lifetime = $self->{cgi}->param("lifetime");
-	if (defined($lifetime))
-	{
-	    # Need to untaint lifetime
-	    if ($lifetime =~ /^(\d+)$/)
-	    {
-		$lifetime = $1;
-	    }
-	    else
-	    {
-		throw GridShibCA::Exception(
-		    "Illegal characters in lifetime ($lifetime)");
-	    }
-	    $options{requestedLifetime} = $lifetime;
-	}
-	my $certificate = $ca->handleRequest(
-	    $self->{session},
-	    $certificateRequest,
-	    %options);
-	# Single use session has now been used, destroy
-	$self->{session}->destroy();
-	$self->_outputCertificate($certificate);
+        my $certificateRequest = $self->{cgi}->getCertificateRequest();
+        my $lifetime = $self->{cgi}->param("lifetime");
+        if (defined($lifetime))
+        {
+            # Need to untaint lifetime
+            if ($lifetime =~ /^(\d+)$/)
+            {
+                $lifetime = $1;
+            }
+            else
+            {
+                throw GridShibCA::Exception(
+                    "Illegal characters in lifetime ($lifetime)");
+            }
+            $options{requestedLifetime} = $lifetime;
+        }
+        my $certificate = $ca->handleRequest(
+            $self->{session},
+            $certificateRequest,
+            %options);
+        # Single use session has now been used, destroy
+        $self->{session}->destroy();
+        $self->_outputCertificate($certificate);
     }
     catch GridShibCA::AuthorizationFailedException with
     {
-	my $ex = shift;
-	$self->{logger}->err($ex->text());
-	$self->_outputError(401, "Authorization failure");
-	exit(1);
+        my $ex = shift;
+        $self->{logger}->err($ex->text());
+        $self->_outputError(401, "Authorization failure");
+        exit(1);
     }
     otherwise
     {
-	my $ex = shift;
-	$self->{logger}->err($ex->text());
-	$self->_outputError(500, "Server error issuing certificate");
-	exit(1);
+        my $ex = shift;
+        $self->{logger}->err($ex->text());
+        $self->_outputError(500, "Server error issuing certificate");
+        exit(1);
     };
     return 1;
 }
@@ -112,12 +112,13 @@ sub _outputCertificate
 {
     my $self = shift;
     my $certificate = shift ||
-	throw GridShibCA::Exception("Missing certificate argument");
+        throw GridShibCA::Exception("Missing certificate argument");
 
     my $pem = $certificate->as_string();
     if (!defined($pem) || ($pem eq ""))
     {
-	throw GridShibCA::Exception("Failed to convert X.509 certificate to PEM");
+        throw GridShibCA::Exception(
+            "Failed to convert X.509 certificate to PEM");
     }
     
     print $self->{cgi}->header("text/plain");
@@ -145,7 +146,7 @@ sub _outputError
     my $message = shift || "No error message given";
 
     print $self->{cgi}->header(-type=>"text/plain",
-			       -status=>$status . " " .  $message);
+                               -status=>$status . " " .  $message);
 }
 
 =back

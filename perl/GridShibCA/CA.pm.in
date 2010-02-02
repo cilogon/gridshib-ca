@@ -69,15 +69,15 @@ sub handleRequest
 {
     my $self = shift;
     my $session = shift ||
-	throw GridShibCA::CAException("Missing session argument");
+        throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
-	throw GridShibCA::CAException("Missing certificate request argument");
+        throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
     $self->_authorizeRequest($session);
     my $certificate = $self->signRequest($session,
-					 $certificateRequest,
-					 %options);
+                                         $certificateRequest,
+                                         %options);
     $self->_logIssuance($session, $certificate);
     return $certificate;
 }
@@ -113,27 +113,29 @@ sub signRequest
 {
     my $self = shift;
     my $session = shift ||
-	throw GridShibCA::CAException("Missing session argument");
+        throw GridShibCA::CAException("Missing session argument");
     my $certificateRequest = shift ||
-	throw GridShibCA::CAException("Missing certificate request argument");
+        throw GridShibCA::CAException("Missing certificate request argument");
     my %options = @_;
 
     if (defined($options{requestedLifetime}))
     {
-	my $maxLifetime = $self->_getMaximumLifetime();
-	my $requestedLifetime = $options{requestedLifetime};
-	if ($requestedLifetime > $maxLifetime)
-	{
-	    throw GridShibCA::CAException("Requested lifetime ($requestedLifetime) greated than maximum allowable ($maxLifetime)");
-	}
+        my $maxLifetime = $self->_getMaximumLifetime();
+        my $requestedLifetime = $options{requestedLifetime};
+        if ($requestedLifetime > $maxLifetime)
+        {
+            throw GridShibCA::CAException(
+                "Requested lifetime ($requestedLifetime) greater " .
+                "than maximum allowable ($maxLifetime)");
+        }
     }
     else
     {
-	$options{requestedLifetime} = $self->_getDefaultLifetime();
+        $options{requestedLifetime} = $self->_getDefaultLifetime();
     }
 
     my $cert = $self->_signRequest($session, $certificateRequest, %options)
-	|| throw GridShibCA::CAException("_signRequest() returned undef");
+        || throw GridShibCA::CAException("_signRequest() returned undef");
     return $cert;
 }
 
@@ -180,7 +182,8 @@ sub _authorizeRequest
     my $session = shift;
 
     my $id = $session->userIdentity() ||
-	throw GridShibCA::CAException("Could not get user identity from exception.");
+        throw GridShibCA::CAException(
+            "Could not get user identity from exception.");
     my $authorization = $self->{config}->getAuthorization($id);
     $authorization->isAuthorized();
 }
@@ -214,11 +217,11 @@ sub _logIssuance
     my $expires = $certificate->notAfter();
 
     $self->{logger}->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" expires=\"%s\"",
-			  $session->param("UserId"),
-			  $session->param("IdP"),
-			  $session->param("ClientHost"),
-			  $serial, $hash,
-			  $DN, $expires);
+                          $session->param("UserId"),
+                          $session->param("IdP"),
+                          $session->param("ClientHost"),
+                          $serial, $hash,
+                          $DN, $expires);
     
     my $certRegistry = $self->{config}->getCertRegistry();
     $certRegistry->registerCert($session, $certificate);
@@ -243,8 +246,8 @@ sub _X509fromPEM
     my $x509 = Crypt::OpenSSL::X509->new_from_string($pem);
     if (!defined($x509))
     {
-	# Not clear to me how Crypt::OpenSSL::X509 returns an error string
-	throw GridShibCA::CAException("Error parsing PEM certificate");
+        # Not clear to me how Crypt::OpenSSL::X509 returns an error string
+        throw GridShibCA::CAException("Error parsing PEM certificate");
     }
     return $x509;
 }

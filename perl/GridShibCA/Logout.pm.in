@@ -38,7 +38,7 @@ sub doCommand
     my $self = shift;
     if ($self->{session}->established())
     {
-	$self->{session}->destroy();
+        $self->{session}->destroy();
     }
     # TODO: Destroy session cookie here
     $self->_displayHTML("LogoutTemplate");

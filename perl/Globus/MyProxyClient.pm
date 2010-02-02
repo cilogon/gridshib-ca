@@ -79,75 +79,76 @@ sub getCred
     my $self = shift;
     my $arg_hash = (ref($_[0]) eq 'HASH') ? $_[0] : {@_};
     my $sock = Globus::GSISocket->new(
-	PeerHost => $self->{host},
-	PeerPort => $self->{port},
-	SSL_cert_file => $self->{cert},
-	SSL_key_file => $self->{key}
-	);
+        PeerHost => $self->{host},
+        PeerPort => $self->{port},
+        SSL_cert_file => $self->{cert},
+        SSL_key_file => $self->{key}
+        );
     if (!defined($sock))
     {
-	$self->_error(Globus::GSISocket::errstr());
-	return undef;
+        $self->_error(Globus::GSISocket::errstr());
+        return undef;
     }
 
     $self->_debug("Sending request to MyProxy server");
     if (!$sock->write(sprintf(
-			  "VERSION=%s\n" .
-			  "COMMAND=%d\n" .
-			  "USERNAME=%s\n" .
-			  "PASSPHRASE=%s\n" .
-			  "LIFETIME=%d\n",
-			  $MYPROXY_VERSION_STRING,
-			  $MYPROXY_GET_COMMAND,
-			  $arg_hash->{Username},
-			  $arg_hash->{Passphrase},
-			  $arg_hash->{Lifetime})))
+                          "VERSION=%s\n" .
+                          "COMMAND=%d\n" .
+                          "USERNAME=%s\n" .
+                          "PASSPHRASE=%s\n" .
+                          "LIFETIME=%d\n",
+                          $MYPROXY_VERSION_STRING,
+                          $MYPROXY_GET_COMMAND,
+                          $arg_hash->{Username},
+                          $arg_hash->{Passphrase},
+                          $arg_hash->{Lifetime})))
     {
-	$self->_error("Error writing MyProxy request: %s",
-		      $sock->errstr());
-	return undef;
+        $self->_error("Error writing MyProxy request: %s",
+                      $sock->errstr());
+        return undef;
     }
 
     $self->_debug("Reading response from MyProxy server");
     my $responseCode = $self->readResponse($sock);
     if (!defined($responseCode))
     {
-	return undef;
+        return undef;
     }
     $self->_debug("Response code is %d", $responseCode);
     if ($responseCode != $MYPROXY_RESPONSE_SUCCESS)
     {
-	$self->_error("MyProxy server denied request: %s",
-		      $self->{responseError});
-	return undef;
+        $self->_error("MyProxy server denied request: %s",
+                      $self->{responseError});
+        return undef;
     }
 
     $self->_debug("Accepting delegated credential from MyProxy server");
     my $cred =  $sock->acceptDelegation(
-	certReq => $arg_hash->{CertReq},
-	certReqFormat => $arg_hash->{CertReqFormat});
+        certReq => $arg_hash->{CertReq},
+        certReqFormat => $arg_hash->{CertReqFormat});
 
     if (!defined($cred))
     {
-	if ($sock->myProxyResponsePending())
-	{
-	    $self->readResponse($sock);
-	    if (defined($self->{responseError}))
-	    {
-		$self->_error("Error from MyProxy server (more details in srver log): %s",
-			      $self->{responseError});
-	    }
-	    else
-	    {
-		$self->_error("Got error from MyProxy server but unable to parse. See server logs.");
-	    }
-	}
-	else
-	{
-	    $self->_error("Error reading credential: %s",
-			  $sock->errstr());
-	}
-	return undef;
+        if ($sock->myProxyResponsePending())
+        {
+            $self->readResponse($sock);
+            if (defined($self->{responseError}))
+            {
+                $self->_error("Error from MyProxy server (more details in ".
+                              "serrver log): %s", $self->{responseError});
+            }
+            else
+            {
+                $self->_error("Got error from MyProxy server but " . 
+                              "unable to parse. See server logs.");
+            }
+        }
+        else
+        {
+            $self->_error("Error reading credential: %s",
+                          $sock->errstr());
+        }
+        return undef;
     }
     $sock->close();
     return $cred;
@@ -171,55 +172,54 @@ sub readResponse
     my $versionString = $sock->readline();
     if (!defined($versionString))
     {
-	$self->_error("Error reading response: %s",
-		      $sock->errstr());
-	return undef;
+        $self->_error("Error reading response: %s",
+                      $sock->errstr());
+        return undef;
     }
     my $responseString = $sock->readline();
     if (!defined($responseString))
     {
-	$self->_error("Error reading response: %s",
-		      $sock->errstr());
-	return undef;
+        $self->_error("Error reading response: %s",
+                      $sock->errstr());
+        return undef;
     }
     my $expectString = sprintf("VERSION=%s", $MYPROXY_VERSION_STRING);
     chomp($versionString);
     if ($versionString ne $expectString)
     {
-	$self->_error(
-	    "Bad version string received from MyProxy Server: %s != %s",
-	    $versionString, $expectString);
-	return undef;
+        $self->_error(
+            "Bad version string received from MyProxy Server: %s != %s",
+            $versionString, $expectString);
+        return undef;
     }
     chomp($responseString);
     if ($responseString !~ /RESPONSE=(\d+)/)
     {
-	$self->_error(
-	    "Bad response string received from MyProxy Server: %s",
-	    $responseString);
-	return undef;
+        $self->_error("Bad response string received from MyProxy Server: %s",
+                      $responseString);
+        return undef;
     }
     my $responseCode = int($1);
     if ($responseCode != 0)
     {
-	# Read error strings
-	$self->{responseError} = "";
-	while ($sock->pending())
-	{
-	    my $errorString = $sock->readline();
-	    if ($errorString =~ /ERROR=(.*)/)
-	    {
-		$errorString = $1;
-		chomp($errorString);
-		$self->{responseError} .= $errorString . "\n";
-	    }
-	}
+        # Read error strings
+        $self->{responseError} = "";
+        while ($sock->pending())
+        {
+            my $errorString = $sock->readline();
+            if ($errorString =~ /ERROR=(.*)/)
+            {
+                $errorString = $1;
+                chomp($errorString);
+                $self->{responseError} .= $errorString . "\n";
+            }
+        }
     }
     # Read and discard any leftover stuff
     my $extra;
     my $pending = $sock->pending();
     $self->_debug("Reading and discarding %d byte(s) after response",
-		  $pending);
+                  $pending);
     $sock->read($extra, $pending);
     return $responseCode;
 }
@@ -256,13 +256,13 @@ sub _debug
     my $format = shift;
     if (ref($format))
     {
-	# We were called as a instance method instead of a static method
-	$format = shift;
+        # We were called as a instance method instead of a static method
+        $format = shift;
     }
     if ($DEBUG and defined($format))
     {
-	chomp($format);
-	printf($format . "\n", @_);
+        chomp($format);
+        printf($format . "\n", @_);
     }
 }
 
@@ -280,12 +280,12 @@ sub errstr
     my $self = shift;
     if (defined($self))
     {
-	return $self->{errstr};
+        return $self->{errstr};
     }
     else
     {
-	# Shouldn't get here
-	return "No Error.";
+        # Shouldn't get here
+        return "No Error.";
     }
 }
 

@@ -43,29 +43,28 @@ sub doCommand
 
     try
     {
-	my $provideTrustroots =
-	    $self->{config}->getParamBoolean("TrustRoots",
-						 "ProvideTrustRoots");
-	if (!$provideTrustroots)
-	{
-	    throw GridShibCA::Exception("Trust roots disabled.");
-	}
+        my $provideTrustroots =
+            $self->{config}->getParamBoolean("TrustRoots",
+                                             "ProvideTrustRoots");
+        if (!$provideTrustroots)
+        {
+            throw GridShibCA::Exception("Trust roots disabled.");
+        }
 
-	my $trustrootsPath = $self->{config}->getParam("TrustRoots",
-						       "TrustRootsPath");
-	print $self->{cgi}->header("text/plain");
-	$self->_handleDirectory($trustrootsPath);
+        my $trustrootsPath = $self->{config}->getParam("TrustRoots",
+                                                       "TrustRootsPath");
+        print $self->{cgi}->header("text/plain");
+        $self->_handleDirectory($trustrootsPath);
     }
     otherwise
     {
-	my $ex = shift;
-	# XXX Some possibility here we already printed a header.
-	print $self->{cgi}->header(-type => "text/plain", 
-				   -status => "401 Providing of trust roots disabled.");
+        my $ex = shift;
+        # XXX Some possibility here we already printed a header.
+        print $self->{cgi}->header(-type => "text/plain", 
+              -status => "401 Providing of trust roots disabled.");
 
-	$self->{logger}->error(
-	    "Error providing trust roots: " . $ex->text());
-	$status = 0;
+        $self->{logger}->error("Error providing trust roots: " . $ex->text());
+        $status = 0;
     };
 
     return $status;
@@ -101,43 +100,43 @@ sub _handleDirectory
 {
     my $self = shift;
     my $path = shift ||
-	throw GridShibCA::Exception("Missing path argument");
+        throw GridShibCA::Exception("Missing path argument");
 
     if (! -x $path)
     {
-	$self->{logger}->error("Trust roots path does not exist: $path");
-	return;
+        $self->{logger}->error("Trust roots path does not exist: $path");
+        return;
     }
 
     if (! -d $path)
     {
-	$self->{logger}->error("Trust roots path is not directory: $path");
-	return;
+        $self->{logger}->error("Trust roots path is not directory: $path");
+        return;
     }
 
     if (! -r $path)
     {
-	$self->{logger}->error("Trust roots path is not readable: $path");
-	return;
+        $self->{logger}->error("Trust roots path is not readable: $path");
+        return;
     }
 
     my $dir = new DirHandle($path);
     if (!defined($dir))
     {
-	$self->{logger}->error("Error openig trust roots path $path: $!");
-	return;
+        $self->{logger}->error("Error openig trust roots path $path: $!");
+        return;
     }
 
     while (defined(my $filename = $dir->read()))
     {
-	# Skip "." and ".."
-	if (($filename eq ".") ||
-	    ($filename eq ".."))
-	{
-	    next;
-	}
-	my $filepath = File::Spec->catfile($path, $filename);
-	$self->_handleFile($filepath);
+        # Skip "." and ".."
+        if (($filename eq ".") ||
+            ($filename eq ".."))
+        {
+            next;
+        }
+        my $filepath = File::Spec->catfile($path, $filename);
+        $self->_handleFile($filepath);
     }
 }
 
@@ -155,26 +154,26 @@ sub _handleFile
 {
     my $self = shift;
     my $filename = shift ||
-	throw GridShibCA::Exception("Missing file path argument");
+        throw GridShibCA::Exception("Missing file path argument");
 
     # If it's not a normal file, skip it
     if (! -f $filename)
     {
-	$self->{logger}->debug("Trusted CA file not a normal file: $filename");
-	return;
+        $self->{logger}->debug("Trusted CA file not a normal file: $filename");
+        return;
     }
 
     if (! -r $filename)
     {
-	$self->{logger}->debug("Trusted CA file not readable: $filename");
-	return;
+        $self->{logger}->debug("Trusted CA file not readable: $filename");
+        return;
     }
 
     my $file = new FileHandle($filename);
     if (!defined($file))
     {
-	$self->{logger}->error("Trusted CA file open failed: $filename: $!");
-	return;
+        $self->{logger}->error("Trusted CA file open failed: $filename: $!");
+        return;
     }
     my @lines = $file->getlines();
     $file->close();
@@ -183,9 +182,9 @@ sub _handleFile
     print "-----File: $basename\n";
     foreach (@lines)
     {
-	# Make sure we have a carriage return at the end of the line
-	chomp($_);
-	print $_ . "\n";
+        # Make sure we have a carriage return at the end of the line
+        chomp($_);
+        print $_ . "\n";
     }
 }
 

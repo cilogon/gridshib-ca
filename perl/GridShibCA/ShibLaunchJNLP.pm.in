@@ -68,7 +68,7 @@ B<Returns:> Default requirements as bitmask
 sub _defaultRequirements
 {
     return $GridShibCA::WebCommand::OPTIONAL_SESSION |
-	$GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
+           $GridShibCA::WebCommand::REQUIRE_CSRF_CHECK;
 }
 
 =back

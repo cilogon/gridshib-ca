@@ -53,16 +53,17 @@ sub doCommand
     my $args = $self->{args};
     if (!defined($args->{template}))
     {
-	throw GridShibCA::ConfigException("template element for DisplayTemplate missing.");
+        throw GridShibCA::ConfigException(
+            "Template element for DisplayTemplate missing.");
     }
     my $templateName = $args->{template};
     my $addCSRF = $args->{addCSRF};
     # Note Config automatically converts "true" to 1
     if (defined($addCSRF) and ($addCSRF = 1))
     {
-	$self->{logger}->debug("Adding CSRF cookie to displayed template");
-	my $csrf = $self->{config}->getCSRF();
-	$self->_addCookie($csrf->createCookie());
+        $self->{logger}->debug("Adding CSRF cookie to displayed template");
+        my $csrf = $self->{config}->getCSRF();
+        $self->_addCookie($csrf->createCookie());
     }
     my %mappings = ();
     $self->_displayHTML($templateName, %mappings);

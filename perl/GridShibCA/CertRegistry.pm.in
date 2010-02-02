@@ -79,9 +79,9 @@ sub registerCert()
 {
     my $self = shift;
     my $session = shift ||
-	throw GridShibCA::CertRegistryException("Missing session argument");
+        throw GridShibCA::CertRegistryException("Missing session argument");
     my $x509 = shift ||
-	throw GridShibCA::CertRegistryException("Missing certificate argument");
+        throw GridShibCA::CertRegistryException("Missing certificate argument");
 
     my $userId = $session->param("UserId");
     my $idp = $session->param("IdP");
@@ -97,29 +97,30 @@ sub registerCert()
 
     if (! -d $registryDir)
     {
-	mkdir($registryDir, 0700) ||
-	    throw GridShibCA::CertRegistryException(
-		"Could not create certificate registry directory (%s): %s",
-		$registryDir, $!);
+        mkdir($registryDir, 0700) ||
+            throw GridShibCA::CertRegistryException(
+                "Could not create certificate registry directory (%s): %s",
+                $registryDir, $!);
     }
 
     # Hash is tainted, so must untaint before using in filename
     if ($hash =~ /^(\w+)$/)
     {
-	$hash = $1;
+        $hash = $1;
     }
     else
     {
-	throw GridShibCA::CertRegistryException("Illegal characters in hash: \"$hash\"");
+        throw GridShibCA::CertRegistryException(
+            "Illegal characters in hash: \"$hash\"");
     }
 
     my $certFilename = File::Spec->catfile($registryDir,
-					   $hash . "." . $timeSeconds);
+                                           $hash . "." . $timeSeconds);
     my $certFile = new FileHandle;
     $certFile->open(">$certFilename") ||
-	throw GridShibCA::CertRegistryException(
-	    "Could not open certificate file (%s): %s",
-	    $certFilename, $!);
+        throw GridShibCA::CertRegistryException(
+            "Could not open certificate file (%s): %s",
+            $certFilename, $!);
 
     print $certFile <<"EOF";
 User: $userId

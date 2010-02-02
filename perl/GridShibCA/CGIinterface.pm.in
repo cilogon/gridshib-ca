@@ -77,26 +77,27 @@ sub getRequestedCredLifetime
     my $lifetime = $self->param("lifetime");
     if (!defined($lifetime) or ($lifetime eq "default"))
     {
-	$lifetime = $self->{config}->getParam("CA", "DefaultCredLifetime");
+        $lifetime = $self->{config}->getParam("CA", "DefaultCredLifetime");
     }
     elsif ($lifetime eq "specified")
     {
-	$lifetime = $self->param("specifiedLifetime");
-	my $unit = $self->param("lifetimeUnit");
-	if (defined($unit) && ($unit eq "hours"))
-	{
-	    $lifetime *= 3600;
-	}
+        $lifetime = $self->param("specifiedLifetime");
+        my $unit = $self->param("lifetimeUnit");
+        if (defined($unit) && ($unit eq "hours"))
+        {
+            $lifetime *= 3600;
+        }
     }
     # Clean lifetime for taint mode
     if ($lifetime =~ /^(\d+)$/)
     {
-	$lifetime = $1;
+        $lifetime = $1;
     }
     else
     {
-	$self->{logger}->err("Illegal characters detected in lifetime ($lifetime)");
-	return $self->{config}->getParam("CA", "DefaultCredLifetime");
+        $self->{logger}->err("Illegal characters detected in " .
+                             "lifetime ($lifetime)");
+        return $self->{config}->getParam("CA", "DefaultCredLifetime");
     }
     return $lifetime;
 }
@@ -115,10 +116,9 @@ sub requestedTrustedCAUpdate
 {
     my $self = shift;
     my $requestedCAUpdate = $self->param("TrustRoots", "ProvideTrustRoots");
-    if (defined($requestedCAUpdate) and
-	($requestedCAUpdate eq "true"))
+    if (defined($requestedCAUpdate) and ($requestedCAUpdate eq "true"))
     {
-	return 1;
+        return 1;
     }
     return 0;
 }

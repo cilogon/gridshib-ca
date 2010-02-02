@@ -50,54 +50,54 @@ sub doCommand
 
     try
     {
-	my $consumer = Net::OpenID::Consumer->new(
-	    # The user agent which sends the openid off to the server.
-	    ua => LWP::UserAgent->new(),
-	    # Require base for return URL
-	    required_root => $baseURL,
-	    # Our secret for nonces
-	    consumer_secret => $secret,
-	    # Way for Consumer to get at CGI parameters
-	    args => $cgi,
-	    );
-	
-	# I would use handle_server_response here if there was some way to 
-	# pass $self to the callbacks.
-	if ($consumer->is_server_response())
-	{
-	    $self->_handleServerResponse($consumer);
-	}
-	else
-	{
-	    # Not an OpenId response. In this case we either need to
-	    # present the user with a login form, or process the result of
-	    # that login form. Look for an openid parameter - if present,
-	    # then this is the form submission. Otherwise we output the
-	    # form.
-	    my $openid = $self->{cgi}->param("openid");
-	    if ($openid)
-	    {
-		$self->_handleClaim($consumer, $openid);
-	    }
-	    else
-	    {
-		# Output logon form
-		$self->{logger}->debug("Providing user OpenId logon form.");
-		$self->_displayHTML("OpenIdLogonForm");
-	    }
-	}
+        my $consumer = Net::OpenID::Consumer->new(
+            # The user agent which sends the openid off to the server.
+            ua => LWP::UserAgent->new(),
+            # Require base for return URL
+            required_root => $baseURL,
+            # Our secret for nonces
+            consumer_secret => $secret,
+            # Way for Consumer to get at CGI parameters
+            args => $cgi,
+            );
+        
+        # I would use handle_server_response here if there was some way to 
+        # pass $self to the callbacks.
+        if ($consumer->is_server_response())
+        {
+            $self->_handleServerResponse($consumer);
+        }
+        else
+        {
+            # Not an OpenId response. In this case we either need to
+            # present the user with a login form, or process the result of
+            # that login form. Look for an openid parameter - if present,
+            # then this is the form submission. Otherwise we output the
+            # form.
+            my $openid = $self->{cgi}->param("openid");
+            if ($openid)
+            {
+                $self->_handleClaim($consumer, $openid);
+            }
+            else
+            {
+                # Output logon form
+                $self->{logger}->debug("Providing user OpenId logon form.");
+                $self->_displayHTML("OpenIdLogonForm");
+            }
+        }
     }
     catch GridShibCA::OpenIdException with
     {
-	my $ex = shift;
-	$self->_handleOpenIdException($ex);
-	$status = 0;
+        my $ex = shift;
+        $self->_handleOpenIdException($ex);
+        $status = 0;
     }
     otherwise
     {
-	my $ex = shift;
-	$self->_displayHTMLError("OpenId authentication failed: " . $ex->text());
-	$status = 0;
+        my $ex = shift;
+        $self->_displayHTMLError("OpenId authentication failed: ".$ex->text());
+        $status = 0;
     };
 
     return $status;
@@ -134,51 +134,52 @@ sub _handleServerResponse
 {
     my $self = shift;
     my $consumer = shift ||
-	throw GridShibCA::Exception("Missing consumer argument");
+        throw GridShibCA::Exception("Missing consumer argument");
 
     my $setup_url = $consumer->user_setup_url();
     my $verifiedId = $consumer->verified_identity();
     if ($setup_url)
     {
-	$self->{logger}->debug("OpenId setup required. Redirecting user to $setup_url");
-	$self->_redirect($setup_url);
+        $self->{logger}->debug("OpenId setup required. " .
+            "Redirecting user to $setup_url");
+        $self->_redirect($setup_url);
     }
     elsif ($consumer->user_cancel())
     {
-	$self->{logger}->info("User canceled OpenId authentication.");
-	$self->_displayHTML("OpenIdCancel");
+        $self->{logger}->info("User canceled OpenId authentication.");
+        $self->_displayHTML("OpenIdCancel");
     }
     elsif ($verifiedId)
     {
-	$self->{logger}->info("OpenId authentication successful: " .
-			       $verifiedId->url());
-	my $openid = $verifiedId->url();
+        $self->{logger}->info("OpenId authentication successful: " .
+                               $verifiedId->url());
+        my $openid = $verifiedId->url();
 
-	# Reload claimed identity to get server and protocol version
-	my $claimedId = $consumer->claimed_identity($openid);
-	my $idpId = $claimedId->identity_server();
+        # Reload claimed identity to get server and protocol version
+        my $claimedId = $consumer->claimed_identity($openid);
+        my $idpId = $claimedId->identity_server();
 
-	my $protocolVersion = $claimedId->protocol_version();
-	my $authMethod = "OpenId";
+        my $protocolVersion = $claimedId->protocol_version();
+        my $authMethod = "OpenId";
 
-	# At some point, save specific version, which is:
-	# $protocolVersion == 1 => OpenId1.1
-	# $protocolVersion == 2 => OpenId2.0
-	
-	my $id = GridShibCA::UserIdentity->new(
-	    -authMethod => $authMethod,
-	    -clientHost => $self->getClientHost(),
-	    -userId => $openid,
-	    -idpId => $idpId);
-	
-	my $session = $self->_doLogon($id);
-	my %mappings = ();
-	$self->_displayHTML("OpenIdSuccess", %mappings);
+        # At some point, save specific version, which is:
+        # $protocolVersion == 1 => OpenId1.1
+        # $protocolVersion == 2 => OpenId2.0
+        
+        my $id = GridShibCA::UserIdentity->new(
+            -authMethod => $authMethod,
+            -clientHost => $self->getClientHost(),
+            -userId => $openid,
+            -idpId => $idpId);
+        
+        my $session = $self->_doLogon($id);
+        my %mappings = ();
+        $self->_displayHTML("OpenIdSuccess", %mappings);
     }
     else
     {
-	# Unknown state
-	throw GridShibCA::OpenIdException($consumer);
+        # Unknown state
+        throw GridShibCA::OpenIdException($consumer);
     }
 }
 
@@ -200,9 +201,9 @@ sub _handleClaim
 {
     my $self = shift;
     my $consumer = shift ||
-	throw GridShibCA::Exception("Missing consumer argument");
+        throw GridShibCA::Exception("Missing consumer argument");
     my $openid = shift ||
-	throw GridShibCA::Exception("Missing openid argument");
+        throw GridShibCA::Exception("Missing openid argument");
 
     my $myURL = $self->{cgi}->url(-full => 1);
     my $baseURL = $self->{cgi}->url(-base => 1);
@@ -212,17 +213,17 @@ sub _handleClaim
     my $claimedId = $consumer->claimed_identity($openid);
     if (!$claimedId)
     {
-	throw GridShibCA::OpenIdException($consumer);
+        throw GridShibCA::OpenIdException($consumer);
     }
     $self->{logger}->debug("Redirecting user to OpenId provider.");
     my $checkURL = $claimedId->check_url (
-	# The place we go back to.
-	return_to  => $myURL,
-	# Having this simplifies the login process.
-	trust_root => $baseURL,
-	# IdP can redirect user if needed
-	delayed_return => 1.
-	);
+        # The place we go back to.
+        return_to  => $myURL,
+        # Having this simplifies the login process.
+        trust_root => $baseURL,
+        # IdP can redirect user if needed
+        delayed_return => 1.
+        );
     $self->_redirect($checkURL);
 }
 
@@ -261,24 +262,29 @@ sub _getConsumerSecret
 {
     my $self = shift;
     my $secretFilename = $self->{config}->getParam("OpenId",
-						   "ConsumerSecretFilename");
+                                                   "ConsumerSecretFilename");
     if (! -f $secretFilename )
     {
-	throw GridShibCA::OpenIdException("OpenId Consumer secret file does not exist: $secretFilename");
+        throw GridShibCA::OpenIdException(
+            "OpenId Consumer secret file does not exist: $secretFilename");
     }
 
     if (! -r $secretFilename )
     {
-	throw GridShibCA::OpenIdException("OpenId Consumer secret file is not readable: $secretFilename");
+        throw GridShibCA::OpenIdException(
+            "OpenId Consumer secret file is not readable: $secretFilename");
     }
 
-    $self->{logger}->debug("Reading OpenId consumer secret from $secretFilename");
+    $self->{logger}->debug("Reading OpenId consumer secret from " .
+        $secretFilename);
 
     my $file = FileHandle->new($secretFilename, "r") ||
-	throw GridShibCA::OpenIdException("Error opening OpenId Consumer secret file $secretFilename: $!");
+        throw GridShibCA::OpenIdException(
+            "Error opening OpenId Consumer secret file $secretFilename: $!");
 
     my $secret = $file->getline() ||
-	throw GridShibCA::OpenIdException("Error reading OpenId Consumer secret from $secretFilename: $!");
+        throw GridShibCA::OpenIdException(
+            "Error reading OpenId Consumer secret from $secretFilename: $!");
 
     $self->{logger}->debug("Reading OpenId consumer secret is $secret");
 
@@ -321,10 +327,10 @@ sub new
 
     if (ref($text))
     {
-	# Net::OpenId::Consumer instance
-	my $errcode = $text->errcode();
-	my $errtext = $text->errtext();
-	$text = "OpenId error: $errtext ($errcode)";
+        # Net::OpenId::Consumer instance
+        my $errcode = $text->errcode();
+        my $errtext = $text->errtext();
+        $text = "OpenId error: $errtext ($errcode)";
     }
 
     my $self = $class->SUPER::new($text);

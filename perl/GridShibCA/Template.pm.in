@@ -47,7 +47,7 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{templateFile} = shift ||
-	throw GridShibCA::TemplateException("Missing filename");
+        throw GridShibCA::TemplateException("Missing filename");
 
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
@@ -55,18 +55,19 @@ sub new
     # We need to use UNTAINT here to clean file for later evaluation
     # Note this means files must be trustworthy.
     $self->{template} = Text::Template->new(TYPE => 'FILE',
-					    SOURCE => $self->{templateFile},
-					    UNTAINT => 1);
+                                            SOURCE => $self->{templateFile},
+                                            UNTAINT => 1);
     if (!$self->{template})
     {
-	throw GridShibCA::TemplateException("Couldn't construct template: $Text::Template::ERROR");
+        throw GridShibCA::TemplateException(
+            "Couldn't construct template: $Text::Template::ERROR");
     }
     # Default initial hash values
     $self->{hash} = {
-	Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
-	ContactAddress => $self->{config}->getParam("ContactAddress"),
-	GridShibCAURL => $self->{config}->getParamURL("URLs", "WebApp"),
-	ShibProtectedURL => $self->{config}->getParamURL("ShibProtectedURL"),
+        Version => $GridShibCA::Constants::GRIDSHIBCA_VERSION_STRING,
+        ContactAddress => $self->{config}->getParam("ContactAddress"),
+        GridShibCAURL => $self->{config}->getParamURL("URLs", "WebApp"),
+        ShibProtectedURL => $self->{config}->getParamURL("ShibProtectedURL"),
     };
 
     # Initialize the Template Package. This is the namespace the
@@ -127,7 +128,7 @@ sub addMappings
     my %hash = @_;
 
     while ( my ($key, $value) = each(%hash) ) {
-	$self->{hash}->{$key} = $value;
+        $self->{hash}->{$key} = $value;
     }
 }
 
@@ -145,7 +146,7 @@ sub addSectionAsMappings
 {
     my $self = shift;
     my $section = shift
-	|| throw TemplateException("Missing section name");
+        || throw TemplateException("Missing section name");
     my %mappings = $self->{config}->getSection($section);
     $self->addMappings(%mappings);
 }
@@ -169,15 +170,16 @@ sub getText
     my $template = $self->{template};
 
     my $text = $template->fill_in(
-	HASH => $self->{hash},
-	BROKEN => \&_broken,
-	BROKEN_ARG => $self,
-	PACKAGE => 'GridShibCA::TemplatePackage',
-	);
+        HASH => $self->{hash},
+        BROKEN => \&_broken,
+        BROKEN_ARG => $self,
+        PACKAGE => 'GridShibCA::TemplatePackage',
+        );
 
     if (!defined($text))
     {
-	throw GridShibCA::TemplateException("Error rendering output: $Text::Template::ERROR");
+        throw GridShibCA::TemplateException(
+            "Error rendering output: $Text::Template::ERROR");
     }
 
     return $text;
@@ -302,15 +304,15 @@ sub cleanURL
     my $url = shift;
     if ($url =~ /^\w+:/)
     {
-	# Absolute URL, just clean up path portion.
-	$uri = URI->new($url);
-	$uri->path(File::Spec->canonpath($uri->path()));
+        # Absolute URL, just clean up path portion.
+        $uri = URI->new($url);
+        $uri->path(File::Spec->canonpath($uri->path()));
     }
     else
     {
-	# Relative URL, clean up first to avoid URI confusing "//" at
-	# start as start of host.
-	$uri = URI->new(File::Spec->canonpath($url));
+        # Relative URL, clean up first to avoid URI confusing "//" at
+        # start as start of host.
+        $uri = URI->new(File::Spec->canonpath($url));
     }
     return $uri->canonical();
 }

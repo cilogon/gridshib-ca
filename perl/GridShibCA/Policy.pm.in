@@ -42,16 +42,16 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{userId} = shift ||
-	throw GridShibCA::PolicyException("Missing userId argument");
+        throw GridShibCA::PolicyException("Missing userId argument");
     $self->{config} = GridShibCA::Config->new();
     $self->{logger} = $self->{config}->getLogger();
     $self->{filename} = $self->{config}->getParam("Authorization",
-						  "PolicyFilename");
+                                                  "PolicyFilename");
     bless($self, $class);
     # Make sure our static $policy variable is set.
     if (!defined($policy))
     {
-	$policy = $self->_initConfig($self->{filename}, $self->{userId});
+        $policy = $self->_initConfig($self->{filename}, $self->{userId});
     }
     $self->{policy} = $policy;
     return $self;
@@ -88,49 +88,49 @@ sub _initConfig
 {
     my $self = shift;
     my $filename = shift ||
-	throw GridhibCA::UserIdentityException("Missing filename argument");
+        throw GridhibCA::UserIdentityException("Missing filename argument");
     my $userId = shift ||
-	throw GridShibCA::UserIdentityException("Missing userId argument");
+        throw GridShibCA::UserIdentityException("Missing userId argument");
     $self->{logger}->debug("Initializing configuration from %s", $filename);
     # Values to fill in based on user
     my $defaultConfig = {
-	UserId => $userId->userId(),
-	IdPId => $userId->idpId(),
+        UserId => $userId->userId(),
+        IdPId => $userId->idpId(),
     };
     my $attributes = $userId->attributes();
     foreach my $attributeName (keys(%$attributes))
     {
-	$defaultConfig->{$attributeName} = $attributes->{$attributeName};
+        $defaultConfig->{$attributeName} = $attributes->{$attributeName};
     }
     my %options = (
-	-ConfigFile => $filename,
-	# Allow for variable substitution in values
-	-InterPolateVars => 1,
-	# Allow for OO type access to values
-	-ExtendedAccess => 1,
-	# Automatically parse booleans
-	-AutoTrue => 1,
-	# Allow for running under taint mode
-	-AutoLaunder => 1,
-	# Set default values based on user
-	-DefaultConfig => $defaultConfig,
-	);
+        -ConfigFile => $filename,
+        # Allow for variable substitution in values
+        -InterPolateVars => 1,
+        # Allow for OO type access to values
+        -ExtendedAccess => 1,
+        # Automatically parse booleans
+        -AutoTrue => 1,
+        # Allow for running under taint mode
+        -AutoLaunder => 1,
+        # Set default values based on user
+        -DefaultConfig => $defaultConfig,
+        );
     if ($self->{debug})
     {
-	# Complain about duplicates values
-	$options{"-AllowMultiOptions"} = 0;
+        # Complain about duplicates values
+        $options{"-AllowMultiOptions"} = 0;
     }
     else
     {
-	# Just use last option given
-	$options{"-MergeDuplicateOptions"} = 1;
+        # Just use last option given
+        $options{"-MergeDuplicateOptions"} = 1;
     }
     my $policy = new Config::General(%options);
     if (!defined($policy))
     {
-	my $message = sprintf("Failed to parse policy file %s",
-			      $filename);
-	throw GridShibCA::PolicyException($message);
+        my $message = sprintf("Failed to parse policy file %s",
+                              $filename);
+        throw GridShibCA::PolicyException($message);
     }
     return $policy;
 }
@@ -152,31 +152,33 @@ sub _getIdpPolicy
     my $idpId = $self->{userId}->idpId();
 
     $self->{logger}->debug("Looking up policy for %s (%s)",
-			   $idpId, $authMethod);
+                           $idpId, $authMethod);
 
     if (!$self->{policy}->exists("AuthMethod") ||
-	!$self->{policy}->is_hash("AuthMethod"))
+        !$self->{policy}->is_hash("AuthMethod"))
     {
-	throw GridShibCA::PolicyException(
-	    "Unknown Idp \"$idpId\": No AuthMethod sections founds.");
+        throw GridShibCA::PolicyException(
+            "Unknown Idp \"$idpId\": No AuthMethod sections founds.");
     }
 
     my $authSections = $self->{policy}->obj("AuthMethod");
 
     if (!$authSections->exists($authMethod) ||
-	!$authSections->is_hash($authMethod))
+        !$authSections->is_hash($authMethod))
     {
-	throw GridShibCA::PolicyException(
-	    "Unknown Idp \"$idpId\": authentication method ($authMethod) not found in policy.");
+        throw GridShibCA::PolicyException(
+            "Unknown Idp \"$idpId\": authentication method (" .
+                $authMethod . ") not found in policy.");
     }
 
     my $authPolicy = $authSections->obj($authMethod);
 
     if (!$authPolicy->exists("IdPNameSpace") ||
-	!$authPolicy->is_hash("IdPNameSpace"))
+        !$authPolicy->is_hash("IdPNameSpace"))
     {
-	throw GridShibCA::PolicyException(
-	    "Unknown Idp \"$idpId\": No IdPs defined for authentication method $authMethod.");
+        throw GridShibCA::PolicyException(
+            "Unknown Idp \"$idpId\": No IdPs defined for " .
+            "authentication method " . $authMethod . ".");
     }
 
     my $idpNameSpaces = $authPolicy->obj("IdPNameSpace");
@@ -186,30 +188,31 @@ sub _getIdpPolicy
     my $idpPolicy = undef;
     foreach my $namespace (@nameSpaces)
     {
-	# Convert $namespace to PERL regex form
-	my $regex = $namespace;
-	$regex =~ s/\./\\./g;   # Protect '.'s
-	$regex =~ s/\*/.+/g;    # Conver * -> .+
-	$regex = "^" . $regex . "\$";  # Anchor start and stop
+        # Convert $namespace to PERL regex form
+        my $regex = $namespace;
+        $regex =~ s/\./\\./g;   # Protect '.'s
+        $regex =~ s/\*/.+/g;    # Conver * -> .+
+        $regex = "^" . $regex . "\$";  # Anchor start and stop
 
-	$self->{logger}->debug("Checking namespace \"$namespace\" (regex: $regex)");
+        $self->{logger}->debug(
+            "Checking namespace \"$namespace\" (regex: $regex)");
 
-	if ($idpId =~ /$regex/)
-	{
-	    my %policy = $idpNameSpaces->hash($namespace);
-	    $idpPolicy = \%policy;
-	    $self->{logger}->debug("Idp %s (%s) matches namespace %s",
-				   $idpId,
-				   $authMethod,
-				   $namespace);
-	    last;
-	}
+        if ($idpId =~ /$regex/)
+        {
+            my %policy = $idpNameSpaces->hash($namespace);
+            $idpPolicy = \%policy;
+            $self->{logger}->debug("Idp %s (%s) matches namespace %s",
+                                   $idpId,
+                                   $authMethod,
+                                   $namespace);
+            last;
+        }
     }
 
     if (!defined($idpPolicy))
     {
-	throw GridShibCA::PolicyException(
-	    "Unknown Idp \"$idpId\" (authentication method $authMethod)");
+        throw GridShibCA::PolicyException(
+            "Unknown Idp \"$idpId\" (authentication method $authMethod)");
     }
 
     $self->{logger}->debug("Hash: " . %$idpPolicy);

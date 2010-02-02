@@ -45,16 +45,16 @@ sub new
 
     try
     {
-	$self->{config}  = GridShibCA::Config->new();    
-	$self->{logger} = $self->{config}->getLogger();
-	$self->{cgi} = CGI->new();
+        $self->{config}  = GridShibCA::Config->new();    
+        $self->{logger} = $self->{config}->getLogger();
+        $self->{cgi} = CGI->new();
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Failed to bootstrap web application",
-		    -exception=>$ex);
-	# Does not return
+        my $ex = shift;
+        handleError("Failed to bootstrap web application",
+                    -exception=>$ex);
+        # Does not return
     };
     return $self;
 }
@@ -91,37 +91,37 @@ sub invokeCommand
 {
     my $self = shift;
     my $command = shift ||
-	handleError("Undefined command to invokeCommand()");
+        handleError("Undefined command to invokeCommand()");
     $self->{logger}->info("Invoking command %s for %s",
-			  $command, $self->{cgi}->remote_addr());
+                          $command, $self->{cgi}->remote_addr());
     $self->{logger}->debug("User-Agent: " . $self->{cgi}->user_agent());
 
     my $module = undef;
 
     try
     {
-	$module = $self->{config}->getCommandModule($command);
+        $module = $self->{config}->getCommandModule($command);
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Error launching web application $command",
-		    -exception=>$ex);
-	# Does not return
+        my $ex = shift;
+        handleError("Error launching web application $command",
+                    -exception=>$ex);
+        # Does not return
     };
 
     try
     {
-	$self->{logger}->debug("Calling invoke()");
-	$module->invoke();
-	$self->{logger}->debug("invoke() completed.");
+        $self->{logger}->debug("Calling invoke()");
+        $module->invoke();
+        $self->{logger}->debug("invoke() completed.");
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Uncaught error in web application $command",
-		    -exception=>$ex);
-	# Does not return
+        my $ex = shift;
+        handleError("Uncaught error in web application $command",
+                    -exception=>$ex);
+        # Does not return
     };
 }
 

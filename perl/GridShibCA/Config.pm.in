@@ -63,13 +63,13 @@ sub new
 
     if (defined($args{debug}) && $args{debug})
     {
-	$self->{debug} = 1;
-	$self->_debug("Debugging enabled");
+        $self->{debug} = 1;
+        $self->_debug("Debugging enabled");
     }
 
     if (!defined($config))
     {
-	$self->_initConfig();
+        $self->_initConfig();
     }
     $self->{config} = $config;
     
@@ -129,10 +129,10 @@ sub save
 {
     my $self = shift;
     my $hashref = shift ||
-	 throw GridShibCA::ConfigException("Missing hash reference argument");
+         throw GridShibCA::ConfigException("Missing hash reference argument");
     # Documentation does not say what this does on error.
     $self->{config}->save_file($self->getConfigFilename(),
-			       $hashref);
+                               $hashref);
 }
 
 =item getParam()
@@ -156,7 +156,7 @@ sub getParam
     my $section = undef;
     if ($#_ > 0)
     {
-	$section = shift;
+        $section = shift;
     }
     my $param = shift;
 
@@ -164,28 +164,30 @@ sub getParam
 
     if (defined($section))
     {
-	if (!$config->exists($section) ||
-	    !$config->is_hash($section))
-	{
-	    throw GridShibCA::ConfigException("Request for parameter \"$param\" in non-existant section \"$section\"");
-	}
+        if (!$config->exists($section) ||
+            !$config->is_hash($section))
+        {
+            throw GridShibCA::ConfigException("Request for parameter " .
+                "\"$param\" in non-existant section \"$section\"");
+        }
 
-	# Section now becomes the object we get value from.
-	$config = $config->obj($section);
+        # Section now becomes the object we get value from.
+        $config = $config->obj($section);
     }
     # Come up with string describing parameter for errors
     my $paramName = sprintf("parameter \"%s\"", $param);
     if (defined($section))
     {
-	$paramName .= sprintf(" in section \"%s\"", $section);
+        $paramName .= sprintf(" in section \"%s\"", $section);
     }
     if (!$config->exists($param))
     {
-	throw GridShibCA::ConfigException("Unknown " . $paramName);
-    }	
+        throw GridShibCA::ConfigException("Unknown " . $paramName);
+    }        
     if ($config->is_hash($param))
     {
-	throw GridShibCA::ConfigException("Parameter is a section: " . $paramName);
+        throw GridShibCA::ConfigException(
+            "Parameter is a section: " . $paramName);
     }
     my $value = $config->value($param);
     return $value;
@@ -239,15 +241,15 @@ sub getParamURI
     my $uri;
     if ($url =~ /^\w+:/)
     {
-	# Absolute URL, just clean up path portion.
-	$uri = URI->new($url);
-	$uri->path(File::Spec->canonpath($uri->path()));
+        # Absolute URL, just clean up path portion.
+        $uri = URI->new($url);
+        $uri->path(File::Spec->canonpath($uri->path()));
     }
     else
     {
-	# Relative URL, clean up first to avoid URI confusing "//" at
-	# start as start of host.
-	$uri = URI->new(File::Spec->canonpath($url));
+        # Relative URL, clean up first to avoid URI confusing "//" at
+        # start as start of host.
+        $uri = URI->new(File::Spec->canonpath($url));
     }
     return $uri;
 }
@@ -292,7 +294,7 @@ sub getSection
     my @sectionNames = @_;
     if (scalar(@sectionNames) < 1)
     {
-	throw GridShibCA::ConfigException("Missing section name argument");
+        throw GridShibCA::ConfigException("Missing section name argument");
     }
     my $config = $self->{config};
 
@@ -304,23 +306,24 @@ sub getSection
 
     foreach my $section (@sectionNames)
     {
-	if (defined($path))
-	{
-	    $path = $path . "/" . $section;
-	}
-	else
-	{
-	    $path = $section;
-	}
+        if (defined($path))
+        {
+            $path = $path . "/" . $section;
+        }
+        else
+        {
+            $path = $section;
+        }
 
-	if (!$config->exists($section) ||
-	    !$config->is_hash($section))
-	{
-	    throw GridShibCA::ConfigException("Request for non-existant section \"$path\"");
-	}
+        if (!$config->exists($section) ||
+            !$config->is_hash($section))
+        {
+            throw GridShibCA::ConfigException(
+                "Request for non-existant section \"$path\"");
+        }
 
-	%hash = $config->hash($section);
-	$config = $config->obj($section);
+        %hash = $config->hash($section);
+        $config = $config->obj($section);
     }
 
     return %hash;
@@ -379,13 +382,13 @@ sub getCommandModule
 
     if (!defined($command))
     {
-	throw GridShibCA::InternalException("Undefined command");
+        throw GridShibCA::InternalException("Undefined command");
     }
 
     if ($command eq "DEFAULT")
     {
-	# DEFAULT is an alias to real command name
-	$command = $self->getParam("Commands", "DEFAULT");
+        # DEFAULT is an alias to real command name
+        $command = $self->getParam("Commands", "DEFAULT");
     }
 
     my %commandHash = $self->getSection("Commands", $command);
@@ -393,7 +396,8 @@ sub getCommandModule
     my $class = $commandHash{class};
     if (!defined($class))
     {
-	throw GridShibCA::ModuleException("No class defined for command \"$command\"");
+        throw GridShibCA::ModuleException(
+            "No class defined for command \"$command\"");
     }
     $self->{logger}->debug("Loading class \"$class\" for command $command");
     
@@ -426,7 +430,7 @@ sub getModules
     my $config = $self->{config};
     if (!$config->exists("Modules") || !$config->is_hash("Modules"))
     {
-	return ();
+        return ();
     }
     my %modulesSection = $config->hash("Modules");
     return keys(%modulesSection);
@@ -580,7 +584,7 @@ sub getHTMLTemplate
 {
     my $self = shift;
     my $templateName = shift ||
-	throw GridShibCA::ConfigException("Missing template name");
+        throw GridShibCA::ConfigException("Missing template name");
     my $filename = $self->_templateNameToFilename($templateName);
     return $self->_newModule("HTMLTemplate", $filename);
 }
@@ -654,7 +658,7 @@ sub getTemplate
 {
     my $self = shift;
     my $templateName = shift ||
-	throw GridShibCA::ConfigException("Missing template name");
+        throw GridShibCA::ConfigException("Missing template name");
     my $filename = $self->_templateNameToFilename($templateName);
     return $self->_newModule("Template", $filename);
 }
@@ -721,52 +725,54 @@ sub _initConfig
     my $self = shift;
     $self->_debug("Initializing configuration from %s", $configFilename);
     my %options = (
-	-ConfigFile => $configFilename,
-	# Allow for variable substitution in values
-	-InterPolateVars => 1,
-	# Allow for OO type access to values
-	-ExtendedAccess => 1,
-	# Automatically parse booleans
-	-AutoTrue => 1,
-	# Allow for running under taint mode
-	-AutoLaunder => 1,
-	);
+        -ConfigFile => $configFilename,
+        # Allow for variable substitution in values
+        -InterPolateVars => 1,
+        # Allow for OO type access to values
+        -ExtendedAccess => 1,
+        # Automatically parse booleans
+        -AutoTrue => 1,
+        # Allow for running under taint mode
+        -AutoLaunder => 1,
+        );
     if ($self->{debug})
     {
-	# Complain about duplicates values
-	$options{"-AllowMultiOptions"} = 0;
+        # Complain about duplicates values
+        $options{"-AllowMultiOptions"} = 0;
     }
     else
     {
-	# Just use last option given
-	$options{"-MergeDuplicateOptions"} = 1;
+        # Just use last option given
+        $options{"-MergeDuplicateOptions"} = 1;
     }
     $config = new Config::General(%options);
     if (!defined($config))
     {
-	my $message = sprintf("Failed to parse configuration file %s",
-			      $configFilename);
-	$self->_debug($message);
-	throw GridShibCA::ConfigException($message);
+        my $message = sprintf("Failed to parse configuration file %s",
+                              $configFilename);
+        $self->_debug($message);
+        throw GridShibCA::ConfigException($message);
     }
     # Make sure we recognize the configuration version number
     if (!$config->exists("ConfigVersion"))
     {
-	my $message = sprintf("Missing 'ConfigVersion' parameter in configuration file (%s): Old style configuration?",
-	    $configFilename);
-	$self->_debug($message);
-	throw GridShibCA::ConfigException($message);
+        my $message = sprintf("Missing 'ConfigVersion' parameter in " .
+            "configuration file (%s): Old style configuration?",
+            $configFilename);
+        $self->_debug($message);
+        throw GridShibCA::ConfigException($message);
     }
     else
     {
-	my $configVersion = $config->value("ConfigVersion");
-	if ($configVersion != 2)
-	{
-	    my $message = sprintf("Unrecognized ConfigVersion (%s) in configuration file (%s).",
-				  $config->{ConfigVersion}, $configFilename);
-	    $self->_debug($message);
-	    throw GridShibCA::ConfigException($message);
-	}
+        my $configVersion = $config->value("ConfigVersion");
+        if ($configVersion != 2)
+        {
+            my $message = sprintf("Unrecognized ConfigVersion (%s) in " .
+                                  "configuration file (%s).",
+                                  $config->{ConfigVersion}, $configFilename);
+            $self->_debug($message);
+            throw GridShibCA::ConfigException($message);
+        }
     }
 }
 
@@ -796,24 +802,24 @@ sub _newModule
     my $className = $self->getParam("Modules", $configVariable);
     if (!defined($className))
     {
-	throw GridShibCA::ModuleException("Undefined module \"" .
-					  $configVariable , "\"");
+        throw GridShibCA::ModuleException("Undefined module \"" .
+                                          $configVariable , "\"");
     }
     $self->_debug("Loading class %s for module %s (%d arguments)",
-		  $className, $configVariable, scalar(@args));
+                  $className, $configVariable, scalar(@args));
     try
     {
-	$instance = $self->_newInstance($className, @args);
+        $instance = $self->_newInstance($className, @args);
     }
     catch GridShibCA::Exception with
     {
-	my $ex = shift;
-	my $text = sprintf("Failed to load module \"%s\": %s",
-			   $configVariable, $ex->text());
-	throw GridShibCA::ModuleException($text);
+        my $ex = shift;
+        my $text = sprintf("Failed to load module \"%s\": %s",
+                           $configVariable, $ex->text());
+        throw GridShibCA::ModuleException($text);
     };
     $self->_debug("Successfully instaneated class %s for module %s",
-		  $className, $configVariable);
+                  $className, $configVariable);
     return $instance;
 }
 
@@ -838,7 +844,7 @@ sub _newInstance
     my $class = shift;
     if (!defined($class))
     {
-	throw GridShibCA::InternalException("Undefined class requested.");
+        throw GridShibCA::InternalException("Undefined class requested.");
     }
     my @args = @_;
 
@@ -846,11 +852,13 @@ sub _newInstance
     eval "use $class; \$instance = $class->new(\@args);";
     if ($@)
     {
-	throw GridShibCA::ModuleException("Failure loading class $class: " . $@);
+        throw GridShibCA::ModuleException(
+            "Failure loading class $class: " . $@);
     }
     if (!defined($instance))
     {
-	throw GridShibCA::ModuleException("Failure loading class $class: No instance returned.");
+        throw GridShibCA::ModuleException(
+            "Failure loading class $class: No instance returned.");
     }
     return $instance;
 }
@@ -873,13 +881,13 @@ sub _debug
 
     if ($self->{logger})
     {
-	$self->{logger}->debug($format, @args);
+        $self->{logger}->debug($format, @args);
     }
 
     if ($self->{debug})
     {
-	chomp($format);
-	print sprintf($format, @_) . "\n";
+        chomp($format);
+        print sprintf($format, @_) . "\n";
     }
 }
 
@@ -900,7 +908,7 @@ sub _templateNameToFilename
 {
     my $self = shift;
     my $templateName = shift ||
-	throw GridShibCA::ConfigException("Missing template name");
+        throw GridShibCA::ConfigException("Missing template name");
     my $filename = $self->getParam("Templates", $templateName);
     return $filename;
 }

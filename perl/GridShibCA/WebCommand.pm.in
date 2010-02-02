@@ -135,26 +135,26 @@ sub invoke
 
     try
     {
-	$self->{logger}->info("Invoking %s module.", ref($self));
-	$self->_handleRequirements();
+        $self->{logger}->info("Invoking %s module.", ref($self));
+        $self->_handleRequirements();
     }
     catch GridShibCA::SessionExpiredException with
     {
-	my $ex = shift;
-	$ex->flush();
-	$self->_handleExpiredSession();
+        my $ex = shift;
+        $ex->flush();
+        $self->_handleExpiredSession();
     }
     catch GridShibCA::SessionException with
     {
-	my $ex = shift;
-	$ex->flush();
-	$self->_handleMissingSession();
+        my $ex = shift;
+        $ex->flush();
+        $self->_handleMissingSession();
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Error with request: " . $ex->text(),
-	    -exception=>$ex);
+        my $ex = shift;
+        handleError("Error with request: " . $ex->text(),
+            -exception=>$ex);
     };
 
     # Any exception from this should be handled by WebApp.pm
@@ -212,10 +212,10 @@ sub _handleExpiredSession
     my $authnMethod = $self->{session}->param("AuthnMethod");
     my $authnURL = $self->{config}->getParam("AuthMethods", $authnMethod);
     $self->_displayHTML(
-	"SessionExpired",
-	AuthnMethod => $authnMethod,
-	AuthnURL => $authnURL,
-	"-status" => 401);
+        "SessionExpired",
+        AuthnMethod => $authnMethod,
+        AuthnURL => $authnURL,
+        "-status" => 401);
     $self->_exit();
 }
 
@@ -237,9 +237,9 @@ sub _handleMissingSession
     $self->{logger}->debug("Handling missing session");
     my %signOnMethods = $self->{config}->getSection("AuthMethods");
     $self->_displayHTML(
-	"SessionMissing",
-	"SignOnMethods" => \%signOnMethods,
-	"-status" => 401);
+        "SessionMissing",
+        "SignOnMethods" => \%signOnMethods,
+        "-status" => 401);
     $self->_exit();
 }
 
@@ -257,7 +257,7 @@ sub _addCookie
 {
     my $self = shift;
     my $cookie = shift ||
-	throw GridShibCA::Exception("Missing cookie argument");
+        throw GridShibCA::Exception("Missing cookie argument");
     my $cookies = $self->{cookies};
     push(@$cookies, $cookie);
 }
@@ -287,21 +287,21 @@ sub _displayHTML
     $template->setCookies($self->{cookies});
     if (defined($mappings{-status}))
     {
-	$self->{logger}->debug("Setting response status to %s",
-			       $mappings{-status});
-	$template->setStatus($mappings{-status});
+        $self->{logger}->debug("Setting response status to %s",
+                               $mappings{-status});
+        $template->setStatus($mappings{-status});
     }
     
     # If we have an established session, add session values to mappings
     # for the template.
     if (defined($self->{session}) and
-	$self->{session}->established())
+        $self->{session}->established())
     {
-	$mappings{SessionId} = $self->{session}->id();
-	$mappings{UserId} = $self->{session}->param("UserId");
-	$mappings{IdpId} = $self->{session}->param("Idp");
-	$mappings{session} = $self->{session}->params();
-	$mappings{Attributes} = $self->{session}->param("Attributes");
+        $mappings{SessionId} = $self->{session}->id();
+        $mappings{UserId} = $self->{session}->param("UserId");
+        $mappings{IdpId} = $self->{session}->param("Idp");
+        $mappings{session} = $self->{session}->params();
+        $mappings{Attributes} = $self->{session}->param("Attributes");
     }
     $template->addMappings(%mappings);
 
@@ -334,16 +334,16 @@ sub _displayHTMLError
     my %mappings;
     if (scalar(@_) > 0)
     {
-	%mappings = @_;
+        %mappings = @_;
     }
     else
     {
-	%mappings = ();
+        %mappings = ();
     }
     $mappings{Error} = $message;
     if (!defined($mappings{-status}))
     {
-	$mappings{-status} = 501;
+        $mappings{-status} = 501;
     }
     $self->_displayHTML("ErrorTemplate", %mappings);
 }
@@ -381,45 +381,45 @@ sub _handleRequirements
     my $self = shift;
 
     our (
-	$OPTIONAL_HTTPS,
-	$OPTIONAL_SESSION,
-	$REQUIRE_CSRF_CHECK,
-	$REQUIRE_POST,
-	);
+        $OPTIONAL_HTTPS,
+        $OPTIONAL_SESSION,
+        $REQUIRE_CSRF_CHECK,
+        $REQUIRE_POST,
+        );
 
     my $requirements = $self->_defaultRequirements();
     my $requirementsString = $self->{requirements};
     if (defined($requirementsString))
     {
-	$requirements = $self->_parseRequirementsString($requirementsString);
-	$self->{logger}->debug("Checking requirements 0x%X (%s)",
-			       $requirements, $requirementsString);
+        $requirements = $self->_parseRequirementsString($requirementsString);
+        $self->{logger}->debug("Checking requirements 0x%X (%s)",
+                               $requirements, $requirementsString);
 
     }
     else
     {
-	$self->{logger}->debug("Checking default requirements 0x%X",
-			       $requirements);
+        $self->{logger}->debug("Checking default requirements 0x%X",
+                               $requirements);
     }
 
     # Sanity check
     if (!defined($requirements))
     {
-	throw GridShibCA::RequirementsException("Requirements is undefined.");
+        throw GridShibCA::RequirementsException("Requirements is undefined.");
     }
 
     # Check for HTTPS
     if (!($requirements & $OPTIONAL_HTTPS))
     {
-	if ($self->_checkHTTPS())
-	{
-	    $self->{logger}->debug("Verified HTTPS protection.");
-	}
-	else
-	{
-	    throw GridShibCA::RequirementsException(
-		"Deployment error: HTTPS protection required but not provided");
-	}
+        if ($self->_checkHTTPS())
+        {
+            $self->{logger}->debug("Verified HTTPS protection.");
+        }
+        else
+        {
+            throw GridShibCA::RequirementsException(
+                "Deployment error: HTTPS protection required but not provided");
+        }
     }
 
     # Check for Session: We always try to establish session, but it's
@@ -427,82 +427,82 @@ sub _handleRequirements
     # unexpected happens.
     try
     {
-	$self->{logger}->debug("Checking for session.");
-	$self->{session} = $self->{config}->getCGISession();
-	$self->{session}->fromCGI($self->{cgi});
-	if ($requirements & $REQUIRE_CREDENTIAL_ISSUER_SESSION)
-	{
-	    if (!$self->{session}->isCredentialIssuerSession())
-	    {
-		my $msg = "Session is not CredentialIssuer session";
-		$self->{logger}->err($msg);
-		throw GridShibCA::SessionException($msg);
-	    }
-	}
-	else
-	{
-	    # Must be browser session
-	    if (!$self->{session}->isBrowserSession())
-	    {
-		my $msg = "Session is not Browser session";
-		$self->{logger}->err($msg);
-		throw GridShibCA::SessionException($msg);
-	    }
-	}
+        $self->{logger}->debug("Checking for session.");
+        $self->{session} = $self->{config}->getCGISession();
+        $self->{session}->fromCGI($self->{cgi});
+        if ($requirements & $REQUIRE_CREDENTIAL_ISSUER_SESSION)
+        {
+            if (!$self->{session}->isCredentialIssuerSession())
+            {
+                my $msg = "Session is not CredentialIssuer session";
+                $self->{logger}->err($msg);
+                throw GridShibCA::SessionException($msg);
+            }
+        }
+        else
+        {
+            # Must be browser session
+            if (!$self->{session}->isBrowserSession())
+            {
+                my $msg = "Session is not Browser session";
+                $self->{logger}->err($msg);
+                throw GridShibCA::SessionException($msg);
+            }
+        }
     }
     catch GridShibCA::SessionExpiredException with
     {
-	my $ex = shift;
-	if ($requirements & $OPTIONAL_SESSION)
-	{
-	    # TODO: I think we really want to still set $self->{session}
-	    # here so that we have access to the old session information.
-	    # But that requires changes to CGISession.pm
-	    $self->{logger}->debug("Session expired.");
-	    $ex->flush();
-	}
-	else
-	{
-	    $ex->throw();
-	}
+        my $ex = shift;
+        if ($requirements & $OPTIONAL_SESSION)
+        {
+            # TODO: I think we really want to still set $self->{session}
+            # here so that we have access to the old session information.
+            # But that requires changes to CGISession.pm
+            $self->{logger}->debug("Session expired.");
+            $ex->flush();
+        }
+        else
+        {
+            $ex->throw();
+        }
     }
     catch GridShibCA::SessionException with
     {
-	my $ex = shift;
-	if ($requirements & $OPTIONAL_SESSION)
-	{
-	    $self->{logger}->debug("Failed to establish session.");
-	    $ex->flush();
-	}
-	else
-	{
-	    $ex->throw();
-	}
+        my $ex = shift;
+        if ($requirements & $OPTIONAL_SESSION)
+        {
+            $self->{logger}->debug("Failed to establish session.");
+            $ex->flush();
+        }
+        else
+        {
+            $ex->throw();
+        }
     }
     otherwise
     {
-	my $ex = shift;
-	$self->{logger}->logException($ex);
-	throw GridShibCA::RequirementsException(
-	    "Unexpected error establishing session: " . $ex->text());
+        my $ex = shift;
+        $self->{logger}->logException($ex);
+        throw GridShibCA::RequirementsException(
+            "Unexpected error establishing session: " . $ex->text());
     };
 
     if ($requirements & $REQUIRE_CSRF_CHECK)
     {
-	$self->{logger}->debug("CSRF check");
-	my $csrf = $self->{config}->getCSRF();
-	$csrf->check();
+        $self->{logger}->debug("CSRF check");
+        my $csrf = $self->{config}->getCSRF();
+        $csrf->check();
     }
 
     if ($requirements & $REQUIRE_POST)
     {
-	$self->{logger}->debug("Checking for POST");
-	my $method = $self->{cgi}->request_method();
-	if ($method ne "POST")
-	{
-	    throw GridShibCA::RequirementsException(
-		"POST required but \"$method\" used.");
-	}
+        $self->{logger}->debug("Checking for POST");
+        my $method = $self->{cgi}->request_method();
+        if ($method ne "POST")
+        {
+            throw GridShibCA::RequirementsException(
+                "POST required but \"$method\" used.");
+        }
     }
     $self->{logger}->debug("Requirements check done.");
 }
@@ -523,7 +523,8 @@ sub _parseRequirementsString
 {
     my $self = shift;
     my $string = shift ||
-	throw GridShibCA::RequirementsExceptions("Missing requirements string argument");
+        throw GridShibCA::RequirementsExceptions(
+            "Missing requirements string argument");
 
     our %RequirementsMappings;
     our $DEFAULT_REQUIREMENTS;
@@ -532,12 +533,13 @@ sub _parseRequirementsString
     my @tokens = split(/,/, $string);
     foreach my $token (@tokens)
     {
-	my $requirement = $RequirementsMappings{$token};
-	if (!defined($requirement))
-	{
-	    throw GridShibCA::RequirementsException("Unrecognized requirement \"$token\"");
-	}
-	$requirements |= $requirement;
+        my $requirement = $RequirementsMappings{$token};
+        if (!defined($requirement))
+        {
+            throw GridShibCA::RequirementsException(
+                "Unrecognized requirement \"$token\"");
+        }
+        $requirements |= $requirement;
     }
     return $requirements;
 }
@@ -560,12 +562,12 @@ sub _checkHTTPS
     my $url = $self->{cgi}->url(-full=>1);
     if ($url =~ /^https:/)
     {
-	$result = 1;
+        $result = 1;
     }
     else
     {
-	$result = 0;
-	$self->{logger}->err("Check for HTTPS failed. URL is %s", $url);
+        $result = 0;
+        $self->{logger}->err("Check for HTTPS failed. URL is %s", $url);
     }
 
     return $result;
@@ -585,7 +587,7 @@ sub _redirect
 {
     my $self = shift;
     my $url = shift ||
-	throw GridShibCA::Exception("Missing url argument");
+        throw GridShibCA::Exception("Missing url argument");
     print $self->{cgi}->redirect($url);
 }
 

@@ -116,11 +116,11 @@ sub getShibSession
     my $shibsession = undef;
     foreach my $key (keys %cookies)
     {
-	if ($key =~ /_shibsession_/)
-	{
-	    $shibsession = $key . "=" . $cookies{$key}->value;
-	    last;
-	}
+        if ($key =~ /_shibsession_/)
+        {
+            $shibsession = $key . "=" . $cookies{$key}->value;
+            last;
+        }
     }
     return $shibsession;
 }
@@ -156,17 +156,17 @@ sub getAttributes
     my $attributes = {};
     foreach my $var (keys(%ENV))
     {
-	# Including what makes sense based on what I see
-	# here. Almost certainly room for improvement here.
-	if (($var =~ /^HTTP_SHIB_/) ||
-	    ($var =~ /^Shib_/) ||  # Same variables as HTTP_SHIB_*
-	    ($var eq "HTTP_ENTITLEMENT") ||
-	    ($var eq "HTTP_EPPN") ||
-	    ($var eq "HTTP_TARGETED_ID") ||
-	    ($var eq "HTTP_UNSCOPED_AFFILIATION"))
-	{
-	    $attributes->{$var} = $ENV{$var};
-	}
+        # Including what makes sense based on what I see
+        # here. Almost certainly room for improvement here.
+        if (($var =~ /^HTTP_SHIB_/) ||
+            ($var =~ /^Shib_/) ||  # Same variables as HTTP_SHIB_*
+            ($var eq "HTTP_ENTITLEMENT") ||
+            ($var eq "HTTP_EPPN") ||
+            ($var eq "HTTP_TARGETED_ID") ||
+            ($var eq "HTTP_UNSCOPED_AFFILIATION"))
+        {
+            $attributes->{$var} = $ENV{$var};
+        }
     }
     return $attributes;
 }
@@ -191,8 +191,9 @@ sub getSSOResponse
 
     if (!defined($base64EncodedSAML))
     {
-	$self->{logger}->err("No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
-	return undef;
+        $self->{logger}->err(
+            "No Shibboleth SAML found (HTTP_SHIB_ATTRIBUTES undefined).");
+        return undef;
     }
 
     my $ssoResponse = decode_base64($base64EncodedSAML);
@@ -200,8 +201,8 @@ sub getSSOResponse
     # XXX Not clear to me how decode_base64 returns an error.
     if (!defined($ssoResponse) or ($ssoResponse eq ""))
     {
-	$self->{logger}->err("Base64 decode of SSO Response failed.");
-	return undef;
+        $self->{logger}->err("Base64 decode of SSO Response failed.");
+        return undef;
     }
 
     return $ssoResponse;
@@ -237,19 +238,22 @@ sub _init
 
     $self->{logger}->debug("Checking to make sure we are Shib-protected.");
     if (!$self->getUserId() &&
-	!$self->getIdP())
+        !$self->getIdP())
     {
-	throw GridShibCA::LogonException("Cannot determine user identity or idenity provider. Shibboleth configuration problem?");
+        throw GridShibCA::LogonException("Cannot determine user identity " .
+            "or idenity provider. Shibboleth configuration problem?");
     }
 
     if (!$self->getUserId())
     {
-	throw GridShibCA::LogonException("Cannot determine user identity. Shibboleth configuration problem?");
+        throw GridShibCA::LogonException("Cannot determine user identity. " .
+            "Shibboleth configuration problem?");
     }
 
     if (!$self->getIdP())
     {
-	throw GridShibCA::LogonException("Cannot determine identity provider. Shibboleth configuration problem?");
+        throw GridShibCA::LogonException("Cannot determine identity " .
+            "provider. Shibboleth configuration problem?");
     }
 }
 

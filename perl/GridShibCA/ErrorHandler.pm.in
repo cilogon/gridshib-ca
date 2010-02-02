@@ -59,11 +59,11 @@ sub handleError
     my $cgi = CGI->new();
     if ($cgi->Accept("text/html"))
     {
-	htmlError($message, $ex);
+        htmlError($message, $ex);
     }
     else
     {
-	textError($message, $ex);
+        textError($message, $ex);
     }
 
     my $exitCode = $args{-exitCode} || 1;
@@ -91,39 +91,39 @@ sub logError
 
     try
     {
-	my $config = GridShibCA::Config->new();
-	my $logger = $config->getLogger();
+        my $config = GridShibCA::Config->new();
+        my $logger = $config->getLogger();
 
-	$logger->err("Error: $message");
-	if (defined($ex))
-	{
-	    $logger->logException($ex);
-	}
+        $logger->err("Error: $message");
+        if (defined($ex))
+        {
+            $logger->logException($ex);
+        }
     }
     otherwise
     {
-	my $logEx = shift;
+        my $logEx = shift;
 
-	# Graceful logging failed. Fall back to STDERR so it ends up
-	# in Apache error log.
-	print STDERR "Logging failed handling error: $message";
-	if (defined($ex))
-	{
-	    print STDERR "EXCEPTION: " . $ex->text() . "\n";
-	    if ($ex->stacktrace())
-	    {
-		print STDERR $ex->stacktrace();
-	    }
-	}
-	if (defined($logEx))
-	{
-	    print STDERR "Logging error: " . $logEx->text() . "\n";
-	}
-	else
-	{
-	    # This shouldn't happen
-	    print STDERR "Unknown logging error.\n";
-	}
+        # Graceful logging failed. Fall back to STDERR so it ends up
+        # in Apache error log.
+        print STDERR "Logging failed handling error: $message";
+        if (defined($ex))
+        {
+            print STDERR "EXCEPTION: " . $ex->text() . "\n";
+            if ($ex->stacktrace())
+            {
+                print STDERR $ex->stacktrace();
+            }
+        }
+        if (defined($logEx))
+        {
+            print STDERR "Logging error: " . $logEx->text() . "\n";
+        }
+        else
+        {
+            # This shouldn't happen
+            print STDERR "Unknown logging error.\n";
+        }
     };
 }
 
@@ -168,27 +168,27 @@ sub htmlError
 
     try
     {
-	my $config = GridShibCA::Config->new();
-	my $template = $config->getHTMLTemplate("ErrorTemplate");
-	my %mappings = (
-	    "Error" => $message,
-	    );
-	$template->addMappings(%mappings);
-	print $template->getText();
+        my $config = GridShibCA::Config->new();
+        my $template = $config->getHTMLTemplate("ErrorTemplate");
+        my %mappings = (
+            "Error" => $message,
+            );
+        $template->addMappings(%mappings);
+        print $template->getText();
     }
     otherwise
     {
-	my $htmlEx = shift;
+        my $htmlEx = shift;
 
-	# Nice HTML output failed. Fall back to simple version
-	print "Content-type: text/plain\n\n";
-	print "Sorry, but an problem occurred and the normal reporting mechanism failed!\n";
-	print "The original error was: " . $message . "\n";
-	print "The error reporting the problem was: " . $htmlEx->text() . "\n";
-	print "Please report this to the site administrator.\n";
+        # Nice HTML output failed. Fall back to simple version
+        print "Content-type: text/plain\n\n";
+        print "Sorry, a problem occurred and the normal reporting mechanism failed!\n";
+        print "The original error was: " . $message . "\n";
+        print "The error reporting the problem was: " . $htmlEx->text() . "\n";
+        print "Please report this to the site administrator.\n";
 
-	# And log for service administrator
-	logError("Failure generating HTML error output for user", $htmlEx);
+        # And log for service administrator
+        logError("Failure generating HTML error output for user", $htmlEx);
     };
 }
 
@@ -216,7 +216,7 @@ sub textError
 
     # 500 Internal Server Error
     print $cgi->header(-type=>"text/plain",
-		       -status=>"500 GridShib-CA Internal Error: $message");
+                       -status=>"500 GridShib-CA Internal Error: $message");
 }
 
 =back

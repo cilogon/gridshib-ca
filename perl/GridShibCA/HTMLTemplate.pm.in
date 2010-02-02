@@ -44,7 +44,8 @@ sub new
     my $self = $class->SUPER::new(@_);
 
     $self->{cgi} = CGI->new() ||
-	throw GridShibCA::TemplateException("Could not instaneate CGI instance");;
+        throw GridShibCA::TemplateException(
+            "Could not instaneate CGI instance");;
 
     # Reference to array of cookies to add to HTML
     $self->{cookies} = undef;
@@ -75,14 +76,14 @@ sub getText
 
     if (defined($self->{cookies}))
     {
-	$params{-cookies} = $self->{cookies};
+        $params{-cookies} = $self->{cookies};
     }
 
     if (defined($self->{status}))
     {
-	$params{-status} = $self->{status};
+        $params{-status} = $self->{status};
     }
-	    
+            
     my $header = $self->{cgi}->header(%params);
     my $text = $self->SUPER::getText();
 
@@ -103,7 +104,7 @@ sub setStatus
 {
     my $self = shift;
     my $status = shift ||
-	throw GridShibCA::Exception("Undefined status argument");
+        throw GridShibCA::Exception("Undefined status argument");
 
     $self->{status} = $status;
 }
@@ -123,7 +124,7 @@ sub setCookies
 {
     my $self = shift;
     my $cookies = shift ||
-	throw GridShibCA::Exception("Undefined cookies argument");
+        throw GridShibCA::Exception("Undefined cookies argument");
 
     $self->{cookies} = $cookies;
 }

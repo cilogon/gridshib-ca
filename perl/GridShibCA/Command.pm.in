@@ -41,7 +41,7 @@ sub new
     my $class = shift;
     my $self = {};
     $self->{command} = shift ||
-	throw GridShibCA::CommandException("Missing command");
+        throw GridShibCA::CommandException("Missing command");
     $self->{args} = \@_;
     $self->{useSTDIN} = 0;
     $self->{input} = undef;
@@ -107,15 +107,15 @@ sub exec
     # IPC::Open3 check for executable here.
     if ( ! -x $self->{command} )
     {
-	throw GridShibCA::CommandException(sprintf("Command not found: %s",
-						   $self->{command}));
+        throw GridShibCA::CommandException(sprintf("Command not found: %s",
+                                                   $self->{command}));
     }
 
     my $inFD = \*cmdIn;
     if ($self->{useSTDIN} == 1)
     {
-	# Redirect our STDIN to process
-	$inFD = "<&STDIN";
+        # Redirect our STDIN to process
+        $inFD = "<&STDIN";
     }
 
     my (@cmdArgs) = ( $self->{command}, @{$self->{args}} );
@@ -128,7 +128,7 @@ sub exec
 
     if (defined($self->{input}))
     {
-	print cmdIn $self->{input};
+        print cmdIn $self->{input};
     }
     close(cmdIn);
 
@@ -142,13 +142,13 @@ sub exec
 
     while (<cmdErr>)
     {
-	$self->{stderr} .= $_;
+        $self->{stderr} .= $_;
     }
     close(cmdErr);
 
     while (<cmdOut>)
     {
-	$self->{stdout} .= $_;
+        $self->{stdout} .= $_;
     }
     close(cmdOut);
 
@@ -157,7 +157,7 @@ sub exec
     my $returnValue = 1;
     if ($self->{status} != 0)
     {
-	$returnValue = 0;
+        $returnValue = 0;
     }
 
     return $returnValue;

@@ -39,19 +39,19 @@ sub doCommand
     my %mappings = ();
     try
     {
-	my $clientSession = $self->{session}->createClientSession();
-	$mappings{authToken} = $clientSession->id();
+        my $clientSession = $self->{session}->createClientSession();
+        $mappings{authToken} = $clientSession->id();
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Error creating client session", -exception=>$ex);
+        my $ex = shift;
+        handleError("Error creating client session", -exception=>$ex);
     };
     $mappings{pythonClientURL} =
-	$self->{config}->getParam("URLs", "GridShibCA") .
-	"/gridshibca-client.py";
+        $self->{config}->getParam("URLs", "GridShibCA") .
+        "/gridshibca-client.py";
     $mappings{webAppURL} = $self->{config}->getParam("URLs", "WebApp");
-	
+        
     $self->_displayHTML("PythonClientTemplate", %mappings);
 }
 

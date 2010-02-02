@@ -132,15 +132,15 @@ sub _signRequest
     my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
 
     my $client = Globus::MyProxyClient->new(
-	ServerHost => $self->{host},
-	ServerPort => $self->{port},
-	ClientCert => $self->{cert},
-	ClientKey => $self->{key});
+        ServerHost => $self->{host},
+        ServerPort => $self->{port},
+        ClientCert => $self->{cert},
+        ClientKey => $self->{key});
 
     if (!defined($client))
     {
-	throw GridShibCA::CAException("Error creating MyProxyClient object: %s",
-				      Globus::MyProxyClient::errstr());
+        throw GridShibCA::CAException("Error creating MyProxyClient object: %s",
+                                      Globus::MyProxyClient::errstr());
     }
 
     # This isn't used since we're authenticating with a certificate
@@ -148,24 +148,25 @@ sub _signRequest
     my $passphrase = "Dummy";
     my $lifetime = $options{requestedLifetime};
     $self->{logger}->debug("MyProxy request: DN = %s lifetime = %d",
-			   $dn, $lifetime);
+                           $dn, $lifetime);
     my $cred = $client->getCred(
-	Username => $dn,
-	Passphrase => $passphrase,
-	Lifetime => $lifetime,
-	CertReq => $reqPEM,
-	CertReqFormat => "DER");
+        Username => $dn,
+        Passphrase => $passphrase,
+        Lifetime => $lifetime,
+        CertReq => $reqPEM,
+        CertReqFormat => "DER");
 
     if (!defined($cred))
     {
-	throw GridShibCA::CAException("Error getting credential from MyProxy: " .
-				      $client->errstr());
+        throw GridShibCA::CAException(
+            "Error getting credential from MyProxy: " . $client->errstr());
     }
 
     my @certs = $cred->getDERCerts();
     if ($#certs > 1)
     {
-	throw GridShibCA::CAException("Got a certificate chain from MyProxy of length greater than 1 (" . $#certs . ")");
+        throw GridShibCA::CAException("Got a certificate chain from MyProxy " .
+            "of length greater than 1 (" . $#certs . ")");
     }
     my $cert = $self->_convertCertDERtoPEM($certs[0]);
     my $x509 = $self->_X509fromPEM($cert);
@@ -219,7 +220,8 @@ sub _convertReqPEMtoDER {
     $cmd->setInput($reqPEM);
     if (!$cmd->exec())
     {
-	throw GridShibCA::CAException("Trying to convert request from PEM to DER: OpenSSL returned non-zero.");
+        throw GridShibCA::CAException("Trying to convert request from " .
+            "PEM to DER: OpenSSL returned non-zero.");
     }
     return $cmd->getOutput();
 }
@@ -248,7 +250,8 @@ sub _convertCertDERtoPEM {
     $cmd->setInput($certDER);
     if (!$cmd->exec())
     {
-	throw GridShibCA::CAException("Error converting certificate from DER to PEM: OpenSSL returned non-zero");
+        throw GridShibCA::CAException("Error converting certificate from " .
+            "DER to PEM: OpenSSL returned non-zero");
     }
     return $cmd->getOutput();
 }

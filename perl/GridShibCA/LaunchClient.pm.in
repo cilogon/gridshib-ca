@@ -41,26 +41,26 @@ sub doCommand
 
     try
     {
-	$self->{clientSession} = $self->_getClientSession();
+        $self->{clientSession} = $self->_getClientSession();
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Error creating client session", -exception=>$ex);
+        my $ex = shift;
+        handleError("Error creating client session", -exception=>$ex);
     };
 
     try
     {
-	my $header = $self->_generateHeader();
-	my $text = $self->_generateText();
+        my $header = $self->_generateHeader();
+        my $text = $self->_generateText();
 
-	print $header . "\n\n";
-	print $text;
+        print $header . "\n\n";
+        print $text;
     }
     otherwise
     {
-	my $ex = shift;
-	handleError("Error rendering output", -exception=>$ex);
+        my $ex = shift;
+        handleError("Error rendering output", -exception=>$ex);
     };
 
     # Success
@@ -158,10 +158,10 @@ sub _setTemplateMappings
 
     $template->addSectionAsMappings("LaunchClient");
     $template->addMappings("WebAppURL",
-			   $self->{config}->getParam("URLs",
-						     "WebApp"));
+                           $self->{config}->getParam("URLs",
+                                                     "WebApp"));
     $template->addMapping("AuthenticationToken",
-			  $self->{clientSession}->id());
+                          $self->{clientSession}->id());
 }
 
 =back

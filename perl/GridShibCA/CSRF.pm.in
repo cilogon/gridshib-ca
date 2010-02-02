@@ -61,8 +61,8 @@ sub new
     # in that order.
     our $CachedToken;
     $self->{Token} = $CachedToken ||
-	$self->getCookieToken() ||
-	$self->createToken();
+        $self->getCookieToken() ||
+        $self->createToken();
 
     $CachedToken = $self->{Token};
     
@@ -84,12 +84,12 @@ sub createCookie
     my $self = shift;
 
     my $cookie = $self->{cgi}->cookie(-name=>$self->{TokenName},
-				      -value=>$self->{Token},
-				      -secure=>1);
+                                      -value=>$self->{Token},
+                                      -secure=>1);
     if (!defined($cookie))
     {
-	# XXX Some error to be pulled from cgi instance here?
-	throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
+        # XXX Some error to be pulled from cgi instance here?
+        throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
     }
     return $cookie;
 }
@@ -125,14 +125,14 @@ sub expiredCookie
     my $self = shift;
 
     my $cookie = $self->{cgi}->cookie(-name=>$self->{TokenName},
-				      -value=>"Expired!",
-				      # Delete
-				      -expires=>"-1d");
+                                      -value=>"Expired!",
+                                      # Delete
+                                      -expires=>"-1d");
 
     if (!defined($cookie))
     {
-	# XXX Some error to be pulled from cgi instance here?
-	throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
+        # XXX Some error to be pulled from cgi instance here?
+        throw GridShibCA::CSRFException("Failed to create CSRF cookie.");
     }
 
     return $cookie;
@@ -175,7 +175,7 @@ sub getFormElement
     my $name = $self->{TokenName};
 
     my $element = sprintf("<input type=\"hidden\" name=\"%s\" value=\"%s\" />",
-			  $name, $token);
+                          $name, $token);
     return $element;
 }
 
@@ -199,7 +199,7 @@ sub createToken
     my $len = $self->{TokenLen};
     for (1 .. $len)
     {
-	$token .= @chars[int(rand(@chars))];
+        $token .= @chars[int(rand(@chars))];
     }
     return $token;
 }
@@ -222,11 +222,13 @@ sub check
     my $method = $self->{cgi}->request_method();
     if (!defined($method))
     {
-	throw GridShibCA::CSRFException("CSRF check failed: could not determine request method.");
+        throw GridShibCA::CSRFException(
+            "CSRF check failed: could not determine request method.");
     }
     if ($method ne "POST")
     {
-	throw GridShibCA::CSRFException("CSRF check failed: wrong method \"$method\"");
+        throw GridShibCA::CSRFException(
+            "CSRF check failed: wrong method \"$method\"");
     }
 
     my $name = $self->{TokenName};
@@ -234,16 +236,18 @@ sub check
     my $formValue = $self->{cgi}->param($name);
     if (!defined($formValue))
     {
-	throw GridShibCA::CSRFException("Failed to retrieve CSRF form value.");
+        throw GridShibCA::CSRFException("Failed to retrieve CSRF form value.");
     }
     my $cookieValue = $self->getCookieToken();
     if (!defined($cookieValue))
     {
-	throw GridShibCA::CSRFException("Failed to retrieve CSRF cookie value.");
+        throw GridShibCA::CSRFException(
+            "Failed to retrieve CSRF cookie value.");
     }
     if ($formValue ne $cookieValue)
     {
-	throw GridShibCA::CSRFException("CSRF check failed. Cookie value ($cookieValue) != form value value ($formValue).");
+        throw GridShibCA::CSRFException("CSRF check failed. Cookie value " .
+            "($cookieValue) != form value ($formValue).");
     }
 }
 

@@ -30,16 +30,16 @@ sub getCertPath
 {
     if (defined($ENV{X509_USER_PROXY}))
     {
-	return $ENV{X509_USER_PROXY};
+        return $ENV{X509_USER_PROXY};
     }
     if (defined($ENV{X509_USER_CERT}))
     {
-	return $ENV{X509_USER_CERT};
+        return $ENV{X509_USER_CERT};
     }
     my $proxyPath = getProxyPath();
     if ( -f $proxyPath )
     {
-	return $proxyPath;
+        return $proxyPath;
     }
     return File::Spec->catfile(getHome(), ".globus", "usercert.pem");
 }
@@ -54,16 +54,16 @@ sub getKeyPath
 {
     if (defined($ENV{X509_USER_PROXY}))
     {
-	return $ENV{X509_USER_PROXY};
+        return $ENV{X509_USER_PROXY};
     }
     if (defined($ENV{X509_USER_KEY}))
     {
-	return $ENV{X509_USER_KEY};
+        return $ENV{X509_USER_KEY};
     }
     my $proxyPath = getProxyPath();
     if ( -f $proxyPath )
     {
-	return $proxyPath;
+        return $proxyPath;
     }
     return File::Spec->catfile(getHome(), ".globus", "userkey.pem");
 }
@@ -79,10 +79,10 @@ sub getProxyPath
 {
     if (defined($ENV{X509_USER_PROXY}))
     {
-	return $ENV{X509_USER_PROXY};
+        return $ENV{X509_USER_PROXY};
     }
     return File::Spec->catfile(File::Spec->tmpdir(),
-			       "x509up_u" . $<)
+                               "x509up_u" . $<)
 }
 
 =item getHome()
@@ -106,7 +106,7 @@ sub getCAPath
 {
     if (defined($ENV{X509_CERT_PATH}))
     {
-	return $ENV{X509_CERT_PATH};
+        return $ENV{X509_CERT_PATH};
     }
     return "/etc/grid-security/certificates";
 }

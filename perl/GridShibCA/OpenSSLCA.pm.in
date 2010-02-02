@@ -271,12 +271,14 @@ sub _getIssueLock()
     my $lockFileHandle;
     if (!open($lockFileHandle, ">", $self->{lockFile}))
     {
-      throw GridShibCA::CAException("Failed to open Issue lock file (" . $self->{lockFile} . "): " . $! );
+      throw GridShibCA::CAException("Failed to open Issue lock file (" . 
+          $self->{lockFile} . "): " . $! );
     }
     if (!flock($lockFileHandle, LOCK_EX))
     {
       close($lockFileHandle);
-      throw GridShibCA::CAException("Failed to obtain Issue lock (" . $self->{lockFile} . "): " . $! );
+      throw GridShibCA::CAException("Failed to obtain Issue lock (" . 
+          $self->{lockFile} . "): " . $! );
     }
     $self->{lockFileHandle} = $lockFileHandle;
     $self->{logger}->debug("Obtained Issue lock.");
