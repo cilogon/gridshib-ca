@@ -114,6 +114,27 @@ sub setConfigFilename
     $configFilename = $filename;
 }
 
+=item save()
+
+Write referenced hash back out to configuration file. Meant for
+automated tests.
+
+B<Arguments>: Hash reference
+
+B<Returns:> Nothing
+
+=cut
+
+sub save
+{
+    my $self = shift;
+    my $hashref = shift ||
+	 throw GridShibCA::ConfigException("Missing hash reference argument");
+    # Documentation does not say what this does on error.
+    $self->{config}->save_file($self->getConfigFilename(),
+			       $hashref);
+}
+
 =item getParam()
 
 Return a configuration parameter from the default section.
@@ -303,6 +324,22 @@ sub getSection
     }
 
     return %hash;
+}
+
+=item getAsHash()
+
+Returns whole configuration as hash.
+
+B<Arguments:> None
+
+B<Returns:> Nothing
+
+=cut
+
+sub getAsHash
+{
+    my $self = shift;
+    return $self->{config}->getall();
 }
 
 =item dump()

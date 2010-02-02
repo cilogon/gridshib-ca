@@ -188,6 +188,10 @@ UTILS="$UTILS utils/check-config.pl"
 AC_CONFIG_FILES([utils/check-config.pl],
 		[chmod +x utils/check-config.pl])
 
+UTILS="$UTILS utils/config.pl"
+AC_CONFIG_FILES([utils/config.pl],
+		[chmod +x utils/config.pl])
+
 UTILS="$UTILS utils/issue-cert.pl"
 AC_CONFIG_FILES([utils/issue-cert.pl],
 		[chmod +x utils/issue-cert.pl])

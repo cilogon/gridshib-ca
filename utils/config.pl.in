@@ -1,0 +1,193 @@
+#!@PERL@ @PERL_ARGS@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 config.pl
+
+Read and set values in the GridShib-CA configuration file.
+
+=head2 Usage
+
+Allows the retrieval or setting of values in the gridshib-ca.conf
+file. Intended for automated tests.
+
+To retrieve a value, give one agument which is I<section
+name>/I<variable name> where section name is left out if varibale is
+not in a section.
+
+To set a value, give argument as for retrieving and add "=I<new value>".
+
+Example usage:
+
+% config.pl ContactAddress
+root@exmaple.com
+% config.pl ContactAddress=root@exmaple.org
+% config.pl ContactAddress
+root@exmaple.org
+% config.pl Modules/Authorization
+GridShibCA::Authorization
+% config.pl Modules/Authorization=GridShibCA::MyAuthorization
+% config.pl Modules/Authorization
+GridShibCA::MyAuthorization
+
+=head2 Return Value
+
+The return value of check-config.pl is zero on success, non-zero on
+error.
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+use GridShibCA::Config;
+use GridShibCA::Exception qw(:try);
+
+use Getopt::Std;
+
+my $debug = 0;
+
+my $usage = <<"EOF";
+Usage: $0 [<options>] [<section>/]<varible>[=<new value>]
+
+Options are:
+ -c <path>        Path to configuration file.
+ -h               Print help and exit.
+EOF
+
+my %options;
+getopts('c:h', \%options);
+
+if ($options{h})
+{
+    print $usage;
+    exit(0);
+}
+
+if ($options{c})
+{
+    GridShibCA::Config->setConfigFilename($options{c});
+}
+my $configFilename = GridShibCA::Config::getConfigFilename();
+
+my $action = shift;
+if (!defined($action))
+{
+    print $usage;
+    exit(1);
+}
+
+my $config;
+try
+{
+    $config = GridShibCA::Config->new(
+	debug => $debug
+	);
+}
+catch GridShibCA::Exception with
+{
+     my $ex = shift;
+     print "Error parsing configuration file: " . $ex->text() . "\n";
+     exit(1);
+};
+
+# Parse our action
+my $newValue = undef;
+if ($action =~ /(.*)=(.*)$/)
+{
+    # Strip off new value
+    $action = $1;
+    $newValue = $2;
+}
+
+if (defined($newValue) && (! -w $configFilename))
+{
+    errorExit("Cannot change values in $configFilename: No write permission");
+}
+
+my @sections = split(/\//, $action);
+my $variableName = pop(@sections);
+if (!defined($variableName))
+{
+    errorExit("Could not parse variable name \"$action\"");
+}
+
+my %roothash = $config->getAsHash();
+my $hashref = \%roothash;
+
+# Walk down sections
+foreach my $section (@sections)
+{
+    if (!defined($hashref->{$section}))
+    {
+	errorExit("Unknown section \"$section\"");
+    }
+    # TODO: Validate $hashref->{$section} is a hash ant not a value
+    $hashref = $hashref->{$section}
+}
+
+if (!defined($hashref->{$variableName}))
+{
+    errorExit("No variable \"$variableName\" in given location.");
+}
+
+# TODO: Validate $hashref->{$variableName} isn't a section in both
+# of the following cases.
+if (defined($newValue))
+{
+    $hashref->{$variableName} = $newValue;
+    umask(0077);
+    $config->save(\%roothash);
+}
+else
+{
+    print $hashref->{$variableName} . "\n";
+}
+
+exit(0);
+
+######################################################################
+#
+# Support functions.
+#
+
+sub errorExit
+{
+    my $format = shift;
+    # Make sure format ends with a single carriage return
+    chomp($format);
+    $format .= "\n";
+    printf(STDERR $format, @_);
+    exit(1);
+}
+
+sub handleException
+{
+    my $message = shift;
+    my $ex = shift;
+    chomp($message);
+    printf(STDERR $message . ": " . $ex->text() . "\n");
+    if ($ex->can("logText") && $ex->logText())
+    {
+	print STDERR $ex->logText() . "\n";
+    }
+    if ($ex->can("stacktrace"))
+    {
+	my $trace = $ex->stacktrace();
+	if (defined($trace))
+	{
+	    print STDERR $trace;
+	}
+    }
+    exit(1);
+}
+
+### Local Variables: ***
+### mode:perl ***
+### End: ***
