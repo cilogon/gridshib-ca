@@ -8,11 +8,11 @@ host=buildbot.ncsa.uiuc.edu
 ssh_opts="-x"
 
 echo "Copying configuration to ${host}...."
-scp gridshib-buildbot.cfg ${host}:/tmp
+scp gridshib-ca-buildbot.cfg ${host}:/tmp
 
 echo "Installing configuration..."
 ssh ${ssh_opts} ${host} \
-    "sudo -u buildmaster cp /tmp/gridshib-buildbot.cfg ~buildmaster/Buildbot/gridshib-ca-buildbot.cfg"
+    "sudo -u buildmaster cp /tmp/gridshib-ca-buildbot.cfg ~buildmaster/Buildbot/"
 
 echo "Restarting buildbot..."
 ssh ${ssh_opts} ${host} \
