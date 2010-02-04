@@ -111,6 +111,8 @@ if test -n "$myproxy_cred_path" ; then
     echo "Reconfiguring for MyProxy-CA testing"
     utils/config.pl Modules/CA=GridShibCA::MyProxyCA
     utils/config.pl MyProxyCA/Path=${myproxy_cred_path}
+    echo -n "MyProxyCA client credential path: "
+    utils/config.pl MyProxyCA/Path
 else
     # Test with openssl CA
     echo "Running create-openssl-ca.pl:"
