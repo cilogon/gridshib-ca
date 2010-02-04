@@ -35,6 +35,22 @@ GridShibCA::Authorization
 % config.pl Modules/Authorization
 GridShibCA::MyAuthorization
 
+=head Side Effects
+
+Note that using config.pl to change a value has the effect of causing
+all interpolated variables in the configuration file to be
+expanded. For example, the following:
+
+ Path=/foo
+ File=${Path}/bar
+
+Becomes:
+
+ Path=/foo
+ File=/foo/bar
+
+See Config::General::save_file() for other side effects.
+
 =head2 Return Value
 
 The return value of check-config.pl is zero on success, non-zero on
