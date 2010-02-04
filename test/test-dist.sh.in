@@ -110,9 +110,16 @@ make install
 if test -n "$myproxy_cred_path" ; then
     echo "Reconfiguring for MyProxy-CA testing"
     utils/config.pl Modules/CA=GridShibCA::MyProxyCA
-    utils/config.pl MyProxyCA/Path=${myproxy_cred_path}
-    echo -n "MyProxyCA client credential path: "
-    utils/config.pl MyProxyCA/Path
+    # First time config.pl is used, it causes all interpolated
+    # variables to be expanded. This means we need to set ClientCert
+    # and ClientKey rather than Path since the first invocation causes
+    # ${Path} to be expanded.
+    utils/config.pl MyProxyCA/ClientCert=${myproxy_cred_path}/myproxy-client-cert.pem
+    utils/config.pl MyProxyCA/ClientKey=${myproxy_cred_path}/myproxy-client-key.pem
+    echo -n "MyProxyCA client cert: "
+    utils/config.pl MyProxyCA/ClientCert
+    echo -n "MyProxyCA client key: "
+    utils/config.pl MyProxyCA/ClientKey
 else
     # Test with openssl CA
     echo "Running create-openssl-ca.pl:"
