@@ -113,14 +113,15 @@ ls -l ${tarFile}
 
 test_dist_opts=""
 if test $do_myproxy = "true"; then
-    if -z "$MYRPOXY_CRED_PATH"; then
+    if test -z "$MYPROXY_CRED_PATH"; then
 	echo "MyProxy testing requested and MYPROXY_CRED_PATH not defined."
 	exit 1
     fi
+    echo "Testing distibution using Myproxy CA and client credentials at ${MYPROXY_CRED_PATH}"
     test_dist_opts="${test_dist_opts} -m ${MYPROXY_CRED_PATH}"
 fi
 
-echo "Running test-dist.sh ${test_dist_opts}:"
+echo "Running test-dist.sh ${test_dist_opts} ${tarFile}"
 test/test-dist.sh ${test_dist_opts} ${tarFile}
 
 echo "Success."
