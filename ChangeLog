@@ -1,0 +1,4893 @@
+2010-02-03 22:30  vwelch
+
+	* utils/config.pl.in (1.3): Added documentation about side effect
+	  of expanding variables in values.
+
+2010-02-03 22:30  vwelch
+
+	* test/test-dist.sh.in (1.14): First time config.pl is used, it
+	  causes all interpolated variables to be expanded. This means we
+	  need to set ClientCert and ClientKey rather than Path since the
+	  first invocation causes ${Path} to be expanded.
+
+2010-02-03 21:13  vwelch
+
+	* test/test-dist.sh.in (1.13): Output MyProxy CA client credential
+	  path for debugging.
+
+2010-02-03 21:13  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.7): Typo fix in MyProxy CA
+	  testing.  Cleaned up and improved output for MyProxy CA testing.
+
+2010-02-03 08:28  vwelch
+
+	* buildbot/: gridshib-buildbot.cfg (1.3[DEAD]),
+	  install-buildbot-config.sh (1.3): Use gridshib-ca-buildbot.cfg
+	  instead of gridshib-buildbot.cfg so that it has the same name in
+	  CVS as on buildbot and I quite confusing myself.
+
+2010-02-02 14:45  tfleury
+
+	* perl/: Globus/Config.pm (1.3), Globus/GSISocket.pm (1.8),
+	  Globus/MyProxyClient.pm (1.4), GridShibCA/Authorization.pm.in
+	  (1.16), GridShibCA/CA.pm.in (1.20), GridShibCA/CGISession.pm.in
+	  (1.32), GridShibCA/CGIinterface.pm.in (1.23),
+	  GridShibCA/CSRF.pm.in (1.6), GridShibCA/CertRegistry.pm.in
+	  (1.11), GridShibCA/Command.pm.in (1.9), GridShibCA/Config.pm.in
+	  (1.44), GridShibCA/DisplayTemplate.pm.in (1.6),
+	  GridShibCA/ErrorHandler.pm.in (1.5),
+	  GridShibCA/HTMLTemplate.pm.in (1.8), GridShibCA/IssueCert.pm.in
+	  (1.10), GridShibCA/JNLPForm.pm.in (1.2),
+	  GridShibCA/LaunchClient.pm.in (1.10), GridShibCA/LaunchJNLP.pm.in
+	  (1.11), GridShibCA/Logger.pm.in (1.17), GridShibCA/Logon.pm.in
+	  (1.15), GridShibCA/Logout.pm.in (1.5), GridShibCA/MyProxyCA.pm.in
+	  (1.13), GridShibCA/NameMapper.pm.in (1.10),
+	  GridShibCA/OpenIdLogon.pm.in (1.13), GridShibCA/OpenSSLCA.pm.in
+	  (1.31), GridShibCA/Policy.pm.in (1.6),
+	  GridShibCA/PythonClient.pm.in (1.4),
+	  GridShibCA/ShibLaunchJNLP.pm.in (1.2), GridShibCA/ShibLogon.pm.in
+	  (1.7), GridShibCA/Template.pm.in (1.19),
+	  GridShibCA/TrustRoots.pm.in (1.5), GridShibCA/UserIdentity.pm.in
+	  (1.6), GridShibCA/WebApp.pm.in (1.6), GridShibCA/WebCommand.pm.in
+	  (1.29), GridShibCA/X509DN.pm.in (1.4): Change tabs to spaces and
+	  fix wrapping lines over 80 chars long.  Also fix a couple of
+	  spelling errors in debug/error output.
+
+2010-02-02 09:54  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.6): Typo.
+
+2010-02-01 22:09  vwelch
+
+	* utils/config.pl.in (1.2): Fixed typos in perldoc.
+
+2010-02-01 21:42  vwelch
+
+	* buildbot/gridshib-ca-buildbot.cfg (1.2): Added MyProxy test.
+
+2010-02-01 21:42  vwelch
+
+	* buildbot/gridshib-ca-buildbot.cfg (1.1): Added missing
+	  gridshib-ca-buildbot.cfg configuration.
+
+2010-02-01 21:42  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.5), test/test-dist.sh.in (1.12):
+	  Add support for -m to support MyProxyCA testing.
+
+2010-02-01 21:42  vwelch
+
+	* configure.ac (1.169), perl/GridShibCA/Config.pm.in (1.43),
+	  utils/config.pl.in (1.1): Added utils/config.pl.in to support
+	  getting and setting values from gridshib-ca.conf for automated
+	  testing.  Added save() and getAsHash() to Config.pm to support
+	  utils/config.pl
+
+2010-01-27 09:09  vwelch
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.6): Bug 6914: Added attributes
+	  gathered to documentation.
+
+2010-01-26 21:24  vwelch
+
+	* perl/GridShibCA/Logger.pm.in (1.16): Bug 6944: Beefed up
+	  documentation on logging and provided example syslog.conf
+
+2010-01-26 21:24  vwelch
+
+	* perl/GridShibCA/Logon.pm.in (1.14): Fixed double '=over' in
+	  documentation.
+
+2010-01-26 21:03  vwelch
+
+	* utils/issue-cert.pl.in (1.16): Bug 6931: Use CA module configured
+	  in gridshib-ca.conf instead of hard-coded OpenSSLCA.pm
+
+2010-01-26 21:03  vwelch
+
+	* perl/GridShibCA/IssueCert.pm.in (1.9): Improved error handling
+	  for certificate issuance errors.
+
+2010-01-26 21:03  vwelch
+
+	* conf/gridshib-ca.conf.in (1.45): Bumped default session lifetime
+	  up from 5 minutes to one hour.
+
+2010-01-26 21:03  vwelch
+
+	* perl/GridShibCA/Logout.pm.in (1.4): Bug 6933: Logout.pm no longer
+	  requires a valid session.
+
+2010-01-25 23:53  vwelch
+
+	* configure.ac (1.168), conf/gridshib-ca.conf.in (1.44),
+	  perl/GridShibCA/ShibLaunchJNLP.pm.in (1.1), templates/debug.html
+	  (1.9), webapps/shibLaunchGSCA.jnlp.in (1.1): Added
+	  shibLaunchGSCA.jnlp
+
+2010-01-25 23:53  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.28): Improved debug logging
+	  of requirements in _handleRequirements()
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/Template.pm.in (1.18): Added $ShibProtectedURL as
+	  available variable in templates.
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/LaunchClient.pm.in (1.9): Added
+	  _getClientSession() method.
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/DisplayTemplate.pm.in (1.5): Added support for
+	  'addCSRF' option in Command element in gridshib-ca.conf
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/test/: CSRFTest.pm (1.1), UnitTestSuite.pm (1.3):
+	  Added CSRFTest.pm tests for CSRF.pm
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/CSRF.pm.in (1.5): All instantiations of CSRF
+	  instances in a given process now return same token value. Use
+	  package variable $CachedToken to achieve.
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/CSRF.pm.in (1.4): Added getToken() method.
+
+2010-01-25 23:52  vwelch
+
+	* perl/GridShibCA/CSRF.pm.in (1.3): Fixed bug with expiredCookie()
+	  Fixed typo in documentation of CSRFException
+
+2010-01-22 14:35  tfleury
+
+	* perl/GridShibCA/X509DN.pm.in (1.3): Changed an error() to a
+	  throw().
+
+2010-01-22 14:35  tfleury
+
+	* perl/GridShibCA/MyProxyCA.pm.in (1.12): Created a new method
+	  _getMyProxyUsername() that can be overridden by subclasses to
+	  return the username passed to the MyProxy server.  Also fixed a
+	  few formatting problems when error() changed to throw().
+
+2010-01-22 11:32  tfleury
+
+	* perl/GridShibCA/MyProxyCA.pm.in (1.11): The OpenSSL config value
+	  is in the "Binaries" subsection.
+
+2010-01-21 17:55  vwelch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.31), test/CGISessionTest.pm
+	  (1.12): CGISession::cookieName() can now be called on initialized
+	  session.  Added test_cookieName() to test this functionality.
+
+2010-01-21 17:55  vwelch
+
+	* perl/GridShibCA/test/: CGISessionTest.pm (1.11), UnitTestSuite.pm
+	  (1.2): Set directory for session files to /tmp for CGISession
+	  tests to allow for running without root permissions.	Add
+	  CGISessionTest.pm to test suite.
+
+2010-01-21 17:55  vwelch
+
+	* perl/GridShibCA/CGISession.pm.in (1.30): Added setDirectory()
+	  function to allow setting directory for session files to permit
+	  non-root testing.
+
+2010-01-21 17:55  vwelch
+
+	* configure.ac (1.167): Fixed runtime output for
+	  --with-jarsigner-keystore
+
+2010-01-21 16:10  vwelch
+
+	* configure.ac (1.166): Fixed typos in help for
+	  --with-jarsigner-password-file and --with-jarsigner-keystore
+
+2010-01-21 11:23  vwelch
+
+	* perl/GridShibCA/MyProxyCA.pm.in (1.10): Fixed
+	  MyProxyCA::signRequest to conform to 2.0 CA.pm changes. Still
+	  needs testing.
+
+2010-01-21 11:23  vwelch
+
+	* Makefile.in (1.113): Added truststore to distribution so
+	  deployers can follow directions on cilogon.org wiki to add own
+	  https CAs.
+
+2010-01-21 11:23  vwelch
+
+	* HOWTO-Release (1.7): Updated URL.
+
+2010-01-21 11:23  vwelch
+
+	* perl/GridShibCA/CA.pm.in (1.19): Added comment to clarify
+	  signRequest() vs _signRequest()
+
+2010-01-19 10:40  vwelch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.29), test/CGISessionTest.pm
+	  (1.10): Added CGISession->cookieName() to return name of session
+	  cookie.  Added test to test CGISession->cookieName() and
+	  CGISession->cookie().
+
+2010-01-19 10:40  vwelch
+
+	* perl/GridShibCA/CGISession.pm.in (1.28),
+	  perl/GridShibCA/Logon.pm.in (1.13), perl/GridShibCA/Policy.pm.in
+	  (1.5), perl/GridShibCA/ShibLogon.pm.in (1.5),
+	  perl/GridShibCA/UserIdentity.pm.in (1.5),
+	  perl/GridShibCA/WebCommand.pm.in (1.27),
+	  perl/GridShibCA/test/CGISessionTest.pm (1.9),
+	  perl/GridShibCA/test/UserIdentityTest.pm (1.4),
+	  templates/debug.html (1.8): Added support for attributes to
+	  UserIdentity.pm and CGISession.pm Collect Shibboleth attributes.
+	  Make attributes available in policy.conf for NameMapper.pm
+
+2010-01-19 10:39  vwelch
+
+	* perl/GridShibCA/Template.pm.in (1.17): Cleaned up handling of
+	  errors in template files.
+
+2010-01-19 10:39  vwelch
+
+	* templates/openid-cancel.html (1.2): Add link back to GridShib-CA
+	  default page for openid cancel.
+
+2010-01-19 10:39  vwelch
+
+	* perl/GridShibCA/OpenIdLogon.pm.in (1.12): Bug fix handling openid
+	  login cancel.
+
+2010-01-16 16:19  vwelch
+
+	* perl/GridShibCA/: Logon.pm.in (1.12), OpenIdLogon.pm.in (1.11):
+	  Added Login::createSessionPassively() method, needed by
+	  go.teragrid.org
+
+2010-01-16 16:19  vwelch
+
+	* Makefile.in (1.112): Bug fix: Shibboleth web applications need to
+	  be apache executable.
+
+2010-01-15 22:18  vwelch
+
+	* perl/GridShibCA/Template.pm.in (1.16): Revamped TemplatePackage
+	  initialization to get rid of warnings.
+
+2010-01-15 22:18  vwelch
+
+	* configure.ac (1.165): Changed default docroot to /var/www/html/
+
+2010-01-15 22:18  vwelch
+
+	* configure.ac (1.164): Fixed help for --with-gridshib-ca-web-path
+
+2010-01-15 22:18  vwelch
+
+	* Makefile.in (1.111): Install Shib webapp with execute
+	  permissions.
+
+2010-01-15 22:17  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.26): Removed undefined and
+	  unused $REQUIRE_NOTHING and $REQUIRE_SESSION
+
+2010-01-15 22:17  vwelch
+
+	* perl/GridShibCA/Config.pm.in (1.42),
+	  perl/GridShibCA/Constants.pm.in (1.4),
+	  perl/GridShibCA/DisplayTemplate.pm.in (1.4),
+	  perl/GridShibCA/Exception.pm.in (1.5), utils/check-config.pl.in
+	  (1.17), utils/create-openid-consumer-secret.pl.in (1.4): Clean up
+	  perl warnings from improved 'make check-perl'
+
+2010-01-15 22:17  vwelch
+
+	* Makefile.in (1.110): Added -w to 'make check-perl' for better
+	  checking.
+
+2010-01-15 22:17  vwelch
+
+	* templates/session-missing.html (1.2): Removed incorrect expired
+	  session text.
+
+2010-01-15 14:56  tfleury
+
+	* perl/GridShibCA/: Logger.pm.in (1.15), MyProxyCA.pm.in (1.9),
+	  OpenSSLCA.pm.in (1.30), SAMLExtension.pm.in (1.3): Minor bug
+	  fixes that Terry found.
+
+2010-01-06 16:47  tag v2_0_0_preview2
+
+2010-01-06 16:47  vwelch
+
+	* dev-utils/Makefile-inc.in (1.18, v2_0_0_preview2): Fixed
+	  distribution to use SourceForge File Release System.
+
+2010-01-06 16:46  vwelch
+
+	* dev-utils/Makefile-inc.in (1.17): Fixed up 'publish-dist' for
+	  sourceforge.
+
+2010-01-03 08:50  vwelch
+
+	* test/test-dist.sh.in (1.11, v2_0_0_preview2): Use runtime
+	  directory creatable by non-root.
+
+2010-01-02 17:43  vwelch
+
+	* test/test-dist.sh.in (1.10): Don't rely on $USER and $GROUP being
+	  set, use 'id' instead.
+
+2010-01-01 22:47  vwelch
+
+	* Makefile.in (1.109, v2_0_0_preview2), configure.ac (1.163,
+	  v2_0_0_preview2), conf/gridshib-ca.conf.in (1.43,
+	  v2_0_0_preview2), test/test-dist.sh.in (1.9),
+	  utils/create-openid-consumer-secret.pl.in (1.3, v2_0_0_preview2),
+	  utils/create-openssl-ca.pl.in (1.14, v2_0_0_preview2): Bug 6524:
+	  Refactor deployment to provide least privilege.  See
+	  http://docs.google.com/View?id=dgp8twm9_2fqs959hk
+
+2010-01-01 22:47  vwelch
+
+	* utils/create-openid-consumer-secret.pl.in (1.2): Set umask.
+
+2010-01-01 11:44  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.4, v2_0_0_preview2): Use /tmp for
+	  runtime directory since we don't have permission to create
+	  directory in /var/run in buildbot test.
+
+2010-01-01 11:44  vwelch
+
+	* Makefile.in (1.108): Added TODO about install returning
+	  misleading error if failing to create runtime directory.
+
+2010-01-01 11:44  vwelch
+
+	* perl/GridShibCA/Template.pm.in (1.15, v2_0_0_preview2): Added
+	  link to Text::Template module.
+
+2010-01-01 11:44  vwelch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.22, v2_0_0_preview2): Fixed
+	  broked link in documentation.
+
+2009-12-31 16:59  vwelch
+
+	* perl/POD-HowTO.txt (1.3, v2_0_0_preview2): Removed RCS tag.
+
+2009-12-31 16:58  vwelch
+
+	* perl/GridShibCA/: Authorization.pm.in (1.15, v2_0_0_preview2),
+	  CA.pm.in (1.18, v2_0_0_preview2), CGISession.pm.in (1.27,
+	  v2_0_0_preview2), CSRF.pm.in (1.2, v2_0_0_preview2),
+	  CertRegistry.pm.in (1.10, v2_0_0_preview2), Command.pm.in (1.8,
+	  v2_0_0_preview2), Config.pm.in (1.41, v2_0_0_preview2),
+	  Exception.pm.in (1.4, v2_0_0_preview2), LaunchClient.pm.in (1.8,
+	  v2_0_0_preview2), LaunchJNLP.pm.in (1.10, v2_0_0_preview2),
+	  Logon.pm.in (1.11, v2_0_0_preview2), MyProxyCA.pm.in (1.8,
+	  v2_0_0_preview2), OpenIdLogon.pm.in (1.10, v2_0_0_preview2),
+	  OpenSSLCA.pm.in (1.29, v2_0_0_preview2), Policy.pm.in (1.4,
+	  v2_0_0_preview2), ShibLogon.pm.in (1.4, v2_0_0_preview2),
+	  Template.pm.in (1.14), UserIdentity.pm.in (1.4, v2_0_0_preview2),
+	  WebCommand.pm.in (1.25, v2_0_0_preview2): Make PERL POD formating
+	  consistent.
+
+2009-12-31 16:53  vwelch
+
+	* Makefile.in (1.107): Set POD2HTML_ROOT for sourceforge.
+
+2009-12-31 16:53  vwelch
+
+	* Makefile.in (1.106), dev-utils/Makefile-inc.in (1.16),
+	  doc/.htaccess (1.1, v2_0_0_preview2), doc/perl/header.html (1.1,
+	  v2_0_0_preview2): Added .htaccess and header.html to files we
+	  sync so we can include preamble to directory listings.
+
+2009-12-30 21:45  vwelch
+
+	* Makefile.in (1.105): Typo fix: realcleam -> realclean
+
+2009-12-30 21:44  vwelch
+
+	* Makefile.in (1.104), configure.ac (1.162),
+	  dev-utils/Makefile-inc.in (1.15): Cleaned up making of perl
+	  documentation (only documentation left in source).  Modified to
+	  publish documentation to cilogon.sourceforge.org
+
+2009-12-30 18:52  vwelch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.26), IssueCert.pm.in (1.8,
+	  v2_0_0_preview2), WebCommand.pm.in (1.24), test/CGISessionTest.pm
+	  (1.8, v2_0_0_preview2): Bug 6907: Create different sessions for
+	  Credential Retriever clients and Browsers. For IssueCred.pm
+	  require CredentialIssuer session.
+
+2009-12-30 18:52  vwelch
+
+	* Makefile.in (1.103), dev-utils/Makefile-inc.in (1.14): Added
+	  perl-post-install-tests to 'make test-post-install'
+
+2009-12-30 18:52  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.23): Added comment clarifying
+	  RequestmentsMappings.
+
+2009-12-30 12:02  vwelch
+
+	* dev-utils/Makefile-inc.in (1.13),
+	  perl/GridShibCA/test/PostInstallTestSuite.pm (1.1,
+	  v2_0_0_preview2), perl/GridShibCA/test/Suite.pm (1.11[DEAD]),
+	  perl/GridShibCA/test/UnitTestSuite.pm (1.1, v2_0_0_preview2):
+	  Split off perl-post-install-tests from perl-unit-tests.  Added
+	  CGISessionTests. to perl-post-install-tests.
+
+2009-12-30 12:02  vwelch
+
+	* Makefile.in (1.102), configure.ac (1.161),
+	  conf/gridshib-ca.conf.in (1.42), perl/GridShibCA/CGISession.pm.in
+	  (1.25), perl/GridShibCA/test/Suite.pm (1.10): Added
+	  /var/run/gridshib-ca runtime directory.  Put CGISession files in
+	  /var/run/gridshib-ca by default.  Added configuration parameter
+	  for setting runtime directory.  CGISession unittests disabled
+	  since they now require write access to runtime directory.
+
+2009-12-17 20:50  vwelch
+
+	* configure.ac (1.160), perl/GridShibCA/myVocsDBCertRegistry.pm.in
+	  (1.5[DEAD]): Bug 6846: Dropped myVocs registry code.
+
+2009-12-15 00:22  vwelch
+
+	* configure.ac (1.159), conf/gridshib-ca.conf.in (1.41),
+	  perl/GridShibCA/CGIinterface.pm.in (1.21),
+	  perl/GridShibCA/DisplayTemplate.pm.in (1.3, v2_0_0_preview2),
+	  perl/GridShibCA/IssueCert.pm.in (1.7),
+	  perl/GridShibCA/JNLPForm.pm.in (1.1, v2_0_0_preview2),
+	  perl/GridShibCA/LaunchJNLP.pm.in (1.9),
+	  templates/jnlp-launch-form.html (1.1, v2_0_0_preview2),
+	  templates/jnlp-launch.html (1.2, v2_0_0_preview2): Changes to
+	  support form for JNLP file creation.	This also fixes CSRF
+	  support for JNLP launching.
+
+2009-12-15 00:22  vwelch
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCACredentialIssuerURL.java (1.6),
+	  GridShibCACredentialRetriever.java (1.6),
+	  GridShibCAProperties.java (1.5) (utags: v2_0_0_preview2): Changes
+	  to support lifetime parameter.
+
+2009-12-15 00:22  vwelch
+
+	* configure.ac (1.158): Typo fix "Gridshib" -> "GridShib" for
+	  DisplayTemplate.pm
+
+2009-12-15 00:22  vwelch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (1.7, v2_0_0_preview2),
+	  perl/GridShibCA/Template.pm.in (1.13),
+	  perl/GridShibCA/WebCommand.pm.in (1.22), templates/debug.html
+	  (1.7, v2_0_0_preview2): Cleaned up Template variables.  MyURL now
+	  set in HTMLTemplate.	Removed ShibProtectedURL.  GridShibCAURL
+	  now in Template.  Added IdpId in WebCommand::_displayHTML()
+	  Changed id to SessionId in WebCommand::_displayHTML() Adjustment
+	  to debug.html for id->SessionId
+
+2009-12-13 17:17  vwelch
+
+	* templates/debug.html (1.6): Removed credential retrievers as
+	  separate section from debug.html since JNLPLaunch command now
+	  covers this.
+
+2009-12-13 17:17  vwelch
+
+	* configure.ac (1.157), conf/gridshib-ca.conf.in (1.40),
+	  templates/jnlp-launch.html (1.1): Bug 5792: Added
+	  jnlp-launch.html as front end for JWS client launch.
+
+2009-12-13 16:46  vwelch
+
+	* conf/gridshib-ca.conf.in (1.39),
+	  perl/GridShibCA/DisplayTemplate.pm.in (1.2),
+	  perl/GridShibCA/IssueCert.pm.in (1.6),
+	  perl/GridShibCA/LaunchClient.pm.in (1.7),
+	  perl/GridShibCA/Logon.pm.in (1.10), perl/GridShibCA/Logout.pm.in
+	  (1.3, v2_0_0_preview2), perl/GridShibCA/OpenIdLogon.pm.in (1.9),
+	  perl/GridShibCA/PythonClient.pm.in (1.3, v2_0_0_preview2),
+	  perl/GridShibCA/TrustRoots.pm.in (1.4, v2_0_0_preview2),
+	  perl/GridShibCA/WebCommand.pm.in (1.21): Revamped WebCommand
+	  requirments: Replaced _requirements() method with
+	  _defaultRequirements() Added 'requirements' option to
+	  gridshib-ca.conf to override default requirements.  HTTPS and
+	  sessions are now required by default, making the default
+	  requirments right for most WebCommands.
+
+2009-12-13 16:46  vwelch
+
+	* configure.ac (1.156), perl/GridShibCA/Debug.pm.in (1.4[DEAD]):
+	  Removed unused Debug.pm.in module.
+
+2009-12-13 16:46  vwelch
+
+	* conf/gridshib-ca.conf.in (1.38), templates/debug.html (1.5):
+	  Changes to use DisplayTemplate for Debug command.
+
+2009-12-13 16:46  vwelch
+
+	* configure.ac (1.155), perl/GridShibCA/DisplayTemplate.pm.in
+	  (1.1): Added DisplayTemplate.pm
+
+2009-12-13 16:45  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.20): Make session parameters
+	  available in Template.
+
+2009-12-13 16:45  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.19): Make elements of
+	  configuration available in 'args' attribute.
+
+2009-12-13 16:45  vwelch
+
+	* perl/GridShibCA/OpenIdLogon.pm.in (1.8): Added comment about
+	  Net::OpenId handling untainting of claimed identity.
+
+2009-12-13 16:45  vwelch
+
+	* perl/GridShibCA/CGISession.pm.in (1.24): Added secure flag to
+	  session cookie.
+
+2009-12-09 22:00  vwelch
+
+	* perl/GridShibCA/: CGIinterface.pm.in (1.20), WebCommand.pm.in
+	  (1.18): Removed RCS tags.
+
+2009-12-09 21:53  vwelch
+
+	* configure.ac (1.154), conf/gridshib-ca.conf.in (1.37),
+	  perl/GridShibCA/CSRF.pm.in (1.1), perl/GridShibCA/Config.pm.in
+	  (1.40), perl/GridShibCA/LaunchClient.pm.in (1.6),
+	  perl/GridShibCA/Logon.pm.in (1.9), perl/GridShibCA/Template.pm.in
+	  (1.12), perl/GridShibCA/WebCommand.pm.in (1.17),
+	  templates/debug.html (1.4): Added CSRF protection support to
+	  LaunchClient.
+
+2009-12-09 21:53  vwelch
+
+	* conf/policy.conf.in (1.3, v2_0_0_preview2),
+	  perl/GridShibCA/OpenIdLogon.pm.in (1.7): Just use "OpenId" for
+	  OpenId AuthnMethod for now.  Doing otherwise means also have
+	  OpenId2.0 in conf/policy.conf and also in AuthMethods section of
+	  gridshib-ca.conf
+
+2009-12-09 21:53  vwelch
+
+	* templates/debug.html (1.3): POST now required for form for launch
+	  JNLP client.
+
+2009-12-09 21:53  vwelch
+
+	* perl/GridShibCA/Logout.pm.in (1.2): Added TODO comment about
+	  destroying session cookie.
+
+2009-12-09 21:53  vwelch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.19): Pruned down all unused
+	  methods.  CSRF methods moved to (soon to be committed)
+	  GridShibCA::CSRF.
+
+2009-12-09 21:52  vwelch
+
+	* buildbot/gridshib-buildbot.cfg (1.2, v2_0_0_preview2): No longer
+	  use scripts from HEAD, but instead use branch we are testing.
+	  Clobber workdir before proceeding.  Project Identity now in
+	  master configuration.
+
+2009-12-08 20:28  vwelch
+
+	* conf/gridshib-ca.conf.in (1.36), perl/GridShibCA/OpenSSLCA.pm.in
+	  (1.28): Bug 6528: Add locking to openssl serial file.
+
+2009-12-08 20:28  vwelch
+
+	* perl/GridShibCA/test/ShibLogonTest.pm (1.3, v2_0_0_preview2): Bug
+	  6898 changes.
+
+2009-12-08 20:28  vwelch
+
+	* perl/GridShibCA/: IssueCert.pm.in (1.5), LaunchClient.pm.in
+	  (1.5): Require POST
+
+2009-12-08 20:28  vwelch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.16): Added support for
+	  requiring POST.
+
+2009-12-08 20:28  vwelch
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.3): Bug 6898: Use standard
+	  Shib environment variable for IdP id.
+
+2009-12-07 21:47  vwelch
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.2): Added sanity checks for
+	  userId and IdpId individually.
+
+2009-12-07 21:47  vwelch
+
+	* dev-utils/build-test.sh.in (1.8, v2_0_0_preview2): More changes
+	  to work with shibber.ncsa.uiuc.edu.
+
+2009-12-07 21:46  vwelch
+
+	* dev-utils/Makefile-inc.in (1.12): Wipe previous synced
+	  distribution files before sync to work from clean start.
+
+2009-12-07 21:46  vwelch
+
+	* configure.ac (1.153): Bumped to preview2.
+
+2009-12-07 21:46  vwelch
+
+	* configure.ac (1.152): Removed unused "--with-css-url" option.
+
+2009-12-07 19:10  vwelch
+
+	* buildbot/gridshib-ca-test.sh (v0_5_BRANCH.2): Added
+	  gridshib-ca-test.sh from HEAD for buildbot tests.
+
+2009-12-06 17:37  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.3): Typo fix
+
+2009-12-06 17:37  vwelch
+
+	* buildbot/gridshib-ca-test.sh (v0_5_BRANCH.1): file
+	  gridshib-ca-test.sh was added on branch v0_5_BRANCH on 2009-12-08
+	  01:10:55 +0000
+
+2009-12-06 16:29  vwelch
+
+	* buildbot/gridshib-ca-test.sh (1.2): Modified to run from
+	  top-level of gridshib-ca checkout (instead of one level above
+	  that).
+
+2009-12-06 16:29  vwelch
+
+	* dev-utils/: Makefile-inc.in (1.11), build-test.sh.in (1.7):
+	  Changes to move from computer.ncsa.uiuc.edu to
+	  shibber.ncsa.uiuc.edu for test deployments.
+
+2009-12-06 16:29  vwelch
+
+	* configure.ac (1.151): Added Error as module to test for.
+
+2009-12-06 16:29  vwelch
+
+	* buildbot/install-buildbot-config.sh (1.2, v2_0_0_preview2):
+	  Install our buildbot configuration as gridshib-ca-buildbot.cfg to
+	  distinguish from other gridshib configuration.
+
+2009-12-05 13:56  vwelch
+
+	* buildbot/: gridshib-buildbot.cfg (1.1), gridshib-ca-test.sh
+	  (1.1), install-buildbot-config.sh (1.1): Subset of buildbot
+	  configuration for gridshib-ca copied over from
+	  gridshibshib/buildbot directory.
+
+2009-12-05 13:09  vwelch
+
+	* configure.ac (1.150), conf/authorizedPortals.conf.in (1.2[DEAD]):
+	  Removed unused authorizedPortals.conf
+
+2009-12-05 13:08  vwelch
+
+	* conf/policy.conf.in (1.2), perl/GridShibCA/OpenIdLogon.pm.in
+	  (1.6): Use "OpenId1.1" or "OpenId2.0" for authentication method
+	  for OpenId.  Get identity provider for OpenId.
+
+2009-12-05 13:08  vwelch
+
+	* perl/GridShibCA/OpenIdLogon.pm.in (1.5): Allow for delayed return
+	  from IdP. Seems to solve error on initial myopenid logon.
+
+2009-12-05 13:08  vwelch
+
+	* perl/GridShibCA/TrustRoots.pm.in (1.3): Only send basename of
+	  files.
+
+2009-12-05 13:08  vwelch
+
+	* perl/GridShibCA/CGISession.pm.in (1.23): Change lifetime
+	  parameter to Expires to avoid dependency on CGISession internals.
+
+2009-12-05 12:44  vwelch
+
+	* Makefile.in (1.101): Also set PERL5LIB for testing (in addition
+	  to PERLLIB)
+
+2009-11-25 22:21  welch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.15): Removed unneeded perl
+	  header.
+
+2009-11-25 22:14  welch
+
+	* conf/gridshib-ca.conf.in (1.35), perl/GridShibCA/Config.pm.in
+	  (1.39), perl/GridShibCA/WebCommand.pm.in (1.14),
+	  perl/GridShibCA/test/ConfigTest.pm (1.14, v2_0_0_preview2): Made
+	  Command names into sections to add additional parameters.
+
+2009-11-25 22:14  welch
+
+	* utils/check-config.pl.in (1.16, v2_0_0_preview2): Use
+	  Config->getCommandModule() to check commands.
+
+2009-11-25 22:14  welch
+
+	* perl/GridShibCA/: CGIinterface.pm.in (1.18), WebCommand.pm.in
+	  (1.13): Removed RCS Id tag and long license statement to bring in
+	  line with other perl modules.
+
+2009-11-25 22:10  welch
+
+	* dev-utils/Makefile-inc.in (1.10): Make 'perl-unit-tests' rebuild
+	  configuration if needed.
+
+2009-11-25 22:10  welch
+
+	* Makefile.in (1.100): Removed unused XSLTPROC variable
+
+2009-11-24 21:21  welch
+
+	* Makefile.in (1.99), configure.ac (1.149): Added 'make dist-sign'
+	  for generating gpg signature of distribution.
+
+2009-11-24 21:21  welch
+
+	* utils/create-openid-consumer-secret.pl (1.2[DEAD]): Removed
+	  autoconf-generated file from repository.
+
+2009-11-24 21:21  welch
+
+	* configure.ac (1.148): Preview1 designation
+
+2009-11-24 06:24  welch
+
+	* configure.ac (1.147): Corrected typo NET::OpenID::Consumer ->
+	  Net::OpenID::Consumer
+
+2009-11-23 22:19  welch
+
+	* Makefile.in (1.98), configure.ac (1.146): Removed webdocs.
+
+2009-11-23 21:39  welch
+
+	* Makefile.in (1.97), configure.ac (1.145), doc/changelog.xml.in
+	  (1.19[DEAD]), doc/faq.xml.in (1.2[DEAD]), doc/footer.html
+	  (1.7[DEAD]), doc/gridshib-ca-cert.tar (1.2[DEAD]),
+	  doc/gridshib-ca-doc-images.graffle (1.5[DEAD]), doc/header.html
+	  (1.4[DEAD]), doc/index.xml.in (1.3[DEAD]), doc/install.xml.in
+	  (1.6[DEAD]), doc/license.xml.in (1.2[DEAD]),
+	  doc/perl-modules.xml.in (1.5[DEAD]), doc/readme.xml.in
+	  (1.3[DEAD]), doc/saml-tools.xml.in (1.4[DEAD]),
+	  doc/test-deployment.xml.in (1.2[DEAD]): Deleted docbook stuff
+
+2009-11-23 21:39  welch
+
+	* configure.ac (1.144): Added OpenID perl modules.
+
+2009-11-23 21:39  welch
+
+	* configure.ac (1.143): CGI::Session and Date::Parse are not in
+	  default PERL distro.
+
+2009-11-23 21:39  welch
+
+	* perl/GridShibCA/OpenIdLogon.pm.in (1.4): Added error handling to
+	  openid code.
+
+2009-11-23 21:39  welch
+
+	* conf/gridshib-ca.conf.in (1.34): Re-added GridShibCA to URLs.
+	  Never should have removed it.
+
+2009-11-22 15:26  welch
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.5),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustRootsURL.java
+	  (1.4, v2_0_0_preview2), perl/GridShibCA/LaunchJNLP.pm.in (1.8):
+	  Working trust root download in JWS client
+
+2009-11-22 15:26  welch
+
+	* perl/GridShibCA/LaunchJNLP.pm.in (1.7): Fixed codebase in JNLP
+	  file
+
+2009-11-22 13:54  welch
+
+	* perl/GridShibCA/: Template.pm.in (1.11), test/ConfigTest.pm
+	  (1.13): Clean up from last commit.
+
+2009-11-22 12:19  welch
+
+	* conf/gridshib-ca.conf.in (1.33), perl/GridShibCA/Logger.pm.in
+	  (1.14, v2_0_0_preview2), perl/GridShibCA/MyProxyCA.pm.in (1.7):
+	  Cleaned up gridshib-ca.conf
+
+2009-11-22 07:37  welch
+
+	* conf/gridshib-ca.conf.in (1.32): Removed portal delegation
+	  configuration.
+
+2009-11-22 07:03  welch
+
+	* python/gridshibca-client.py.in (1.11, v2_0_0_preview2): strip()
+	  authToken after reading to remove whitespace introduce by
+	  cut'n'paste.
+
+2009-11-21 17:43  welch
+
+	* python/gridshibca-client.py.in (1.10): Handle errors responses
+	  from server better.
+
+2009-11-21 17:42  welch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.12): Add http status to error
+	  responses.
+
+2009-11-21 17:41  welch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (1.6): Added setStatus()
+	  method.
+
+2009-11-21 17:39  welch
+
+	* Makefile.in (1.96): Include python script(s) 'make'
+
+2009-11-21 17:36  welch
+
+	* python/gridshibca-client.py.in (1.9): Bug fixes.
+
+2009-11-21 17:27  welch
+
+	* perl/GridShibCA/TrustRoots.pm.in (1.2): Bug fixing.
+
+2009-11-21 13:50  welch
+
+	* python/gridshibca-client.py.in (1.8): Removed old TODO comment.
+
+2009-11-21 13:49  welch
+
+	* configure.ac (1.142), conf/gridshib-ca.conf.in (1.31),
+	  perl/GridShibCA/TrustRoots.pm.in (1.1): Added TrustRoots.pm to
+	  provide trust roots to clients.
+
+2009-11-21 13:49  welch
+
+	* perl/GridShibCA/Logger.pm.in (1.13): Added error() method as
+	  alias for err().
+
+2009-11-21 13:49  welch
+
+	* perl/GridShibCA/test/: LoggerTest.pm (1.1, v2_0_0_preview2),
+	  Suite.pm (1.9): Added Logger.pm unit tests.
+
+2009-11-21 13:49  welch
+
+	* configure.ac (1.141): Remove now unused FreezeThaw
+
+2009-11-21 13:49  welch
+
+	* configure.ac (1.140), perl/GridShibCA/CertRegistry.pm.in (1.9):
+	  Use Date::Parse to put in seconds for expiration instead of human
+	  friendly date.
+
+2009-11-17 21:36  welch
+
+	* conf/gridshib-ca.conf.in (1.30), configure.ac (1.139),
+	  perl/GridShibCA/Logout.pm.in (1.1),
+	  perl/GridShibCA/WebCommand.pm.in (1.11), templates/logout.html
+	  (1.1, v2_0_0_preview2), templates/session-missing.html (1.1,
+	  v2_0_0_preview2): Added SessionMissing template to handle missing
+	  session.  Added Logout module.
+
+2009-11-17 21:36  welch
+
+	* conf/gridshib-ca.conf.in (1.29), configure.ac (1.138),
+	  perl/GridShibCA/WebCommand.pm.in (1.10),
+	  templates/session-expired.html (1.1, v2_0_0_preview2): Display
+	  SessionExpired template for expired session.
+
+2009-11-17 21:36  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.22): Make session expiration
+	  lifetime from session creation instead of session usage/access.
+
+2009-11-17 21:36  welch
+
+	* perl/GridShibCA/test/CGISessionTest.pm (1.7): Clean up sessions
+	  created during testing.
+
+2009-11-17 21:36  welch
+
+	* utils/issue-cert.pl.in (1.15, v2_0_0_preview2): CR at end of
+	  output added.
+
+2009-11-16 21:06  welch
+
+	* utils/create-openid-consumer-secret.pl.in (1.1): Utility to
+	  create git openid consumer secret.  Should have been part of
+	  262b467cc5555ea9aab67d9381138180aaf1bf34
+
+2009-11-15 18:42  welch
+
+	* utils/issue-cert.pl.in (1.14): Clean up temporary files when done
+	  with them.
+
+2009-11-15 18:42  welch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.21), test/CGISessionTest.pm
+	  (1.6): Fix client session issuance.
+
+2009-11-15 18:42  welch
+
+	* perl/GridShibCA/IssueCert.pm.in (1.4): Destroy client session
+	  after credential issuance.
+
+2009-11-15 18:42  welch
+
+	* templates/python.html (1.2, v2_0_0_preview2): Clean up python
+	  client URL.
+
+2009-11-15 18:42  welch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.20), test/CGISessionTest.pm
+	  (1.5): Fix bug with client sessions being identical to the
+	  browser session.
+
+2009-11-15 18:42  welch
+
+	* conf/gridshib-ca.conf.in (1.28), perl/GridShibCA/Config.pm.in
+	  (1.38), perl/GridShibCA/Template.pm.in (1.10),
+	  perl/GridShibCA/WebCommand.pm.in (1.9),
+	  perl/GridShibCA/test/ConfigTest.pm (1.12), templates/debug.html
+	  (1.2): Cleaned up URL handling in templates.
+
+2009-11-15 18:41  welch
+
+	* conf/gridshib-ca.conf.in (1.27), perl/GridShibCA/Policy.pm.in
+	  (1.3): Moved PolicyFilename parameter to Authorization block.
+	  Got rid of now unused AuthoriedIdps parameter.
+
+2009-11-15 15:17  welch
+
+	* configure.ac (1.137), conf/gridshib-ca.conf.in (1.26),
+	  dev-utils/build-test.sh.in (1.6),
+	  perl/GridShibCA/OpenIdLogon.pm.in (1.3),
+	  utils/create-openid-consumer-secret.pl (1.1): Added support for
+	  OpenId Consumer secret file.
+
+2009-11-15 14:09  welch
+
+	* perl/GridShibCA/test/Suite.pm (1.8): Removed deleted
+	  FakeSignOnTest.pm
+
+2009-11-15 14:09  welch
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.1): Added missing
+	  ShibLogon.pm.in file. Replaced ShibSignOn.pm.in.
+
+2009-11-15 12:57  welch
+
+	* HOWTO-BugfixRelease (1.6, v2_0_0_preview2), HOWTO-Release (1.6,
+	  v2_0_0_preview2), LICENSE (1.5, v2_0_0_preview2), Makefile.in
+	  (1.95), bootstrap.sh (1.3, v2_0_0_preview2), configure.ac
+	  (1.136), conf/gridshib-ca.conf.in (1.25),
+	  dev-utils/build-test.sh.in (1.5), dev-utils/clean-pod2html.sh.in
+	  (1.3, v2_0_0_preview2), java/GridShibCAClient/run-findbugs.sh.in
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/BrowserInterface.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Credential.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientApp.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientLogger.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (1.5),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.4),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java
+	  (1.4),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustRootsURL.java
+	  (1.3),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustStore.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (1.5, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/PEMEncoder.java
+	  (1.3, v2_0_0_preview2),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Resource.java
+	  (1.3, v2_0_0_preview2), nmi/gridshib-ca-nmitest.sh (1.6,
+	  v2_0_0_preview2), openssl-ca/Makefile.in (1.5, v2_0_0_preview2),
+	  openssl-ca/openssl-ca-test.sh.in (1.2, v2_0_0_preview2),
+	  perl/POD-HowTO.txt (1.2), perl/Globus/Config.pm (1.2,
+	  v2_0_0_preview2), perl/Globus/GSICredential.pm (1.2,
+	  v2_0_0_preview2), perl/Globus/GSISocket.pm (1.7,
+	  v2_0_0_preview2), perl/Globus/MyProxyClient.pm (1.3,
+	  v2_0_0_preview2), perl/GridShibCA/Authorization.pm.in (1.14),
+	  perl/GridShibCA/CA.pm.in (1.17), perl/GridShibCA/CGISession.pm.in
+	  (1.19), perl/GridShibCA/CertRegistry.pm.in (1.8),
+	  perl/GridShibCA/Command.pm.in (1.7), perl/GridShibCA/Config.pm.in
+	  (1.37), perl/GridShibCA/Constants.pm.in (1.3, v2_0_0_preview2),
+	  perl/GridShibCA/Debug.pm.in (1.3),
+	  perl/GridShibCA/ErrorHandler.pm.in (1.4, v2_0_0_preview2),
+	  perl/GridShibCA/Exception.pm.in (1.3),
+	  perl/GridShibCA/HTMLTemplate.pm.in (1.5),
+	  perl/GridShibCA/IssueCert.pm.in (1.3),
+	  perl/GridShibCA/LaunchClient.pm.in (1.4),
+	  perl/GridShibCA/LaunchJNLP.pm.in (1.6),
+	  perl/GridShibCA/Logger.pm.in (1.12), perl/GridShibCA/Logon.pm.in
+	  (1.8), perl/GridShibCA/MyProxyCA.pm.in (1.6),
+	  perl/GridShibCA/NameMapper.pm.in (1.9, v2_0_0_preview2),
+	  perl/GridShibCA/OpenIdLogon.pm.in (1.2),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.27),
+	  perl/GridShibCA/Policy.pm.in (1.2),
+	  perl/GridShibCA/PythonClient.pm.in (1.2),
+	  perl/GridShibCA/SAMLExtension.pm.in (1.2, v2_0_0_preview2),
+	  perl/GridShibCA/Template.pm.in (1.9),
+	  perl/GridShibCA/UserIdentity.pm.in (1.3),
+	  perl/GridShibCA/WebApp.pm.in (1.5, v2_0_0_preview2),
+	  perl/GridShibCA/X509DN.pm.in (1.2, v2_0_0_preview2),
+	  perl/GridShibCA/myVocsDBCertRegistry.pm.in (1.4),
+	  perl/GridShibCA/test/CGISessionTest.pm (1.4),
+	  perl/GridShibCA/test/CommandTest.pm (1.5, v2_0_0_preview2),
+	  perl/GridShibCA/test/ConfigTest.pm (1.11),
+	  perl/GridShibCA/test/ExceptionTest.pm (1.2, v2_0_0_preview2),
+	  perl/GridShibCA/test/HTMLTemplateTest.pm (1.2, v2_0_0_preview2),
+	  perl/GridShibCA/test/ShibLogonTest.pm (1.2),
+	  perl/GridShibCA/test/Suite.pm (1.7),
+	  perl/GridShibCA/test/UserIdentityTest.pm (1.3, v2_0_0_preview2),
+	  python/gridshibca-client.py.in (1.7), test/test-cred.sh.in (1.4,
+	  v2_0_0_preview2), test/test-dist.sh.in (1.8),
+	  utils/check-config.pl.in (1.15), utils/create-openssl-ca.pl.in
+	  (1.13), utils/issue-cert.pl.in (1.13), utils/myproxy-mapapp.pl.in
+	  (1.2, v2_0_0_preview2), webapps/GridShibCA.cgi.in (1.3,
+	  v2_0_0_preview2), webapps/launchGSCA.jnlp.in (1.3,
+	  v2_0_0_preview2), webapps/openid.cgi.in (1.3, v2_0_0_preview2),
+	  webapps/shib.cgi.in (1.2, v2_0_0_preview2): Cleaned up license
+	  headers in files.  Removed RCS Id tags.
+
+2009-11-15 12:39  welch
+
+	* utils/ca-myproxy.pl.in (1.3[DEAD]): Onsolete, removed.
+
+2009-11-15 12:39  welch
+
+	* perl/GridShibCA/OutputHandler.pm.in (1.2[DEAD]): Never used.
+
+2009-11-15 12:38  welch
+
+	* perl/GridShibCA/OpenIdSignOn.pm.in (1.2[DEAD]): Replace with
+	  OpenIdLogon.pm.in
+
+2009-11-14 19:55  welch
+
+	* java/GridShibCAClient/src/org/globus/util/README (1.3,
+	  v2_0_0_preview2): Typo fix.
+
+2009-11-14 19:55  welch
+
+	* README.BuildingJava (1.4[DEAD]): Replaced with java/README.txt
+
+2009-11-14 19:55  welch
+
+	* conf/authorizedIdps.conf.in (1.3[DEAD]): Subsumed by policy.conf
+
+2009-11-14 19:54  welch
+
+	* configure.ac (1.135), conf/gridshib-ca.conf.in (1.24),
+	  conf/policy.conf.in (1.1), perl/GridShibCA/Authorization.pm.in
+	  (1.13), perl/GridShibCA/CA.pm.in (1.16),
+	  perl/GridShibCA/CGISession.pm.in (1.18),
+	  perl/GridShibCA/Config.pm.in (1.36),
+	  perl/GridShibCA/FakeSignOn.pm.in (1.5[DEAD]),
+	  perl/GridShibCA/Logon.pm.in (1.7),
+	  perl/GridShibCA/NameMapper.pm.in (1.8),
+	  perl/GridShibCA/OpenId.pm.in (1.3[DEAD]),
+	  perl/GridShibCA/OpenIdLogon.pm.in (1.1),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.26),
+	  perl/GridShibCA/Policy.pm.in (1.1),
+	  perl/GridShibCA/ShibSignOn.pm.in (1.3[DEAD]),
+	  perl/GridShibCA/WebCommand.pm.in (1.8),
+	  perl/GridShibCA/WebSignOn.pm.in (1.6[DEAD]),
+	  perl/GridShibCA/X509DN.pm.in (1.1),
+	  perl/GridShibCA/test/FakeSignOnTest.pm (1.2[DEAD]),
+	  perl/GridShibCA/test/ShibLogonTest.pm (1.1),
+	  perl/GridShibCA/test/ShibSignOnTest.pm (1.4[DEAD]),
+	  perl/GridShibCA/test/Suite.pm (1.6), utils/check-config.pl.in
+	  (1.14), utils/create-openssl-ca.pl.in (1.12),
+	  utils/issue-cert.pl.in (1.12), webapps/login.cgi.in (1.5[DEAD]),
+	  webapps/openid.cgi.in (1.2), webapps/shib.cgi.in (1.1): Working
+	  OpenId policy enforcement.  Replaced WebSignOn with UserIdentity.
+	  Added X509DN.
+
+2009-11-14 19:23  welch
+
+	* utils/issue-cert.pl.in (1.11): When handling exception, check and
+	  make sure logText() returns defined value before trying to print
+	  it.
+
+2009-11-14 19:23  welch
+
+	* perl/GridShibCA/: Config.pm.in (1.35), Logger.pm.in (1.11):
+	  Logger::new() now allows for specifying Config object with
+	  -config.  This allows creation by Config (avoiding infinite loop)
+	  so that Config can do real logging.
+
+2009-11-14 19:23  welch
+
+	* perl/GridShibCA/: UserIdentity.pm.in (1.2),
+	  test/UserIdentityTest.pm (1.2): Fixed typo with exception
+	  throwing with missing arguments.  Added test for throwing
+	  exception with missing arguments.
+
+2009-11-14 19:23  welch
+
+	* configure.ac (1.134), perl/GridShibCA/UserIdentity.pm.in (1.1),
+	  perl/GridShibCA/test/UserIdentityTest.pm (1.1): Added
+	  UserIdentity.pm
+
+2009-11-14 19:23  welch
+
+	* perl/GridShibCA/OpenId.pm.in (1.2): Fixed bug with not putting
+	  error text in exception.
+
+2009-11-14 19:23  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.17): Fixed comment in typo.
+
+2009-11-07 21:44  welch
+
+	* conf/gridshib-ca.conf.in (1.23), configure.ac (1.133),
+	  perl/GridShibCA/OpenId.pm.in (1.1),
+	  perl/GridShibCA/OpenIdSignOn.pm.in (1.1),
+	  templates/openid-cancel.html (1.1, v2_0_0_preview2),
+	  templates/openid-logon-form.html (1.1, v2_0_0_preview2),
+	  webapps/openid.cgi.in (1.1): Functioning OpenId logon.
+
+2009-11-07 21:44  welch
+
+	* perl/GridShibCA/: Logon.pm.in (1.6), WebCommand.pm.in (1.7):
+	  Added GridShibCAURL and MyURL mappings to default HTMLTemplate.
+	  Added WebCommand::_redirect() method.
+
+2009-11-07 21:43  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.16),
+	  perl/GridShibCA/Logon.pm.in (1.5), utils/issue-cert.pl.in (1.10):
+	  Rename CGISession::recordWebSignOn() to fromWebSignOn() to be
+	  more consistent with other method names.
+
+2009-11-07 21:43  welch
+
+	* templates/error.html (1.3, v2_0_0_preview2): Cleaned up html.
+
+2009-11-07 21:43  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.15): Include authentication
+	  method in session.
+
+2009-11-06 18:59  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.14): Set template of
+	  CGI::Session files to gsca-sesion-
+
+2009-11-06 18:59  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.13): Fix bug with
+	  establishing new session throwing session expiration error if
+	  previous session expired.
+
+2009-11-03 21:05  welch
+
+	* python/gridshibca-client.py.in (1.6): Added setting of
+	  user-agent.
+
+2009-11-03 21:05  welch
+
+	* python/gridshibca-client.py.in (1.5): Typo fix on last commit.
+
+2009-11-03 21:05  welch
+
+	* python/gridshibca-client.py.in (1.4): Sanity check on credential
+	  before writing it out.
+
+2009-11-03 21:05  welch
+
+	* python/gridshibca-client.py.in (1.3): Check for non-https URL and
+	  throw an error.
+
+2009-11-03 21:05  welch
+
+	* python/gridshibca-client.py.in (1.2): Print a nice error message
+	  if OpenSSL module not found.
+
+2009-11-01 15:01  welch
+
+	* configure.ac (1.132), conf/gridshib-ca.conf.in (1.22),
+	  perl/GridShibCA/PythonClient.pm.in (1.1), templates/python.html
+	  (1.1): Aded PythonClient command.
+
+2009-11-01 15:01  welch
+
+	* configure.ac (1.131): Add GRIDSHIB_CA_BASE_URL and
+	  GRIDSHIB_CA_WEBAPP_URL as substitutions.
+
+2009-11-01 15:00  welch
+
+	* Makefile.in (1.94): Install python scripts in html directory.
+
+2009-11-01 14:46  welch
+
+	* dev-utils/Makefile-inc.in (1.9): URL should be https not http
+
+2009-11-01 12:16  welch
+
+	* Makefile.in (1.93), configure.ac (1.130): Add python script
+	  sources to distribution so 'make test-dist' works.
+
+2009-10-31 13:00  welch
+
+	* conf/gridshib-ca.conf.in (1.21): Use @GRIDSHIB_CA_WEBAPP_URL@
+
+2009-10-31 12:59  welch
+
+	* configure.ac (1.129), python/gridshibca-client.py.in (1.1):
+	  Working python client.
+
+2009-10-31 12:59  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.25): Return openssl stderr
+	  output in log on error.
+
+2009-10-27 10:38  welch
+
+	* perl/GridShibCA/Logon.pm.in (1.4): Add support for redirection to
+	  main webapp.	Added extra logging.
+
+2009-10-27 10:38  welch
+
+	* templates/login.html (1.5, v2_0_0_preview2): Redirect to main
+	  webapp.
+
+2009-10-27 10:37  welch
+
+	* conf/gridshib-ca.conf.in (1.20): Typo fix.
+
+2009-10-26 21:15  welch
+
+	* perl/GridShibCA/Debug.pm.in (1.2): Take advantage of
+	  ACCEPT_SESSION to allow for invocation without acception.
+
+2009-10-26 21:15  welch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.6): Added ACCEPT_SESSION
+	  option.
+
+2009-10-26 21:14  welch
+
+	* perl/GridShibCA/: CGISession.pm.in (1.12), test/CGISessionTest.pm
+	  (1.3): Added established() method.
+
+2009-10-26 21:12  welch
+
+	* conf/gridshib-ca.conf.in (1.19),
+	  perl/GridShibCA/test/ConfigTest.pm (1.10),
+	  webapps/launchGSCA.jnlp.in (1.2): Have launchGSCA.jnlp use
+	  GridShibCA::LaunchJNLP directly instead of going through
+	  GridShibCA::WebApp->invokeCommand() to keep Commands section of
+	  gridshib-ca.conf limited to user invokable commands.
+
+2009-10-26 21:09  welch
+
+	* perl/GridShibCA/LaunchJNLP.pm.in (1.5): Fix typo in comment.
+
+2009-10-26 21:08  welch
+
+	* doc/gridshib-ca-doc-images.graffle (1.4): Updated images.
+
+2009-10-18 13:55  welch
+
+	* perl/POD-HowTO.txt (1.1): Document describing how to do POD in
+	  GSCA code.
+
+2009-10-18 13:53  welch
+
+	* configure.ac (1.128), conf/gridshib-ca.conf.in (1.18),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (1.4),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (1.4), perl/GridShibCA/Authorization.pm.in (1.12),
+	  perl/GridShibCA/CA.pm.in (1.15), perl/GridShibCA/CGISession.pm.in
+	  (1.11), perl/GridShibCA/CertRegistry.pm.in (1.7),
+	  perl/GridShibCA/Debug.pm.in (1.1),
+	  perl/GridShibCA/DumpSession.pm.in (1.2[DEAD]),
+	  perl/GridShibCA/IssueCert.pm.in (1.2),
+	  perl/GridShibCA/Logon.pm.in (1.3),
+	  perl/GridShibCA/NameMapper.pm.in (1.7),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.24), templates/debug.html
+	  (1.1), templates/dump.html (1.2[DEAD]), utils/issue-cert.pl.in
+	  (1.9): Certificate issuance working through JWS client now.
+	  Replaced DumpSession.pm with Debug.pm JWS client now sets
+	  "accept" and "User-Agent" properties.  Added post() method to
+	  GridShibCAURL.java
+
+2009-10-18 13:46  welch
+
+	* webapps/login.cgi.in (1.4): Typo fix in calling Logon->new()
+
+2009-10-18 13:45  welch
+
+	* perl/GridShibCA/WebApp.pm.in (1.4): Added logging of user-agent.
+	  Removed duplicate logging of command name.
+
+2009-10-18 13:45  welch
+
+	* perl/GridShibCA/Template.pm.in (1.8): Added init of
+	  $self->{logger} as needed by _broken() callback.
+
+2009-10-18 13:43  welch
+
+	* perl/GridShibCA/: LaunchClient.pm.in (1.3), LaunchJNLP.pm.in
+	  (1.4): Get rid of old getSectionParam() use.
+
+2009-10-18 13:43  welch
+
+	* perl/GridShibCA/ErrorHandler.pm.in (1.3): Handle error output for
+	  clients that don't accept text/html (e.g. JWS client).
+
+2009-10-15 20:35  welch
+
+	* configure.ac (1.127), conf/gridshib-ca.conf.in (1.17),
+	  perl/GridShibCA/Authorization.pm.in (1.11),
+	  perl/GridShibCA/CA.pm.in (1.14), perl/GridShibCA/Config.pm.in
+	  (1.34), perl/GridShibCA/IssueCert.pm.in (1.1),
+	  perl/GridShibCA/MyProxyCA.pm.in (1.5),
+	  perl/GridShibCA/NameMapper.pm.in (1.6),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.23),
+	  perl/GridShibCA/WebApp.pm.in (1.3),
+	  perl/GridShibCA/test/CommandTest.pm (1.4),
+	  perl/GridShibCA/test/ConfigTest.pm (1.9),
+	  utils/check-config.pl.in (1.13), utils/create-openssl-ca.pl.in
+	  (1.11), utils/issue-cert.pl.in (1.8): Certificate issuance
+	  working from commandline now.
+
+2009-10-14 21:14  welch
+
+	* perl/GridShibCA/test/: FakeSignOnTest.pm (1.1), Suite.pm (1.5):
+	  Added FakeSignOnTest.pm
+
+2009-10-14 21:14  welch
+
+	* perl/GridShibCA/FakeSignOn.pm.in (1.4): Added ability to set
+	  returned parameters through constructor.
+
+2009-10-14 21:12  welch
+
+	* perl/GridShibCA/test/ShibSignOnTest.pm (1.3): Add test for
+	  method.
+
+2009-10-13 21:45  welch
+
+	* perl/GridShibCA/test/ShibSignOnTest.pm (1.2): Fixed environment
+	  clearing in tear_down()
+
+2009-10-13 21:34  welch
+
+	* perl/GridShibCA/test/: ShibSignOnTest.pm (1.1), Suite.pm (1.4):
+	  Added ShibSignOnTest.pm
+
+2009-10-10 11:01  welch
+
+	* conf/gridshib-ca.conf.in (1.16), templates/GSCA.jnlp (1.4,
+	  v2_0_0_preview2): Got UseBundledCAs for JWS client working.
+
+2009-10-10 10:56  welch
+
+	* Makefile.in (1.92): Typos.
+
+2009-10-10 10:53  welch
+
+	* Makefile.in (1.91): Added 'make install-force' to force install
+	  of configuration and templates.
+
+2009-10-10 10:38  welch
+
+	* Makefile.in (1.90): Go ahead and overwrite existing configuration
+	  and templates on install.
+
+2009-10-09 23:24  welch
+
+	* configure.ac (1.126), conf/gridshib-ca.conf.in (1.15),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (1.3),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.3),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java
+	  (1.3),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (1.3), perl/GridShibCA/CGISession.pm.in (1.10),
+	  perl/GridShibCA/LaunchClient.pm.in (1.2),
+	  perl/GridShibCA/LaunchJNLP.pm.in (1.3),
+	  perl/GridShibCA/test/ConfigTest.pm (1.8), templates/GSCA.jnlp
+	  (1.3): JWS application launching now.
+
+2009-10-09 20:12  welch
+
+	* perl/GridShibCA/test/ConfigTest.pm (1.7): Fix one test that broke
+	  with removal of Logon webcommand from Commands section.  Disabled
+	  getHTMLTemplate test until I figure out how to make it work on
+	  buildbot.
+
+2009-10-06 07:25  welch
+
+	* Makefile.in (1.89), configure.ac (1.125), test/test-dist.sh.in
+	  (1.7): Cleaned up install paths to shib-protected and default web
+	  spaces per Bug 6523.
+
+2009-10-06 07:23  welch
+
+	* conf/gridshib-ca.conf.in (1.14), utils/check-config.pl.in (1.12),
+	  webapps/login.cgi.in (1.3): Don't allow invocation of Logon
+	  command through GridShibCA.cgi.  Pretty sure that would create a
+	  security issue.
+
+2009-10-06 07:21  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.9): Typo fix.
+
+2009-10-04 16:59  welch
+
+	* configure.ac (1.124), conf/gridshib-ca.conf.in (1.13),
+	  perl/GridShibCA/CGISession.pm.in (1.8),
+	  perl/GridShibCA/LaunchClient.pm.in (1.1),
+	  perl/GridShibCA/LaunchJNLP.pm.in (1.2),
+	  perl/GridShibCA/test/ConfigTest.pm (1.6), templates/GSCA.jnlp
+	  (1.2): Refactored LaunchJNLP.pm to use new LaunchClient.pm Added
+	  client session support.
+
+2009-10-04 14:15  welch
+
+	* perl/GridShibCA/test/ConfigTest.pm (1.5): Typo fix.
+
+2009-10-04 14:12  welch
+
+	* configure.ac (1.123), perl/GridShibCA/Constants.pm.in (1.2),
+	  perl/GridShibCA/test/CommandTest.pm (1.3): Use configure to
+	  populate binary paths in GridShibCA::Constants.pm for
+	  CommandTest.pm
+
+2009-10-03 15:52  welch
+
+	* perl/GridShibCA/Logger.pm.in (1.10): Improved logging of
+	  exceptions.
+
+2009-10-02 00:40  welch
+
+	* test/TestRunner.pl (1.2, v2_0_0_preview2): Return non-zero on
+	  failed unit tests so that 'make perl-unit-tests' errors out on
+	  failures.
+
+2009-09-28 22:23  welch
+
+	* configure.ac (1.122), conf/gridshib-ca.conf.in (1.12),
+	  perl/GridShibCA/Config.pm.in (1.33),
+	  perl/GridShibCA/LaunchJNLP.pm.in (1.1),
+	  perl/GridShibCA/Template.pm.in (1.7),
+	  perl/GridShibCA/test/ConfigTest.pm (1.4), templates/GSCA.jnlp
+	  (1.1), webapps/launchGSCA.jnlp.in (1.1): New, functional
+	  webapps/launchGSCA.jnlp.in
+
+2009-09-22 20:41  welch
+
+	* configure.ac (1.121): Don't make setting CGI_BIN_DIR dependent on
+	  demos being enabled.
+
+2009-09-22 20:40  welch
+
+	* Makefile.in (1.88): Typo fix.
+
+2009-09-21 21:41  welch
+
+	* perl/GridShibCA/Template.pm.in (1.6): Improved deocumentation for
+	  addMapping()
+
+2009-09-21 20:15  welch
+
+	* perl/GridShibCA/Logon.pm.in (1.2): Added setting of cookie for
+	  session.
+
+2009-09-21 20:15  welch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (1.4): Added setCookied()
+
+2009-09-21 20:14  welch
+
+	* perl/GridShibCA/FakeSignOn.pm.in (1.3): Added methodName()
+	  Cleaned up logging.
+
+2009-09-21 20:08  welch
+
+	* Makefile.in (1.87), configure.ac (1.120): Separate installation
+	  of shib-protected and cgi applications.  Added configuration
+	  options for --with-syslog-id and --with-syslog-facility
+
+2009-09-21 20:06  welch
+
+	* conf/gridshib-ca.conf.in (1.11),
+	  perl/GridShibCA/DumpSession.pm.in (1.1), templates/dump.html
+	  (1.1): Added DumpSession command.
+
+2009-09-21 20:00  welch
+
+	* webapps/GridShibCA.cgi.in (1.2): Revamped to use
+	  WebApp::handleRequest()
+
+2009-09-21 19:59  welch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.5): Added _addCookie()
+	  method.  Added improved handling of session failures errors to
+	  _handleRequirements().
+
+2009-09-21 19:57  welch
+
+	* perl/GridShibCA/WebApp.pm.in (1.2): Added handleRequest() method.
+
+2009-09-21 19:55  welch
+
+	* perl/GridShibCA/Logger.pm.in (1.9): debug() method now always
+	  logs at debug priority.  Added warn() method.
+
+2009-09-21 19:54  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.7): Added params(), flush()
+	  and cookie() methods.  Improved error handling.
+
+2009-09-21 19:43  welch
+
+	* perl/GridShibCA/test/CGISessionTest.pm (1.2): Added
+	  test_sessionException, test_invalidSession, test_fromId,
+	  test_param, test_params, test_destroy
+
+2009-09-21 19:41  welch
+
+	* perl/GridShibCA/Template.pm.in (1.5): Typo fix in logging.
+
+2009-09-21 19:40  welch
+
+	* perl/GridShibCA/ErrorHandler.pm.in (1.2): Also log error when
+	  failing over to simple error reporting.
+
+2009-09-11 17:38  welch
+
+	* perl/GridShibCA/WebCommand.pm.in (1.4): Fixed typo re
+	  REQUIRE_CSRF_CHECK
+
+2009-09-11 11:03  welch
+
+	* webapps/login.cgi.in (1.2): Use handleError() to handle errors.
+
+2009-09-11 11:02  welch
+
+	* templates/login.html (1.4): Escape curly brackets in javascript.
+
+2009-09-07 20:45  welch
+
+	* configure.ac (1.119), conf/gridshib-ca.conf.in (1.10),
+	  doc/gridshib-ca-doc-images.graffle (1.3),
+	  perl/GridShibCA/Authorization.pm.in (1.10),
+	  perl/GridShibCA/CGISession.pm.in (1.6),
+	  perl/GridShibCA/Command.pm.in (1.6), perl/GridShibCA/Config.pm.in
+	  (1.32), perl/GridShibCA/ErrorHandler.pm.in (1.1),
+	  perl/GridShibCA/Exception.pm.in (1.2),
+	  perl/GridShibCA/FakeSignOn.pm.in (1.2),
+	  perl/GridShibCA/HTMLError.pm.in (1.4[DEAD]),
+	  perl/GridShibCA/HTMLTemplate.pm.in (1.3),
+	  perl/GridShibCA/Logger.pm.in (1.8), perl/GridShibCA/Login.pm.in
+	  (1.3[DEAD]), perl/GridShibCA/Logon.pm.in (1.1),
+	  perl/GridShibCA/Request.pm.in (1.2[DEAD]),
+	  perl/GridShibCA/ShibSignOn.pm.in (1.2),
+	  perl/GridShibCA/Template.pm.in (1.4),
+	  perl/GridShibCA/WebApp.pm.in (1.1),
+	  perl/GridShibCA/WebCommand.pm.in (1.3),
+	  perl/GridShibCA/WebSignOn.pm.in (1.5),
+	  perl/GridShibCA/test/CGISessionTest.pm (1.1),
+	  perl/GridShibCA/test/CommandTest.pm (1.2),
+	  perl/GridShibCA/test/ConfigTest.pm (1.3),
+	  perl/GridShibCA/test/HTMLTemplateTest.pm (1.1),
+	  perl/GridShibCA/test/Suite.pm (1.3), templates/login.html (1.3),
+	  test/template.html (1.1, v2_0_0_preview2), test/template.tmpl
+	  (1.1, v2_0_0_preview2), utils/check-config.pl.in (1.11),
+	  utils/create-openssl-ca.pl.in (1.10), webapps/login.cgi.in (1.1):
+	  login.cgi web application basically working now.
+
+2009-09-07 20:15  welch
+
+	* dev-utils/build-test.sh.in (1.4): Only run configure if Makefile
+	  doesn't exist.
+
+2009-09-07 20:15  welch
+
+	* dev-utils/Makefile-inc.in (1.8): Added extra output in
+	  perl-unit-tests and deploy-test.
+
+2009-09-01 20:37  welch
+
+	* configure.ac (1.118), perl/GridShibCA/Exception.pm.in (1.1),
+	  perl/GridShibCA/test/ExceptionTest.pm (1.1): Added
+	  GridShibCA::Exception class.
+
+2009-08-29 22:46  welch
+
+	* configure.ac (1.117): Added check for PERL Test::Unit module in
+	  development mode.
+
+2009-08-29 21:45  welch
+
+	* Makefile.in (1.86), dev-utils/Makefile-inc.in (1.7): Added
+	  'perl-unit-tests' to 'make test' Cleaned up 'make test'
+
+2009-08-29 21:37  welch
+
+	* perl/GridShibCA/test/: CommandTest.pm (1.1), Suite.pm (1.2):
+	  Added CommandTest.pm
+
+2009-08-29 21:37  welch
+
+	* perl/GridShibCA/test/ConfigTest.pm (1.2): Fix swap of expected vs
+	  actual.
+
+2009-08-29 21:35  welch
+
+	* perl/GridShibCA/Command.pm.in (1.5): Added check for non-existent
+	  binary.
+
+2009-08-29 20:36  welch
+
+	* dev-utils/Makefile-inc.in (1.6), perl/GridShibCA/Config.pm.in
+	  (1.31), perl/GridShibCA/test/ConfigTest.pm (1.1),
+	  perl/GridShibCA/test/Suite.pm (1.1), test/TestRunner.pl (1.1):
+	  Added start of perl unit tests.  Run with 'make perl-unit-tests'
+
+2009-08-29 20:35  welch
+
+	* utils/check-config.pl.in (1.10): Typo fix.
+
+2009-08-29 20:34  welch
+
+	* doc/gridshib-ca-doc-images.graffle (1.2): Added 2.0 process flow.
+
+2009-08-29 15:34  welch
+
+	* doc/gridshib-ca-doc-images.graffle (1.1): Combined image sources
+	  into one graffle file.
+
+2009-08-26 22:22  welch
+
+	* doc/changelog.xml.in (1.18): Attribute removal of untainting of
+	  UserId and IdpId to bug 6809.
+
+2009-08-26 21:57  welch
+
+	* test/test-dist.sh.in (1.6): Leverage 'make test-post-install' Add
+	  check for configure after unpacking distribution.
+
+2009-08-26 21:56  welch
+
+	* doc/changelog.xml.in (1.17), perl/GridShibCA/WebSignOn.pm.in
+	  (1.4): Bug 6775: UserId and IdpID returned by WebSignOn.on are no
+	  longer untainted.
+
+2009-08-24 20:48  tag v1_0_0
+
+2009-08-24 20:48  welch
+
+	* configure.ac (tags: v1_0_0) (v0_5_BRANCH.31): Removed "rc2"
+	  release status.
+
+2009-08-24 08:48  welch
+
+	* configure.ac (1.116): Typo "Text::template" -> "Text::Template"
+	  caught by buildbot.  Is this not case sensitive on all systems?
+
+2009-08-22 22:21  welch
+
+	* HOWTO-BugfixRelease (1.5): Force tag move in step 6.
+
+2009-08-22 22:17  tag from_v0_5_BRANCH
+
+2009-08-22 22:17  welch
+
+	* Makefile.in (1.85, from_v0_5_BRANCH), configure.ac (1.115,
+	  from_v0_5_BRANCH), todo.txt (1.7[DEAD]), conf/gridshib-ca.conf.in
+	  (1.9, from_v0_5_BRANCH), dev-utils/Makefile-inc.in (1.5,
+	  from_v0_5_BRANCH), doc/changelog.xml.in (1.16, from_v0_5_BRANCH),
+	  java/README.txt (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/build.xml (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), java/GridShibCAClient/gsca-build.xml (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/gsca.properties.in (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), java/GridShibCAClient/icons.graffle (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/manifest.mf (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), java/GridShibCAClient/master-application.jnlp
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/preview-application.html (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/proguard-mac.conf (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), java/GridShibCAClient/proguard.conf (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/run-findbugs.sh.in (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/appframework-1.0.3.jar (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/bcprov-jdk15-143.jar (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/jnlp.jar (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), java/GridShibCAClient/lib/junit-4.6.jar (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/proguard.jar (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/swing-layout-1.0.3.jar (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/lib/swing-worker-1.1.jar (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/build-impl.xml (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/genfiles.properties (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/jnlp-impl.xml (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/project.properties (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/project.xml (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/configs/JWS_generated.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/private/config.properties (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/private/private.properties (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/private/private.xml (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/nbproject/private/configs/JWS_generated.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/resources/properties.in (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/META-INF/services/org.jdesktop.application.Application
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/BrowserInterface.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Credential.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.form
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.form
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.form
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.form
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientApp.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientLogger.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustRootsURL.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustStore.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/PEMEncoder.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Resource.java
+	  (1.2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/CredentialInfoFrame.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/DebugFrame.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/ErrorDialog.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/NCSA-CSD-Logo-small.png
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/checkmark.png
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/running.png
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/splash.png
+	  (1.2, v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/org/globus/util/ConfigUtil.java (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/org/globus/util/LICENSE.TXT (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/org/globus/util/README (1.2,
+	  from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/org/globus/util/Util.java (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/src/org/globus/util/Util.java.diff (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/1c3f2ca8.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/4a6cd8b1.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/5aba75cb.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/6349a761.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/85ca9edc.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/9b95bbf2.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/9d8753eb.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/README (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/a7792cdb.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/aa99c057.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/b89793e4.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/bc82f877.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/d1b603c3.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/f2e89fe3.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/ff783690.0 (1.2,
+	  v2_0_0_preview2, from_v0_5_BRANCH), perl/Globus/GSISocket.pm
+	  (1.6, from_v0_5_BRANCH), perl/Globus/MyProxyClient.pm (1.2,
+	  from_v0_5_BRANCH), perl/GridShibCA/CA.pm.in (1.13,
+	  from_v0_5_BRANCH), perl/GridShibCA/CGISession.pm.in (1.5,
+	  from_v0_5_BRANCH), perl/GridShibCA/CGIinterface.pm.in (1.17,
+	  from_v0_5_BRANCH), perl/GridShibCA/CertRegistry.pm.in (1.6,
+	  from_v0_5_BRANCH), perl/GridShibCA/Config.pm.in (1.30,
+	  from_v0_5_BRANCH), perl/GridShibCA/NameMapper.pm.in (1.5,
+	  from_v0_5_BRANCH), perl/GridShibCA/OpenSSLCA.pm.in (1.22,
+	  from_v0_5_BRANCH), perl/GridShibCA/TokenGenerator.pm.in
+	  (1.7[DEAD]), test/test-dist.sh.in (1.5, from_v0_5_BRANCH),
+	  utils/check-config.pl.in (1.9, from_v0_5_BRANCH): Sync'ed with
+	  0.5.0 branch and 'make test-dist' works at least.
+
+2009-08-21 19:13  tag merge_v0_5_BRANCH
+
+2009-08-21 19:13  welch
+
+	* java/GridShibCAClient/: nbproject/genfiles.properties,
+	  nbproject/project.xml,
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.form,
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java
+	  (v0_5_BRANCH.[3,3,2,2]) (utags: merge_v0_5_BRANCH, v1_0_0): Keep
+	  title centered in CredentialInfoFrame
+
+2009-08-21 19:11  welch
+
+	* configure.ac (tags: merge_v0_5_BRANCH) (v0_5_BRANCH.30): Status
+	  to rc2
+
+2009-08-17 22:55  tag v1_0_0_RC1
+
+2009-08-17 22:55  welch
+
+	* configure.ac (tags: v1_0_0_RC1) (v0_5_BRANCH.29): Updated
+	  copyright to 2009.
+
+2009-08-17 22:35  welch
+
+	* configure.ac (v0_5_BRANCH.28): Changed release status to RC1.
+
+2009-08-17 22:34  welch
+
+	* doc/changelog.xml.in (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_BRANCH) (v0_5_BRANCH.33): Beefed up logging in
+	  generateCred.cgi and launchGSCA.jnlp Bugs 6336 and 6770
+
+2009-08-17 21:40  welch
+
+	* java/GridShibCAClient/: nbproject/genfiles.properties,
+	  nbproject/project.xml,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java (tags:
+	  v1_0_0, merge_v0_5_BRANCH) (v0_5_BRANCH.[2,2,2,2]) (utags:
+	  v1_0_0_RC1): Added testLaunch parameter and got test of JWS
+	  working again.
+
+2009-08-17 21:39  welch
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ArgumentParser.java
+	  (v0_5_BRANCH.2): Removed unused file.
+
+2009-08-17 21:38  welch
+
+	* Makefile.in (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_BRANCH),
+	  configure.ac (v0_5_BRANCH.[14,27]): Fix to last commit to make
+	  java code, which broke makes in non --enable-build mode.
+
+2009-08-17 21:17  welch
+
+	* Makefile.in (v0_5_BRANCH.13): Rebuild jar on change to java file.
+
+2009-08-12 22:30  welch
+
+	* doc/changelog.xml.in, perl/GridShibCA/CGISession.pm.in (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1) (v0_5_BRANCH.[32,3]): Bug
+	  6129: Improve error message for expired session/token.
+
+2009-08-12 22:25  welch
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1) (v0_5_BRANCH.2):
+	  Display exception message in ErrorDialog.
+
+2009-08-12 22:25  welch
+
+	* conf/gridshib-ca.conf.in, perl/GridShibCA/Config.pm.in
+	  (v0_5_BRANCH.[2,3]) (utags: merge_v0_5_BRANCH, v1_0_0,
+	  v1_0_0_RC1): Added ClientSessionLifetime gridshib-ca.conf option
+	  for setting session lifetime.
+
+2009-08-12 22:23  welch
+
+	* Makefile.in (v0_5_BRANCH.12): Added 'make jar' target.
+
+2009-08-07 23:26  welch
+
+	* configure.ac, doc/changelog.xml.in (v0_5_BRANCH.[26,31]): Bug
+	  5861: The IO::Socket::SSL Perl module, required by MyProxy, is
+	  now required by configure.
+
+2009-08-07 23:21  welch
+
+	* Makefile.in (v0_5_BRANCH.11): Make sure
+	  dev-utils/clean-pod2html.sh is executable before running it.
+
+2009-08-07 23:18  welch
+
+	* perl/GridShibCA/CGISession.pm.in (v0_5_BRANCH.2): Cleaned up
+	  perldoc.
+
+2009-08-07 22:28  welch
+
+	* configure.ac, doc/changelog.xml.in (v0_5_BRANCH.[25,30]): Bug
+	  6719: Renamed create-jnlp to launchGSCA.jnlp as .jnlp suffix is
+	  important on Mac.
+
+2009-08-05 22:03  welch
+
+	* configure.ac, java/GridShibCAClient/run-findbugs.sh.in (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1) (v0_5_BRANCH.[24,1]):
+	  Added run-findbugs.sh.in for running findbugs on our jar.
+
+2009-08-05 21:38  welch
+
+	* java/GridShibCAClient/gsca-build.xml (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1) (v0_5_BRANCH.4): Do not include
+	  netbeans jar(s) in our jar.
+
+2009-08-03 22:58  welch
+
+	* doc/changelog.xml.in, perl/Globus/GSISocket.pm (tags: v1_0_0,
+	  v1_0_0_RC1, merge_v0_5_BRANCH), perl/Globus/MyProxyClient.pm
+	  (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_BRANCH)
+	  (v0_5_BRANCH.[29,2,1]):
+	  https://bugzilla.mcs.anl.gov/globus/show_bug.cgi?id=4917 Improved
+	  reading of MyProxy error messages during credential acceptance.
+	  See also: http://bugzilla.ncsa.uiuc.edu/show_bug.cgi?id=359
+
+2009-08-03 22:27  welch
+
+	* perl/Globus/GSISocket.pm (v0_5_BRANCH.1): Fix Bad DER certificate
+	  header message to make it clear bytes are hex.
+
+2009-08-03 22:09  welch
+
+	* perl/GridShibCA/: CA.pm.in, OpenSSLCA.pm.in (v0_5_BRANCH.[2,2])
+	  (utags: merge_v0_5_BRANCH, v1_0_0, v1_0_0_RC1): Undo previous
+	  move of get*DN() methods from CA.pm to OpenSSLCA.pm In the
+	  default Myproxy configuration, we request a specific DN, so need
+	  to be able to construct it. This doesn't change the fact we
+	  shouldn't assume we get requested DN back from Myproxy.  See Bug
+	  6781.
+
+2009-08-03 08:59  welch
+
+	* perl/GridShibCA/CGISession.pm.in (v0_5_BRANCH.1): Missing from
+	  previous commit.
+
+2009-08-02 21:57  welch
+
+	* Makefile.in, configure.ac (v0_5_BRANCH.[10,23]): Fixes for 'make
+	  perl-module-doc'
+
+2009-08-02 21:07  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.28): Clarified message re Bug
+	  6719 and FireFox.
+
+2009-08-02 21:06  welch
+
+	* Makefile.in, configure.ac, conf/gridshib-ca.conf.in,
+	  doc/changelog.xml.in, perl/GridShibCA/Config.pm.in,
+	  perl/GridShibCA/TokenGenerator.pm.in
+	  (v0_5_BRANCH.[9,22,1,27,2,1]): Use CGISession.pm  instead of
+	  TokenGenerator.pm for creating token used by JWS client (resolved
+	  Bug 6802). This adds a requirement for CGI::Session.
+
+2009-08-02 20:59  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.26): Added entry for new JWS
+	  client.
+
+2009-08-02 20:03  welch
+
+	* java/GridShibCAClient/resources/properties.in (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1) (v0_5_BRANCH.2): Use statically
+	  defined string for trustStore path (instead of autoconf defined).
+
+2009-08-02 20:02  welch
+
+	* java/GridShibCAClient/Makefile.in (v0_5_BRANCH.2): Removing
+	  unused Makefile (is all ant-based)
+
+2009-08-02 15:34  welch
+
+	* java/GridShibCAClient/gsca-build.xml (v0_5_BRANCH.3): Build
+	  combinedLib from lib instead of dist/lib so we don't depend on
+	  Netbeans build to copy libs.
+
+2009-08-02 14:33  welch
+
+	* java/GridShibCAClient/nbproject/: project.properties,
+	  private/config.properties (v0_5_BRANCH.[3,2]) (utags:
+	  merge_v0_5_BRANCH, v1_0_0, v1_0_0_RC1): Set jnlp.enabled=false to
+	  disable netbeans creation of JNLP file and jar signing, since we
+	  do those on our own and they require JWS Ant Tasks jar.
+
+2009-08-02 13:41  welch
+
+	* java/GridShibCAClient/: gsca-build.xml, lib/jnlp.jar (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  nbproject/project.properties (v0_5_BRANCH.[2,1,2]): Add jnlp.jar
+	  to repository to remove dependency on external jar for build.
+	  Don't include jnlp.jar in combinedJar.
+
+2009-08-02 12:56  welch
+
+	* configure.ac (v0_5_BRANCH.21): Remove references to resources/
+	  which has been moved to java/GridShibCAClient/resources
+
+2009-08-01 21:24  welch
+
+	* Makefile.in, configure.ac (v0_5_BRANCH.[8,20]): Fixes from import
+	  of new JWS client from last commit.
+
+2009-08-01 20:51  welch
+
+	* Makefile.in, configure.ac, java/README.txt (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/Makefile.in,
+	  java/GridShibCAClient/build.xml (tags: v1_0_0, merge_v0_5_BRANCH,
+	  v1_0_0_RC1), java/GridShibCAClient/gsca-build.xml,
+	  java/GridShibCAClient/gsca.properties.in (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/icons.graffle (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1), java/GridShibCAClient/manifest.mf
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/master-application.jnlp (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/preview-application.html (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/proguard-mac.conf (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/proguard.conf (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/appframework-1.0.3.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/bcprov-jdk15-143.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/junit-4.6.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/proguard.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/swing-layout-1.0.3.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/lib/swing-worker-1.1.jar (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/build-impl.xml (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/genfiles.properties,
+	  java/GridShibCAClient/nbproject/jnlp-impl.xml (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/project.properties,
+	  java/GridShibCAClient/nbproject/project.xml,
+	  java/GridShibCAClient/nbproject/configs/JWS_generated.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/private/config.properties,
+	  java/GridShibCAClient/nbproject/private/private.properties (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/private/private.xml (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/nbproject/private/configs/JWS_generated.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/resources/properties.in,
+	  java/GridShibCAClient/src/META-INF/services/org.jdesktop.application.Application
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ArgumentParser.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/BrowserInterface.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Credential.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.form
+	  (tags: v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java
+	  (tags: v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.form
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.form
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.form
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientApp.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientLogger.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustRootsURL.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCATrustStore.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/PEMEncoder.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Resource.java
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/CredentialInfoFrame.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/DebugFrame.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/ErrorDialog.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/NCSA-CSD-Logo-small.png
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/checkmark.png
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/running.png
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/splash.png
+	  (tags: v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/org/globus/util/ConfigUtil.java (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/org/globus/util/LICENSE.TXT (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/org/globus/util/README (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/org/globus/util/Util.java (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/src/org/globus/util/Util.java.diff (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/1c3f2ca8.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/4a6cd8b1.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/5aba75cb.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/6349a761.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/85ca9edc.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/9b95bbf2.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/9d8753eb.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/README (tags: v1_0_0,
+	  merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/a7792cdb.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/aa99c057.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/b89793e4.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/bc82f877.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/d1b603c3.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/f2e89fe3.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1),
+	  java/GridShibCAClient/trusted-https-certs/ff783690.0 (tags:
+	  v1_0_0, merge_v0_5_BRANCH, v1_0_0_RC1)
+	  (v0_5_BRANCH.[7,19,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]):
+	  New JWS client from NEW_JWS_CLIENT_BRANCH
+
+2009-08-01 17:44  welch
+
+	* perl/GridShibCA/CGISession.pm.in (1.4): Typo fix in existing()
+	  method name.
+
+2009-07-31 21:23  tag merge_NEW_JWS_CLIENT_BRANCH
+
+2009-07-31 21:23  welch
+
+	* Makefile.in, configure.ac, java/README.txt,
+	  java/GridShibCAClient/Makefile.in,
+	  java/GridShibCAClient/build.xml,
+	  java/GridShibCAClient/gsca-build.xml,
+	  java/GridShibCAClient/gsca.properties.in,
+	  java/GridShibCAClient/manifest.mf,
+	  java/GridShibCAClient/master-application.jnlp,
+	  java/GridShibCAClient/preview-application.html,
+	  java/GridShibCAClient/nbproject/genfiles.properties,
+	  java/GridShibCAClient/nbproject/project.properties,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/ErrorDialog.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/ErrorDialog.properties,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties
+	  (NEW_JWS_CLIENT_BRANCH.[6,9,3,3,3,4,2,1,1,1,2,3,2,2,3,2,2,3,3,3,3,2,3,3])
+	  (utags: merge_NEW_JWS_CLIENT_BRANCH):      Removed option and
+	  requirement for BouncyCastle source.
+	       Two missing files from Netbeans project.
+	       Snapshot - at least project builds now.
+	       Ant-based build now working with Make.
+	       Added resources/properties and resoucres/trustStore to jar.
+	       Clean up of main GUI.
+	       Cleaned up appearance of DebugFrame and AboutBox.
+	       Made AboutBox more narrow.
+	       Added TODOs.
+
+2009-07-28 10:08  welch
+
+	* configure.ac, java/GridShibCAClient/Makefile.in,
+	  java/GridShibCAClient/gsca-build.xml,
+	  java/GridShibCAClient/icons.graffle (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), java/GridShibCAClient/proguard.conf
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/resources/properties.in (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/DebugFrame.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientApp.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Resource.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/NCSA-CSD-Logo-small.png
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/about.png,
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/checkmark.png
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/running.png
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH)
+	  (NEW_JWS_CLIENT_BRANCH.[8,2,3,1,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,1,2,1,1]):
+	  Snapshot of everything I've done over the past few days without
+	  access to cvs.globus.org.
+
+2009-07-25 08:54  welch
+
+	* Makefile.in, configure.ac, java/README.txt,
+	  java/GridShibCAClient/Makefile.in,
+	  java/GridShibCAClient/gsca-build.xml,
+	  java/GridShibCAClient/proguard-mac.conf (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/proguard.conf,
+	  java/GridShibCAClient/lib/junit-4.6.jar (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/lib/proguard.jar (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/nbproject/project.properties,
+	  java/GridShibCAClient/resources/properties.in,
+	  java/GridShibCAClient/trusted-https-certs/1c3f2ca8.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/4a6cd8b1.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/5aba75cb.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/6349a761.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/85ca9edc.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/9b95bbf2.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/9d8753eb.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/README (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/a7792cdb.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/aa99c057.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/b89793e4.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/bc82f877.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/d1b603c3.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/f2e89fe3.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  java/GridShibCAClient/trusted-https-certs/ff783690.0 (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH)
+	  (NEW_JWS_CLIENT_BRANCH.[5,7,2,1,2,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]):
+	  Build working now through existing autoconf/Make system.  Moved
+	  certificates to java/GridShibCAClient/trusted-https-certs ToDo:
+	  Remove old java code, get 'make dist' working
+
+2009-07-20 22:40  welch
+
+	* Makefile.in, configure.ac, java/GridShibCAClient/build.xml,
+	  java/GridShibCAClient/gsca-build.xml,
+	  java/GridShibCAClient/gsca.properties.in
+	  (NEW_JWS_CLIENT_BRANCH.[4,6,2,1,1]): Initial integration of IDE
+	  build into existing autoconf-based system.
+
+2009-07-20 21:24  welch
+
+	* java/README.txt (NEW_JWS_CLIENT_BRANCH.1): Directions for
+	  importing project into Netbeans
+
+2009-07-20 21:06  welch
+
+	* java/GridShibCAClient/: build.xml, nbproject/build-impl.xml
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  nbproject/genfiles.properties, nbproject/jnlp-impl.xml (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), nbproject/project.properties,
+	  nbproject/project.xml (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  nbproject/configs/JWS_generated.properties (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), nbproject/private/config.properties
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  nbproject/private/private.properties (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), nbproject/private/private.xml
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  nbproject/private/configs/JWS_generated.properties (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/META-INF/services/org.jdesktop.application.Application (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/ArgumentParser.java (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/BrowserInterface.java (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/Credential.java (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.form (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java,
+	  src/edu/ncsa/gridshib/gridshibca/DebugFrame.form,
+	  src/edu/ncsa/gridshib/gridshibca/DebugFrame.java,
+	  src/edu/ncsa/gridshib/gridshibca/ErrorDialog.form,
+	  src/edu/ncsa/gridshib/gridshibca/ErrorDialog.java,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.form,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientAboutBox.java,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientApp.java,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientLogger.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialIssuerURL.java,
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCATrustRootsURL.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCATrustStore.java (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java,
+	  src/edu/ncsa/gridshib/gridshibca/PEMEncoder.java (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/Resource.java,
+	  src/edu/ncsa/gridshib/gridshibca/resources/CredentialInfoFrame.properties
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/resources/DebugFrame.properties
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/edu/ncsa/gridshib/gridshibca/resources/ErrorDialog.properties,
+	  src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties,
+	  src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties,
+	  src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties,
+	  src/edu/ncsa/gridshib/gridshibca/resources/about.png,
+	  src/edu/ncsa/gridshib/gridshibca/resources/splash.png (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), src/org/globus/util/ConfigUtil.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/org/globus/util/LICENSE.TXT (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), src/org/globus/util/README (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH), src/org/globus/util/Util.java
+	  (tags: merge_NEW_JWS_CLIENT_BRANCH),
+	  src/org/globus/util/Util.java.diff (tags:
+	  merge_NEW_JWS_CLIENT_BRANCH)
+	  (NEW_JWS_CLIENT_BRANCH.[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]):
+	  New Netbean project for JWS client.
+
+2009-07-14 20:26  welch
+
+	* configure.ac (NEW_JWS_CLIENT_BRANCH.5): Moved command line
+	  arguments into GridShibCAProperties object.
+
+2009-07-09 21:07  welch
+
+	* Makefile.in, configure.ac (NEW_JWS_CLIENT_BRANCH.[3,4]): Use
+	  properties files to hold constants.
+
+2009-07-08 01:57  welch
+
+	* Makefile.in, configure.ac (NEW_JWS_CLIENT_BRANCH.[2,3]):
+	  Refactored code working at this point.
+
+2009-07-06 22:27  welch
+
+	* configure.ac (NEW_JWS_CLIENT_BRANCH.2): Working to the point of
+	  trying to connect now.  Added ArgumentParser.java
+
+2009-06-30 22:42  welch
+
+	* Makefile.in, configure.ac (NEW_JWS_CLIENT_BRANCH.[1,1]):
+	  Refactored and cleaned up Java code per Bug 5847.
+
+2009-06-22 19:52  welch
+
+	* perl/GridShibCA/CertRegistry.pm.in (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_BRANCH) (v0_5_BRANCH.2): Prepend serial number with 0x
+	  to make it clear it is in hex.
+
+2009-06-20 16:40  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.25): create-jnlp now adds
+	  "attachment" tag to output so that Camino works (Bug 6719). Not
+	  that this will seem to cause Firefox to always ask what to do
+	  with the JNLP file.
+
+2009-06-20 16:31  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.24): Corrected bug number for
+	  not destroying CSRF cookie.
+
+2009-06-20 16:26  welch
+
+	* configure.ac (v0_5_BRANCH.18): Set status to preview-2009-06-20
+	  for release to go.teragrid.org
+
+2009-06-20 16:16  welch
+
+	* doc/changelog.xml.in, perl/GridShibCA/NameMapper.pm.in (tags:
+	  v1_0_0, v1_0_0_RC1, merge_v0_5_BRANCH) (v0_5_BRANCH.[23,1]):
+	  NameMapper.pm now uses CGIInterface.pm for REMOTE_USER and
+	  HTTP_SHIB_IDENTITY_PROVIDER (Bug 6782).
+
+2009-06-20 15:52  welch
+
+	* doc/changelog.xml.in, perl/GridShibCA/CGIinterface.pm.in (tags:
+	  v1_0_0, v1_0_0_RC1, merge_v0_5_BRANCH) (v0_5_BRANCH.[22,6]): Fix
+	  untainting for ePTID in CGIInterface.pm (Bug 6775).
+
+2009-06-20 15:15  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.21): Do not destroy CSRF cookie
+	  in create-jnlp (Bug 6719).
+
+2009-06-20 14:32  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.20): Added a couple annotations
+	  to previous changelogs.
+
+2009-06-20 14:24  welch
+
+	* doc/changelog.xml.in, perl/GridShibCA/CertRegistry.pm.in
+	  (v0_5_BRANCH.[19,1]): Use certificate DN hash instead of user
+	  identity for filename when logging certificate in CertRegistry.pm
+	  (Bug 6778).  Also include timestamp in filename so that all
+	  certificates (instead of last certificate per user) are recorded.
+
+2009-06-19 18:56  welch
+
+	* configure.ac, doc/changelog.xml.in, perl/GridShibCA/CA.pm.in,
+	  perl/GridShibCA/OpenSSLCA.pm.in (v0_5_BRANCH.[17,18,1,1]): Do not
+	  assume we can predict the user's DN, instead parse it from
+	  returned certificate (Cyrpt::OpenSSL::X509 Perl module now
+	  required). Remove get*DN() methods from CA.pm and move to
+	  OpenSSLCA.pm. (Bug 6781)
+
+2009-06-19 17:37  welch
+
+	* configure.ac, doc/changelog.xml.in (v0_5_BRANCH.[16,17]): Removed
+	  umask checking in JWS client (Bug 5298).
+
+2009-06-19 17:23  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.16): Beefed up logging in
+	  create-jnlp (Bug 6770).
+
+2009-06-19 17:02  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.15): Added C=US, ST=UT, L=Salt
+	  Lake City, O=The USERTRUST Network, OU=http://www.usertrust.com,
+	  CN=UTN-USERFirst-Hardware from FireFox truststore to accomodate
+	  go.teragrid.org.
+
+2009-06-19 16:33  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.14): Caught up changelog.
+
+2009-06-19 16:20  welch
+
+	* todo.txt (v0_5_BRANCH.1): Clean up.
+
+2009-06-15 22:14  welch
+
+	* README.BuildingJava (1.3, from_v0_5_BRANCH): Updated possible
+	  locations of javaws.jar on Mac.
+
+2009-05-10 21:57  welch
+
+	* conf/gridshib-ca.conf.in (1.8), perl/GridShibCA/CGISession.pm.in
+	  (1.3), perl/GridShibCA/Config.pm.in (1.29),
+	  perl/GridShibCA/HTMLError.pm.in (1.3, from_v0_5_BRANCH),
+	  perl/GridShibCA/Login.pm.in (1.2, from_v0_5_BRANCH),
+	  perl/GridShibCA/OutputHandler.pm.in (1.1, from_v0_5_BRANCH),
+	  perl/GridShibCA/Template.pm.in (1.3, from_v0_5_BRANCH),
+	  perl/GridShibCA/WebCommand.pm.in (1.2, from_v0_5_BRANCH):
+	  Restructure CGISession so it can be initialized cleanly.  Created
+	  OutputHandler as interface to all output.  WebCommand now becomes
+	  child class based on request to maintain state.
+
+2009-05-02 17:31  welch
+
+	* configure.ac (1.114), conf/gridshib-ca.conf.in (1.7),
+	  perl/GridShibCA/Config.pm.in (1.28), perl/GridShibCA/Logger.pm.in
+	  (1.7, from_v0_5_BRANCH), perl/GridShibCA/Login.pm.in (1.1),
+	  perl/GridShibCA/Request.pm.in (1.1, from_v0_5_BRANCH),
+	  perl/GridShibCA/WebCommand.pm.in (1.1),
+	  perl/GridShibCA/WebSignOn.pm.in (1.3, from_v0_5_BRANCH),
+	  utils/check-config.pl.in (1.8), webapps/GridShibCA.cgi.in (1.1,
+	  from_v0_5_BRANCH), webapps/GridShibCALogin.cgi.in (1.3[DEAD]):
+	  Session-based approach passing tests at least.
+
+2009-05-01 19:21  welch
+
+	* utils/issue-cert.pl.in (1.7, from_v0_5_BRANCH): Added -o option.
+	  Updated to use new WebSignOn class.
+
+2009-05-01 19:18  welch
+
+	* test/test-dist.sh.in (1.4): Added invocation of test/test-cred.sh
+
+2009-05-01 19:17  welch
+
+	* test/test-cred.sh.in (1.3, from_v0_5_BRANCH): Added -c, -i, and
+	  -l options so script can be run as part of 'make test-dist'
+
+2009-05-01 19:15  welch
+
+	* perl/GridShibCA/Authorization.pm.in (1.9, from_v0_5_BRANCH): Typo
+	  fix.
+
+2009-05-01 19:15  welch
+
+	* configure.ac (1.113): Clean up list of perl modules to check for.
+	  Added chmod +x test/test-cred.sh
+
+2009-05-01 19:14  welch
+
+	* aclocal.m4 (1.5, v2_0_0_preview2, from_v0_5_BRANCH): Improved
+	  output for missing modules.
+
+2009-04-29 22:07  welch
+
+	* configure.ac (1.112), perl/GridShibCA/CGISession.pm.in (1.2),
+	  perl/GridShibCA/WebSignOn.pm.in (1.2),
+	  webapps/GridShibCALogin.cgi.in (1.2): Allow for serializing and
+	  saving WebSignOn to CGISession.
+
+2009-04-29 22:06  welch
+
+	* perl/GridShibCA/Authorization.pm.in (1.8): Typo fix.
+
+2009-04-28 22:05  welch
+
+	* configure.ac (1.111), conf/gridshib-ca.conf.in (1.6),
+	  perl/GridShibCA/Authorization.pm.in (1.7),
+	  perl/GridShibCA/CGISession.pm.in (1.1),
+	  perl/GridShibCA/Config.pm.in (1.27),
+	  perl/GridShibCA/FakeShib.pm.in (1.2[DEAD]),
+	  perl/GridShibCA/FakeSignOn.pm.in (1.1, from_v0_5_BRANCH),
+	  perl/GridShibCA/ShibInterface.pm.in (1.4[DEAD]),
+	  perl/GridShibCA/ShibSignOn.pm.in (1.1, from_v0_5_BRANCH),
+	  perl/GridShibCA/WebSignOn.pm.in (1.1), utils/check-config.pl.in
+	  (1.7), webapps/GridShibCALogin.cgi.in (1.1): General clean up of
+	  perl modules.  Started to add CGI::Session support (Bug 6722).
+
+2009-04-27 21:36  welch
+
+	* configure.ac (1.110), perl/GridShibCA/Config.pm.in (1.26),
+	  perl/GridShibCA/Constants.pm.in (1.1, from_v0_5_BRANCH): Created
+	  GridShibCA::Constants with autoconf-set variables.
+
+2009-04-27 21:36  welch
+
+	* Makefile.in (1.84), dev-utils/Makefile-inc.in (1.4): Moved
+	  'test-dist' to dev-utils/Makefile-inc.in
+
+2009-04-25 21:07  welch
+
+	* Makefile.in (1.83), configure.ac (1.109),
+	  conf/gridshib-ca.conf.in (1.5), doc/changelog.xml.in (1.15),
+	  perl/GridShibCA/Config.pm.in (1.25), utils/check-config.pl.in
+	  (1.6): Rewrote GridShibCA::Config to use Config::General
+	  check-config.pl will now catch duplicate statements (Bug 6527)
+	  Configuration file (gridshib-ca.conf) format has changed. I
+	  expect more changes.
+
+2009-04-20 21:54  tag from_HTML_TEMPLATE_ADD
+
+2009-04-20 21:54  welch
+
+	* Makefile.in (1.82), configure.ac (1.108),
+	  conf/gridshib-ca.conf.in (1.4), doc/install.xml.in (1.5,
+	  from_v0_5_BRANCH), doc/perl-modules.xml.in (1.4,
+	  from_v0_5_BRANCH), perl/GridShibCA/Config.pm.in (1.24),
+	  perl/GridShibCA/HTMLError.pm.in (1.2),
+	  perl/GridShibCA/HTMLTemplate.pm.in (1.2, from_v0_5_BRANCH),
+	  perl/GridShibCA/Template.pm.in (1.2),
+	  templates/CredentialRetriever.jnlp (1.2, v2_0_0_preview2,
+	  from_v0_5_BRANCH), templates/error.html (1.2, from_v0_5_BRANCH),
+	  templates/login.html (1.2, from_v0_5_BRANCH) (utags:
+	  from_HTML_TEMPLATE_ADD): Merged HTML_TEMPLATE_ADD branch. Builds
+	  and deploys. Still needs some work to clean up output.
+
+2009-04-15 21:34  welch
+
+	* configure.ac (1.107): Removed old chmod of dev-utils/* and
+	  tests/*
+
+2009-04-12 21:36  welch
+
+	* dev-utils/build-test.sh.in (1.3, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH): Remove any old deployment before deploying new
+	  one.
+
+2009-04-12 21:25  welch
+
+	* dev-utils/build-test.sh.in (1.2): Functional now.
+
+2009-04-12 21:25  welch
+
+	* dev-utils/Makefile-inc.in (1.3, from_HTML_TEMPLATE_ADD): Include
+	  PACKAGE_VERSION_STRING in TMP_DIR to avoid clashes.
+
+2009-04-12 21:24  welch
+
+	* Makefile.in (1.81): Removed missing chmod-tests and chmod-utils
+	  deps.
+
+2009-04-12 21:07  welch
+
+	* HOWTO-BugfixRelease (1.4, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH): Cleaned up examples.
+
+2009-04-12 21:05  welch
+
+	* HOWTO-BugfixRelease (1.3), HOWTO-Release (1.5,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH), Makefile.in (1.80),
+	  README.BuildingJava (1.2, from_HTML_TEMPLATE_ADD), bootstrap.sh
+	  (1.2, from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH), configure.ac
+	  (1.106), conf/authorizedIdps.conf.in (1.2,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH),
+	  dev-utils/clean-pod2html.sh.in (1.2, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH), doc/changelog.xml.in (1.14,
+	  from_HTML_TEMPLATE_ADD), doc/gridshib-ca-process-flow.graffle
+	  (1.4[DEAD]), doc/gridshib-ca-process-flow.jpg (1.4[DEAD]),
+	  doc/https-cas.xml.in (1.2[DEAD]), doc/index.xml.in (1.2,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH),
+	  doc/introduction.xml.in (1.2[DEAD]), doc/myproxy-ca.xml.in
+	  (1.2[DEAD]), doc/portal-delegation.graffle (1.2[DEAD]),
+	  doc/portal-delegation.jpg (1.2[DEAD]),
+	  doc/portal-delegation.xml.in (1.3[DEAD]), doc/process-flow.xml.in
+	  (1.2[DEAD]), doc/readme.xml.in (1.2, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH), openssl-ca/openssl-ca.c (1.7, v2_0_0_preview2,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH),
+	  perl/GridShibCA/CGIinterface.pm.in (1.16,
+	  from_HTML_TEMPLATE_ADD), perl/GridShibCA/Config.pm.in (1.23),
+	  test/test-cred.sh.in (1.2, from_HTML_TEMPLATE_ADD): Merge from
+	  v0_5_BRANCH branch. Stills needs testing.
+
+2009-04-10 20:32  tag merge_v0_5_0_BRANCH
+
+2009-04-10 20:32  welch
+
+	* configure.ac, test/test-cred.sh.in (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_BRANCH) (v0_5_BRANCH.[15,1]) (utags:
+	  merge_v0_5_0_BRANCH): Bumped to version 0.5.3-preview Added
+	  test/test-cred.sh.in for testing credentials downloaded from
+	  GS-CA
+
+2009-04-10 20:29  tag v0_5_2
+
+2009-04-10 20:29  tag v0_5_2_RC1
+
+2009-04-10 20:29  welch
+
+	* HOWTO-Release (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, merge_v0_5_BRANCH) (v0_5_BRANCH.4): Moved
+	  HOWTO to the wiki.
+
+2009-04-10 18:34  welch
+
+	* configure.ac (tags: v0_5_2) (v0_5_BRANCH.14): Removed rc1 suffix
+	  for release.
+
+2009-04-01 22:00  welch
+
+	* configure.ac (tags: v0_5_2_RC1) (v0_5_BRANCH.13): Versioned as
+	  0.5.2-rc1
+
+2009-04-01 21:58  welch
+
+	* conf/authorizedIdps.conf.in (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_BRANCH), doc/changelog.xml.in (v0_5_BRANCH.[3,13])
+	  (utags: merge_v0_5_0_BRANCH, v0_5_2, v0_5_2_RC1): Added
+	  ProtectNetwork
+	  (https://idp.protectnetwork.org/protectnetwork-idp) to default
+	  authorizedIdps.conf.
+
+2009-04-01 21:42  welch
+
+	* Makefile.in (tags: merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2)
+	  (v0_5_BRANCH.6): Fix for 'make test' - make sure utils are
+	  executable before running tests.
+
+2009-04-01 21:34  welch
+
+	* HOWTO-Release (v0_5_BRANCH.3): Reverted last change, readding NMI
+	  directions, adding reference to buildbot tests.
+
+2009-03-30 23:02  welch
+
+	* Makefile.in, configure.ac, doc/changelog.xml.in,
+	  doc/gridshib-ca-process-flow.graffle (tags: v0_5_2_RC1, v0_5_2),
+	  doc/gridshib-ca-process-flow.jpg (tags: v0_5_2_RC1, v0_5_2),
+	  doc/https-cas.xml.in (tags: v0_5_2_RC1, v0_5_2), doc/index.xml.in
+	  (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_0_BRANCH, v0_5_2_RC1,
+	  v0_5_2, merge_v0_5_BRANCH), doc/install.xml.in (tags: v0_5_2_RC1,
+	  v0_5_2), doc/introduction.xml.in (tags: v0_5_2_RC1, v0_5_2),
+	  doc/myproxy-ca.xml.in (tags: v0_5_2_RC1, v0_5_2),
+	  doc/perl-modules.xml.in (tags: v0_5_2_RC1, v0_5_2),
+	  doc/portal-delegation.graffle (tags: v0_5_2_RC1, v0_5_2),
+	  doc/portal-delegation.jpg (tags: v0_5_2_RC1, v0_5_2),
+	  doc/portal-delegation.xml.in (tags: v0_5_2_RC1, v0_5_2),
+	  doc/process-flow.xml.in (tags: v0_5_2_RC1, v0_5_2),
+	  doc/readme.xml.in (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_0_BRANCH,
+	  v0_5_2, v0_5_2_RC1, merge_v0_5_BRANCH), doc/saml-tools.xml.in
+	  (tags: v0_5_2_RC1, v0_5_2)
+	  (v0_5_BRANCH.[5,12,12,1,1,2,1,3,1,2,1,1,1,1,3,1,2]): Moved admin
+	  documentation under admin/ per Bug 6046
+
+2009-03-30 20:19  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.11): Break out of iFrames to
+	  prevent clickjacking. Bug 6649
+
+2009-03-22 14:09  welch
+
+	* HOWTO-Release (v0_5_BRANCH.2): Removed outdated NMI B&T step,
+	  this is now done regularly by buildbot.
+
+2009-02-13 20:35  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (tags: merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2) (v0_5_BRANCH.5): Bug 6610: CSRF token is now
+	  40 character random token.
+
+2009-02-13 19:59  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (v0_5_BRANCH.4): Bug 6610:
+	  Clear CSRF protection cookie after we launch JWS application.
+
+2009-02-05 21:59  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (v0_5_BRANCH.3): Use MD5 to
+	  create a hard-to-predict CSRF token value.  Would have used SHA1,
+	  but it doesn't seem to be consistently available.
+
+2009-02-05 21:41  welch
+
+	* doc/process-flow.xml.in, perl/GridShibCA/CGIinterface.pm.in
+	  (v0_5_BRANCH.[2,2]): CSRF-protection framework as discussed in
+	  Bug 6610. Cookie and form element set by login.cgi and validated
+	  by create-jnlp
+
+2009-02-05 19:33  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.10): Do not allow GET method
+	  invocations of create-jnlp to help prevent CSRF attacks per Bug
+	  6610.
+
+2009-01-16 16:34  welch
+
+	* perl/GridShibCA/Config.pm.in (tags: merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2) (v0_5_BRANCH.1): Default redirectURL is now
+	  "NONE"
+
+2009-01-13 19:58  welch
+
+	* openssl-ca/openssl-ca.c (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, merge_v0_5_BRANCH)
+	  (v0_5_BRANCH.1): Bug 6608: Hardcode use of sha1.
+
+2009-01-13 19:44  welch
+
+	* configure.ac (v0_5_BRANCH.11): Bug 6616: Demo scripts are now
+	  always made and shipped with distribution, but only installed if
+	  --enable-demos is specified to configure.
+
+2009-01-12 21:45  welch
+
+	* Makefile.in, configure.ac, doc/changelog.xml.in
+	  (v0_5_BRANCH.[4,10,9]): Bug 5860: Overwrite jar and jnlp files on
+	  'make install'
+
+2009-01-12 21:20  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.8): Bugs 6522 and 6560.
+
+2009-01-12 18:07  welch
+
+	* configure.ac (v0_5_BRANCH.9): Bug 6522: Fix help string for
+	  --with-gridshib-ca-html-dir
+
+2009-01-12 18:03  welch
+
+	* doc/myproxy-ca.xml.in (v0_5_BRANCH.1): Bug 6560: Indicate need
+	  for MyProxy 4.4 or later.
+
+2009-01-12 17:58  welch
+
+	* configure.ac (v0_5_BRANCH.8): Make sure dev-utils/*.sh is
+	  executible (for dev-utils/clean-pod2html.sh).
+
+2008-12-24 09:37  welch
+
+	* configure.ac (v0_5_BRANCH.7): Changes from HEAD: Make default
+	  stylesheet path /usr/local/share/xml/xsl and add configure
+	  option: --with-xsl-path
+
+2008-12-24 09:20  welch
+
+	* configure.ac (1.105): Moved default location of XSLT style sheet
+	  to /usr/local/share/xml/xsl and make it configurable with
+	  --with-xsl-path
+
+2008-12-22 10:32  welch
+
+	* Makefile.in, configure.ac, test/password (tags: v1_0_0,
+	  v1_0_0_RC1, merge_v0_5_0_BRANCH, v0_5_2_RC1, merge_v0_5_BRANCH,
+	  v0_5_2), test/test.pkcs12 (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, merge_v0_5_BRANCH, v0_5_2)
+	  (v0_5_BRANCH.[3,6,1,1]): Changes from HEAD to allow for automated
+	  builds.  Makefile.in: Fix to test-cert-issue to use fake incommon
+	  user to work	   with changes to authorizedIdps.conf
+
+2008-12-22 10:30  welch
+
+	* conf/authorizedIdps.conf.in (v0_5_BRANCH.2): Fixed comment.
+
+2008-12-22 09:53  welch
+
+	* doc/changelog.xml.in, perl/GridShibCA/CGIinterface.pm.in
+	  (v0_5_BRANCH.[7,1]): Bug 6517 fix.
+
+2008-12-22 09:50  welch
+
+	* conf/authorizedIdps.conf.in, doc/changelog.xml.in
+	  (v0_5_BRANCH.[1,6]): Changed from InQueue to InCommon in default
+	  authorizedIdps.conf file.
+
+2008-12-22 09:49  welch
+
+	* configure.ac (v0_5_BRANCH.5): Bumped version to 0.5.2-preview
+
+2008-12-22 07:55  welch
+
+	* bootstrap.sh (tags: v1_0_0, v1_0_0_RC1, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, merge_v0_5_BRANCH, v0_5_2) (v0_5_BRANCH.1): Copied
+	  over bootstrap.sh from HEAD.
+
+2008-12-21 21:16  welch
+
+	* Makefile.in (1.79), configure.ac (1.104), test/password (1.1,
+	  v2_0_0_preview2, from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH),
+	  test/test.pkcs12 (1.1, v2_0_0_preview2, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH): Changes to make allow for automated jar
+	  signing, which allows for automated buildbot tests of whole build
+	  process.
+
+2008-12-21 21:13  welch
+
+	* README.BuildingJava (1.1, v0_5_2_RC1, v0_5_2): Instructions for
+	  developers of java code.
+
+2008-12-19 15:54  welch
+
+	* Makefile.in (1.78): Don't assume index.xml is first prerequisite.
+
+2008-03-04 16:43  welch
+
+	* nmi/README (1.7, v2_0_0_preview2, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH): Updated URL.
+
+2008-03-04 16:42  welch
+
+	* dev-utils/Makefile-inc.in (1.2, v0_5_2_RC1, v0_5_2): Added
+	  install-dist target.
+
+2008-03-04 16:40  welch
+
+	* Makefile.in (1.77): Typo fix in dist-files target.
+
+2008-03-04 16:37  welch
+
+	* HOWTO-BugfixRelease (1.2, v0_5_2_RC1, v0_5_2), HOWTO-Release
+	  (1.4): Clarifications and typo fixes
+
+2008-03-04 16:10  tag v0_5_1
+
+2008-03-04 16:10  welch
+
+	* configure.ac (tags: v0_5_1) (v0_5_BRANCH.4): Cleared release
+	  status for 0.5.1 release.
+
+2008-03-04 15:45  welch
+
+	* Makefile.in (tags: v0_5_1), configure.ac,
+	  dev-utils/clean-pod2html.sh.in (tags: v1_0_0, v1_0_0_RC1,
+	  merge_v0_5_0_BRANCH, v0_5_2, v0_5_2_RC1, merge_v0_5_BRANCH,
+	  v0_5_1), doc/changelog.xml.in (tags: v0_5_1)
+	  (v0_5_BRANCH.[2,3,1,5]): Added clean-pod2html.sh to remove xml
+	  header from html files generated by pod2html which cause problems
+	  on the Globus web site (Bug 5894).
+
+2008-03-04 15:37  welch
+
+	* doc/: changelog.xml.in, install.xml.in (tags: v0_5_1)
+	  (v0_5_BRANCH.[4,2]): Fixed a couple broken links and a duplicate
+	  anchor.
+
+2008-03-04 14:26  welch
+
+	* configure.ac, doc/changelog.xml.in, doc/https-cas.xml.in (tags:
+	  v0_5_1), doc/process-flow.xml.in (tags: v0_5_1)
+	  (v0_5_BRANCH.[2,3,1,1]): Jar file now includes version number to
+	  help prevent caching issues (bug 5878)
+
+2008-03-04 14:23  welch
+
+	* doc/install.xml.in (v0_5_BRANCH.1): Fixed broken link to perl
+	  modules.
+
+2008-03-01 22:54  welch
+
+	* Makefile.in (1.76), configure.ac (1.103): Start of CCS-ifying all
+	  the GS-CA output.
+
+2008-03-01 18:22  welch
+
+	* bootstrap.sh (1.1): Bootstrap script for bootstrapping fresh CVS
+	  checkout.
+
+2008-03-01 18:21  welch
+
+	* configure.ac (1.102): Removed deploy-test.sh reference I
+	  accidentially left in.
+
+2008-03-01 11:22  welch
+
+	* Makefile.in (1.75), configure.ac (1.101),
+	  dev-utils/Makefile-inc.in (1.1), dev-utils/build-test.sh.in (1.1,
+	  v0_5_2_RC1, v0_5_2): Added dev-utils/Makefile-inc which is only
+	  included in development mode.  Moved all development related
+	  stuff from Makefile to dev-utils/Makefile-inc Cleaned up making
+	  autoconf-created scripts executable.	Added
+	  dev-utils/build-test.sh to build and install GS-CA on test
+	  server.
+
+2008-02-29 17:13  welch
+
+	* configure.ac (1.100): Added --with-shib-protected-protocol
+	  configure option to allow for non-https deployment for testing.
+
+2008-02-29 15:59  welch
+
+	* configure.ac (1.99), dev-utils/make-release.pl.in (1.6[DEAD]):
+	  Removed outdated make-release.pl script. See HOWTO-Release for
+	  instructions on releasing.
+
+2008-02-27 17:24  welch
+
+	* Makefile.in (1.74): Always overwrite webdocs when installing.
+	  Updated path on computer for rsync.
+
+2008-02-27 15:50  welch
+
+	* configure.ac (1.98), doc/perl-modules.xml.in (1.3),
+	  perl/GridShibCA/FakeShib.pm.in (1.1, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, v0_5_2_RC1, v0_5_2): Added FakeShib module for
+	  testing without Shibboleth.
+
+2008-02-27 15:34  welch
+
+	* perl/GridShibCA/ShibInterface.pm.in (1.3, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, v0_5_2_RC1, v0_5_2): Fixed bug in previous
+	  checkin.
+
+2008-02-27 15:33  welch
+
+	* perl/GridShibCA/Config.pm.in (1.22): Fixed typo in pod
+	  documentation.
+
+2008-02-25 09:35  welch
+
+	* configure.ac (1.97), conf/gridshib-ca.conf.in (1.3),
+	  doc/changelog.xml.in (1.13), doc/install.xml.in (1.4),
+	  doc/perl-modules.xml.in (1.2), perl/GridShibCA/Config.pm.in
+	  (1.21), perl/GridShibCA/OpenSSLCA.pm.in (1.21,
+	  from_HTML_TEMPLATE_ADD), perl/GridShibCA/SAMLExtension.pm.in
+	  (1.1, from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, v0_5_2_RC1,
+	  v0_5_2), perl/GridShibCA/ShibInterface.pm.in (1.2): Added
+	  SAMLExtension perl module, basically wrapping GridShib-SAMLTools
+	  If we don't find a SSOResponse when creating a SAML Extension,
+	  proceed without it but log a warning.  Everything seems to be
+	  working after refactoring at this point.
+
+2008-02-20 22:22  welch
+
+	* doc/install.xml.in (1.3): Fixed broken link to perl-modules.
+
+2008-02-19 22:44  welch
+
+	* configure.ac (1.96), conf/gridshib-ca.conf.in (1.2),
+	  perl/GridShibCA/CGIinterface.pm.in (1.15),
+	  perl/GridShibCA/Config.pm.in (1.20),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.20),
+	  perl/GridShibCA/ShibInterface.pm.in (1.1): Added ShibInterface
+	  perl module, taking methods from CGIInterface module.  Now have
+	  dependency on MIME:Base64 Still needs testing and documentation
+	  updates.
+
+2008-02-19 22:43  welch
+
+	* HOWTO-BugfixRelease (1.1): Documentation on branching a
+	  maintainence release.
+
+2008-02-19 22:37  welch
+
+	* nmi/: MIME-Base64-3.07.tar.gz (1.1, v2_0_0_preview2,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, v0_5_2_RC1, v0_5_2),
+	  README (1.6), gridshib-ca-cmdfile.in (1.6, v2_0_0_preview2,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH), gridshib-ca-nmitest.sh
+	  (1.5, from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH): Update NMI
+	  testing to use new platforms: x86_fc_5, x86_deb_4.0, x86_sles_9,
+	  x86_rh_9, x86_suse_10.2 Added install of MIME:Base64 to test
+	  environment.
+
+2008-02-19 22:33  welch
+
+	* HOWTO-Release (1.3): Use 'cvs tag' instead of 'cvs rtag' for
+	  simplcity.
+
+2008-02-18 19:09  welch
+
+	* doc/changelog.xml.in (v0_5_BRANCH.2): Removed offline-allowed
+	  elements from jnlp files to help prevent caching
+
+2008-02-18 18:57  welch
+
+	* Makefile.in (v0_5_BRANCH.1): Added subdirs to 'make test'
+	  dependencies so openssl-ca is built before testing.
+
+2008-02-18 18:46  welch
+
+	* HOWTO-Release (tags: v0_5_1), doc/changelog.xml.in,
+	  doc/saml-tools.xml.in (tags: v0_5_1, merge_v0_5_BRANCH)
+	  (v0_5_BRANCH.[1,1,1]): Documentation fix: Added setting of
+	  IdP.entityID for GS-SAMLTools integration (Bug 5813) Added new
+	  NCSA CA certificates (f2e89fe3.0 and 9b95bbf2.0) to certificates/
+	  directory for inclusion in trustStore
+
+2008-02-18 18:45  welch
+
+	* configure.ac (v0_5_BRANCH.1): Bumped version to 0.5.1-rc
+
+2008-02-11 14:51  welch
+
+	* doc/changelog.xml.in (1.12): Added new NCSA PKI CA certificates.
+	  Cleaned up very out of date README.
+
+2008-02-02 11:31  welch
+
+	* doc/: changelog.xml.in (1.11), saml-tools.xml.in (1.3,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH): Documentation fix:
+	  Added setting of IdP.entityID for GS-SAMLTools integration (Bug
+	  5813)
+
+2008-02-02 11:14  welch
+
+	* HOWTO-Release (1.2): Added instructions to update archives.html
+
+2008-02-02 11:10  welch
+
+	* configure.ac (1.95): Bump to 0.6.0-preview to differientiate from
+	  0.5.0 code.
+
+2008-01-23 20:51  welch
+
+	* HOWTO-Release (1.1): Directions for making a release.
+
+2008-01-23 19:27  tag v0_5_0
+
+2008-01-23 19:27  welch
+
+	* configure.ac (1.94, v0_5_0): Bumped to 0.5.0 final.
+
+2008-01-23 19:11  welch
+
+	* nmi/README (1.5, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0): Changed from grand-central to
+	  nmi-s003
+
+2008-01-23 19:10  welch
+
+	* doc/saml-tools.xml.in (1.2, merge_NEW_JWS_CLIENT_BRANCH, v0_5_0):
+	  Updated for GS-ST 0.3.0
+
+2008-01-23 19:10  welch
+
+	* configure.ac (1.93): Improved comments for
+	  PACKAGE_RELEASE_STRING.
+
+2008-01-21 16:30  welch
+
+	* doc/changelog.xml.in (1.10), openssl-ca/openssl-ca.c (1.6,
+	  v0_5_1), perl/GridShibCA/OpenSSLCA.pm.in (1.19,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1) (utags:
+	  merge_NEW_JWS_CLIENT_BRANCH, v0_5_0): Updated to use GridShib
+	  SAML Tools 0.3.0 and invoke so that we get correctly formatted
+	  ASN.1 in the extension with the right OID.
+
+2008-01-21 16:14  welch
+
+	* configure.ac (1.92): Updated copyright to 2008.
+
+2008-01-21 15:47  welch
+
+	* doc/changelog.xml.in (1.9), perl/GridShibCA/OpenSSLCA.pm.in
+	  (1.18): When running GridShib SAMLTools, check for existence of
+	  JAVA_HOME and log a warning if it doesn't exist.
+
+2008-01-21 15:30  welch
+
+	* doc/changelog.xml.in (1.8), perl/GridShibCA/OpenSSLCA.pm.in
+	  (1.17): Made '--quiet' argument to GridShib-SAMLTools dependent
+	  on debug configuration option so that when debug is True better
+	  output is generated.
+
+2008-01-21 14:23  welch
+
+	* doc/changelog.xml.in (1.7), perl/GridShibCA/Config.pm.in (1.19,
+	  merge_NEW_JWS_CLIENT_BRANCH, v0_5_1, v0_5_0),
+	  utils/check-config.pl.in (1.5, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0): Changes to address bug 5798:
+	  check-config.pl now dumps configuration values.  Config.pm now
+	  strips whitespace from configuration values.
+
+2008-01-21 14:16  welch
+
+	* doc/changelog.xml.in (1.6): Fixed missing close of list item
+	  introduced in last check in.
+
+2008-01-21 14:16  welch
+
+	* Makefile.in (1.73, v0_5_0): Added echos at end of tests and prior
+	  to jar signing.
+
+2008-01-21 13:31  welch
+
+	* doc/changelog.xml.in (1.5): Added CredentialRetriever.java
+	  setFilePermission bug fix.  Cleaned up a couple other items.
+
+2008-01-21 13:29  welch
+
+	* openssl-ca/openssl-ca.c (1.5): Added comment to explain NULL
+	  parameter to X509_EXTENSION_create_by_OBJ()
+
+2008-01-21 13:28  welch
+
+	* openssl-ca/Makefile.in (1.4, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0): Fixed typo 'realnclean' ->
+	  'realclean'
+
+2008-01-21 13:27  welch
+
+	* doc/install.xml.in (1.2, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_v0_5_BRANCH, v0_5_0): Fixed link to configuration section
+	  ("#conf" instead of "#configure")
+
+2007-08-16 16:55  tag merge_HTML_TEMPLATE_ADD_BRANCH
+
+2007-08-16 16:55  welch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (tags:
+	  merge_HTML_TEMPLATE_ADD_BRANCH) (HTML_TEMPLATE_ADD_BRANCH.4):
+	  Cleaned up some comments.
+
+2007-08-16 16:51  welch
+
+	* doc/perl-modules.xml.in (tags: merge_HTML_TEMPLATE_ADD_BRANCH)
+	  (HTML_TEMPLATE_ADD_BRANCH.1): Added HTMLError, HTMLTemplate and
+	  Template modules.
+
+2007-08-16 16:46  welch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (HTML_TEMPLATE_ADD_BRANCH.3):
+	  HTMLTemplate is now a subclass of Template.
+
+2007-07-31 22:03  welch
+
+	* configure.ac, conf/gridshib-ca.conf.in,
+	  perl/GridShibCA/Config.pm.in, perl/GridShibCA/Template.pm.in,
+	  templates/CredentialRetriever.jnlp
+	  (HTML_TEMPLATE_ADD_BRANCH.[3,3,3,1,1]) (utags:
+	  merge_HTML_TEMPLATE_ADD_BRANCH): Added GridShibCA/Template
+	  module.  Converted create-jnlp to use Template module.
+
+2007-07-31 21:59  welch
+
+	* perl/GridShibCA/HTMLError.pm.in (tags:
+	  merge_HTML_TEMPLATE_ADD_BRANCH) (HTML_TEMPLATE_ADD_BRANCH.2):
+	  Added HTTPErrorExit() method.
+
+2007-07-31 21:57  welch
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (HTML_TEMPLATE_ADD_BRANCH.2):
+	  Fix typo in comment.
+
+2007-07-25 10:12  welch
+
+	* configure.ac, conf/gridshib-ca.conf.in,
+	  perl/GridShibCA/Config.pm.in, perl/GridShibCA/HTMLError.pm.in
+	  (HTML_TEMPLATE_ADD_BRANCH.[2,2,2,1]): Added HTMLError module.
+
+2007-07-25 10:10  welch
+
+	* Makefile.in (tags: merge_HTML_TEMPLATE_ADD_BRANCH)
+	  (HTML_TEMPLATE_ADD_BRANCH.2): Removed duplicate
+	  install-templates.
+
+2007-07-16 15:07  welch
+
+	* configure.ac (1.91): Documentation typo fix (bug 5435)
+
+2007-07-12 20:53  welch
+
+	* Makefile.in, configure.ac, conf/gridshib-ca.conf.in,
+	  doc/install.xml.in (tags: merge_HTML_TEMPLATE_ADD_BRANCH),
+	  perl/GridShibCA/Config.pm.in, perl/GridShibCA/HTMLTemplate.pm.in,
+	  templates/error.html (tags: merge_HTML_TEMPLATE_ADD_BRANCH),
+	  templates/login.html (tags: merge_HTML_TEMPLATE_ADD_BRANCH)
+	  (HTML_TEMPLATE_ADD_BRANCH.[1,1,1,1,1,1,1,1]): Functional
+	  HTMLTemplate module and login.cgi modified to use it.
+
+2007-07-12 20:48  welch
+
+	* Makefile.in (1.72), configure.ac (1.90): Fixes for using nmi-s003
+	  for B&T
+
+2007-07-12 20:13  welch
+
+	* Makefile.in (1.71), configure.ac (1.89): Use nmi-s003.cs.wisc.edu
+	  for NMI B&T.
+
+2007-07-12 13:00  welch
+
+	* Makefile.in (1.70), configure.ac (1.88), doc/changelog.xml.in
+	  (1.4), test/test-dist.sh.in (1.3, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0): Split openssl configuration options
+	  into --with-openssl and --with-openssl-prefix to allow for
+	  binaries to be separate from libraries and includes.	Fixed a
+	  number of minor issues with 'make test' and 'make test-dist'
+
+2007-07-05 21:00  tag HTML_TEMPLATE_ADD_ROOT
+
+2007-07-05 21:00  welch
+
+	* perl/GridShibCA/NameMapper.pm.in (1.4,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT): perldoc fix.
+
+2007-07-05 20:55  welch
+
+	* Makefile.in (1.69), configure.ac (1.87), doc/changelog.xml.in
+	  (1.3, merge_HTML_TEMPLATE_ADD_BRANCH) (utags:
+	  HTML_TEMPLATE_ADD_ROOT): Switched to using Java CoG source files
+	  instead of class files.
+
+2007-06-05 15:51  welch
+
+	* Makefile.in (1.68), doc/changelog.xml.in (1.2),
+	  openssl-ca/Makefile.in (1.3, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  HTML_TEMPLATE_ADD_ROOT): Fixed bug 5350: 'make clean' does not
+	  remove files not regeneratable in distibution.
+
+2007-06-05 15:28  welch
+
+	* authorizedIdps.conf.in (1.5[DEAD]), authorizedPortals.conf.in
+	  (1.2[DEAD]), configure.ac (1.86), gridshib-ca.conf.in
+	  (1.19[DEAD]), conf/authorizedIdps.conf.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT),
+	  conf/authorizedPortals.conf.in (1.1, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT), conf/gridshib-ca.conf.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1,
+	  v0_5_2, v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT): Move
+	  configuration files from top-level directory to conf/
+
+2007-06-05 15:28  welch
+
+	* Makefile.in (1.67): Clean up temporary files with 'make
+	  realclean'
+
+2007-05-22 14:54  welch
+
+	* doc/portal-delegation.xml.in (1.2, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, v0_5_1, merge_v0_5_BRANCH,
+	  v0_5_0, HTML_TEMPLATE_ADD_ROOT): Some reformatting that was
+	  missed in 0.4.0 check-in.
+
+2007-05-21 17:57  welch
+
+	* configure.ac (1.85): Bumped to 0.5.0 preview.
+
+2007-05-13 20:55  tag v0_4_0
+
+2007-05-13 20:55  welch
+
+	* gridshib-ca.conf.in (1.18, v0_4_0): Added newline to end of file.
+
+2007-05-13 20:39  welch
+
+	* configure.ac (1.84, v0_4_0): Removed rc designation.
+
+2007-05-13 20:36  welch
+
+	* Makefile.in (1.66, v0_4_0), configure.ac (1.83),
+	  doc/changelog.html.in (1.17[DEAD]), doc/changelog.xml.in (1.1,
+	  v0_4_0), doc/faq.xml.in (1.1, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), doc/https-cas.html.in
+	  (1.3[DEAD]), doc/https-cas.xml.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  doc/index.html.in (1.10[DEAD]), doc/index.xml.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  doc/install.html.in (1.17[DEAD]), doc/install.xml.in (1.1,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), doc/introduction.xml.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0), doc/license.html.in (1.3[DEAD]), doc/license.xml.in
+	  (1.1, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0), doc/modules.html.in (1.6[DEAD]), doc/myproxy-ca.html.in
+	  (1.3[DEAD]), doc/myproxy-ca.xml.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0), doc/perl-modules.xml.in (1.1,
+	  merge_NEW_JWS_CLIENT_BRANCH, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), doc/portal-delegation.html.in
+	  (1.4[DEAD]), doc/portal-delegation.xml.in (1.1, v0_4_0),
+	  doc/process-flow.html.in (1.6[DEAD]), doc/process-flow.xml.in
+	  (1.1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), doc/saml-issuer.html.in
+	  (1.2[DEAD]), doc/saml-tools.xml.in (1.1,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  doc/test-deployment.xml.in (1.1, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Converted to docbook.
+
+2007-05-12 20:11  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.16,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, HTML_TEMPLATE_ADD_ROOT, v0_4_0):
+	  Added --quiet to gridshib-saml-issuer args.
+
+2007-05-10 18:54  welch
+
+	* Makefile.in (1.65): Don't overwrite html files on install.
+
+2007-04-30 17:12  welch
+
+	* perl/GridShibCA/CA.pm.in (1.12, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Make sure attribute types are
+	  capitalized and we have no spaces after commas in RFC 2253 DNs.
+
+2007-04-30 17:11  welch
+
+	* authorizedIdps.conf.in (1.4, v0_4_0): Capitalized attribute types
+	  and no spaces after commas.
+
+2007-04-30 17:11  welch
+
+	* perl/GridShibCA/NameMapper.pm.in (1.3, v0_4_0): Fixed typo in
+	  comment.
+
+2007-04-30 16:38  welch
+
+	* doc/changelog.html.in (1.16), openssl-ca/openssl-ca.c (1.4,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, HTML_TEMPLATE_ADD_ROOT, v0_4_0):
+	  Fixed bug 5254: OpenSSL-based CA now issues V3 certificates.
+
+2007-04-30 16:37  welch
+
+	* configure.ac (1.82): Bumped to rc6
+
+2007-04-30 16:36  welch
+
+	* Makefile.in (1.64): Added test-dist target for testing
+	  distribution tarball.
+
+2007-04-23 19:30  welch
+
+	* configure.ac (1.81): Bumped to rc5
+
+2007-04-23 19:27  welch
+
+	* Makefile.in (1.63): Added test-myproxy-mapapp
+
+2007-04-01 18:42  welch
+
+	* aclocal.m4 (1.4, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  configure.ac (1.80), nmi/README (1.4,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  nmi/gridshib-ca-cmdfile.in (1.5, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  nmi/gridshib-ca-nmitest.sh (1.4, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  openssl-ca/Makefile.in (1.2, v0_4_0): Use openssl-0.9.8e prereq.
+	  Set LDFLAGS -L and CFLAGS -I based on location of openssl.
+	  Various changes to make sure LDFLAGS and CFLAGS are honored in
+	  all our tests.
+
+2007-03-26 15:29  welch
+
+	* nmi/gridshib-ca-cmdfile.in (1.4): Fix prereqs statement for perl,
+	  allowing x86_rhas_3 to succeed.
+
+2007-03-26 15:29  welch
+
+	* nmi/gridshib-ca-nmitest.sh (1.3): Add hostname to output. Cleanup
+	  formatting a little.
+
+2007-03-25 21:49  welch
+
+	* aclocal.m4 (1.3), configure.ac (1.79): Unify hostname checking
+	  for URLs and relative DN.  Make sure we are getting FQDN for
+	  both.
+
+2007-03-25 21:48  welch
+
+	* utils/issue-cert.pl.in (1.6, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0): If we are running as root, switch to uid and gid of
+	  WWW_USER.
+
+2007-03-25 21:47  welch
+
+	* gridshib-ca.conf.in (1.17): Disable redirectURL by default.
+
+2007-03-25 16:19  welch
+
+	* nmi/: README (1.3), gridshib-ca-cmdfile.in (1.3),
+	  gridshib-ca-nmitest.sh (1.2): Prune non-functioning OSs from NMI
+	  B&T.	Added debugging to our submission script.
+
+2007-03-25 16:18  welch
+
+	* aclocal.m4 (1.2), configure.ac (1.78), doc/install.html.in
+	  (1.16): Added check for OpenSSL 0.9.7 or later.  Move check for
+	  PERL up so that it is found before we start searching for
+	  Perl modules.
+
+2007-03-25 16:16  welch
+
+	* Makefile.in (1.62): Only sync NMI_FILE for NMI testing.
+
+2007-03-16 23:33  welch
+
+	* utils/issue-cert.pl.in (1.5): Added HTTP_SHIB_ATTRIBUTES to test
+	  SAML insertion into certificate.  Fixed typo in -newkey argument.
+	  Print parsed cerificate.
+
+2007-03-16 23:31  welch
+
+	* perl/GridShibCA/TokenGenerator.pm.in (1.6,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Verify all token fields when
+	  decoding.
+
+2007-03-16 23:31  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.15): Use openssl to base64
+	  decode instead of MIME::Base64, which wasn't standard in perl
+	  until 5.8.6
+
+2007-03-16 23:30  welch
+
+	* perl/GridShibCA/NameMapper.pm.in (1.2): Clean environment
+	  variables for perl taint mode.
+
+2007-03-16 23:29  welch
+
+	* perl/GridShibCA/Config.pm.in (1.18, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0): Catch undefined instance
+
+2007-03-16 23:28  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.14,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0): Instantiation
+	  was pretty badly broken - SUPER::new() wasn't called, config and
+	  logger initialization broken.
+
+2007-03-16 23:27  welch
+
+	* nmi/: README (1.2), gridshib-ca-cmdfile.in (1.2): Change project
+	  name to GridShib perl 5.8.5 is a reqreq
+
+2007-03-16 23:26  welch
+
+	* Makefile.in (1.61): Don't test DEV_UTILS with 'make check-perl'
+	  Use rsync for uploading stuff to NMI B&T
+
+2007-03-16 23:25  welch
+
+	* configure.ac (1.77): Check to make sure all the standard perl
+	  modules are in place.
+
+2007-03-16 23:25  welch
+
+	* doc/install.html.in (1.15): Indicate version 5.8.5 or later of
+	  perl should work, since that seems to be what is deployed in the
+	  NMI B&T facility.
+
+2007-03-16 20:02  welch
+
+	* Makefile.in (1.60), configure.ac (1.76): Cleaned up DEV_UTILS so
+	  that 'make check-perl' doesn't try to check non-perl files.
+
+2007-03-16 20:02  welch
+
+	* test/test-dist.sh.in (1.2, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Use current user as www-user so
+	  that install can be done as non-root user.
+
+2007-03-16 20:01  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.14), utils/issue-cert.pl.in
+	  (1.4): Removed use of File::Temp->new() as this appears to be
+	  functionality added recently (between perl 5.8.0 and 5.8.6).
+
+2007-03-16 19:24  welch
+
+	* Makefile.in (1.59), configure.ac (1.75), nmi/README (1.1),
+	  nmi/gridshib-ca-cmdfile.in (1.1), nmi/gridshib-ca-nmitest.sh
+	  (1.1), nmi/gridshib-ca.ftp.in (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0): Added support for NMI Build and Test.
+
+2007-03-16 19:21  welch
+
+	* utils/issue-cert.pl.in (1.3): Removed reliance on
+	  Crypt::OpenSSL:PKCS10 by calling openssl directly.
+
+2007-03-16 18:40  welch
+
+	* doc/install.html.in (1.14): Updated with recent changes.
+
+2007-03-16 18:03  welch
+
+	* doc/modules.html.in (1.5): Added link to myVocsCertRegistry.pm
+
+2007-03-16 18:01  welch
+
+	* perl/GridShibCA/myVocsDBCertRegistry.pm.in (1.3, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0): Cleaned up perldoc.
+
+2007-03-16 17:55  welch
+
+	* perl/GridShibCA/CA.pm.in (1.11): Cleaned up perldoc.
+
+2007-03-14 22:07  welch
+
+	* configure.ac (1.74), test/test-dist.sh.in (1.1): Added
+	  test/test-dist.sh.in to test build and install of tarball.
+
+2007-03-14 22:07  welch
+
+	* utils/create-openssl-ca.pl.in (1.9, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Typo fix.
+
+2007-03-14 21:19  welch
+
+	* Makefile.in (1.58), authorizedIdps.conf.in (1.3), configure.ac
+	  (1.73), gridshib-ca.conf.in (1.16), doc/changelog.html.in (1.15),
+	  doc/install.html.in (1.13), doc/modules.html.in (1.4),
+	  openssl-ca/openssl-ca-test.sh.in (1.1, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  perl/GridShibCA/Authorization.pm.in (1.6, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0), perl/GridShibCA/CA.pm.in (1.10),
+	  perl/GridShibCA/CGIinterface.pm.in (1.13),
+	  perl/GridShibCA/CertRegistry.pm.in (1.5,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  perl/GridShibCA/Config.pm.in (1.17), perl/GridShibCA/Logger.pm.in
+	  (1.6, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0),
+	  perl/GridShibCA/MyProxyCA.pm.in (1.4, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), perl/GridShibCA/NameMapper.pm.in
+	  (1.1), perl/GridShibCA/OpenSSLCA.pm.in (1.13),
+	  perl/GridShibCA/TokenGenerator.pm.in (1.5),
+	  perl/GridShibCA/myVocsDBCertRegistry.pm.in (1.2),
+	  test/test-cert.pem (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0), test/test-key.pem (1.1,
+	  v2_0_0_preview2, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0), utils/create-openssl-ca.pl.in (1.8),
+	  utils/issue-cert.pl.in (1.2): Added 'make test' and 'make
+	  test-post-install' Installing existing configuration files now
+	  results in {file}.new Create CGI_BIN_DIR during install if it
+	  does not exist.  'make check-perl' stops on first failure.  Added
+	  NameMapper.pm Added testing of Perl modules with 'make
+	  check-perl' Added support for 'redirectURL' in gridshib-ca.conf
+	  Added argument checking to Authorization.pm.in Authorization.pm
+	  ignores policy following Idp regex For a number of modules, moved
+	  creation of config ond logger objects  into object creation to
+	  allow for clean testing of modules.  create-openssl-ca.pl: use
+	  perl chown() instead of invoking it.	issue-cert.pl: Set
+	  REMOTE_USER and HTTP_SHIB_IDENTITY_PROVIDER env variables.
+
+2007-03-03 18:12  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.12): Catch undefined IdP
+	  and handle more gracefully.
+
+2007-03-03 18:11  welch
+
+	* doc/https-cas.html.in (1.2): Fixed typo.
+
+2007-02-27 20:48  welch
+
+	* configure.ac (1.72), doc/myproxy-ca.html.in (1.2),
+	  perl/GridShibCA/MyProxyCA.pm.in (1.3), utils/mapper.sh.in
+	  (1.4[DEAD]), utils/myproxy-mapapp.pl.in (1.1, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Now pass full DN to MyProxy.
+	  Replaced mapper.sh with mapapp.pl for better security.
+
+2007-02-27 20:34  welch
+
+	* authorizedIdps.conf.in (1.2): Added CR to last line.
+
+2007-02-27 20:09  welch
+
+	* utils/mapper.sh.in (1.3): Commit before I delete this bad boy to
+	  use perl script.
+
+2007-02-25 11:38  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.12): Cleaned up temporary file
+	  handling with respect to the SAML extension.
+
+2007-02-24 20:24  welch
+
+	* configure.ac (1.71), gridshib-ca.conf.in (1.15),
+	  doc/index.html.in (1.9), doc/saml-issuer.html.in (1.1),
+	  openssl-ca/openssl-ca.c (1.3), perl/GridShibCA/Config.pm.in
+	  (1.16), perl/GridShibCA/OpenSSLCA.pm.in (1.11): Added support for
+	  calling GridShib SAML Tools.
+
+2007-02-24 20:23  welch
+
+	* perl/GridShibCA/CertRegistry.pm.in (1.4): Added checking of
+	  arguments.
+
+2007-02-24 20:22  welch
+
+	* perl/GridShibCA/CA.pm.in (1.9): Added _warn() and _debug()
+	  methods for logging.	Added pointer to MyProxyCA as child.
+
+2007-02-24 20:21  welch
+
+	* LICENSE (1.4), doc/footer.html (1.6) (utags:
+	  HTML_TEMPLATE_ADD_ROOT, from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_v0_5_0_BRANCH, merge_v0_5_BRANCH, v0_4_0, v0_5_0, v0_5_1,
+	  v0_5_2, v0_5_2_RC1, v1_0_0, v1_0_0_RC1): Updated Copyright to
+	  2007.
+
+2007-02-24 17:36  welch
+
+	* configure.ac (1.70), utils/issue-cert.pl.in (1.1): Added
+	  utils/issue-cert.pl for testing issuance of certificate locally.
+
+2007-02-24 16:59  welch
+
+	* configure.ac (1.69): Bumped to version 0.4.0preview Maded release
+	  status optional in preparation for 0.4.0
+
+2007-02-20 21:35  welch
+
+	* gridshib-ca.conf.in (1.14), perl/GridShibCA/CA.pm.in (1.8),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.10),
+	  utils/create-openssl-ca.pl.in (1.7): Added idp to DN.  Cleaned up
+	  create-openssl-ca.pl.in
+
+2007-02-20 21:32  welch
+
+	* Makefile.in (1.57): Fixed up rsync commands. Got rid of now
+	  unused rsync-myvocs.
+
+2007-02-19 21:03  welch
+
+	* utils/create-openssl-ca.pl.in (1.6): Add message about generating
+	  keys, may take a minute...
+
+2007-02-19 21:03  welch
+
+	* Makefile.in (1.56): Make sure utils are executable after build.
+
+2007-02-18 15:00  welch
+
+	* configure.ac (1.68), doc/https-cas.html.in (1.1): Added
+	  https-cas.html.in to described how to add portal CA to jar file.
+
+2007-02-18 14:58  welch
+
+	* Makefile.in (1.55): Changed from terra.mcs.anl.gov to
+	  cvs.globus.org
+
+2006-12-16 14:21  welch
+
+	* perl/Globus/GSISocket.pm (1.5, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0): Don't overwrite error string set
+	  by readDERCertificate() in acceptDelegation()
+
+2006-12-11 11:00  welch
+
+	* configure.ac (1.67): Added AC_CLEAN_PATH() to clean up file and
+	  directory paths.
+
+2006-12-11 09:29  welch
+
+	* Makefile.in (1.54), configure.ac (1.66): Fixed up demo
+	  installation code which seems to have been broken.
+
+2006-12-11 08:43  welch
+
+	* doc/changelog.html.in (1.14): Added note about bug 4887 (DC
+	  components in relative DN) being done.
+
+2006-12-10 14:57  welch
+
+	* configure.ac (1.65), utils/create-openssl-ca.pl.in (1.5): Moved
+	  to DNs using DC components.
+
+2006-12-10 14:48  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.9): Take advantage of
+	  getOpenSSLDN() method.
+
+2006-12-10 14:47  welch
+
+	* perl/GridShibCA/CA.pm.in (1.7): Added getOpenSSLDN() method to
+	  return DN in openssl format.
+
+2006-12-08 22:28  welch
+
+	* perl/Globus/GSISocket.pm (1.4): Improved error message when SSL
+	  Socket creation fails.
+
+2006-12-07 17:33  welch
+
+	* images/protectnetwork.png (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0): Needed for last change to webdocs/index.html.in
+
+2006-12-03 14:31  welch
+
+	* gridshib-ca.conf.in (1.13), doc/changelog.html.in (1.13),
+	  doc/process-flow.html.in (1.5), perl/GridShibCA/Config.pm.in
+	  (1.15): Added useBundledCAs option to gridshib-ca.conf
+
+2006-11-30 19:40  welch
+
+	* dev-utils/make-release.pl.in (1.5, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  merge_v0_5_0_BRANCH, v0_5_2, v0_5_2_RC1, v0_5_1,
+	  merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0): Do a
+	  'make bc-clean' to ensure we only get needed BouncyCastle class
+	  files.
+
+2006-11-30 19:28  welch
+
+	* Makefile.in (1.53), doc/changelog.html.in (1.12): Create
+	  Version.java if it doesn't exist (bug 4878)
+
+2006-11-30 19:17  welch
+
+	* configure.ac (1.64), doc/changelog.html.in (1.11):
+	  --with-gridshib-ca-conf-dir uses ${prefix} instead of static
+	  '/usr/local/' Improved help for --with-gridshib-ca-confi-dir
+
+2006-11-29 13:56  welch
+
+	* configure.ac (1.63), doc/changelog.html.in (1.10): Changed
+	  release status to alpha2-test.  Fixed typos in 'configure --help'
+	  (Bug 4877).
+
+2006-11-29 13:55  welch
+
+	* Makefile.in (1.52): Fixed typo for 'make release': 'install-docs"
+	  -> "install-doc"
+
+2006-11-27 04:33  tag v0_3_0-alpha
+
+2006-11-27 04:33  welch
+
+	* Makefile.in (1.51), configure.ac (1.62), gridshib-ca.conf.in
+	  (1.12), perl/GridShibCA/CertRegistry.pm.in (1.3),
+	  perl/GridShibCA/Config.pm.in (1.14),
+	  perl/GridShibCA/myVocsDBCertRegistry.pm.in (1.1) (utags:
+	  v0_3_0-alpha): Added myVocsDBCertRegistry.pm CertRegistry.pm:
+	  Added lifetime as parameter Config.pm: Check for error on module
+	  creation.  Makefile.in: Added outputing of target directories to
+	  'make install' output Makefile.in: Fixed POD2HTML_ROOT for perl
+	  module html creation.
+
+2006-11-25 13:11  welch
+
+	* dev-utils/make-release.pl.in (1.4, v0_3_0-alpha): Beefed up
+	  make-release.pl script to add options.
+
+2006-11-19 18:07  welch
+
+	* configure.ac (1.61): Use PERL_CGI_BIN_ARGS for CGI-BIN scripts so
+	  that non-CGI-BIN scripts aren't run in taint mode.
+
+2006-11-19 18:06  welch
+
+	* dev-utils/make-release.pl.in (1.3): Use tempdir() instead of
+	  mkdtemp().
+
+2006-11-19 17:48  welch
+
+	* perl/GridShibCA/Config.pm.in (1.13): Added missing JNLPTemplate
+	  configuration option.
+
+2006-11-19 17:19  welch
+
+	* Makefile.in (1.50): Move documentation section before
+	  distribution so that documentation files get included in
+	  distribution.  Print files as they get added to tarball.
+
+2006-11-19 16:33  welch
+
+	* configure.ac (1.60): Got rid of tag-version.pl
+
+2006-11-17 18:23  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.11, v0_3_0-alpha): Added
+	  option to form to make trusted CA download optional.
+
+2006-11-16 23:47  welch
+
+	* configure.ac (1.59), gridshib-ca.conf.in (1.11),
+	  doc/changelog.html.in (1.9, v0_3_0-alpha),
+	  doc/gridshib-ca-process-flow.graffle (1.3,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha), doc/gridshib-ca-process-flow.jpg (1.3,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha), doc/process-flow.html.in (1.4,
+	  v0_3_0-alpha), perl/GridShibCA/Config.pm.in (1.12): Added
+	  downloading and installation of trusted CA directory contents.
+	  Changed documentation directory to used dots instead of dashes.
+
+2006-11-16 23:45  welch
+
+	* Makefile.in (1.49): Make sure documentation will be
+	  world-readable.
+
+2006-11-16 23:20  welch
+
+	* dev-utils/: make-release.pl.in (1.2), tag-version.pl.in
+	  (1.4[DEAD]): Functional make-release.pl script.  Got rid of now
+	  unused tag-version.pl script.
+
+2006-11-16 21:00  welch
+
+	* Makefile.in (1.48): Create resources directory for trustStore if
+	  it does not exist.
+
+2006-11-16 20:32  welch
+
+	* Makefile.in (1.47), configure.ac (1.58),
+	  dev-utils/make-release.pl.in (1.1), dev-utils/tag-version.pl.in
+	  (1.3): Added make-release.pl.in and clean up for distribution
+	  building.
+
+2006-11-16 19:23  welch
+
+	* configure.ac (1.57): Relabel as "alpha" Removed check for PKCS10
+	  unless we're enabling demos.
+
+2006-11-11 17:51  welch
+
+	* gridshib-ca.conf.in (1.10), doc/changelog.html.in (1.8),
+	  openssl-ca/openssl-ca.c (1.2, v0_3_0-alpha),
+	  perl/GridShibCA/CA.pm.in (1.6, v0_3_0-alpha),
+	  perl/GridShibCA/CGIinterface.pm.in (1.10),
+	  perl/GridShibCA/Config.pm.in (1.11), perl/GridShibCA/Logger.pm.in
+	  (1.5, v0_3_0-alpha), perl/GridShibCA/OpenSSLCA.pm.in (1.8,
+	  v0_3_0-alpha): Added support for client-requested lifetimes.
+	  Added debug support using debug and clientDebug in configuration
+	  file.  Arguments to CredentialRetriever are now attribute=value
+	  formatted.
+
+2006-11-11 17:48  welch
+
+	* perl/GridShibCA/MyProxyCA.pm.in (1.2, v0_3_0-alpha): Added some
+	  debugging.
+
+2006-11-11 17:47  welch
+
+	* perl/Globus/GSISocket.pm (1.3, v0_3_0-alpha): Fixed for
+	  client-side authorization when connecting to localhost.
+
+2006-11-11 17:46  welch
+
+	* Makefile.in (1.46): Build jar by default in develop mode.
+
+2006-11-10 07:57  welch
+
+	* perl/Globus/GSISocket.pm (1.2): Added client-side authorization.
+	  Cleaned up error handling.
+
+2006-11-08 23:23  welch
+
+	* doc/changelog.html.in (1.7): Updated a few details.
+
+2006-11-08 23:10  welch
+
+	* perl/Globus/README (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha): README for Globus
+	  perl modules.
+
+2006-11-08 23:08  welch
+
+	* Makefile.in (1.45), configure.ac (1.56), gridshib-ca.conf.in
+	  (1.9), doc/install.html.in (1.12, v0_3_0-alpha),
+	  doc/modules.html.in (1.3, v0_3_0-alpha), doc/myproxy-ca.html.in
+	  (1.1, v0_3_0-alpha), perl/Globus/Config.pm (1.1, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha), perl/Globus/GSICredential.pm (1.1, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha), perl/Globus/GSISocket.pm (1.1),
+	  perl/Globus/MyProxyClient.pm (1.1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2, v0_5_1, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  perl/GridShibCA/Config.pm.in (1.10),
+	  perl/GridShibCA/MyProxyCA.pm.in (1.1): Added MyProxyCA.pm and
+	  supporting perl modules and documentation.
+
+2006-11-08 23:07  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.7): Added documentation for
+	  OpenSSLRandFile
+
+2006-11-05 11:35  welch
+
+	* Makefile.in (1.44), configure.ac (1.55),
+	  dev-utils/tag-version.pl.in (1.2), doc/changelog.html.in (1.6),
+	  doc/index.html.in (1.8, v0_3_0-alpha), doc/install.html.in
+	  (1.11), doc/modules.html.in (1.2),
+	  perl/GridShibCA/Authorization.pm.in (1.5, v0_3_0-alpha),
+	  perl/GridShibCA/CA.pm.in (1.5),
+	  perl/GridShibCA/CGIinterface.pm.in (1.9),
+	  perl/GridShibCA/CertRegistry.pm.in (1.2),
+	  perl/GridShibCA/Command.pm.in (1.4, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  perl/GridShibCA/Config.pm.in (1.9), perl/GridShibCA/Logger.pm.in
+	  (1.4), perl/GridShibCA/OpenSSLCA.pm.in (1.6),
+	  perl/GridShibCA/TokenGenerator.pm.in (1.4, v0_3_0-alpha),
+	  utils/check-config.pl.in (1.4, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  utils/create-openssl-ca.pl.in (1.4, v0_3_0-alpha): Revamp of
+	  configure.ac and Makefile.in
+
+2006-11-04 12:39  welch
+
+	* gridshib-ca.conf.in (1.8), todo.txt (1.6,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  doc/portal-delegation.html.in (1.3, v0_3_0-alpha),
+	  perl/GridShibCA/Config.pm.in (1.8), utils/check-config.pl.in
+	  (1.3): Made portal delegation disabled by default.  Cleaned up
+	  some bugs with gridshib-ca.conf Added getParamBoolean() and
+	  getFilename() to Config.pm check-config.pl: don't dump
+	  configuration file.
+
+2006-11-04 12:37  welch
+
+	* Makefile.in (1.43): Only regenerated Version.java when it is
+	  needed instead of running config.status
+
+2006-11-04 11:54  welch
+
+	* configure.ac (1.54), dev-utils/tag-version.pl.in (1.1),
+	  utils/tag-version.pl.in (1.3[DEAD]): Moved development utilities
+	  to dev-utils.
+
+2006-11-04 11:26  welch
+
+	* LICENSE (1.3, v0_3_0-alpha), todo.txt (1.5), doc/footer.html
+	  (1.5, v0_3_0-alpha): Cleaned up licensing information.  Added
+	  Globus CoG license information.
+
+2006-11-04 11:04  welch
+
+	* Makefile.in (1.42), todo.txt (1.4): Only regenerated
+	  configure-generated files that need to be regenerated.  Remove
+	  $(HTML_INC) dependency for CGI scripts.
+
+2006-11-04 10:35  welch
+
+	* todo.txt (1.3): Removed requirement for Sun JDK from JNLP since
+	  we've moved to bouncycastle.
+
+2006-11-02 22:37  welch
+
+	* Makefile.in (1.41), configure.ac (1.53):
+	  Moved to using Bouncy Castle.  PEM.java should have been added a
+	  long time ago.
+
+2006-11-02 22:30  welch
+
+	* perl/GridShibCA/Authorization.pm.in (1.4): Catch undefined
+	  $portalURL.
+
+2006-11-02 22:30  welch
+
+	* gridshib-ca.conf.in (1.7), perl/GridShibCA/Config.pm.in (1.7),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.5): Set RANDFILE environment
+	  variable from OpenSSLRandFile configuration option to avoid
+	  "unable to write 'random state'" errors that suddenly appeared.
+
+2006-11-01 17:27  welch
+
+	* perl/GridShibCA/Authorization.pm.in (1.3): Check for undefined
+	  IdP.
+
+2006-10-31 22:35  welch
+
+	* doc/: portal-delegation.html.in (1.2), process-flow.html.in
+	  (1.3): Added details about form variables.
+
+2006-10-31 22:33  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.8): Allow for slashes ('/')
+	  in IdP name.
+
+2006-10-30 19:50  welch
+
+	* configure.ac (1.52): Install all jpg files in doc/
+
+2006-10-30 19:49  welch
+
+	* Makefile.in (1.40): Make sure install-doc installs documentation
+	  that is world-readble.
+
+2006-10-29 14:32  welch
+
+	* configure.ac (1.51), gridshib-ca.conf.in (1.6),
+	  doc/changelog.html.in (1.5), doc/index.html.in (1.7),
+	  doc/install.html.in (1.10), doc/modules.html.in (1.1),
+	  doc/portal-delegation.graffle (1.1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, v0_5_1, merge_v0_5_BRANCH,
+	  v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  doc/portal-delegation.html.in (1.1), doc/portal-delegation.jpg
+	  (1.1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, v0_5_1, merge_v0_5_BRANCH,
+	  v0_5_0, HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha): Updated
+	  documentation.
+
+2006-10-29 12:15  welch
+
+	* configure.ac (1.50): Bumped to version 0.3.0-test.
+
+2006-10-29 12:02  welch
+
+	* createTrustStore.sh (1.2[DEAD]): Long incorporated into
+	  Makefile.in
+
+2006-10-28 18:26  welch
+
+	* Makefile.in (1.39), authorizedPortals.conf.in (1.1, v0_4_0,
+	  v0_3_0-alpha), configure.ac (1.49), gridshib-ca.conf.in (1.5),
+	  perl/GridShibCA/Authorization.pm.in (1.2),
+	  perl/GridShibCA/Config.pm.in (1.6): Added portal authorization.
+
+2006-10-28 18:00  welch
+
+	* gridshib-ca.conf.in (1.4): Uncomment everything to start with.
+
+2006-10-28 17:59  welch
+
+	* configure.ac (1.48), doc/callouts.html.in (1.2[DEAD]),
+	  doc/install.html.in (1.9): Updated documentation. Got rid of
+	  callouts.html.in
+
+2006-10-28 17:24  welch
+
+	* Makefile.in (1.38), authorizedIdps.conf.in (1.1, v0_3_0-alpha),
+	  configure.ac (1.47), gridshib-ca.conf.in (1.3),
+	  perl/GridShibCA/Authorization.pm.in (1.1),
+	  perl/GridShibCA/CertRegistry.pm.in (1.1),
+	  perl/GridShibCA/Config.pm.in (1.5): Added Authorization.pm.in and
+	  CertRegistry.pm.in
+
+2006-10-28 15:29  welch
+
+	* perl/GridShibCA/CA.pm.in (1.4): Fixed documentation for return
+	  value for getError()
+
+2006-10-28 14:02  welch
+
+	* Makefile.in (1.37), configure.ac (1.46), perl/GridShibCA/CA.pm.in
+	  (1.3), perl/GridShibCA/CGIinterface.pm.in (1.7),
+	  perl/GridShibCA/Command.pm.in (1.3), perl/GridShibCA/Config.pm.in
+	  (1.4), perl/GridShibCA/Logger.pm.in (1.3),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.4),
+	  perl/GridShibCA/TokenGenerator.pm.in (1.3),
+	  utils/check-config.pl.in (1.2), utils/create-openssl-ca.pl.in
+	  (1.3): Added POD documentation to perl scripts and modules.
+
+2006-10-28 11:06  welch
+
+	* Makefile.in (1.36), configure.ac (1.45), gridshib-ca.conf.in
+	  (1.2), perl/GridShibCA/CA.pm.in (1.2),
+	  perl/GridShibCA/CGIinterface.pm.in (1.6),
+	  perl/GridShibCA/Command.pm.in (1.2), perl/GridShibCA/Config.pm.in
+	  (1.3), perl/GridShibCA/Logger.pm.in (1.2),
+	  perl/GridShibCA/OpenSSLCA.pm.in (1.3),
+	  perl/GridShibCA/TokenGenerator.pm.in (1.2),
+	  utils/create-openssl-ca.pl.in (1.2):
+	  Move to useing $config->getParam() instead of autoconf subsituted
+	  strings.
+
+2006-10-18 22:13  welch
+
+	* configure.ac (1.44), perl/GridShibCA/Config.pm.in (1.2),
+	  utils/check-config.pl.in (1.1): Added check-config.pl.in
+
+2006-10-17 21:56  welch
+
+	* Makefile.in (1.35), configure.ac (1.43), gridshib-ca.conf.in
+	  (1.1), perl/GridShibCA/CGIinterface.pm.in (1.5),
+	  perl/GridShibCA/Config.pm.in (1.1): Added GridShibCA::Config
+	  interface and gridshib-ca.conf.in
+
+2006-10-17 17:40  welch
+
+	* Makefile.in (1.34), configure.ac (1.42),
+	  doc/gridshib-ca-process-flow.graffle (1.2),
+	  doc/gridshib-ca-process-flow.jpg (1.2), doc/process-flow.html.in
+	  (1.2): Renamed login.in to create-jnlp.in Renamed welcome.pl to
+	  login.cgi Got rid of login.html.in Updated documentation
+	  regarding process flow.
+
+2006-10-17 16:32  welch
+
+	* perl/GridShibCA/CGIinterface.pm.in (1.4): Catch REMOTE_USER not
+	  being defined.  Fix bug in instantiating logger.
+
+2006-10-17 16:32  welch
+
+	* Makefile.in (1.33): Don't autoregenerated aclocal.m4, only when
+	  'make aclocal' is run.
+
+2006-10-16 21:22  welch
+
+	* Makefile.in (1.32), aclocal.m4 (1.1, v0_3_0-alpha), configure.ac
+	  (1.41), perl/GridShibCA/CGIinterface.pm.in (1.3): Added the
+	  ability to delegate to portals.  Added
+	  gridshib-ca-demo-portal.cgi.in Added aclocal.m4 Still need to add
+	  delegation authorization.
+
+2006-10-15 17:09  welch
+
+	* Makefile.in (1.31), configure.ac (1.40),
+	  perl/GridShibCA/CGIinterface.pm.in (1.2),
+	  perl/GridShibCA/TokenGenerator.pm.in (1.1): Added token to
+	  request to generateCred.cgi to protect against user being tricked
+	  into creating certificate by, e.g., malicious javascript
+
+2006-10-15 15:31  welch
+
+	* perl/GridShibCA/OpenSSLCA.pm.in (1.2): General clean up of
+	  module.
+
+2006-10-15 15:08  welch
+
+	* Makefile.in (1.30), configure.ac (1.39), perl/GridShibCA/CA.pm.in
+	  (1.1), perl/GridShibCA/CGIinterface.pm.in (1.1),
+	  perl/GridShibCA/Command.pm.in (1.1), perl/GridShibCA/Logger.pm.in
+	  (1.1), perl/GridShibCA/OpenSSLCA.pm.in (1.1), utils/CA.pm.in
+	  (1.2[DEAD]), utils/CGIinterface.pm.in (1.3[DEAD]),
+	  utils/Command.pm.in (1.5[DEAD]), utils/Logger.pm.in (1.2[DEAD]),
+	  utils/OpenSSLCA.pm.in (1.4[DEAD]): Perl modules are now of form
+	  GridShibCA::module Perl module sources moved to perl/GridShibCA
+
+2006-10-12 22:45  welch
+
+	* doc/footer.html (1.4): Fixed typo.
+
+2006-10-12 22:42  welch
+
+	* LICENSE (1.2), Makefile.in (1.29), configure.ac (1.38),
+	  doc/changelog.html.in (1.4), doc/footer.html (1.3),
+	  openssl-ca/LICENSE (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  openssl-ca/Makefile.in (1.1, v0_3_0-alpha), openssl-ca/README
+	  (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  openssl-ca/app_rand.c (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha), openssl-ca/apps.c
+	  (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha), openssl-ca/apps.h
+	  (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha), openssl-ca/e_os.h
+	  (1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha),
+	  openssl-ca/openssl-ca.c (1.1), utils/OpenSSLCA.pm.in (1.3):
+	  Builds and installs own openssl-ca program for certificate
+	  signing so that it can set the DN on signed certificates.
+
+2006-10-10 17:23  welch
+
+	* configure.ac (1.37): Separate out doc files that are autoconf
+	  generated from those that are not (e.g. jpegs).
+
+2006-10-10 17:22  welch
+
+	* Makefile.in (1.28): Make install-docs dependant just on
+	  documentation files and not all autoconf generated files.
+
+2006-10-10 17:20  welch
+
+	* doc/index.html.in (1.6): Moved links to ChangeLog and process
+	  flow under Other docs.
+
+2006-10-10 17:04  welch
+
+	* doc/changelog.html.in (1.3): Circumvent JWS installing its own
+	  SSLSocketFactory so that default SSLSocketFactory is used and our
+	  list of trusted CAs is honored.
+
+2006-10-10 14:05  welch
+
+	* configure.ac (1.36), doc/gridshib-ca-process-flow.graffle (1.1),
+	  doc/gridshib-ca-process-flow.jpg (1.1), doc/index.html.in (1.5),
+	  doc/process-flow.html.in (1.1): Added doc/process-flow.html.in
+	  describing GridShib-CA process flow.
+
+2006-10-08 15:26  welch
+
+	* utils/CGIinterface.pm.in (1.2): Log when illegal characters are
+	  detected in REMOTE_USER.
+
+2006-10-08 15:23  welch
+
+	* configure.ac (1.35), utils/Logger.pm.in (1.1): Added Logger.pm
+	  interface for logging.
+
+2006-10-08 14:33  welch
+
+	* utils/Command.pm.in (1.4): Removed comment about not being parsed
+	  by autoconf.
+
+2006-10-08 14:30  welch
+
+	* configure.ac (1.34), utils/CGIinterface.pm.in (1.1): Changed to
+	  strictly enforced taint mode (-T) Added CGIinterface.pm
+
+2006-10-08 14:30  welch
+
+	* utils/Command.pm.in (1.3): Added getStatus() method to get at
+	  command status.
+
+2006-10-08 14:27  welch
+
+	* utils/OpenSSLCA.pm.in (1.2): Fixed comparison of expected DN to
+	  DN in certificate request.
+
+2006-10-08 12:24  welch
+
+	* Makefile.in (1.27), configure.ac (1.33), doc/changelog.html.in
+	  (1.2), utils/CA.pm.in (1.1), utils/Command.pm.in (1.2),
+	  utils/OpenSSLCA.pm.in (1.1), utils/ca-openssl.pl.in (1.5[DEAD]):
+	  Added CA.pm as base interface for CA interactions with
+	  OpenSSLCA.pm as an instantiation for local OpenSSL-based CA
+	  Command.pm: getSTDOUT() -> getOutput(), getSTDERR() -> getError()
+
+2006-10-07 17:21  welch
+
+	* configure.ac (1.32), doc/changelog.html.in (1.1),
+	  doc/index.html.in (1.4): Started ChangeLog
+
+2006-10-07 16:27  welch
+
+	* configure.ac (1.31), utils/Command.pm.in (1.1),
+	  utils/ca-openssl.pl.in (1.4), utils/mapper.sh.in (1.2,
+	  v0_3_0-alpha): CredentialRetriever now using HTTP status code
+	  instead of own internal status header.  login now passes expected
+	  DN to CredentialRetreiver (via jnlp) CreaentialRetriever now
+	  generating key pair and sending certificate request to
+	  generateCred.pl Added Command.pm to handle executing programs.
+	  Starting to use RFC 2253 style DNs internally.  MyProxy
+	  interactions broken at this point.
+
+2006-10-07 16:17  welch
+
+	* Makefile.in (1.26): Added check-perl target for running 'perl -c'
+	  on generated perl scripts.
+
+2006-06-26 15:41  welch
+
+	* Makefile.in (1.25), configure.ac (1.30), doc/faq.html.in
+	  (1.3[DEAD]), doc/header.html (1.3, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha), doc/index.html.in
+	  (1.3): Better integration with gridshib.globus.org: Use
+	  pre-existing faq and images.
+
+2006-06-23 15:55  welch
+
+	* Makefile.in (1.24), configure.ac (1.29), doc/callouts.html.in
+	  (1.1), doc/install.html.in (1.8): Use underscores instead of dots
+	  in distribution file.  Move documentation to docs/ subdir.  Added
+	  doc/callouts.html
+
+2006-06-12 20:39  welch
+
+	* Makefile.in (1.23), doc/index.html.in (1.2), doc/install.html.in
+	  (1.7): Changes to reflect new release directory structure.
+
+2006-06-06 13:20  welch
+
+	* Makefile.in (1.22): Fixes for initial configure when Version.java
+	  doesn't exist yet.
+
+2006-06-06 13:16  welch
+
+	* doc/index.html.in (1.1): Added missing file.
+
+2006-06-05 17:21  vwelch
+
+	* configure.ac (1.28): Added gridshib-auth-prog callout.  Cleaned
+	  up gridshib-logger-prog callout.
+
+2006-06-05 17:19  vwelch
+
+	* utils/ca-openssl.pl.in (1.3): Added comment about needing to lock
+	  on serial file access.
+
+2006-06-05 17:17  vwelch
+
+	* doc/install.html.in (1.6): Fixed a couple of typos.
+
+2006-06-05 09:59  vwelch
+
+	* utils/ca-myproxy.pl.in (1.2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha): Add extra checking
+	  on key ownership and permissions.
+
+2006-06-05 09:59  vwelch
+
+	* configure.ac (1.27): Bumped to test version.
+
+2006-06-04 18:42  vwelch
+
+	* Makefile.in (1.21), doc/gridshib-ca-cert.tar (1.1, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha): Added doc/gridshib-ca-cert.tar
+
+2006-06-04 18:41  vwelch
+
+	* doc/install.html.in (1.5): Fixed typo.
+
+2006-06-04 18:26  tag v0_2_0
+
+2006-06-04 18:26  vwelch
+
+	* configure.ac (1.26, v0_2_0): Bumped to version 0.2.0
+
+2006-06-04 18:12  vwelch
+
+	* Makefile.in (1.20, v0_2_0), configure.ac (1.25), doc/faq.html.in
+	  (1.2, v0_2_0), doc/footer.html (1.2, v0_2_0), doc/header.html
+	  (1.2, v0_2_0), doc/install.html.in (1.4, v0_2_0),
+	  doc/license.html.in (1.2, v0_3_0-alpha, v0_2_0): Got
+	  documentation at least somewhat squared away.
+
+2006-06-04 16:56  vwelch
+
+	* Makefile.in (1.19), configure.ac (1.24), doc/install.html.in
+	  (1.3), utils/ca-myproxy.pl.in (1.1, v0_2_0),
+	  utils/ca-openssl.pl.in (1.2, v0_2_0): Functional myproxy CA
+	  support.  Improved error reporting.  Added troubleshooting
+	  information.
+
+2006-06-02 21:46  vwelch
+
+	* Makefile.in (1.18), configure.ac (1.23), doc/install.html.in
+	  (1.2), utils/ca-openssl.pl.in (1.1), utils/create-ca.pl.in
+	  (1.2[DEAD]), utils/create-openssl-ca.pl.in (1.1, v0_2_0): Split
+	  openssl CA into ca-openssl.pl.in Renamed create-ca.pl to
+	  create-openssl-ca.pl 'make install' now has dependency on
+	  configure-generated-scripts to automate     execution of
+	  config.status if needed.  Added --with-gridshib-ca-html-dir which
+	  disappeared somehow.	Cleaned up logger program support
+
+2006-06-02 20:14  vwelch
+
+	* Makefile.in (1.17), configure.ac (1.22), doc/faq.html.in (1.1),
+	  doc/footer.html (1.1), doc/header.html (1.1), doc/install.html.in
+	  (1.1), utils/create-ca.pl (1.2[DEAD]), utils/create-ca.pl.in
+	  (1.1): Put create-ca.pl.in in repo not create-ca.pl Moved
+	  faq.html.in to doc/ from webdocs/ Start of documentation in doc/
+	  Start of support for myproxy and openssl CA - no myproxy support
+	  yet Improved help for configure
+
+2006-05-31 16:48  vwelch
+
+	* configure.ac (1.21), utils/create-ca.pl (1.1),
+	  utils/tag-version.pl.in (1.2, v0_2_0): Version that uses openssl
+	  instead of myproxy.
+
+2006-05-31 11:04  vwelch
+
+	* version (1.2[DEAD]): Unused file.
+
+2006-05-31 11:03  vwelch
+
+	* INSTALL (1.2[DEAD]): Removed of unused file.
+
+2006-05-31 10:57  tag v0_1_5
+
+2006-05-31 10:57  vwelch
+
+	* configure.ac (1.20, v0_1_5): Bumped version to 0.1.5
+
+2006-04-20 15:23  vwelch
+
+	* Makefile.in (1.16, v0_1_5): Added 'clean' and 'realclean'
+	  targets.
+
+2006-04-13 20:25  vwelch
+
+	* configure.ac (1.19): Fixed bug with specifying html directory.
+	  Added checking and result messages for directories.
+
+2006-04-13 20:25  vwelch
+
+	* Makefile.in (1.15): Added sync-myvocs target.
+
+2006-04-07 21:42  vwelch
+
+	* configure.ac (1.18): Bumped to version 0.1.5-test
+
+2006-04-07 14:53  tag v0_1_4
+
+2006-04-07 14:53  vwelch
+
+	* configure.ac (1.17, v0_1_4): Bumped to version 0.1.4
+
+2006-04-05 21:12  vwelch
+
+	* configure.ac (1.16): Added syslog capabilities to
+	  generateCred.cgi Cleaned up file handling in generateCred.cgi
+
+2006-03-31 12:57  vwelch
+
+	* Makefile.in (1.14, v0_1_4), configure.ac (1.15): Added
+	  checkPrerequisites.html Added GridShibCATester JWS application.
+	  Changed name of jar to GridShibCA.jar Some minor build cleanups.
+
+2006-03-29 18:07  vwelch
+
+	* Makefile.in (1.13), configure.ac (1.14): Some general clean up of
+	  build process.  Moved list of all files into configure.ac and
+	  substitutions into Makefile.in
+
+2006-03-29 17:28  vwelch
+
+	* Makefile.in (1.12), configure.ac (1.13),
+	  images/Shibboleth-logo_RGB.jpg (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5, v0_1_4),
+	  images/globustoolkit.gif (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5, v0_1_4),
+	  images/openidp-logo-small.png (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5, v0_1_4): Moved images to
+	  images/ directory.
+
+2006-03-25 16:29  vwelch
+
+	* configure.ac (1.12), utils/tag-version.pl.in (1.1, v0_1_5,
+	  v0_1_4): Added utils/tag-version.pl.in to help me tag new version
+	  in CVS.
+
+2006-03-25 16:27  vwelch
+
+	* Makefile.in (1.11): Changed to implicit rule for auto
+	  regeneration of configure-outputed files.
+
+2006-03-25 15:50  tag v0_1_3
+
+2006-03-25 15:50  vwelch
+
+	* configure.ac (1.11, v0_1_3): Bumped version to 0.1.3 Added some
+	  automatic path checking to myproxy search.
+
+2006-03-25 14:58  vwelch
+
+	* Makefile.in (1.10, v0_1_3), configure.ac (1.10): Added
+	  login.html.in as redirection page prior to login cgi script
+	  Renamed generateCred.html.in to login.in
+
+2006-03-25 14:33  vwelch
+
+	* LICENSE (1.1, v0_2_0, v0_1_5, v0_1_4, v0_1_3), Makefile.in (1.9),
+	  configure.ac (1.9), doc/license.html.in (1.1, v0_1_5, v0_1_4,
+	  v0_1_3), utils/mapper.sh.in (1.1, v0_2_0, v0_1_5, v0_1_4,
+	  v0_1_3):
+	  Added license and copyright.	Start at generateCred.html page,
+	  but not integrated yet.  Broke html header and footer out into
+	  header.html.in and footer.html.in GRIDSHIB_URL fixed to
+	  GRIDSHIB_CA_URL Added utils/mapper.sh to return full DN.  Added
+	  Umask.java to check umask Broke out GUI into GUI.java Added
+	  copyright to Version.in Spurced up index.html.in
+
+2006-03-21 22:03  tag v0_1_2
+
+2006-03-21 22:03  vwelch
+
+	* configure.ac (1.8, v0_1_2): Bumped version to 0.1.2
+
+2006-03-21 21:57  vwelch
+
+	* Makefile.in (1.8, v0_1_2), configure.ac (1.7): Moved to using
+	  shibsession instead of my own generated token.  Got rid of
+	  unprotected cgi-bin directory.  JWS app now handles ERRORS from
+	  server correctly.  Fixed a bug in login where I was using static
+	  directory "gridshib-ca"     as code_base in jnlp file.
+
+2006-03-21 18:03  tag v0_1_1
+
+2006-03-21 18:03  vwelch
+
+	* Makefile.in (1.7), configure.ac (1.6), todo.txt (1.2, v0_2_0,
+	  v0_1_5, v0_1_4, v0_1_3, v0_1_2) (utags: v0_1_1): Bumped version
+	  to 0.1.1 Fixed images in welcome.pl Added sources to
+	  distribution.  Added version number to default gridshib-ca
+	  directory component name.  CredentialRetriever.jnlp is now
+	  generated by configure and includes version.	index.html doesn't
+	  refer to tarball any more.
+
+2006-03-19 09:24  vwelch
+
+	* Makefile.in (1.6), configure.ac (1.5): Prevent config.status
+	  refreshing Version.java from causing unneeded unneeded
+	  regenerations of Version.class and the jar file.
+
+2006-03-19 08:57  vwelch
+
+	* Makefile.in (1.5): Fixed some issues with making distributions.
+
+2006-03-19 08:17  vwelch
+
+	* Makefile.in (1.4), configure.ac (1.4), version (1.1, v0_1_5,
+	  v0_1_4, v0_1_3, v0_1_2, v0_1_1): Added versioning.  Tweaked
+	  default shibboleth-protected cgi-bin directory.
+
+2006-03-19 07:25  vwelch
+
+	* Makefile.in (1.3), configure.ac (1.3): Allow for autoregeneration
+	  of configure-generated stuff.
+
+2006-03-18 18:51  vwelch
+
+	* INSTALL (1.1, v0_1_5, v0_1_4, v0_1_3, v0_1_2, v0_1_1),
+	  INSTALL.config (1.2[DEAD]), Makefile.in (1.2), configure.ac
+	  (1.2): Got installation and a few bugs ironed out.
+
+2006-03-18 08:03  vwelch
+
+	* INSTALL.config (1.1), Makefile.in (1.1), build.xml (1.3[DEAD]),
+	  configure.ac (1.1), install-sh (1.1, v2_0_0_preview2, v1_0_0,
+	  v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5, v0_1_4, v0_1_3, v0_1_2,
+	  v0_1_1), todo.txt (1.1): New build system based on autoconf.
+
+2006-03-16 16:45  vwelch
+
+	* build.xml (1.2), createTrustStore.sh (1.1, v0_2_0, v0_1_5,
+	  v0_1_4, v0_1_3, v0_1_2, v0_1_1): Seems to be a basic functioning
+	  version using POST and HTTPS from the JWS application.
+
+2006-03-12 14:21  tag v0
+
+2006-03-12 14:21  vwelch
+
+	* .classpath (1.1), .project (1.1), build.xml (1.1): Initial
+	  revision
+
+2006-03-12 14:21  vwelch
+
+	* .classpath (1.1.1.1, v2_0_0_preview2, v1_0_0, v1_0_0_RC1,
+	  merge_NEW_JWS_CLIENT_BRANCH, merge_HTML_TEMPLATE_ADD_BRANCH,
+	  from_HTML_TEMPLATE_ADD, from_v0_5_BRANCH, merge_v0_5_0_BRANCH,
+	  v0_5_2_RC1, v0_5_2, v0_5_1, merge_v0_5_BRANCH, v0_5_0,
+	  HTML_TEMPLATE_ADD_ROOT, v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5,
+	  v0_1_4, v0_1_3, v0_1_2, v0_1_1), .project (1.1.1.1,
+	  v2_0_0_preview2, v1_0_0, v1_0_0_RC1, merge_NEW_JWS_CLIENT_BRANCH,
+	  merge_HTML_TEMPLATE_ADD_BRANCH, from_HTML_TEMPLATE_ADD,
+	  from_v0_5_BRANCH, merge_v0_5_0_BRANCH, v0_5_2_RC1, v0_5_2,
+	  v0_5_1, merge_v0_5_BRANCH, v0_5_0, HTML_TEMPLATE_ADD_ROOT,
+	  v0_4_0, v0_3_0-alpha, v0_2_0, v0_1_5, v0_1_4, v0_1_3, v0_1_2,
+	  v0_1_1), build.xml (1.1.1.1) (utags: v0): [no log message]
+

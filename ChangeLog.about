@@ -1,0 +1,20 @@
+February 04, 2010 - Terry Fleury <tfleury@illnios.edu>
+
+The ChangeLog file was generated using the "cvs2cl.pl" script available from 
+http://www.red-bean.com/cvs2cl/ .  This script queries the CVS repository
+using a "cvs log" command and outputs a GNU-style ChangeLog file.
+
+To get the cvs2cl.pl script:
+
+    cvs -d :pserver:anonymous@cvs.red-bean.com:/usr/local/cvs co cvs2cl
+
+To see the man page:
+
+    perldoc cvs2cl.pl
+
+To (re)generate the ChangeLog file, run the following command in the main
+gridshib-ca directory (the same one containing this file):
+
+    cvs2cl.pl -r -b -t -T --show-dead
+
+The previous ChangeLog is saved to ChangeLog.bak (not stored in CVS).
