@@ -212,8 +212,10 @@ sub getParamBoolean
 {
     my $self = shift;
 
-    # Config::General handles this for us, so we just use normal method
-    return $self->getParam(@_);
+    # Since -AutoTrue is off, we need to convert any strings 
+    # (such as yes, on, 1, true) to boolean values
+    $param = $self->getParam(@_);
+    return (($param =~ /^\s*yes|on|1|true\s*$/i) ? 1 : 0);
 }
 
 =item getParamURI()
@@ -730,8 +732,6 @@ sub _initConfig
         -InterPolateVars => 1,
         # Allow for OO type access to values
         -ExtendedAccess => 1,
-        # Automatically parse booleans
-        -AutoTrue => 1,
         # Allow for running under taint mode
         -AutoLaunder => 1,
         );
