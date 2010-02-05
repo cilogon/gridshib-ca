@@ -14,8 +14,8 @@ ConfigVersion = 2
 # General Configuration
 #
 
-# Set to "True" to enable debugging on server
-debug = False
+# Set to "true" to enable debugging on server
+debug = false
 
 # Contact address for this deployment
 ContactAddress = ContactAddressNotConfigured
@@ -125,7 +125,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
     class = GridShibCA::DisplayTemplate
     template = DebugTemplate
     # Add CSRF cookie for ShibLaunchGSCA.jnlp
-    addCSRF = True
+    addCSRF = true
     requirements = session_optional
   </Debug>
 
@@ -194,7 +194,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # trust store? The latter has the benefit that if the CA that signed
   # the web server certificate isn't recognized, the user will be
   # prompted if they want to trust the web site.
-  UseBundledCAs = True
+  UseBundledCAs = true
 </LaunchClient>
 
 <URLs>
@@ -288,7 +288,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   RandFile = ${RuntimePath}/openssl-random-state
 
   # Include Shibboleth SAML assertion in certificate
-  # If True, need to set JavaHome and GridShibSAMLToolsPath in <Binaries>
+  # If true, need to set JavaHome and GridShibSAMLToolsPath in <Binaries>
   IncludeSAMLInCert = false
 </OpenSSLCA>
 
