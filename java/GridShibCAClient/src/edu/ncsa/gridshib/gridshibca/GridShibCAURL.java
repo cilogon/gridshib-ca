@@ -76,6 +76,9 @@ public class GridShibCAURL
                 // Could not find trust store
                 throw new RuntimeException(e);
             }
+        } else
+        {
+            GridShibCAClientLogger.debugMessage("Using default trust store since useBundledCAs is false.");
         }
     }
 
