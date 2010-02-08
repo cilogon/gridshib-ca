@@ -101,6 +101,8 @@ sub _setTemplateMappings
     my $codebase =
         $self->{cgi}->url(-base => 1) .
         $self->{config}->getParam("GridShibCAURL");
+    # Fetch JNLP file via http to avoid JWS security warning
+    $codebase =~ s/^https/http/;
     my @Arguments = ();
     try
     {
