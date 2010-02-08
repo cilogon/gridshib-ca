@@ -140,7 +140,6 @@ WEBAPPS="\
 	webapps/GridShibCA.cgi \
 	webapps/launchGSCA.jnlp \
 	webapps/openid.cgi \
-	webapps/shibLaunchGSCA.jnlp \
 	"
 AC_SUBST(WEBAPPS)
 AC_CONFIG_FILES([$WEBAPPS])
