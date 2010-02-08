@@ -147,7 +147,6 @@ AC_SRC_FILES(WEBAPPS, WEBAPP_SRCS)
 AC_SUBST(WEBAPP_SRCS)
 
 TEMPLATE_FILES="\
-	templates/CredentialRetriever.jnlp \
 	templates/debug.html \
 	templates/error.html \
 	templates/GSCA.jnlp \
