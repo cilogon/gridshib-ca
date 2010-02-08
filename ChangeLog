@@ -1,3 +1,41 @@
+2010-02-08 13:41  tfleury
+
+	* perl/GridShibCA/LaunchJNLP.pm.in (1.12): Fetch the JNLP file via
+	  http rather than https to avoid security warning popup box from
+	  JWS app.
+
+2010-02-08 11:31  tfleury
+
+	* templates/debug.html (1.11): Output the CSRF hidden form element
+	  correctly.
+
+2010-02-08 11:18  tfleury
+
+	* configure.ac (1.172): Delete CredentialRetriever.jnlp from
+	  configure script as well.
+
+2010-02-08 10:56  tfleury
+
+	* templates/debug.html (1.10): Added logic so that the
+	  "Shibboleth-protected JWS Launch" button (which links to
+	  shibLaunchGSCA.jnlp) appears only when there is a valid
+	  shibboleth Identity Provider in the current session.
+
+2010-02-08 10:33  tfleury
+
+	* configure.ac (1.171): shibLaunchGSCA.jnlp needs to go only in the
+	  shib-protected directory.
+
+2010-02-08 10:29  tfleury
+
+	* templates/CredentialRetriever.jnlp (1.3[DEAD]): Removed
+	  CredentialRetriever.jnlp since no longer used.
+
+2010-02-05 16:22  tfleury
+
+	* ChangeLog (1.2): Update ChangeLog getting ready for a 2.0.0
+	  release.
+
 2010-02-05 16:21  tfleury
 
 	* configure.ac (1.170): Get set for a full 2.0.0 release (i.e. not
