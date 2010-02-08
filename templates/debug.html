@@ -33,13 +33,23 @@ Version { $Version }
 }
 </ul>
 </p>
+{
+  if ((%Attributes) &&
+      (exists($Attributes{'Shib_Identity_Provider'})) &&
+      (length($Attributes{'Shib_Identity_Provider'}) > 0)) {
+    $OUT .= '
 <h2>Special Commands</h2>
 <p>
-  <form method="POST" action="{$ShibProtectedURL}/shibLaunchGSCA.jnlp">
-    { $CSRF->getFormElement(); }
+  <form method="POST" action="{$ShibProtectedURL}/shibLaunchGSCA.jnlp">';
+    $CSRF->getFormElement();
+    $OUT .= '
     <input type="submit" value="Shibboleth-protected JWS Launch"/>
   </form>
-</p>
+</p>';
+  } else {
+    $OUT .= "\n";
+  }
+}
 <hr/>
 <h2>Session Dump</h2>
 <p>
