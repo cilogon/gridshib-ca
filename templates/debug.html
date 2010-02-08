@@ -40,8 +40,11 @@ Version { $Version }
     $OUT .= '
 <h2>Special Commands</h2>
 <p>
-  <form method="POST" action="{$ShibProtectedURL}/shibLaunchGSCA.jnlp">';
-    $CSRF->getFormElement();
+  <form method="POST" action="';
+    $OUT .= $ShibProtectedURL;
+    $OUT .= '/shibLaunchGSCA.jnlp">
+    ';
+    $OUT .= $CSRF->getFormElement();
     $OUT .= '
     <input type="submit" value="Shibboleth-protected JWS Launch"/>
   </form>
