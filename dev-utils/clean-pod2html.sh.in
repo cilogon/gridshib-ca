@@ -51,7 +51,7 @@ if test $? -eq 0 ; then
     # Exit on any error
     tmpFile=`$MKTEMP /tmp/clean-pod2html.XXXXXX` 
     $MV $file $tmpFile
-    $TAIL +2 $tmpFile > $file
+    $TAIL -n +2 $tmpFile > $file
     $RM -f $tmpFile
 fi
 
