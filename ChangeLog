@@ -1,3 +1,22 @@
+2010-02-09 13:13  tfleury
+
+	* utils/config.pl.in (1.4): Fix an incorrect "head" tag and also
+	  format example usage better.
+
+2010-02-09 12:57  tfleury
+
+	* Makefile.in (1.114): Fix "basename" command to put suffix to be
+	  stripped at end rather than by using '-s' option.
+
+2010-02-09 12:56  tfleury
+
+	* dev-utils/clean-pod2html.sh.in (1.4): Fix "tail" command to use
+	  newer style of specifying number of lines.
+
+2010-02-09 11:26  tfleury
+
+	* ChangeLog (1.4): Final update before 2.0.0 release.
+
 2010-02-09 10:38  tfleury
 
 	* templates/debug.html (1.12): Output a hidden form element for
