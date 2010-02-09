@@ -1,3 +1,47 @@
+2010-02-09 10:38  tfleury
+
+	* templates/debug.html (1.12): Output a hidden form element for
+	  DownloadTrustroots for when the "Shibboleth-protected JWS Launch"
+	  button is clicked.
+
+2010-02-09 09:51  tfleury
+
+	* templates/jnlp-launch.html (1.3): Explicitly set
+	  DownloadTrustroots to string "true" or "false".
+
+2010-02-09 09:51  tfleury
+
+	* templates/jnlp-launch-form.html (1.2): Chnage installTrustedCAs
+	  to DownloadTrustroots.
+
+2010-02-09 09:49  tfleury
+
+	* perl/GridShibCA/LaunchJNLP.pm.in (1.13): Set $provideTrustRoots
+	  to string 'false' rather than boolean 0.
+
+2010-02-09 09:49  tfleury
+
+	* perl/GridShibCA/JNLPForm.pm.in (1.3): Change installTrustedCAs to
+	  DownloadTrustroots.
+
+2010-02-09 09:47  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.7): Check the boolean value of DownloadCAs rather than simply
+	  checking if it was set or not.
+
+2010-02-09 09:46  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAURL.java
+	  (1.7): Remove unnecessary intermediate Boolean variable.
+
+2010-02-08 13:44  tfleury
+
+	* ChangeLog (1.3): This should be the last update before the 2.0.0
+	  release.
+
 2010-02-08 13:41  tfleury
 
 	* perl/GridShibCA/LaunchJNLP.pm.in (1.12): Fetch the JNLP file via
