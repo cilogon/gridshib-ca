@@ -74,9 +74,9 @@ sub doCommand
             $self->{logger}->debug("Requested lifetime is $lifetime");
             $mappings{Lifetime} = $lifetime;
             
-            my $installTrustedCAs = $self->{cgi}->requestedTrustedCAUpdate();
-            $self->{logger}->debug("installTrustedCAs = $installTrustedCAs");
-            $mappings{InstallTrustedCAs} = $installTrustedCAs;
+            my $downloadTrustroots = $self->{cgi}->requestedTrustedCAUpdate();
+            $self->{logger}->debug("downloadTrustroots = $downloadTrustroots");
+            $mappings{DownloadTrustroots} = $downloadTrustroots;
         }
         catch GridShibCA::CSRFException with
         {
