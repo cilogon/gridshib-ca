@@ -27,7 +27,8 @@
   # Do we have trust roots to provide to client?
   if ($Config->getParamBoolean("TrustRoots", "ProvideTrustRoots"))
   {
-    $OUT .= $CGI->checkbox(-name=>installTrustedCAs, -checked=>1, -value=>"true", -label=>"Update my trusted CAs");
+    $OUT .= $CGI->checkbox(-name=>DownloadTrustroots, -checked=>1, 
+                           -value=>"true", -label=>"Update my trusted CAs");
     $OUT .= "<br/>";
   }
   $OUT .= $CGI->submit("submit", "Press here to generate and download Grid credential.");
