@@ -541,7 +541,7 @@ $(CLEAN_POD2HTML): $(CLEAN_POD2HTML).in config.status
 perl-module-doc: $(PERL_MODULES_DOC_DIR) $(PERL_MODULES)
 	@chmod +x $(CLEAN_POD2HTML)
 	@for script in $(PERL_MODULES) ; do \
-	  f=`basename -s .pm $${script}` ;\
+	  f=`basename $${script} .pm` ;\
 	  t=GridShibCA::`basename $${script}` ;\
 	  out=$(PERL_DOC_DIR)/GridShibCA/$${f}.html ;\
 	  if test $${script} -nt $${out} ; then \
@@ -553,7 +553,7 @@ perl-module-doc: $(PERL_MODULES_DOC_DIR) $(PERL_MODULES)
 
 perl-script-doc: $(PERL_SCRIPTS_DOC_DIR) $(UTILS)
 	@for script in $(UTILS) ; do \
-	  f=`basename -s .pl $${script}` ;\
+	  f=`basename $${script} .pl` ;\
 	  t=GridShibCA::`basename $${script}` ;\
 	  out=$(PERL_SCRIPTS_DOC_DIR)/$${f}.html ;\
 	  if test $${script} -nt $${out} ; then \
