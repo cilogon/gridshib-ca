@@ -107,6 +107,9 @@ sub _setTemplateMappings
     try
     {
         my $provideTrustRoots = $self->{cgi}->param("DownloadTrustroots");
+        if (!$provideTrustRoots) {
+            $provideTrustRoots = 'false';
+        }
         push(@Arguments, "DownloadCAs=$provideTrustRoots");
     }
     otherwise
