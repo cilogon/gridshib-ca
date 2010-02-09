@@ -24,18 +24,18 @@ To set a value, give argument as for retrieving and add "=I<new value>".
 
 Example usage:
 
-% config.pl ContactAddress
-root@example.com
-% config.pl ContactAddress=root@example.org
-% config.pl ContactAddress
-root@example.org
-% config.pl Modules/Authorization
-GridShibCA::Authorization
-% config.pl Modules/Authorization=GridShibCA::MyAuthorization
-% config.pl Modules/Authorization
-GridShibCA::MyAuthorization
+ % config.pl ContactAddress
+   root@example.com
+ % config.pl ContactAddress=root@example.org
+ % config.pl ContactAddress
+   root@example.org
+ % config.pl Modules/Authorization
+   GridShibCA::Authorization
+ % config.pl Modules/Authorization=GridShibCA::MyAuthorization
+ % config.pl Modules/Authorization
+   GridShibCA::MyAuthorization
 
-=head Side Effects
+=head2 Side Effects
 
 Note that using config.pl to change a value has the effect of causing
 all interpolated variables in the configuration file to be
