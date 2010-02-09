@@ -44,10 +44,12 @@ Version { $Version }
     $OUT .= $ShibProtectedURL;
     $OUT .= '/shibLaunchGSCA.jnlp">
     ';
-    $OUT .= $CSRF->getFormElement();
-    $OUT .= '
-    <input type="submit" value="Shibboleth-protected JWS Launch"/>
-  </form>
+    $OUT .= $CSRF->getFormElement() . "\n";
+    if ($Config->getParamBoolean("TrustRoots","ProvideTrustRoots")) {
+      $OUT .= $CGI->hidden("DownloadTrustRoots","true") . "\n";
+    }
+    $OUT .= $CGI->submit("submit","Shibboleth-protected JWS Launch") . "\n";
+    $OUT .= ' </form>
 </p>';
   } else {
     $OUT .= "\n";
