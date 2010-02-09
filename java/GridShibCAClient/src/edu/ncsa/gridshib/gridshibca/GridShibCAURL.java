@@ -49,9 +49,7 @@ public class GridShibCAURL
      */
     public static void init()
     {
-        Boolean useBundledCAs = GridShibCAProperties.getPropertyAsBoolean("UseBundledCAs");
-
-        if (useBundledCAs)
+        if (GridShibCAProperties.getPropertyAsBoolean("UseBundledCAs"))
         {
             try
             {
