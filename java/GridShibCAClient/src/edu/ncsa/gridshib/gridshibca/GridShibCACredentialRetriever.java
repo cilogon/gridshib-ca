@@ -154,7 +154,7 @@ public class GridShibCACredentialRetriever
         this.message("Successfully wrote credential to disk.");
         view.displayCredentalInfo(credential);
 
-        if (GridShibCAProperties.isSet("DownloadCAs"))
+        if (GridShibCAProperties.getPropertyAsBoolean("DownloadCAs"))
         {
             try
             {
