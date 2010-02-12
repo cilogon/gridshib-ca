@@ -163,7 +163,9 @@ sub getAttributes
             ($var eq "HTTP_ENTITLEMENT") ||
             ($var eq "HTTP_EPPN") ||
             ($var eq "HTTP_TARGETED_ID") ||
-            ($var eq "HTTP_UNSCOPED_AFFILIATION"))
+            ($var eq "HTTP_UNSCOPED_AFFILIATION") ||
+            ($var eq "HTTP_ASSURANCE")
+           )
         {
             $attributes->{$var} = $ENV{$var};
         }
