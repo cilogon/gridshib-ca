@@ -6,7 +6,7 @@
 #
 ######################################################################
 
-=head1 GridShibCA::ShibSignOn
+=head1 GridShibCA::ShibLogon
 
 GridShib-CA interface to Shibboleth functionality.
 
@@ -125,7 +125,7 @@ sub getShibSession
     return $shibsession;
 }
 
-=item methodName
+=item getMethodName
 
 Return human-readable string identifying sign-on method.
 
