@@ -818,7 +818,7 @@ sub _newModule
                            $configVariable, $ex->text());
         throw GridShibCA::ModuleException($text);
     };
-    $self->_debug("Successfully instaneated class %s for module %s",
+    $self->_debug("Successfully instantiated class %s for module %s",
                   $className, $configVariable);
     return $instance;
 }

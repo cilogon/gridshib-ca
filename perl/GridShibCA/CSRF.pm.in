@@ -23,7 +23,7 @@ package GridShibCA::CSRF;
 use GridShibCA::Config;
 use GridShibCA::Exception qw(:try);
 
-# Static, cached value so the multiple instanteations of this class
+# Static, cached value so the multiple instantiations of this class
 # always use the same value.
 my $CachedToken = undef;
 
