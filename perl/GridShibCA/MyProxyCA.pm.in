@@ -75,10 +75,10 @@ sub new
     $self->{config} = GridShibCA::Config->new();
 
     try {
-      $self->{host} = $self->{config}->getParam("MyProxyCA", "Server");
-      $self->{port} = $self->{config}->getParam("MyProxyCA", "Port");
-      $self->{cert} = $self->{config}->getParam("MyProxyCA", "ClientCert");
-      $self->{key} = $self->{config}->getParam("MyProxyCA", "ClientKey");
+      $self->{confighost} = $self->{config}->getParam("MyProxyCA","Server");
+      $self->{configport} = $self->{config}->getParam("MyProxyCA","Port");
+      $self->{configcert} = $self->{config}->getParam("MyProxyCA","ClientCert");
+      $self->{configkey} = $self->{config}->getParam("MyProxyCA","ClientKey");
     } catch  GridShibCA::ConfigException with {
       my $ex = shift;
       throw GridShibCA::CAException("MyProxyCA configuration error: " . 
@@ -132,10 +132,10 @@ sub _signRequest
     my $reqPEM = $self->_convertReqPEMtoDER($certificateRequest);
 
     my $client = Globus::MyProxyClient->new(
-        ServerHost => $self->{host},
-        ServerPort => $self->{port},
-        ClientCert => $self->{cert},
-        ClientKey => $self->{key});
+        ServerHost => $self->_getHost($session),
+        ServerPort => $self->_getPort($session),
+        ClientCert => $self->_getCert($session),
+        ClientKey => $self->_getKey($session));
 
     if (!defined($client))
     {
@@ -171,6 +171,92 @@ sub _signRequest
     my $cert = $self->_convertCertDERtoPEM($certs[0]);
     my $x509 = $self->_X509fromPEM($cert);
     return $x509;
+}
+
+=item _getHost
+
+Returns the hostname of the MyProxyCA server.  In this class,
+the default MyProxyCA hostname as set in the gridshib-ca.conf
+file is returned.  This method can be overridden by subclasses
+to return a different value.
+
+B<Arguments:> A Session object.
+
+B<Returns:> The hostname of the MyProxyCA server.
+
+=cut
+
+sub _getHost
+{
+    my $self = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+    return $self->{confighost};
+}
+
+=item _getPort
+
+Returns the port number of the MyProxyCA server.  In this class,
+the default MyProxyCA port as set in the gridshib-ca.conf
+file is returned.  This method can be overridden by subclasses
+to return a different value.
+
+B<Arguments:> A Session object.
+
+B<Returns:> The port number of the MyProxyCA server.
+
+=cut
+
+sub _getPort
+{
+    my $self = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+    return $self->{configport};
+}
+
+=item _getCert
+
+Returns the client certificate to use when connecting to the MyProxyCA
+server.  In this class, the default client certificate as set in the
+gridshib-ca.conf file is returned.  This method can be overridden by
+subclasses to return a different value.
+
+B<Arguments:> A Session object.
+
+B<Returns:> The client certificate to use when connecting to the MyProxyCA
+server.
+
+=cut
+
+sub _getCert
+{
+    my $self = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+    return $self->{configcert};
+}
+
+=item _getKey
+
+Returns the client private key to use when connecting to the MyProxyCA
+server.  In this class, the default client private key as set in the
+gridshib-ca.conf file is returned.  This method can be overridden by
+subclasses to return a different value.
+
+B<Arguments:> A Session object.
+
+B<Returns:> The client private key to use when connecting to the MyProxyCA
+server.
+
+=cut
+
+sub _getKey
+{
+    my $self = shift;
+    my $session = shift ||
+      throw GridShibCA::CAException("Missing session argument");
+    return $self->{configkey};
 }
 
 =item _getMyProxyUsername
