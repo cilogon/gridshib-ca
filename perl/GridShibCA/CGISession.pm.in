@@ -454,7 +454,7 @@ sub createClientSession
         $self->{config}->getParam("Session",
                                   "CredentialRetrieverClientLifetime");
     $session->createNew(-lifetime => $lifetime, -type => "CredentialIssuer");
-    $self->{logger}->debug("New client session %s created (lifeime: %d)",
+    $self->{logger}->debug("New client session %s created (lifetime: %d)",
                            $session->id(), $lifetime);
 
     # Fill in new client session with values from current session
