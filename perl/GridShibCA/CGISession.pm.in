@@ -229,7 +229,7 @@ sub fromUserIdentity
     my $self = shift;
     $self->_checkSession();
     my $id = shift ||
-        throw GridShibCA::SessionException("missing identity argument");
+        throw GridShibCA::SessionException("Missing identity argument");
 
     $self->param("UserId", $id->userId());
     $self->param("IdP", $id->idpId());

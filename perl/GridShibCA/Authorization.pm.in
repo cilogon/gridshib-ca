@@ -97,7 +97,7 @@ sub authorizeSession
 {
     my $self = shift;
     my $session = shift ||
-        throw GridShibCA::AuthorizationException("Missing sesssion argument");
+        throw GridShibCA::AuthorizationException("Missing session argument");
 
     my $userId = $session->param("UserId");
     if (!defined($userId) or ($userId eq ""))
