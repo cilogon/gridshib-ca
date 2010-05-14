@@ -45,7 +45,7 @@ sub new
 
     $self->{cgi} = CGI->new() ||
         throw GridShibCA::TemplateException(
-            "Could not instaneate CGI instance");;
+            "Could not instantiate CGI instance");;
 
     # Reference to array of cookies to add to HTML
     $self->{cookies} = undef;
