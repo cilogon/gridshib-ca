@@ -38,7 +38,7 @@ public class Credential
 {
 
     // Default private key size to generate
-    private static int defaultKeySize = 1024;
+    private static int defaultKeySize = 2048;
 
     // Default key algorithm to use for generation
     private static String defaultKeyAlg = "RSA";

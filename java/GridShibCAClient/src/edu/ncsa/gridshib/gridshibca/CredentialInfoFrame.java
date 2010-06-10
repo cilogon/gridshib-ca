@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.WindowConstants;
 import org.jdesktop.application.Action;
+import org.globus.util.ConfigUtil;
 
 /**
  * Show user information about their credential.
@@ -34,6 +35,7 @@ public class CredentialInfoFrame
         setTitle("GridShib-CA Credential Information");
         globusIdField.setEditable(false);
         rfcIdField.setEditable(false);
+        locationField.setEditable(false);
         validUntilField.setEditable(false);
     }
 
@@ -54,6 +56,8 @@ public class CredentialInfoFrame
         rfcIdField = new javax.swing.JTextField();
         validUntilLabel = new javax.swing.JLabel();
         validUntilField = new javax.swing.JTextField();
+        locationLabel = new javax.swing.JLabel();
+        locationField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -64,6 +68,7 @@ public class CredentialInfoFrame
         closeButton.setText(resourceMap.getString("doneButton.text")); // NOI18N
         closeButton.setName("doneButton"); // NOI18N
 
+        titleLabel.setFont(resourceMap.getFont("titleLabel.font")); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         titleLabel.setText(resourceMap.getString("titleLabel.text")); // NOI18N
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -88,36 +93,35 @@ public class CredentialInfoFrame
         validUntilField.setText(resourceMap.getString("validUntilField.text")); // NOI18N
         validUntilField.setName("validUntilField"); // NOI18N
 
+        locationLabel.setText(resourceMap.getString("locationLabel.text")); // NOI18N
+        locationLabel.setName("locationLabel"); // NOI18N
+
+        locationField.setText(resourceMap.getString("locationField.text")); // NOI18N
+        locationField.setName("locationField"); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(globusIdLabel)
-                        .addContainerGap(245, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(rfcIdLabel)
-                        .addContainerGap(229, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, rfcIdField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                            .add(globusIdField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(validUntilLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(validUntilField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(closeButton)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
-                        .add(titleLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(132, Short.MAX_VALUE))))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rfcIdField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, globusIdField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                            .add(globusIdLabel)
+                            .add(rfcIdLabel)
+                            .add(locationLabel)
+                            .add(locationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(validUntilLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(validUntilField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
+                                .add(closeButton)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -128,16 +132,19 @@ public class CredentialInfoFrame
                 .add(globusIdLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(globusIdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(7, 7, 7)
-                .add(rfcIdLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rfcIdLabel)
+                .add(7, 7, 7)
                 .add(rfcIdField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(locationLabel)
+                .add(4, 4, 4)
+                .add(locationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(14, 14, 14)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(validUntilLabel)
+                    .add(closeButton)
                     .add(validUntilField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(closeButton)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -169,6 +176,7 @@ public class CredentialInfoFrame
     {
         globusIdField.setText(cred.getSubjectGlobusFormat());
         rfcIdField.setText(cred.getSubject());
+        locationField.setText(ConfigUtil.discoverProxyLocation());
         validUntilField.setText(cred.getNotAfter().toString());
     }
 
@@ -191,6 +199,8 @@ public class CredentialInfoFrame
     private javax.swing.JButton closeButton;
     private javax.swing.JTextField globusIdField;
     private javax.swing.JLabel globusIdLabel;
+    private javax.swing.JTextField locationField;
+    private javax.swing.JLabel locationLabel;
     private javax.swing.JTextField rfcIdField;
     private javax.swing.JLabel rfcIdLabel;
     private javax.swing.JLabel titleLabel;
