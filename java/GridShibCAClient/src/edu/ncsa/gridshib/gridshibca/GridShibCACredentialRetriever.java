@@ -117,7 +117,7 @@ public class GridShibCACredentialRetriever
             return;
         }
 
-        this.message("Requesting credential from GridShib-CA server.");
+        this.message("Generating certificate and keys...");
         try
         {
             int lifetime = GridShibCAProperties.getPropertyAsInt("lifetime");
@@ -137,7 +137,7 @@ public class GridShibCACredentialRetriever
             return;
         }
 
-        this.message("Successfully received credential.");
+        this.message("Received certificate.");
 
         try
         {
@@ -151,14 +151,14 @@ public class GridShibCACredentialRetriever
             fatalError("Error writing credentials to local file", e);
             return;
         }
-        this.message("Successfully wrote credential to disk.");
+        this.message("Certificate written to file.");
         view.displayCredentalInfo(credential);
 
         if (GridShibCAProperties.getPropertyAsBoolean("DownloadCAs"))
         {
             try
             {
-                message("Retrieving trusted CAs.");
+                message("Downloading CAs...");
                 URL gridshibCAURL = GridShibCAProperties.getPropertyAsURL("WebAppURL");
                 GridShibCATrustRootsURL trustRootsURL = new GridShibCATrustRootsURL(gridshibCAURL);
                 trustRootsURL.getTrustRoots();
@@ -197,7 +197,7 @@ public class GridShibCACredentialRetriever
             }
         }
 
-        this.message("Credential successfully saved.");
+        this.message("Done!");
         view.doneLabel.setEnabled(true);
         view.displaySuccess();
         view.enableExitButton();
