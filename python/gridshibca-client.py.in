@@ -143,13 +143,14 @@ class GridShibCATrustRootsURL(GridShibCAURL):
             file.close()
             
 class GridShibCACredentialIssuerURL(GridShibCAURL):
-    def requestCertificate(self, authToken):
+    def requestCertificate(self, authToken, lifetime):
         """Request certificate from GridShib-CA. Returns X509Credential object."""
         credential = X509Credential()
         requestPEM = credential.generateRequest()
         debug("Request generated:\n%s" % requestPEM)
         postFields = {
             "command" : "IssueCert",
+            "lifetime" : lifetime,
             "GRIDSHIBCA_SESSION_ID" : authToken,
             "certificateRequest" : requestPEM,
             }
@@ -232,6 +233,9 @@ def main(argv=None):
     parser.add_option("-d", "--debug",
                       dest="debug", action="store_true", default=False,
                       help="show debug messages")
+    parser.add_option("-l", "--lifetime",
+                      dest="lifetime", default=43200,
+                      help="requested certificate lifetime (seconds)")
     parser.add_option("-q", "--quiet",
                       dest="quiet", action="store_true", default=False,
                       help="run quietly")
@@ -257,7 +261,7 @@ def main(argv=None):
         authToken = getpass.getpass("Please enter your Authentication token: ").strip();
     progress("Using GridShib CA server at %s" % options.serverURL)
     try:
-        credential = credIssuer.requestCertificate(authToken)
+        credential = credIssuer.requestCertificate(authToken, options.lifetime)
     except Exception, err:
         print "Error retrieving credential: ", err
         sys.exit(1)
