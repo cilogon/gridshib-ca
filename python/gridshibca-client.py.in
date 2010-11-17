@@ -178,7 +178,7 @@ class X509Credential:
 
     def generateRequest(self,
                         keyType = crypto.TYPE_RSA,
-                        bits = 1024,
+                        bits = 2048,
                         messageDigest = "sha1"):
         """Generate a request and return the PEM-encoded PKCS10 object."""
         progress("Generating private keys and certificate request.")
