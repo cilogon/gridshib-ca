@@ -4,7 +4,7 @@ GridShibCAProperties.java
 
 This file is part of the GridShib-CA distribution.
 
-Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Copyright 2006-2010 The Board of Trustees of the University of Illinois.
 Please see LICENSE at the root of the distribution.
 */
 
@@ -37,7 +37,9 @@ public class GridShibCAProperties
         "UseBundledCAs", // Use CAs in JWS jar to validate HTTPs connections.
         "RedirectURL", // URL to redirect browser to on success
         "TestLaunch", // Just test launch and exit
-        "lifetime" // Requested credential lifetime
+        "lifetime", // Requested credential lifetime
+        "minPassphraseLength", // for encrypting private keys
+        "maxCleartextLifetime" // max seconds before passphrase required
     };
 
     /**
@@ -56,6 +58,8 @@ public class GridShibCAProperties
         properties.setProperty("TestLaunch", "false");
         properties.setProperty("DownloadCAs", "true");
         properties.setProperty("lifetime", "0"); // 0 == default
+        properties.setProperty("minPassphraseLength", "12"); // IGTF standard
+        properties.setProperty("maxCleartextLifetime", "1000000"); // IGTF std
         
         // Load from our JWS Jar
         properties.load(propertiesResource.asStream());
