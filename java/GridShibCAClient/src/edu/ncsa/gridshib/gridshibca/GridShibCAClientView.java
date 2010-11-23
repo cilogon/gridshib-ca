@@ -4,19 +4,16 @@ GridShibCAClientView.java
 
 This file is part of the GridShib-CA distribution.
 
-Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Copyright 2006-2010 The Board of Trustees of the University of Illinois.
 Please see LICENSE at the root of the distribution.
 */
 
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.WindowConstants;
 import org.jdesktop.application.ResourceMap;
 
 /**
@@ -135,6 +132,14 @@ public class GridShibCAClientView
         exitButton.setEnabled(true);
     }
 
+    public char [] getPassphrase()
+    {
+        PassphraseDialog pDialog =
+                new PassphraseDialog(mainFrame, /* modal */ true);
+        pDialog.setLocationRelativeTo(mainFrame);
+        return pDialog.getPassphrase();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -202,7 +207,7 @@ public class GridShibCAClientView
                             .add(mainPanelLayout.createSequentialGroup()
                                 .add(statusTitleLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 191, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
                             .add(doneLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 317, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(mainPanelLayout.createSequentialGroup()
                         .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -224,9 +229,9 @@ public class GridShibCAClientView
                         .add(20, 20, 20)
                         .add(jLabel1)
                         .add(38, 38, 38)
-                        .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, statusTitleLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, statusLabel))
+                        .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(statusTitleLabel)
+                            .add(statusLabel))
                         .add(18, 18, 18)
                         .add(doneLabel)
                         .add(18, 18, 18)
