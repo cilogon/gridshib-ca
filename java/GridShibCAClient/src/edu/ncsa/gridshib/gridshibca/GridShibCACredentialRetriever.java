@@ -4,12 +4,13 @@ GridShibCAClientApp.java
 
 This file is part of the GridShib-CA distribution.
 
-Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Copyright 2006-2010 The Board of Trustees of the University of Illinois.
 Please see LICENSE at the root of the distribution.
 */
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Calendar;
 
 /**
  * The main class of the application.
@@ -138,13 +139,35 @@ public class GridShibCACredentialRetriever
         }
 
         this.message("Received certificate.");
+        
+        // If the certificate is long-lived 
+        // (lifetime greater than maxCleartextLifetime),
+        // then encrypt the private key and write out a pkcs12 object.
+        char [] passphrase = null;
+        Calendar maxLifetime = Calendar.getInstance();
+        maxLifetime.add(Calendar.SECOND,
+                GridShibCAProperties.getPropertyAsInt("maxCleartextLifetime"));
+        if (credential.getNotAfter().after(maxLifetime.getTime())) {
+            this.message("Prompting for passphrase.");
+            passphrase = view.getPassphrase();
+            if (passphrase == null || 
+                    passphrase.length < GridShibCAProperties.getPropertyAsInt("minPassphraseLength")) {
+                fatalError("Invalid passphrase.");
+            }
+        }
 
+        this.message("Writing credentials to local file...");
         try
         {
-            String proxyFile = null;
+            String proxyFile = null, pkcs12File = null;
 
-            proxyFile = credential.writeToDefaultProxyFile();
+            proxyFile = credential.writeToDefaultProxyFile(passphrase);
             this.debug("Credential written to: " + proxyFile);
+
+            if (passphrase != null) { // pkcs12 requires a passphrase
+                pkcs12File = proxyFile.concat(".p12");
+                credential.writeToPKCS12File(pkcs12File, passphrase);
+            }
 
         } catch (Exception e)
         {
@@ -268,7 +291,7 @@ public class GridShibCACredentialRetriever
     }
 
     /**
-     * Verify propertie are valid.
+     * Verify properties are valid.
      * @throws IllegalArgumentException
      */
     private void validateProperties()
