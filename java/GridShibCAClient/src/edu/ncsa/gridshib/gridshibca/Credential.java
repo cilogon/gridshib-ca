@@ -4,31 +4,35 @@ Credential.java
 
 This file is part of the GridShib-CA distribution.
 
-Copyright 2006-2009 The Board of Trustees of the University of Illinois.
+Copyright 2006-2010 The Board of Trustees of the University of Illinois.
 Please see LICENSE at the root of the distribution.
 */
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.cert.Certificate;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-
 import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
+import javax.crypto.Cipher;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-
+import org.bouncycastle.openssl.PEMWriter;
 import org.globus.util.ConfigUtil;
-import org.globus.util.Util;
 
 /**
  * Class representing the user's X.509 credential (private key and
@@ -104,6 +108,7 @@ public class Credential
                 keyPair.getPrivate(),
                 pkcs10Provider);
 
+                // XXX Use BouncyCastle's PEMWriter
         String requestPEM = PEMEncoder.encodePKCS10CertificationRequest(pkcs10);
 
         return requestPEM;
@@ -164,6 +169,7 @@ public class Credential
     public void readX509CertFromPEM(InputStream inStream)
             throws IOException, CertificateException
     {
+        // XXX Use BouncyCastle's PEMReader
         this.cert = PEMEncoder.x509CertFromPEM(inStream);
     }
 
@@ -183,6 +189,22 @@ public class Credential
     }
 
     /**
+     * Write this credential, in a format suitable for Globus, to the current
+     * user's default proxy file.
+     * @param passphrase Passphrase to encrypt private key
+     * @return Path of default proxy file.
+     * @throws java.io.IOException
+     * @throws java.security.cert.CertificateException
+     */
+    public String writeToDefaultProxyFile(char [] passphrase)
+            throws IOException, CertificateException
+    {
+        String proxyPath = ConfigUtil.discoverProxyLocation();
+        this.writeToFile(proxyPath, passphrase);
+        return proxyPath;
+    }
+
+    /**
      * Write this credential, in a format suitable for Globus, to the given
      * path.
      * @param path Path to which to write the file.
@@ -192,31 +214,85 @@ public class Credential
     public void writeToFile(String path)
             throws IOException, CertificateException
     {
+        writeToFile(path, null);
+    }
+
+    /**
+     * Write this credential, in a format suitable for Globus, to the given
+     * path.
+     * @param path Path to which to write the file.
+     * @param passphrase Passphrase with which to encrypt the private key
+     * @throws java.io.IOException
+     * @throws java.security.cert.CertificateException
+     */
+    public void writeToFile(String path, char[] passphrase)
+            throws IOException, CertificateException
+    {
         File outFile = new File(path);
 
         outFile.delete();
         // Argh. small time window here where file could be opened()
         // unless umask is set correctly.
         //
-        // XXX Java 6 allows for attributes in the Create File call which
+        // XXX Java 7 allows for attributes in the Create File call which
         // should be used here to prevent race condition.
         // http://java.sun.com/docs/books/tutorial/essential/io/fileAttr.html#posix
         outFile.createNewFile();
 
-        // Note that umask value here is converted to a string as a decimal
-        // value. So don't pass a octal value, but the octal value as if it
-        // was a decimal.
-        Util.setFilePermissions(path, 600);
+        setOwnerAccessOnly(outFile);
 
-        FileWriter out = new FileWriter(outFile);
+        // Find a trusted security Provider that can encrypt the key if needed
+        String providerName = null;
+        try {
+            Cipher c = Cipher.getInstance("DES/CBC/NoPadding");
+            Provider p = c.getProvider();
+            providerName = p.getName();
+        } catch (Exception e) {
+        }
 
-        out.write(PEMEncoder.x509CertToPEM(cert));
-
-        // Now output private key
-        RSAPrivateKey privateKey = (RSAPrivateKey) this.keyPair.getPrivate();
-        String privateKeyPEM =
-                PEMEncoder.encodeRSAPrivateKeyPKCS1(privateKey);
-        out.write(privateKeyPEM);
-        out.close();
+        FileWriter fw = new FileWriter(outFile);
+        PEMWriter pemWriter = new PEMWriter(fw, providerName);
+        pemWriter.writeObject(cert);
+        if (passphrase != null && passphrase.length > 0) {
+            pemWriter.writeObject(keyPair.getPrivate(), "DES-EDE3-CBC",
+                    passphrase, new SecureRandom());
+        } else {
+            pemWriter.writeObject(keyPair.getPrivate());
+        }
+        pemWriter.close();
+        fw.close();
     }
+
+    /**
+     * Write this credential, in PKCS12 format, to the given path.
+     * @param path Path to which to write the file.
+     * @param password Passphrase with which to encrypt the private key
+     * @throws java.io.IOException
+     * @throws java.security.cert.CertificateException
+     */
+    public void writeToPKCS12File(String path, char[] password)
+            throws KeyStoreException, NoSuchProviderException, IOException,
+                   NoSuchAlgorithmException, CertificateException
+    {
+        KeyStore keyStore = KeyStore.getInstance("pkcs12");
+        Certificate[] chain = new Certificate[] { cert };
+        keyStore.load(null, password);
+        keyStore.setKeyEntry("default", this.keyPair.getPrivate(), password,
+                chain);
+        File outFile = new File(path);
+        setOwnerAccessOnly(outFile);
+        FileOutputStream keyStoreOut = new FileOutputStream(outFile);
+        keyStore.store(keyStoreOut, password);
+        keyStoreOut.close();
+    }
+
+    /**
+     * Sets permissions on a given file to be only accessible by the current
+     * user.
+     */
+    private static boolean setOwnerAccessOnly(File f) {
+        return f.setReadOnly() && f.setReadable(false, false)
+                && f.setReadable(true) && f.setWritable(true);
+    }
+
 }
