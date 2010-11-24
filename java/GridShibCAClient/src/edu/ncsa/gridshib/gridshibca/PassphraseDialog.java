@@ -51,7 +51,11 @@ public class PassphraseDialog extends javax.swing.JDialog {
         OK = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setBounds(new java.awt.Rectangle(4, 22, 485, 280));
+        setMaximumSize(new java.awt.Dimension(485, 280));
+        setMinimumSize(new java.awt.Dimension(485, 280));
         setName("Form"); // NOI18N
+        setPreferredSize(new java.awt.Dimension(400, 280));
 
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getResourceMap(PassphraseDialog.class);
         Title.setFont(resourceMap.getFont("Title.font")); // NOI18N
@@ -88,6 +92,7 @@ public class PassphraseDialog extends javax.swing.JDialog {
 
         OK.setText(resourceMap.getString("OK.text")); // NOI18N
         OK.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        OK.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         OK.setName("OK"); // NOI18N
         OK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -99,30 +104,31 @@ public class PassphraseDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, Title, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(Instructions1)
-                .addContainerGap(171, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(Title, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                    .add(OK))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(Instructions2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPasswordField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+                .add(Instructions1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(Instructions2)
-                .addContainerGap(221, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPasswordField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+                .add(jPasswordField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(223, Short.MAX_VALUE)
-                .add(OK)
-                .add(186, 186, 186))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
+                .add(jPasswordField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -130,19 +136,19 @@ public class PassphraseDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(Title)
-                .add(35, 35, 35)
+                .add(18, 18, 18)
                 .add(Instructions1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(10, 10, 10)
                 .add(jPasswordField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(Instructions2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPasswordField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(statusLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
                 .add(OK)
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -216,6 +222,7 @@ public class PassphraseDialog extends javax.swing.JDialog {
         OK.setEnabled(false);
         statusLabel.setText(" ");
         Instructions1.setText("Enter a " + minPassphraseLength + " character (or longer) passphrase to protect your private key:");
+        setResizable(false);
         setVisible(true);
     }
 
