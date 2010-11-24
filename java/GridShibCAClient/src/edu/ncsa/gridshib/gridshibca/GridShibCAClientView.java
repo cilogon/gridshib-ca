@@ -188,10 +188,11 @@ public class GridShibCAClientView
         exitButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
+        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+        helpMenu = new javax.swing.JMenu();
         showCredInfoMenuItem = new javax.swing.JMenuItem();
         showDebugMenuItem = new javax.swing.JMenuItem();
         showHelpMenuItem = new javax.swing.JMenuItem();
-        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
 
         mainPanel.setMaximumSize(new java.awt.Dimension(400, 500));
         mainPanel.setMinimumSize(new java.awt.Dimension(400, 200));
@@ -306,26 +307,31 @@ public class GridShibCAClientView
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
-        showCredInfoMenuItem.setAction(actionMap.get("showCredentialInfo")); // NOI18N
-        showCredInfoMenuItem.setText(resourceMap.getString("showCredInfoMenuItem.text")); // NOI18N
-        showCredInfoMenuItem.setName("showCredInfoMenuItem"); // NOI18N
-        fileMenu.add(showCredInfoMenuItem);
-
-        showDebugMenuItem.setAction(actionMap.get("showDebugFrame")); // NOI18N
-        showDebugMenuItem.setText(resourceMap.getString("showDebugMenuItem.text")); // NOI18N
-        showDebugMenuItem.setName("showDebugMenuItem"); // NOI18N
-        fileMenu.add(showDebugMenuItem);
-
-        showHelpMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
-        showHelpMenuItem.setText(resourceMap.getString("showHelpMenuItem.text")); // NOI18N
-        showHelpMenuItem.setName("showHelpMenuItem"); // NOI18N
-        fileMenu.add(showHelpMenuItem);
-
         exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
         exitMenuItem.setName("exitMenuItem"); // NOI18N
         fileMenu.add(exitMenuItem);
 
         menuBar.add(fileMenu);
+
+        helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
+        helpMenu.setName("helpMenu"); // NOI18N
+
+        showCredInfoMenuItem.setAction(actionMap.get("showCredentialInfo")); // NOI18N
+        showCredInfoMenuItem.setText(resourceMap.getString("showCredInfoMenuItem.text")); // NOI18N
+        showCredInfoMenuItem.setName("showCredInfoMenuItem"); // NOI18N
+        helpMenu.add(showCredInfoMenuItem);
+
+        showDebugMenuItem.setAction(actionMap.get("showDebugFrame")); // NOI18N
+        showDebugMenuItem.setText(resourceMap.getString("showDebugMenuItem.text")); // NOI18N
+        showDebugMenuItem.setName("showDebugMenuItem"); // NOI18N
+        helpMenu.add(showDebugMenuItem);
+
+        showHelpMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        showHelpMenuItem.setText(resourceMap.getString("showHelpMenuItem.text")); // NOI18N
+        showHelpMenuItem.setName("showHelpMenuItem"); // NOI18N
+        helpMenu.add(showHelpMenuItem);
+
+        menuBar.add(helpMenu);
 
         setComponent(mainPanel);
         setMenuBar(menuBar);
@@ -342,6 +348,7 @@ public class GridShibCAClientView
     private javax.swing.JLabel PKCSlocationLabel;
     public javax.swing.JLabel doneLabel;
     private javax.swing.JButton exitButton;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField locationField;
     private javax.swing.JLabel locationLabel;
