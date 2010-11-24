@@ -163,10 +163,12 @@ public class GridShibCACredentialRetriever
 
             proxyFile = credential.writeToDefaultProxyFile(passphrase);
             this.debug("Credential written to: " + proxyFile);
+            view.showCredentialLocation(proxyFile);
 
             if (passphrase != null) { // pkcs12 requires a passphrase
                 pkcs12File = proxyFile.concat(".p12");
                 credential.writeToPKCS12File(pkcs12File, passphrase);
+                view.showPKCS12Location(pkcs12File);
             }
 
         } catch (Exception e)
