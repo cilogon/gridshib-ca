@@ -10,6 +10,7 @@ Please see LICENSE at the root of the distribution.
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
@@ -38,6 +39,8 @@ public class DebugFrame
 
         // XXX Make this a resource
         setTitle("GridShib-CA Debug Log");
+        closeButton.requestFocus();
+        debugText.setEditable(false);
 
     }
 
@@ -65,6 +68,7 @@ public class DebugFrame
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
+        debugText.setBackground(resourceMap.getColor("debugText.background")); // NOI18N
         debugText.setColumns(20);
         debugText.setRows(5);
         debugText.setMinimumSize(new java.awt.Dimension(0, 0));
@@ -75,6 +79,11 @@ public class DebugFrame
         closeButton.setAction(actionMap.get("close")); // NOI18N
         closeButton.setText(resourceMap.getString("closeButton.text")); // NOI18N
         closeButton.setName("closeButton"); // NOI18N
+        closeButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                closeButtonKeyReleased(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -86,12 +95,9 @@ public class DebugFrame
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 541, Short.MAX_VALUE)
                         .add(closeButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.CENTER, titleLabel))
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.CENTER, layout.createSequentialGroup()
-                .addContainerGap(234, Short.MAX_VALUE)
-                .add(titleLabel)
-                .addContainerGap(234, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -106,6 +112,12 @@ public class DebugFrame
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void closeButtonKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_closeButtonKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            close();
+        }
+    }//GEN-LAST:event_closeButtonKeyReleased
 
     /**
      * @param args the command line arguments

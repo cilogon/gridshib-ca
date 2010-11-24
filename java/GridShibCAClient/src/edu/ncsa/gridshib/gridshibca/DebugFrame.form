@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.1" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <Properties>
@@ -24,20 +24,16 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace pref="541" max="32767" attributes="0"/>
                       <Component id="closeButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane1" alignment="1" pref="620" max="32767" attributes="0"/>
+                  <Component id="titleLabel" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="2" attributes="0">
-              <EmptySpace pref="234" max="32767" attributes="0"/>
-              <Component id="titleLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="234" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -74,6 +70,7 @@
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="debugText">
           <Properties>
+            <Property name="background" type="java.awt.Color" resourceKey="debugText.background"/>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -92,6 +89,9 @@
         <Property name="text" type="java.lang.String" resourceKey="closeButton.text"/>
         <Property name="name" type="java.lang.String" value="closeButton" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="closeButtonKeyReleased"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
