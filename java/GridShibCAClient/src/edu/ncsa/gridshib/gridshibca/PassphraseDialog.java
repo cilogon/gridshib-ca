@@ -52,8 +52,8 @@ public class PassphraseDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBounds(new java.awt.Rectangle(4, 22, 485, 280));
-        setMaximumSize(new java.awt.Dimension(485, 280));
-        setMinimumSize(new java.awt.Dimension(485, 280));
+        setMaximumSize(new java.awt.Dimension(485, 400));
+        setMinimumSize(new java.awt.Dimension(485, 100));
         setName("Form"); // NOI18N
         setPreferredSize(new java.awt.Dimension(400, 280));
 
@@ -63,6 +63,7 @@ public class PassphraseDialog extends javax.swing.JDialog {
         Title.setText(resourceMap.getString("Title.text")); // NOI18N
         Title.setName("Title"); // NOI18N
 
+        jPasswordField1.setBackground(resourceMap.getColor("jPasswordField1.background")); // NOI18N
         jPasswordField1.setText(resourceMap.getString("jPasswordField1.text")); // NOI18N
         jPasswordField1.setToolTipText(resourceMap.getString("jPasswordField1.toolTipText")); // NOI18N
         jPasswordField1.setName("jPasswordField1"); // NOI18N
@@ -75,6 +76,7 @@ public class PassphraseDialog extends javax.swing.JDialog {
         Instructions1.setText(resourceMap.getString("Instructions1.text")); // NOI18N
         Instructions1.setName("Instructions1"); // NOI18N
 
+        jPasswordField2.setBackground(resourceMap.getColor("jPasswordField2.background")); // NOI18N
         jPasswordField2.setText(resourceMap.getString("jPasswordField2.text")); // NOI18N
         jPasswordField2.setToolTipText(resourceMap.getString("jPasswordField2.toolTipText")); // NOI18N
         jPasswordField2.setName("jPasswordField2"); // NOI18N
@@ -99,6 +101,11 @@ public class PassphraseDialog extends javax.swing.JDialog {
                 OKActionPerformed(evt);
             }
         });
+        OK.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                OKKeyReleased(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -107,29 +114,29 @@ public class PassphraseDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(Title, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                    .add(OK))
+                    .add(OK)
+                    .add(Title, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE))
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
-                .add(Instructions2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                .addContainerGap(20, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .add(20, 20, 20))
+            .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(jPasswordField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                 .addContainerGap(20, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(20, 20, 20)
                 .add(Instructions1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(20, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(20, 20, 20)
                 .add(jPasswordField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPasswordField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(20, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(20, Short.MAX_VALUE)
+                .add(Instructions2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+                .add(20, 20, 20))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -172,6 +179,12 @@ public class PassphraseDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jPasswordField2KeyReleased
 
+    private void OKKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_OKKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            close();
+        }
+    }//GEN-LAST:event_OKKeyReleased
+
     /**
     * @param args the command line arguments
     */
@@ -204,6 +217,7 @@ public class PassphraseDialog extends javax.swing.JDialog {
             result = true;
         }
         OK.setEnabled(result);
+        OK.setFocusable(true);
         return result;
     }
 
@@ -220,8 +234,10 @@ public class PassphraseDialog extends javax.swing.JDialog {
     {
         center();
         OK.setEnabled(false);
+        OK.setFocusable(false);
         statusLabel.setText(" ");
         Instructions1.setText("Enter a " + minPassphraseLength + " character (or longer) passphrase to protect your private key:");
+        pack();
         setResizable(false);
         setVisible(true);
     }

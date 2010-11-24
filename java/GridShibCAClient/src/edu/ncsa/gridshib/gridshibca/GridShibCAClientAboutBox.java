@@ -8,6 +8,7 @@ Copyright 2006-2009 The Board of Trustees of the University of Illinois.
 Please see LICENSE at the root of the distribution.
 */
 
+import java.awt.event.KeyEvent;
 import org.jdesktop.application.Action;
 
 public class GridShibCAClientAboutBox
@@ -25,6 +26,7 @@ public class GridShibCAClientAboutBox
  */
         appVersionLabel.setText(GridShibCAProperties.getProperty("Version"));
         getRootPane().setDefaultButton(closeButton);
+        closeButton.requestFocus();
     }
 
     @Action
@@ -64,6 +66,11 @@ public class GridShibCAClientAboutBox
         javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getActionMap(GridShibCAClientAboutBox.class, this);
         closeButton.setAction(actionMap.get("closeAboutBox")); // NOI18N
         closeButton.setName("closeButton"); // NOI18N
+        closeButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                closeButtonKeyReleased(evt);
+            }
+        });
 
         appTitleLabel.setFont(appTitleLabel.getFont().deriveFont(appTitleLabel.getFont().getStyle() | java.awt.Font.BOLD, appTitleLabel.getFont().getSize()+4));
         appTitleLabel.setText(resourceMap.getString("Application.title")); // NOI18N
@@ -173,6 +180,13 @@ public class GridShibCAClientAboutBox
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void closeButtonKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_closeButtonKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            closeAboutBox();
+        }
+    }//GEN-LAST:event_closeButtonKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel appVersionLabel;
     private javax.swing.JButton closeButton;

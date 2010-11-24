@@ -10,6 +10,7 @@ Please see LICENSE at the root of the distribution.
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import javax.swing.WindowConstants;
 import org.jdesktop.application.Action;
 import org.globus.util.ConfigUtil;
@@ -37,6 +38,7 @@ public class CredentialInfoFrame
         rfcIdField.setEditable(false);
         locationField.setEditable(false);
         validUntilField.setEditable(false);
+        closeButton.requestFocus();
     }
 
     /** This method is called from within the constructor to
@@ -67,6 +69,11 @@ public class CredentialInfoFrame
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getResourceMap(CredentialInfoFrame.class);
         closeButton.setText(resourceMap.getString("doneButton.text")); // NOI18N
         closeButton.setName("doneButton"); // NOI18N
+        closeButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                closeButtonKeyReleased(evt);
+            }
+        });
 
         titleLabel.setFont(resourceMap.getFont("titleLabel.font")); // NOI18N
         titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -81,21 +88,25 @@ public class CredentialInfoFrame
         rfcIdLabel.setText(resourceMap.getString("rfcIdLabel.text")); // NOI18N
         rfcIdLabel.setName("rfcIdLabel"); // NOI18N
 
+        globusIdField.setBackground(resourceMap.getColor("globusIdField.background")); // NOI18N
         globusIdField.setText(resourceMap.getString("globusIdField.text")); // NOI18N
         globusIdField.setName("globusIdField"); // NOI18N
 
+        rfcIdField.setBackground(resourceMap.getColor("rfcIdField.background")); // NOI18N
         rfcIdField.setText(resourceMap.getString("rfcIdField.text")); // NOI18N
         rfcIdField.setName("rfcIdField"); // NOI18N
 
         validUntilLabel.setText(resourceMap.getString("validUntilLabel.text")); // NOI18N
         validUntilLabel.setName("validUntilLabel"); // NOI18N
 
+        validUntilField.setBackground(resourceMap.getColor("validUntilField.background")); // NOI18N
         validUntilField.setText(resourceMap.getString("validUntilField.text")); // NOI18N
         validUntilField.setName("validUntilField"); // NOI18N
 
         locationLabel.setText(resourceMap.getString("locationLabel.text")); // NOI18N
         locationLabel.setName("locationLabel"); // NOI18N
 
+        locationField.setBackground(resourceMap.getColor("locationField.background")); // NOI18N
         locationField.setText(resourceMap.getString("locationField.text")); // NOI18N
         locationField.setName("locationField"); // NOI18N
 
@@ -150,6 +161,12 @@ public class CredentialInfoFrame
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void closeButtonKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_closeButtonKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            close();
+        }
+    }//GEN-LAST:event_closeButtonKeyReleased
 
     /**
      * @param args the command line arguments

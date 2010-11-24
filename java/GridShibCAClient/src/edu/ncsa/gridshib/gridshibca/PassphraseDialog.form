@@ -7,10 +7,10 @@
       <Rectangle value="[4, 22, 485, 280]"/>
     </Property>
     <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[485, 280]"/>
+      <Dimension value="[485, 400]"/>
     </Property>
     <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-      <Dimension value="[485, 280]"/>
+      <Dimension value="[485, 100]"/>
     </Property>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
     <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
@@ -38,35 +38,35 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="Title" alignment="2" pref="445" max="32767" attributes="0"/>
                   <Component id="OK" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="Title" alignment="2" pref="445" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
-              <Component id="Instructions2" pref="445" max="32767" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
               <EmptySpace pref="20" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
               <Component id="statusLabel" pref="445" max="32767" attributes="0"/>
+              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
+              <Component id="jPasswordField2" pref="445" max="32767" attributes="0"/>
               <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
               <Component id="Instructions1" pref="445" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
               <Component id="jPasswordField1" pref="445" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace pref="20" max="32767" attributes="0"/>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jPasswordField2" pref="445" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="20" max="32767" attributes="0"/>
+              <Component id="Instructions2" pref="445" max="32767" attributes="0"/>
+              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -103,6 +103,7 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="jPasswordField1">
       <Properties>
+        <Property name="background" type="java.awt.Color" resourceKey="jPasswordField1.background"/>
         <Property name="text" type="java.lang.String" resourceKey="jPasswordField1.text"/>
         <Property name="toolTipText" type="java.lang.String" resourceKey="jPasswordField1.toolTipText"/>
         <Property name="name" type="java.lang.String" value="jPasswordField1" noResource="true"/>
@@ -119,6 +120,7 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="jPasswordField2">
       <Properties>
+        <Property name="background" type="java.awt.Color" resourceKey="jPasswordField2.background"/>
         <Property name="text" type="java.lang.String" resourceKey="jPasswordField2.text"/>
         <Property name="toolTipText" type="java.lang.String" resourceKey="jPasswordField2.toolTipText"/>
         <Property name="name" type="java.lang.String" value="jPasswordField2" noResource="true"/>
@@ -150,6 +152,7 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="OKActionPerformed"/>
+        <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="OKKeyReleased"/>
       </Events>
     </Component>
   </SubComponents>

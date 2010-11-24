@@ -9,6 +9,7 @@ Please see LICENSE at the root of the distribution.
 */
 
 
+import java.awt.event.KeyEvent;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.FrameView;
@@ -38,12 +39,12 @@ public class GridShibCAClientView
 
         mainFrame = getFrame();
 
-        /* Don't allow resizing */
-        mainFrame.setResizable(false);
-        
         /* Center our GUI*/
         mainFrame.pack();
         mainFrame.setLocationRelativeTo(null);
+
+        /* Don't allow resizing */
+        mainFrame.setResizable(false);
 
         debugFrame = new DebugFrame();
         credInfo = new CredentialInfoFrame();
@@ -53,9 +54,11 @@ public class GridShibCAClientView
 
         locationLabel.setVisible(false);
         locationField.setVisible(false);
+        locationField.setFocusable(false);
         locationField.setEditable(false);
         PKCSlocationLabel.setVisible(false);
         PKCSlocationField.setVisible(false);
+        PKCSlocationField.setFocusable(false);
         PKCSlocationField.setEditable(false);
     }
 
@@ -137,6 +140,7 @@ public class GridShibCAClientView
     public void enableExitButton()
     {
         exitButton.setEnabled(true);
+        exitButton.requestFocus();
     }
 
     public char [] getPassphrase()
@@ -152,6 +156,7 @@ public class GridShibCAClientView
         locationField.setText(loc);
         locationLabel.setVisible(true);
         locationField.setVisible(true);
+        locationField.setFocusable(true);
     }
 
     public void showPKCS12Location(String loc)
@@ -159,6 +164,7 @@ public class GridShibCAClientView
         PKCSlocationField.setText(loc);
         PKCSlocationLabel.setVisible(true);
         PKCSlocationField.setVisible(true);
+        PKCSlocationField.setFocusable(true);
     }
 
     /** This method is called from within the constructor to
@@ -171,7 +177,6 @@ public class GridShibCAClientView
     private void initComponents() {
 
         mainPanel = new javax.swing.JPanel();
-        exitButton = new javax.swing.JButton();
         doneLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         statusTitleLabel = new javax.swing.JLabel();
@@ -180,6 +185,7 @@ public class GridShibCAClientView
         locationLabel = new javax.swing.JLabel();
         PKCSlocationLabel = new javax.swing.JLabel();
         PKCSlocationField = new javax.swing.JTextField();
+        exitButton = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         showCredInfoMenuItem = new javax.swing.JMenuItem();
@@ -187,24 +193,18 @@ public class GridShibCAClientView
         showHelpMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
 
-        mainPanel.setMaximumSize(new java.awt.Dimension(400, 350));
-        mainPanel.setMinimumSize(new java.awt.Dimension(400, 350));
+        mainPanel.setMaximumSize(new java.awt.Dimension(400, 500));
+        mainPanel.setMinimumSize(new java.awt.Dimension(400, 200));
         mainPanel.setName("mainPanel"); // NOI18N
         mainPanel.setPreferredSize(new java.awt.Dimension(400, 350));
-
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getActionMap(GridShibCAClientView.class, this);
-        exitButton.setAction(actionMap.get("quit")); // NOI18N
-        exitButton.setName("exitButton"); // NOI18N
 
         doneLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getResourceMap(GridShibCAClientView.class);
         doneLabel.setIcon(resourceMap.getIcon("doneLabel.icon")); // NOI18N
         doneLabel.setText(resourceMap.getString("doneLabel.text")); // NOI18N
-        doneLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         doneLabel.setDisabledIcon(resourceMap.getIcon("doneLabel.disabledIcon")); // NOI18N
         doneLabel.setEnabled(false);
         doneLabel.setName("doneLabel"); // NOI18N
-        doneLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
         jLabel1.setFont(resourceMap.getFont("jLabel1.font")); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -218,6 +218,7 @@ public class GridShibCAClientView
         statusLabel.setText(resourceMap.getString("statusLabel.text")); // NOI18N
         statusLabel.setName("statusLabel"); // NOI18N
 
+        locationField.setBackground(resourceMap.getColor("locationField.background")); // NOI18N
         locationField.setText(resourceMap.getString("locationField.text")); // NOI18N
         locationField.setName("locationField"); // NOI18N
 
@@ -227,7 +228,17 @@ public class GridShibCAClientView
         PKCSlocationLabel.setText(resourceMap.getString("PKCSlocationLabel.text")); // NOI18N
         PKCSlocationLabel.setName("PKCSlocationLabel"); // NOI18N
 
+        PKCSlocationField.setBackground(resourceMap.getColor("PKCSlocationField.background")); // NOI18N
         PKCSlocationField.setName("PKCSlocationField"); // NOI18N
+
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(edu.ncsa.gridshib.gridshibca.GridShibCAClientApp.class).getContext().getActionMap(GridShibCAClientView.class, this);
+        exitButton.setAction(actionMap.get("quit")); // NOI18N
+        exitButton.setName("exitButton"); // NOI18N
+        exitButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                exitButtonKeyReleased(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -237,33 +248,33 @@ public class GridShibCAClientView
                 .addContainerGap()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(exitButton)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
                 .addContainerGap())
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(PKCSlocationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .add(PKCSlocationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addContainerGap(21, Short.MAX_VALUE))
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(locationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .add(locationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                .addContainerGap(21, Short.MAX_VALUE))
             .add(mainPanelLayout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(statusTitleLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                .addContainerGap(21, Short.MAX_VALUE))
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(PKCSlocationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                .add(PKCSlocationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                 .addContainerGap())
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(doneLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                .add(doneLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                 .addContainerGap())
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(locationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                .add(locationField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -285,7 +296,7 @@ public class GridShibCAClientView
                 .add(PKCSlocationLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(PKCSlocationField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(exitButton)
                 .addContainerGap())
         );
@@ -319,6 +330,12 @@ public class GridShibCAClientView
         setComponent(mainPanel);
         setMenuBar(menuBar);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void exitButtonKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_exitButtonKeyReleased
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            mainFrame.dispose();
+        }
+    }//GEN-LAST:event_exitButtonKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField PKCSlocationField;
