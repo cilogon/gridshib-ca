@@ -37,35 +37,15 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="2" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="OK" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="Title" alignment="2" pref="445" max="32767" attributes="0"/>
+                  <Component id="statusLabel" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="jPasswordField2" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="Instructions2" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="jPasswordField1" alignment="0" pref="445" max="32767" attributes="0"/>
+                  <Component id="Instructions1" alignment="0" pref="445" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
-              <Component id="jPasswordField2" pref="445" max="32767" attributes="0"/>
-              <EmptySpace pref="20" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
-              <Component id="Instructions1" pref="445" max="32767" attributes="0"/>
-              <EmptySpace pref="20" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="20" pref="20" max="20" attributes="0"/>
-              <Component id="jPasswordField1" pref="445" max="32767" attributes="0"/>
-              <EmptySpace pref="20" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="Instructions2" pref="445" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="statusLabel" pref="445" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
