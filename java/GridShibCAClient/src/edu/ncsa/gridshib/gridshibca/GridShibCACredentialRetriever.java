@@ -118,10 +118,12 @@ public class GridShibCACredentialRetriever
             return;
         }
 
-        this.message("Generating certificate and keys...");
         try
         {
             int lifetime = GridShibCAProperties.getPropertyAsInt("lifetime");
+            this.message("Generating keys...");
+            credIssuerURL.genKeyPair();
+            this.message("Requesting certificate...");
             credential = credIssuerURL.requestCredential(lifetime);
         } catch (javax.net.ssl.SSLHandshakeException e)
         {

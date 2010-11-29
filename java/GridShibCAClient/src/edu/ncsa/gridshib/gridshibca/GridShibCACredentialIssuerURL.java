@@ -27,6 +27,7 @@ import java.util.HashMap;
 public class GridShibCACredentialIssuerURL extends GridShibCAURL
 {
     private String authenticationToken;
+    private Credential cred = null;
 
     /**
      *
@@ -51,6 +52,23 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
     }
 
     /**
+     * Generate a key pair in preparation for requesting a certificate.
+     * @throws java.io.IOException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws NoSuchProviderException
+     * @throws SignatureException
+     * @throws InvalidKeyException
+     */
+    public void genKeyPair()
+        throws IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, SignatureException, InvalidKeyException
+    {
+        GridShibCAClientLogger.debugMessage("Generating keypair");
+        cred = new Credential();
+        cred.genKeyPair();
+    }
+
+    /**
      * Request a credential from the GridShibCA.
      * @param Requested lifetime in seconds.
      * @return Credential object.
@@ -64,11 +82,15 @@ public class GridShibCACredentialIssuerURL extends GridShibCAURL
     public Credential requestCredential(int lifetime)
         throws IOException, NoSuchAlgorithmException, CertificateException, NoSuchProviderException, SignatureException, InvalidKeyException
     {
-        this.openConnection();
+        if (cred == null) {
+            this.genKeyPair();
+        }
 
-        Credential cred = new Credential();
         GridShibCAClientLogger.debugMessage("Generating certificate request");
         String requestPEM = cred.generatePEMCertificateRequest();
+
+        GridShibCAClientLogger.debugMessage("Connecting to server");
+        this.openConnection();
 
         GridShibCAClientLogger.debugMessage("Writing certificate request");
         this.writeRequest(requestPEM, lifetime);

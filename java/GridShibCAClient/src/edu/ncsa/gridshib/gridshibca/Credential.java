@@ -64,8 +64,42 @@ public class Credential
     private X509Certificate cert = null;
 
     /**
-     * Generate new key pair and return a PEM-encoded certificate request using
-     * default key size and algorithm.
+     * Generate new key pair using default key size and algorithm.
+     * @throws java.security.NoSuchAlgorithmException
+     * @throws java.io.IOException
+     * @throws java.security.NoSuchProviderException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.SignatureException
+     */
+    public void genKeyPair()
+            throws NoSuchAlgorithmException, IOException,
+            NoSuchProviderException, InvalidKeyException, SignatureException
+    {
+        genKeyPair(Credential.defaultKeySize, Credential.defaultKeyAlg);
+    }
+
+    /**
+     * Generate new key pair.
+     * @param keySize The key size for the generated keys.
+     * @param keyAlg The key algorithm to use.
+     * @throws java.security.NoSuchAlgorithmException
+     * @throws java.io.IOException
+     * @throws java.security.NoSuchProviderException
+     * @throws java.security.InvalidKeyException
+     * @throws java.security.SignatureException
+     */
+    public void genKeyPair(int keySize, String keyAlg)
+            throws NoSuchAlgorithmException, IOException,
+            NoSuchProviderException, InvalidKeyException, SignatureException
+    {
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(keyAlg);
+        keyGenerator.initialize(keySize);
+
+        this.keyPair = keyGenerator.genKeyPair();
+    }
+
+    /**
+     * Return a PEM-encoded certificate request.
      * @return The certificate request in PEM format.
      * @throws java.security.NoSuchAlgorithmException
      * @throws java.io.IOException
@@ -76,29 +110,9 @@ public class Credential
     public String generatePEMCertificateRequest()
             throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, SignatureException
     {
-        return generatePEMCertificateRequest(Credential.defaultKeySize,
-                Credential.defaultKeyAlg);
-    }
-
-    /**
-     * Generate new key pair and return a PEM-encoded certificate request.
-     * @param keySize The key size for the generated keys.
-     * @param keyAlg The key algorithm to use.
-     * @return The certificate request in PEM format.
-     * @throws java.security.NoSuchAlgorithmException
-     * @throws java.io.IOException
-     * @throws java.security.NoSuchProviderException
-     * @throws java.security.InvalidKeyException
-     * @throws java.security.SignatureException
-     */
-    public String generatePEMCertificateRequest(int keySize,
-            String keyAlg)
-            throws NoSuchAlgorithmException, IOException, NoSuchProviderException, InvalidKeyException, SignatureException
-    {
-        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance(keyAlg);
-        keyGenerator.initialize(keySize);
-
-        this.keyPair = keyGenerator.genKeyPair();
+        if (this.keyPair == null) {
+            this.genKeyPair();
+        }
 
         PKCS10CertificationRequest pkcs10 =
                 new PKCS10CertificationRequest(Credential.pkcs10SigAlgName,
@@ -280,6 +294,8 @@ public class Credential
         keyStore.setKeyEntry("default", this.keyPair.getPrivate(), password,
                 chain);
         File outFile = new File(path);
+        outFile.delete();
+        outFile.createNewFile();
         setOwnerAccessOnly(outFile);
         FileOutputStream keyStoreOut = new FileOutputStream(outFile);
         keyStore.store(keyStoreOut, password);
