@@ -2,7 +2,7 @@
 ######################################################################
 #
 # This file is part of the GriShib-CA distribution.  Copyright
-# 2006-2009 The Board of Trustees of the University of
+# 2006-2010 The Board of Trustees of the University of
 # Illinois. Please see LICENSE at the root of the distribution.
 #
 ######################################################################
@@ -24,6 +24,7 @@ import getpass
 from optparse import OptionParser
 import os
 import sys
+from datetime import datetime, timedelta
 import urllib
 import urllib2
 import urlparse
@@ -200,10 +201,26 @@ class X509Credential:
             raise GridShibCAException("Attempt to write incomplete credential (private key is missing)")
         if self.certificate is None:
             raise GridShibCAException("Attempt to write incomplete credential (public key is mising)")
+        exp_time = datetime.strptime(self.certificate.get_notAfter(),
+                                     "%Y%m%d%H%M%SZ") 
+        timeleft = exp_time - datetime.utcnow()
+        secondsleft = timeleft.seconds + timeleft.days * 24 * 3600
+        debug("Certificate lifetime: %d seconds" % secondsleft)
         certificatePEM = crypto.dump_certificate(crypto.FILETYPE_PEM,
                                                  self.certificate)
-        privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
-                                               self.privateKey)
+        debug("maxcleartextlifetime: %d seconds" % maxcleartextlifetime)
+        if secondsleft > maxcleartextlifetime:
+           debug("Writing encrypted private key")
+           passphrase = ""
+           while len(passphrase) < minpasslen:
+               passphrase = getpass.getpass("Please enter a %d character (or longer) passphrase to protect your private key: " % minpasslen).strip();
+           privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                                  self.privateKey,
+                                                  "des-ede-cbc",
+                                                  passphrase)
+        else:
+            privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                                   self.privateKey)
         if os.path.exists(path):
             os.remove(path)
         # O_EXCL|O_CREAT to prevent a race condition where someone
@@ -222,6 +239,8 @@ def main(argv=None):
 
     global displayProgress
     global displayDebug
+    global maxcleartextlifetime
+    global minpasslen
 
     parser = OptionParser(
         usage="%prog [<options>] <some arg>", # printed with -h/--help
@@ -230,12 +249,18 @@ def main(argv=None):
     parser.add_option("-a", "--authToken",
                       dest="authToken", default=None,
                       help="specify AUTHTOKEN", metavar="AUTHTOKEN")
+    parser.add_option("-c", "--maxcleartextlifetime",
+                      dest="maxcleartextlifetime", default=1000000,
+                      help="maximum seconds before passphrase is required")
     parser.add_option("-d", "--debug",
                       dest="debug", action="store_true", default=False,
                       help="show debug messages")
     parser.add_option("-l", "--lifetime",
                       dest="lifetime", default=43200,
                       help="requested certificate lifetime (seconds)")
+    parser.add_option("-p", "--minpasslen",
+                      dest="minpasslen", default=12,
+                      help="minimum passphrase length (# of characters)")
     parser.add_option("-q", "--quiet",
                       dest="quiet", action="store_true", default=False,
                       help="run quietly")
@@ -247,6 +272,8 @@ def main(argv=None):
     (options, args) = parser.parse_args()
     displayProgress = not options.quiet
     displayDebug = options.debug
+    maxcleartextlifetime = int(options.maxcleartextlifetime)
+    minpasslen = int(options.minpasslen)
     debug("GridShib CA client starting up")
     try:
         debug("Server URL is %s" % options.serverURL)
