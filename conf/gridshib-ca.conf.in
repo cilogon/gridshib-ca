@@ -62,7 +62,7 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
 
   # JNLP file template used by launchGSCA.jnlp
   JNLPTemplate = ${Path}/GSCA.jnlp
-</Templaes>
+</Templates>
 
 <Modules>
   # Perl Modules
