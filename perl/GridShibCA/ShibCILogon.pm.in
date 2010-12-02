@@ -1,0 +1,231 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::ShibCILogon
+
+This class is specific to the CILogon Service setup.  Rather than reading
+SAML attributes from a current Shibboleth session, it reads equivalent
+values from a current PHP session.  Thus, this class overrides those methods
+which would have read attributes from the Apache/Shibd session, and instead
+reads from the browser PHP session.
+
+=cut
+
+package GridShibCA::ShibCILogon;
+
+# Inherit Logon
+use base qw(GridShibCA::ShibLogon);
+
+use GridShibCA::PHPSession;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Create a new ShibCILogon object (a subclass of WebCommand).  This method
+gets a new PHPSession object and stores it in the {phpsession} pointer.
+This is utilized to get various PHP session values.
+
+B<Arguments:> Hash of elements from Commands entry.
+
+B<Returns:> A ShibCILogon instance (which is a subclass of WebCommand).
+
+=cut
+
+sub new
+{
+    my $invocant = shift;
+    my $class = ref($invocant) || $invocant;
+    my $self = $class->SUPER::new(@_);
+
+    $self->{phpsession} = GridShibCA::PHPSession->new();
+
+    bless($self,$class);
+    return $self;
+}
+
+=item getUserId()
+
+Returns the unchecked, tainted PHP session "uid", which corresponds to the
+unique user identifier in the persistent store.
+
+B<Arguments:> None
+
+B<Returns:> Persistent store UID as string, or undef if unknown or missing
+the PHP session.
+
+=cut
+
+sub getUserId
+{
+    my $self = shift;
+    return $self->{phpsession}->getUID();
+}
+
+=item getIdP()
+
+Returns the unchecked, tainted identity provider identifier.  This is read
+from the PHP session.
+
+B<Arguments:> None
+
+B<Returns:> IdP as string, or undef if unknown.
+
+=cut
+
+sub getIdP
+{
+    my $self = shift;
+    return $self->{phpsession}->getIdP();
+}
+
+=item getShibSession()
+
+Returns undef since there is no Shibboleth session in the CILogon Service.
+
+B<Arguments:> None
+
+B<Returns:> undef.
+
+=cut
+
+sub getShibSession
+{
+    my $self = shift;
+    return undef;
+}
+
+=item getAttributes
+
+Return reference to hash containing user attributes.  The only attribute of
+interest is 'loa' (level of assurance) which is utilized to determine which
+MyProxyCA port to connect to.
+
+B<Arguments:> None
+
+B<Returns:> Reference to hash.
+
+=cut
+
+sub getAttributes
+{
+    my $self = shift;
+    my $attributes = {};
+    $loa = $self->{phpsession}->getLoa();
+    if (length($loa) > 0) {
+        $attributes->{'loa'} = $loa;
+    }
+    return $attributes;
+}
+
+=item getSSOResponse()
+
+Returns undef since there is no Shibboleth session in the CILogon Service.
+
+B<Arguments:> None
+
+B<Returns:> undef
+
+=cut
+
+sub getSSOResponse
+{
+    my $self = shift;
+    return undef;
+}
+
+=item getMethodName
+
+Return human-readable string identifying sign-on method.
+
+B<Arguments:> None
+
+B<Returns:> String identifying sign-on method.
+
+=cut
+
+sub getMethodName
+{
+    my $self = shift;
+    my $retstr = "Shibboleth";
+    $loa = $self->{phpsession}->getLoa();
+    if ($loa eq "openid") {
+        $retstr = "OpenId";
+    }
+    return $retstr;
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Internal methods
+
+These internal methods not intended for external use.
+
+=over 4
+
+=item _init()
+
+Check and make sure everyting is OK.  The only reason this method overrides
+the one in ShibLogon is to be able to print out different error messages to
+show there might be a missing PHP session.
+
+B<Arguments:> None
+
+B<Returns:> Nothing. Throws GridShibCA::LogonException on error.
+
+=cut
+
+sub _init
+{
+    my $self = shift;
+
+    $self->{logger}->debug("Checking for SAML attributes in PHP session.");
+    if (!$self->getUserId() &&
+        !$self->getIdP())
+    {
+        throw GridShibCA::LogonException("Cannot determine user identity " .
+            "or idenity provider. Missing PHP session?");
+    }
+
+    if (!$self->getUserId())
+    {
+        throw GridShibCA::LogonException("Cannot determine user identity. " .
+            "Missing PHP session?");
+    }
+
+    if (!$self->getIdP())
+    {
+        throw GridShibCA::LogonException("Cannot determine identity " .
+            "provider. Missing PHP session?");
+    }
+}
+
+=back
+
+=cut
+
+######################################################################
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

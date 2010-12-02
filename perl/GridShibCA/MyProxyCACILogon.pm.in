@@ -1,0 +1,120 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::MyProxyCACILogon
+
+Implementation of L<GridShibCA::CA Class|GridShibCA::CA> based on MyProxy
+using a local database to get a DN for a username.  The local database
+stores a unique user identifier for each user, and can return a "DN" string
+to be sent to the MyProxyCA server.  Note that this DN is not exactly a DN
+since it contains an email=... entry which is put in the certificate
+extension.
+
+=cut
+
+package GridShibCA::MyProxyCACILogon;
+
+# Inherit MyProxyCA class
+use base qw(GridShibCA::MyProxyCA);
+
+# Set up environment for CILogon::Store and CILogon::User classes
+# Note that database.properties and namespaces.properties are stored
+# in /var/www/config and must have read access by apache.
+use lib '/usr/local/cilogon/lib/perl5';
+$ENV{'CILOGON_ROOT'} = '/var/www/config/';
+use CILogon::Store;
+use CILogon::User;
+
+=head2 Methods
+
+=over 4
+
+=item _getMyProxyUsername()
+
+Overrides a method in MyProxyCA. This method gets the persistent store uid
+(user identifier) from the session.  It then gets the "CILogon::User" object
+for that uid.  It then calls getDN() on that $user object to return the
+DN to be passed to the MyProxyCA server.
+
+B<Arguments:> A Session object.
+
+B<Returns:> A DN username as a string, or undef on error.
+
+=cut
+
+sub _getMyProxyUsername
+{
+    my $self = shift;
+    my $session = shift ||
+        throw GridShibCA::CAException("Missing session argument");
+
+    my $retval = undef;
+
+    my $uid = $session->userIdentity()->userId();
+    my $user = CILogon::Store->getUser($uid);
+    if (defined($user)) {
+        my $status = $user->status();
+        if (!($status & 1)) { # All STATUS_OK_* codes are even
+            my $dn = $user->getDN();
+            if (length($dn) > 0) {
+                $retval = $dn;
+            }
+        }
+    }
+    return $retval;
+}
+
+=item _getPort()
+
+Overrides a method in MyProxyCA to get the port to connect to the MyProxyCA
+server.  This is necessary because the "level of assurance" determines
+whether a "basic" or "silver" certificate should be issued.  "Basic"
+certificates are issued on port 7512, while "silver" certificates are issued
+on port 7514.
+
+B<Arguments:> A Session object.
+
+B<Returns:> A port number to connect to the MyProxyCA server.
+
+=cut
+
+sub _getPort
+{
+    my $self = shift;
+    my $session = shift ||
+        throw GridShibCA::CAException("Missing session argument");
+
+    my $retval = $self->{configport};
+
+    my $attributes = $session->userIdentity()->attributes();
+    if (exists($attributes->{'loa'})) {
+        $loa = $attributes->{'loa'};
+        if ($loa eq 'http://incommonfederation.org/assurance/silver') {
+            $retval = 7514;
+        } elsif ($loa eq 'openid') {
+            $retval = 7516;
+        }
+    }
+    return $retval;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

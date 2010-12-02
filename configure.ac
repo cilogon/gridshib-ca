@@ -233,11 +233,15 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/Logger.pm \
 	perl/GridShibCA/Logon.pm \
 	perl/GridShibCA/Logout.pm \
+	perl/GridShibCA/MyProxyCACILogon.pm \
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
+	perl/GridShibCA/PHPSession.pm \
 	perl/GridShibCA/Policy.pm \	
 	perl/GridShibCA/PythonClient.pm \
 	perl/GridShibCA/SAMLExtension.pm \
+	perl/GridShibCA/ShibCILaunchJNLP.pm \
+	perl/GridShibCA/ShibCILogon.pm \
 	perl/GridShibCA/ShibLaunchJNLP.pm \
 	perl/GridShibCA/ShibLogon.pm \
 	perl/GridShibCA/Template.pm \

@@ -1,0 +1,164 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::PHPSession
+
+Reads various values from a PHP session.
+
+This class assists in the reading of values set in the default PHP session
+(as invoked by the PHP command "session_start()" using the default
+"session_name()").  The PHP session save_path and session cookie name are
+read from the system-wide php.ini configuration file ('/etc/php.ini').  The
+actual session file name is then computed and utilized to create the
+internal {php} object (an instance of PHP::Session).  
+
+The developer has access to several "getters" (such as getUID()) that
+fetch specific PHP session values.  Also, there is an "internal" method
+getVar() which allows the developer to fetch any PHP session value.
+
+=cut
+
+package GridShibCA::PHPSession;
+
+use PHP::Session;
+use CGI::Lite;
+use Config::Simple;
+
+=head2 Methods
+
+=over 4
+
+=item new()
+
+Returns a new PHPSession object containing an internal {php} object pointing
+to the actual PHP::Session instance.  If the PHP session file could not be
+read, this {php} object is undefined, and all "getter" methods will return
+undef.
+
+B<Arguments:> None
+
+B<Returns:> GridShibCA::PHPSession instance.
+
+=cut
+
+sub new
+{
+    my $class = shift;
+    my $self = {};
+
+    $self->{php} = undef;
+
+    my $config = new Config::Simple('/etc/php.ini');
+    my $savepath = $config->param('Session.session.save_path');
+    if (length($savepath) == 0) {
+        $savepath = '/var/lib/php/session';
+    }
+    my $sessionname = $config->param('Session.session.name');
+    if (length($sessionname) == 0) {
+        $sessionname = 'PHPSESSID';
+    }
+
+    my $cgi = new CGI::Lite;
+    my $cookies = $cgi->parse_cookies;
+    my $sessionhash = $cookies->{$sessionname};
+    my $sessionfile = "$savepath/sess_$sessionhash";
+    if (-r $sessionfile) {
+        $self->{php} = PHP::Session->new($sessionhash,{save_path => $savepath});
+    }
+
+    bless($self,$class);
+    return $self;
+}
+
+=item getUID()
+
+Returns the value of 'uid' (the persistent store unique user identifier)
+from the PHP session, or undef if not set.
+
+B<Arguments:> None
+
+B<Returns:> The PHP session 'uid', or undef if not set.
+
+=cut
+
+sub getUID 
+{
+    my $self = shift;
+    return $self->getVar('uid');
+}
+
+=item getIdP()
+
+Returns the value of 'idp' (Identity Provider) from the PHP session, or
+undef if not set.
+
+B<Arguments:> None
+
+B<Returns:> The PHP session 'idp', or undef if not set.
+
+=cut
+
+sub getIdP
+{
+    my $self = shift;
+    return $self->getVar('idp');
+}
+
+=item getLoa()
+
+Returns the value of 'loa' (level of assurance) from the PHP session, or
+undef if not set.
+
+B<Arguments:> None
+
+B<Returns:> The PHP session 'loa', or undef if not set.
+
+=cut
+
+sub getLoa
+{
+    my $self = shift;
+    return $self->getVar('loa');
+}
+
+=item getVar($varname)
+
+Returns the value of $varname from the PHP session, or undef if not set.
+
+B<Arguments:> $varname - The PHP session variable name to fetch.
+
+B<Returns:> The PHP session value of $varname, or undef if not set.
+
+=cut
+
+sub getVar
+{
+    my $self = shift;
+    my $varname = shift;
+    my $retval = undef;
+    if ((defined($self->{php})) && ($self->{php}->is_registered($varname))) {
+        $retval = $self->{php}->get($varname);
+    }
+    return $retval;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***
