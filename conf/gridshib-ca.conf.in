@@ -195,6 +195,20 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # the web server certificate isn't recognized, the user will be
   # prompted if they want to trust the web site.
   UseBundledCAs = true
+
+  # When a user requests a certificate with a lifetime greater than
+  # MaxCleartextLifetime, the user will be prompted to enter a passphrase to
+  # encrypt the private key.  This value is in seconds and defaults to the
+  # standard as defined by IGTF, 1 million seconds ~= 11.57 days.
+  MaxCleartextLifetime = 1000000
+
+  # When the user is prompted for a passphrase to encrypt the certificate
+  # private key, this value specifies the minimum length for that
+  # passphrase.  Note that certain Java distributions may not allow for
+  # passphrases greater than 7 characters in length, or installation of the
+  # JCE Unlimited Strength Jurisdition Policy Files as documented at
+  # http://www.ngs.ac.uk/tools/jcepolicyfiles .
+  MinPassphraseLength = 12
 </LaunchClient>
 
 <URLs>
