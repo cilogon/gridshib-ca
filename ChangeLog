@@ -1,3 +1,290 @@
+2010-12-02 17:34  tfleury
+
+	* conf/gridshib-ca.conf.in (1.48): Fix spelling error in closing
+	  tag.
+
+2010-12-02 14:01  tfleury
+
+	* conf/gridshib-ca.conf.in (1.47), templates/GSCA.jnlp (1.5): Added
+	  maxCleartextLifetime and minPassphraseLength options to the
+	  config file which outputs these values to the .jnlp file.  These
+	  two values are then utilized by the Java Web Start Client.
+
+2010-11-30 16:11  jbasney
+
+	* python/gridshibca-client.py.in (1.14): add maxcleartextlifetime
+	  and minpasslen options with IGTF defaults similar to JWS client
+	  and encrypt the private key when required
+
+2010-11-29 15:57  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  Credential.java (1.6), GridShibCACredentialIssuerURL.java (1.7),
+	  GridShibCACredentialRetriever.java (1.11): * separate key
+	  generation from certificate request generation so   we can have
+	  separate status messages * write out pkcs12 file with correct
+	  permissions * connect to the server *after* generating keys and
+	  certreq so we   hold the connection open for a shorter time
+
+2010-11-24 17:02  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCAClientView.form (1.7), GridShibCAClientView.java (1.8):
+	  * fix handling of enter key on exitButton * text alignment
+
+2010-11-24 17:01  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties
+	  (1.7): update successText for new menu names
+
+2010-11-24 16:59  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCAClientAboutBox.form (1.5),
+	  GridShibCAClientAboutBox.java (1.6), PassphraseDialog.form (1.5),
+	  PassphraseDialog.java (1.5): text alignment
+
+2010-11-24 16:59  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  DebugFrame.form (1.3), DebugFrame.java (1.4),
+	  resources/DebugFrame.properties (1.3): * display debug text with
+	  dark background * give close button focus by default * set debug
+	  text to not be editable * accept enter key on close button
+
+2010-11-24 15:58  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCAClientView.form (1.6), GridShibCAClientView.java (1.7),
+	  resources/GridShibCAClientView.properties (1.6): split "Menu"
+	  into "File" and "Help" menu items
+
+2010-11-24 15:51  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  PassphraseDialog.form (1.4), PassphraseDialog.java (1.4): fix
+	  labels attached to left of panel
+
+2010-11-24 15:49  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  CredentialInfoFrame.form (1.5), CredentialInfoFrame.java (1.6),
+	  GridShibCAClientAboutBox.form (1.4),
+	  GridShibCAClientAboutBox.java (1.5), GridShibCAClientView.form
+	  (1.5), GridShibCAClientView.java (1.6), PassphraseDialog.form
+	  (1.3), PassphraseDialog.java (1.3),
+	  resources/CredentialInfoFrame.properties (1.5),
+	  resources/GridShibCAClientView.properties (1.5),
+	  resources/PassphraseDialog.properties (1.4): * support enter key
+	  on buttons with focus * set grey background for read-only
+	  jTextFields * requestFocus on buttons by default as appropriate *
+	  setFocusable(false) when setVisible(false) and vice versa
+
+2010-11-24 15:46  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/:
+	  running.png (1.3[DEAD]), splash.png (1.3[DEAD]): unused
+
+2010-11-24 13:47  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCAClientView.form (1.4), GridShibCAClientView.java (1.5),
+	  GridShibCACredentialRetriever.java (1.10),
+	  resources/GridShibCAClientView.properties (1.4): show credential
+	  file path(s) in main Client window
+
+2010-11-24 13:47  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  PassphraseDialog.form (1.2), PassphraseDialog.java (1.2):
+	  resizing things
+
+2010-11-24 13:46  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  GridShibCAClientAboutBox.form (1.3),
+	  GridShibCAClientAboutBox.java (1.4): update copyright year
+
+2010-11-24 13:45  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  CredentialInfoFrame.form (1.4), CredentialInfoFrame.java (1.5):
+	  resize for font change
+
+2010-11-24 13:44  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/CredentialInfoFrame.properties
+	  (1.4): consistently use Lucida Grande font
+
+2010-11-24 13:44  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientAboutBox.properties
+	  (1.3): update copyrightLabel year
+
+2010-11-24 13:43  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/PassphraseDialog.properties
+	  (1.3): include some default statusLabel test
+
+2010-11-23 16:57  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/PassphraseDialog.properties
+	  (1.2): tooltip text shouldn't have hard-coded minPassphraseLength
+
+2010-11-23 16:53  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.9): if the certificate is long-lived, then encrypt the private
+	  key and write out a pkcs12 object
+
+2010-11-23 16:50  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.java
+	  (1.4): add getPassphrase() using PassphraseDialog
+
+2010-11-23 16:49  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAClientView.form
+	  (1.3): increase width of statusLabel
+
+2010-11-23 16:47  jbasney
+
+	* java/GridShibCAClient/src/org/globus/util/: Util.java
+	  (1.3[DEAD]), Util.java.diff (1.3[DEAD]): no longer used
+
+2010-11-23 16:46  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/Credential.java
+	  (1.5): * support writing encrypted PEM private keys * support
+	  writing PKCS12 objects * define a local setOwnerAccessOnly()
+	  method so we don't need   org.globus.util.Util anymore
+
+2010-11-23 16:42  jbasney
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCAProperties.java
+	  (1.6): add minPassphraseLength and maxCleartextLifetime
+	  properties
+
+2010-11-23 16:41  jbasney
+
+	* java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/:
+	  PassphraseDialog.form (1.1), PassphraseDialog.java (1.1),
+	  resources/PassphraseDialog.properties (1.1): passphrase prompter
+
+2010-11-23 16:39  jbasney
+
+	* configure.ac (1.173): bump to version 2.0.1 and copyright year of
+	  2010
+
+2010-11-17 15:52  jbasney
+
+	* python/gridshibca-client.py.in (1.13): add lifetime option
+
+2010-11-17 11:00  jbasney
+
+	* python/gridshibca-client.py.in (1.12): upgrade to 2048 bit keys
+
+2010-10-15 13:28  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientApp.properties
+	  (1.3): Update URL of Security homepage.
+
+2010-10-15 13:09  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/GridShibCACredentialRetriever.java
+	  (1.8): Changed some of the status messages.
+
+2010-10-15 11:54  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/GridShibCAClientView.properties
+	  (1.3): Update text for window and use new animated hourglass
+	  icon.
+
+2010-10-15 11:47  tfleury
+
+	*
+	  java/GridShibCAClient/src/edu/ncsa/gridshib/gridshibca/resources/hourglass.gif
+	  (1.1): Added animated hourglass to replace recycle icon.
+
+2010-06-10 17:16  tfleury
+
+	* java/GridShibCAClient/nbproject/build-impl.xml (1.4): Revert to
+	  older version of build script to use ant 1.6.5.
+
+2010-06-10 17:03  tfleury
+
+	* java/GridShibCAClient/nbproject/project.properties (1.4): Updated
+	  Netbeans project file.
+
+2010-06-10 16:11  tfleury
+
+	* java/GridShibCAClient/: nbproject/build-impl.xml (1.3),
+	  nbproject/genfiles.properties (1.3), nbproject/project.properties
+	  (1.3), nbproject/private/private.properties (1.3),
+	  src/edu/ncsa/gridshib/gridshibca/Credential.java (1.4),
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.form (1.3),
+	  src/edu/ncsa/gridshib/gridshibca/CredentialInfoFrame.java (1.4),
+	  src/edu/ncsa/gridshib/gridshibca/resources/CredentialInfoFrame.properties
+	  (1.3): Changed client-side key generation size to 2048.  Also
+	  attempted to add display of credential path location in GUI.
+
+2010-05-14 16:36  tfleury
+
+	* perl/GridShibCA/HTMLTemplate.pm.in (1.9): Fixed spelling mistake.
+
+2010-05-14 16:20  tfleury
+
+	* perl/GridShibCA/: Authorization.pm.in (1.17), CGISession.pm.in
+	  (1.34): Fixed spelling mistake.
+
+2010-05-14 12:28  tfleury
+
+	* perl/GridShibCA/TrustRoots.pm.in (1.6): Fixed spelling mistake.
+
+2010-05-14 12:00  tfleury
+
+	* perl/GridShibCA/CGISession.pm.in (1.33): Fixed spelling mistake.
+
+2010-04-19 18:31  tfleury
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.9): Fixed a couple of
+	  comments.
+
+2010-04-19 18:31  tfleury
+
+	* perl/GridShibCA/MyProxyCA.pm.in (1.14): Made the MyProxy CA host,
+	  port, cert, and key all subroutines so they can be overridden by
+	  subclasses.
+
+2010-04-19 18:29  tfleury
+
+	* perl/GridShibCA/: CSRF.pm.in (1.7), Config.pm.in (1.46): Fixed
+	  spelling mistake.
+
+2010-02-12 09:43  tfleury
+
+	* perl/GridShibCA/ShibLogon.pm.in (1.8): Add HTTP_ASSURANCE to
+	  attributes written to session file.  To be used to distinguish
+	  between "Basic" and "Silver" certificates.
+
+2010-02-09 13:15  tfleury
+
+	* ChangeLog (1.5): Minor fixes to documentation generation.
+
 2010-02-09 13:13  tfleury
 
 	* utils/config.pl.in (1.4): Fix an incorrect "head" tag and also
