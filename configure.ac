@@ -305,6 +305,7 @@ PERL_MODULES_TO_CHECK=" \
 			Getopt::Std \
 			IPC::Open3 \
 			LWP::UserAgent \
+      URI::Escape \
 			MIME::Base64 \
 			Sys::Syslog \
 			"
