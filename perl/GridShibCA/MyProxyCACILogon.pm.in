@@ -22,17 +22,38 @@ package GridShibCA::MyProxyCACILogon;
 # Inherit MyProxyCA class
 use base qw(GridShibCA::MyProxyCA);
 
-# Set up environment for CILogon::Store and CILogon::User classes
-# Note that database.properties and namespaces.properties are stored
-# in /var/www/config and must have read access by apache.
-use lib '/usr/local/cilogon/lib/perl5';
-$ENV{'CILOGON_ROOT'} = '/var/www/config/';
-use CILogon::Store;
-use CILogon::User;
+use LWP::UserAgent;
+use URI::Escape;
 
 =head2 Methods
 
 =over 4
+
+=item _do_GET()
+
+This method is taken from "Perl & LWP" in the O'Reilly series of books, 
+page 24.  It is a wrapper for the get() method.
+
+B<Arguments>: A URL to fetch followed by optional header lines specified as
+key=>value, key=>value, etc.
+
+B<Returns>: In scalar context, returns the document fetched or undef if
+there is an error. In lists context, returns the document fetched, the
+status code from the HTTP response, a boolean value indicating if the status
+code indicates success, and an object we can interrogate to find out more
+about the response.
+
+=cut
+
+sub _do_GET
+{
+  my $browser = LWP::UserAgent->new();
+  $browser->timeout(30);
+  my $resp = $browser->get(@_);
+  return ($resp->content,$resp->code,$resp->is_success,$resp) if wantarray;
+  return unless $resp->is_success;
+  return $resp->content;
+}
 
 =item _getMyProxyUsername()
 
@@ -56,11 +77,16 @@ sub _getMyProxyUsername
     my $retval = undef;
 
     my $uid = $session->userIdentity()->userId();
-    my $user = CILogon::Store->getUser($uid);
-    if (defined($user)) {
-        my $status = $user->status();
-        if (!($status & 1)) { # All STATUS_OK_* codes are even
-            my $dn = $user->getDN();
+    my ($output,$httpcode,undef,undef) = $self->_do_GET(
+        "http://localhost:8080/delegation/dbService?" . 
+            "action=getUser&user_uid=$uid");
+    if ((defined($output)) && ($httpcode == 200)) {
+        my $status = 1;
+        ($output =~ /status=([^\r\n]+)/) && ($status = uri_unescape($1));
+        if (!($status & 1)) { # All STATUS_OK codes are even
+            my $dn = "";
+            ($output =~ /distinguished_name=([^\r\n]+)/) && 
+                ($dn = uri_unescape($1));
             if (length($dn) > 0) {
                 $retval = $dn;
             }
