@@ -29,38 +29,12 @@ use URI::Escape;
 
 =over 4
 
-=item _do_GET()
-
-This method is taken from "Perl & LWP" in the O'Reilly series of books, 
-page 24.  It is a wrapper for the get() method.
-
-B<Arguments>: A URL to fetch followed by optional header lines specified as
-key=>value, key=>value, etc.
-
-B<Returns>: In scalar context, returns the document fetched or undef if
-there is an error. In lists context, returns the document fetched, the
-status code from the HTTP response, a boolean value indicating if the status
-code indicates success, and an object we can interrogate to find out more
-about the response.
-
-=cut
-
-sub _do_GET
-{
-  my $browser = LWP::UserAgent->new();
-  $browser->timeout(30);
-  my $resp = $browser->get(@_);
-  return ($resp->content,$resp->code,$resp->is_success,$resp) if wantarray;
-  return unless $resp->is_success;
-  return $resp->content;
-}
-
 =item _getMyProxyUsername()
 
 Overrides a method in MyProxyCA. This method gets the persistent store uid
-(user identifier) from the session.  It then gets the "CILogon::User" object
-for that uid.  It then calls getDN() on that $user object to return the
-DN to be passed to the MyProxyCA server.
+(user identifier) from the session.  It then calls out to the dbService
+servlet using this uid to get the distinguished_name for the user.  This is
+returned to be passed to the MyProxyCA server.
 
 B<Arguments:> A Session object.
 
@@ -77,15 +51,16 @@ sub _getMyProxyUsername
     my $retval = undef;
 
     my $uid = $session->userIdentity()->userId();
-    my ($output,$httpcode,undef,undef) = $self->_do_GET(
-        "http://localhost:8080/delegation/dbService?" . 
-            "action=getUser&user_uid=$uid");
-    if ((defined($output)) && ($httpcode == 200)) {
+    my $browser = LWP::UserAgent->new();
+    $browser->timeout(30);
+    my $resp = $browser->get("http://localhost:8080/delegation/dbService?" . 
+        "action=getUser&user_uid=" . uri_escape($uid) );
+    if ((defined($resp)) && (defined($resp->content)) && ($resp->code == 200)) {
         my $status = 1;
-        ($output =~ /status=([^\r\n]+)/) && ($status = uri_unescape($1));
+        ($resp->content =~ /status=([^\r\n]+)/) && ($status = uri_unescape($1));
         if (!($status & 1)) { # All STATUS_OK codes are even
             my $dn = "";
-            ($output =~ /distinguished_name=([^\r\n]+)/) && 
+            ($resp->content =~ /distinguished_name=([^\r\n]+)/) && 
                 ($dn = uri_unescape($1));
             if (length($dn) > 0) {
                 $retval = $dn;
