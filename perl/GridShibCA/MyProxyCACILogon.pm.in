@@ -57,11 +57,14 @@ sub _getMyProxyUsername
         "action=getUser&user_uid=" . uri_escape($uid) );
     if ((defined($resp)) && (defined($resp->content)) && ($resp->code == 200)) {
         my $status = 1;
-        ($resp->content =~ /status=([^\r\n]+)/) && ($status = uri_unescape($1));
+        ($resp->content =~ /status=([^\r\n]+)/) && ($status = $1);
         if (!($status & 1)) { # All STATUS_OK codes are even
             my $dn = "";
-            ($resp->content =~ /distinguished_name=([^\r\n]+)/) && 
-                ($dn = uri_unescape($1));
+            if ($resp->content =~ /distinguished_name=([^\r\n]+)/) {
+                $dn = $1;
+                $dn =~ tr/+/ /;
+                $dn =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg;
+            }
             if (length($dn) > 0) {
                 $retval = $dn;
             }
