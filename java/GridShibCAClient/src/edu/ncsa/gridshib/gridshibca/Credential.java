@@ -306,9 +306,11 @@ public class Credential
      * Sets permissions on a given file to be only accessible by the current
      * user.
      */
-    private static boolean setOwnerAccessOnly(File f) {
-        return f.setReadOnly() && f.setReadable(false, false)
-                && f.setReadable(true) && f.setWritable(true);
+    private static void setOwnerAccessOnly(File f) {
+        f.setReadOnly();
+        f.setReadable(false, false);
+        f.setReadable(true);
+        f.setWritable(true);
     }
 
 }
