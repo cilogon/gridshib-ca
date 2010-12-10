@@ -1,0 +1,39 @@
+<html>
+<!--
+This template is used when the user is missing a required session.
+
+Values filled in for this page (besides default values):
+ %SignOnMethods - Hash of SignOnName => URL
+ $TargetURL - URL user was attempting to access.
+
+Todo: Add redirection to $TargetURL
+-->
+<head>
+  <title>GridShib CA: Session Required</title>
+</head>
+<body>
+<center>
+<h1>GridShib CA</h1>
+(Version {$Version})
+<p>
+A session is required. Please choose one of the following sign-on methods:
+</p>
+<p>
+<ul>
+{
+  foreach my $key (keys(%SignOnMethods)) {
+    my $url = cleanURL($SignOnMethods{$key});
+    $OUT .= "<li><a href=\"$url\">$key</a></li>\n";
+  }
+}
+</ul>
+<p>
+For help you can contact the administrator of this GridShib-CA at
+{$ContactAddress}
+</p>
+<p>
+Return to the <a href="https://cilogon.org/">CILogon Welcome Page</a>.
+</p>
+</center>
+</body>
+</html>
