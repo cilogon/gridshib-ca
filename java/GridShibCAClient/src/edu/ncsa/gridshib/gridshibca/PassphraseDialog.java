@@ -31,6 +31,14 @@ public class PassphraseDialog extends javax.swing.JDialog {
         initComponents();
         minPassphraseLength =
                 GridShibCAProperties.getPropertyAsInt("minPassphraseLength");
+        /* Force the first password box to get the text caret 'focus' */
+        addFocusListener(new java.awt.event.FocusListener() {
+            public void focusGained(java.awt.event.FocusEvent e) {
+                jPasswordField1.requestFocusInWindow();
+            }
+            public void focusLost(java.awt.event.FocusEvent e) {
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -192,7 +200,8 @@ public class PassphraseDialog extends javax.swing.JDialog {
         boolean result = false;
         char [] p1 = jPasswordField1.getPassword();
         char [] p2 = jPasswordField2.getPassword();
-        if (p1.length < minPassphraseLength) {
+        if ((p1.length < minPassphraseLength) &&
+            (p2.length < minPassphraseLength)) {
             statusLabel.setText("Passphrase is too short. It must be " +
                     minPassphraseLength + " characters or longer.");
         } else if (!Arrays.equals(p1, p2)) {
