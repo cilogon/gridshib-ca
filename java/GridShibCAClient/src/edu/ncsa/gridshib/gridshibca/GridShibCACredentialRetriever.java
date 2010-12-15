@@ -51,7 +51,7 @@ public class GridShibCACredentialRetriever
         }
     }
 
-    public void retrieveCredential()
+    public void retrieveCredential() throws Exception
     {
         GridShibCACredentialIssuerURL credIssuerURL = null;
         Credential credential = null;
@@ -109,7 +109,7 @@ public class GridShibCACredentialRetriever
                     token);
         } catch (java.net.MalformedURLException e)
         {
-            fatalError("Error parseing GridShib-CA URL", e);
+            fatalError("Error parsing GridShib-CA URL", e);
             return;
         } catch (java.io.IOException iOException)
         {
@@ -152,9 +152,10 @@ public class GridShibCACredentialRetriever
         if (credential.getNotAfter().after(maxLifetime.getTime())) {
             this.message("Prompting for passphrase.");
             passphrase = view.getPassphrase();
-            if (passphrase == null || 
-                    passphrase.length < GridShibCAProperties.getPropertyAsInt("minPassphraseLength")) {
-                fatalError("Invalid passphrase.");
+            if ((passphrase == null) || 
+                (passphrase.length < GridShibCAProperties.
+                    getPropertyAsInt("minPassphraseLength"))) {
+                throw new Exception("Invalid passphrase.");
             }
         }
 
