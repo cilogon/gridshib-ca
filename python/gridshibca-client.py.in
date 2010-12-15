@@ -211,9 +211,17 @@ class X509Credential:
         debug("maxcleartextlifetime: %d seconds" % maxcleartextlifetime)
         if secondsleft > maxcleartextlifetime:
            debug("Writing encrypted private key")
-           passphrase = ""
+           passphrase = verify = ""
            while len(passphrase) < minpasslen:
                passphrase = getpass.getpass("Please enter a %d character (or longer) passphrase to protect your private key: " % minpasslen).strip();
+               verify = getpass.getpass("Verify passphrase: ").strip();
+               if len(passphrase) < minpasslen:
+                   print "Passphrase too short, please try again..."
+                   passphrase = verify = ""
+               elif passphrase != verify:
+                   print "Passphrase mismatch, please try again..."
+                   passphrase = verify = ""
+
            privateKeyPEM = crypto.dump_privatekey(crypto.FILETYPE_PEM,
                                                   self.privateKey,
                                                   "des-ede-cbc",
