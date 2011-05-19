@@ -109,23 +109,6 @@ sub getIdP
     return $self->getVar('idp');
 }
 
-=item getLoa()
-
-Returns the value of 'loa' (level of assurance) from the PHP session, or
-undef if not set.
-
-B<Arguments:> None
-
-B<Returns:> The PHP session 'loa', or undef if not set.
-
-=cut
-
-sub getLoa
-{
-    my $self = shift;
-    return $self->getVar('loa');
-}
-
 =item getVar($varname)
 
 Returns the value of $varname from the PHP session, or undef if not set.
