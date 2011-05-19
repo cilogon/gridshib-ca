@@ -104,9 +104,10 @@ sub getShibSession
 
 =item getAttributes
 
-Return reference to hash containing user attributes.  The only attribute of
-interest is 'loa' (level of assurance) which is utilized to determine which
-MyProxyCA port to connect to.
+Return reference to hash containing user attributes.  The attributes of
+interest include 'loa' (level of assurance), 'dn' (used as the part of the
+myproxy-logon username) and 'myproxyinfo' (extra info such as 'skin' to
+pass with the myproxy-logon username).
 
 B<Arguments:> None
 
@@ -118,10 +119,20 @@ sub getAttributes
 {
     my $self = shift;
     my $attributes = {};
-    $loa = $self->{phpsession}->getLoa();
-    if (length($loa) > 0) {
-        $attributes->{'loa'} = $loa;
+    my $attr;
+    $attr = $self->{phpsession}->getVar('dn');
+    if (length($attr) > 0) {
+        $attributes->{'dn'} = $attr;
     }
+    $attr = $self->{phpsession}->getVar('loa');
+    if (length($attr) > 0) {
+        $attributes->{'loa'} = $attr;
+    }
+    $attr = $self->{phpsession}->getVar('myproxyinfo');
+    if (length($attr) > 0) {
+        $attributes->{'myproxyinfo'} = $attr;
+    }
+
     return $attributes;
 }
 
@@ -155,7 +166,7 @@ sub getMethodName
 {
     my $self = shift;
     my $retstr = "Shibboleth";
-    $loa = $self->{phpsession}->getLoa();
+    my $loa = $self->{phpsession}->getVar('loa');
     if ($loa eq "openid") {
         $retstr = "OpenId";
     }
