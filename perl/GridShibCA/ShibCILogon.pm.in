@@ -121,15 +121,15 @@ sub getAttributes
     my $attributes = {};
     my $attr;
     $attr = $self->{phpsession}->getVar('dn');
-    if (length($attr) > 0) {
+    if ((defined($attr)) && (length($attr) > 0)) {
         $attributes->{'dn'} = $attr;
     }
     $attr = $self->{phpsession}->getVar('loa');
-    if (length($attr) > 0) {
+    if ((defined($attr)) && (length($attr) > 0)) {
         $attributes->{'loa'} = $attr;
     }
     $attr = $self->{phpsession}->getVar('myproxyinfo');
-    if (length($attr) > 0) {
+    if ((defined($attr)) && (length($attr) > 0)) {
         $attributes->{'myproxyinfo'} = $attr;
     }
 
@@ -167,7 +167,7 @@ sub getMethodName
     my $self = shift;
     my $retstr = "Shibboleth";
     my $loa = $self->{phpsession}->getVar('loa');
-    if ($loa eq "openid") {
+    if ((defined($loa)) && ($loa eq "openid")) {
         $retstr = "OpenId";
     }
     return $retstr;
