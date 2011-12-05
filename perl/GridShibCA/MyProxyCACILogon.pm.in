@@ -89,6 +89,11 @@ sub _getPort
             $retval = 7516;
         }
     }
+    # Special hack for OSG - use SHA-1 version of MyProxy servers
+    if ((exists($attributes->{'cilogon_skin'})) && 
+        ((uc $attributes->{'cilogon_skin'}) eq 'OSG')) {
+        $retval--;
+    }
     return $retval;
 }
 
