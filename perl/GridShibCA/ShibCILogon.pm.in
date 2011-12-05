@@ -105,9 +105,11 @@ sub getShibSession
 =item getAttributes
 
 Return reference to hash containing user attributes.  The attributes of
-interest include 'loa' (level of assurance), 'dn' (used as the part of the
-myproxy-logon username) and 'myproxyinfo' (extra info such as 'skin' to
-pass with the myproxy-logon username).
+interest are listed in the local array 'sessionvars', and include :
+* loa - level of assurance
+* dn - used as the part of the myproxy-logon username
+* myproxyinfo - extra info such as 'skin' to pass with the myproxy username
+* cilogon_skin - name of the optional CILogon skin in use
 
 B<Arguments:> None
 
@@ -118,19 +120,13 @@ B<Returns:> Reference to hash.
 sub getAttributes
 {
     my $self = shift;
+    my @sessionvars = ('dn','loa','myproxyinfo','cilogon_skin');
     my $attributes = {};
-    my $attr;
-    $attr = $self->{phpsession}->getVar('dn');
-    if ((defined($attr)) && (length($attr) > 0)) {
-        $attributes->{'dn'} = $attr;
-    }
-    $attr = $self->{phpsession}->getVar('loa');
-    if ((defined($attr)) && (length($attr) > 0)) {
-        $attributes->{'loa'} = $attr;
-    }
-    $attr = $self->{phpsession}->getVar('myproxyinfo');
-    if ((defined($attr)) && (length($attr) > 0)) {
-        $attributes->{'myproxyinfo'} = $attr;
+    for my $sessionvar (@sessionvars) {
+        my $attr = $self->{phpsession}->getVar($sessionvar);
+        if ((defined($attr)) && (length($attr) > 0)) {
+            $attributes->{$sessionvar} = $attr;
+        }
     }
 
     return $attributes;
