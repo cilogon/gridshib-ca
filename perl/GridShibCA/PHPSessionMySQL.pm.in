@@ -19,9 +19,14 @@ package GridShibCA::PHPSessionMySQL;
 # Inherit PHP::Session
 use base qw(PHP::Session);
 
-# Need to clean these up for when using MySQL 
+# Use the following for reading PHP session from file
 use FileHandle;
 use File::Spec;
+
+# Use the following for reading PHP session from database/dbService servlet
+use LWP::UserAgent;
+use URI::Escape;
+use MIME::Base64::URLSafe qw(urlsafe_b64decode);
 
 =head2 Methods
 
@@ -29,7 +34,8 @@ use File::Spec;
 
 =item _slurp_content
 
-Returns the PHP session data from a MySQL database, rather than from a file.
+Returns the PHP session data from a MySQL database or from a file.
+Set the local variable $usemysql=1 for MySQL, 0 for file.
 
 B<Arguments:> None
 
@@ -40,14 +46,39 @@ B<Returns:> The PHP session data.
 sub _slurp_content {
     my $self = shift;
 
-    my $handle = FileHandle->new($self->_file_path) or return;
-    binmode $handle;
-    flock $handle, LOCK_SH;
-    local $/ = undef;
-    my $data = <$handle>;
-    $handle->close;
+    my $retval = undef;
+    my $usemysql = 0;
 
-    return $data;
+    if ($usemysql) {  # Read PHP session data from MySQL
+        my $id = $self->id;
+        my $browser = LWP::UserAgent->new();
+        $browser->timeout(30);
+        my $resp = $browser->get("http://localhost:8080/oauth/dbService?" .
+                   "action=getPHPSession&id=" . uri_escape($id) );
+        if ((defined($resp)) && (defined($resp->content)) && 
+            ($resp->code == 200)) {
+            my $status = 1;
+            ($resp->content =~ /status=([^\r\n]+)/) && ($status = $1);
+            if (!($status & 1)) { # All STATUS_OK codes are even
+                my $data = "";
+                if ($resp->content =~ /data=([^\r\n]+)/) {
+                    $data = $1;
+                }
+                if (length($data) > 0) {
+                    $retval = urlsafe_b64decode($data);
+                }
+            }
+        }
+    } else {  # Read PHP session data from file
+        my $handle = FileHandle->new($self->_file_path) or return;
+        binmode $handle;
+        flock $handle, LOCK_SH;
+        local $/ = undef;
+        $retval = <$handle>;
+        $handle->close;
+    }
+
+    return $retval;
 }
 
 =back
