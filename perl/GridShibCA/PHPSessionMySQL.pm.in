@@ -1,0 +1,67 @@
+######################################################################
+#
+# This file is part of the GriShib-CA distribution.  Copyright
+# 2006-2009 The Board of Trustees of the University of
+# Illinois. Please see LICENSE at the root of the distribution.
+#
+######################################################################
+
+=head1 GridShibCA::PHPSessionMySQL
+
+This module subclasses the PHP::Session module to override the
+_slurp_content subroutine so that PHP session data can be read from MySQL
+rather than from file.
+
+=cut
+
+package GridShibCA::PHPSessionMySQL;
+
+# Inherit PHP::Session
+use base qw(PHP::Session);
+
+# Need to clean these up for when using MySQL 
+use FileHandle;
+use File::Spec;
+
+=head2 Methods
+
+=over 4
+
+=item _slurp_content
+
+Returns the PHP session data from a MySQL database, rather than from a file.
+
+B<Arguments:> None
+
+B<Returns:> The PHP session data.
+
+=cut
+
+sub _slurp_content {
+    my $self = shift;
+
+    my $handle = FileHandle->new($self->_file_path) or return;
+    binmode $handle;
+    flock $handle, LOCK_SH;
+    local $/ = undef;
+    my $data = <$handle>;
+    $handle->close;
+
+    return $data;
+}
+
+=back
+
+=head2 Version
+
+GridShib-CA version @PACKAGE_VERSION_STRING@
+
+=cut
+
+# Return true for import/use
+1;
+
+######################################################################
+### Local Variables: ***
+### mode:perl ***
+### End: ***

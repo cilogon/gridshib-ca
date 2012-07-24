@@ -237,6 +237,7 @@ REQUIRED_PERL_MODULES="\
 	perl/GridShibCA/NameMapper.pm \
 	perl/GridShibCA/OpenSSLCA.pm \
 	perl/GridShibCA/PHPSession.pm \
+	perl/GridShibCA/PHPSessionMySQL.pm \
 	perl/GridShibCA/Policy.pm \	
 	perl/GridShibCA/PythonClient.pm \
 	perl/GridShibCA/SAMLExtension.pm \

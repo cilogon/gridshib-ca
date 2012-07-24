@@ -15,7 +15,9 @@ This class assists in the reading of values set in the default PHP session
 "session_name()").  The PHP session save_path and session cookie name are
 read from the system-wide php.ini configuration file ('/etc/php.ini').  The
 actual session file name is then computed and utilized to create the
-internal {php} object (an instance of PHP::Session).  
+internal {php} object (an instance of GridShibCA::PHPSessionMySQL, which is
+simply subclassed from PHP::Session in order to override the _slurp_content
+method to read the PHP session data from MySQL instead of from file).
 
 The developer has access to several "getters" (such as getUID()) that
 fetch specific PHP session values.  Also, there is an "internal" method
@@ -25,7 +27,7 @@ getVar() which allows the developer to fetch any PHP session value.
 
 package GridShibCA::PHPSession;
 
-use PHP::Session;
+use GridShibCA::PHPSessionMySQL;
 use CGI::Lite;
 use Config::Simple;
 
@@ -36,9 +38,9 @@ use Config::Simple;
 =item new()
 
 Returns a new PHPSession object containing an internal {php} object pointing
-to the actual PHP::Session instance.  If the PHP session file could not be
-read, this {php} object is undefined, and all "getter" methods will return
-undef.
+to the actual GridShibCA::PHPSessionMySQL (PHP::Session) instance.  If the
+PHP session file could not be read, this {php} object is undefined, and all
+"getter" methods will return undef.
 
 B<Arguments:> None
 
@@ -68,7 +70,7 @@ sub new
     my $sessionhash = $cookies->{$sessionname};
     my $sessionfile = "$savepath/sess_$sessionhash";
     if (-r $sessionfile) {
-        $self->{php} = PHP::Session->new($sessionhash,{save_path => $savepath});
+        $self->{php} = GridShibCA::PHPSessionMySQL->new($sessionhash,{save_path => $savepath});
     }
 
     bless($self,$class);
