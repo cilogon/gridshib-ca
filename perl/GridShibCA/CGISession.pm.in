@@ -57,6 +57,7 @@ use Carp;
 use CGI;
 use CGI::Session;
 use CGI::Session::Driver::file;  # So we can set FileName
+use CGI::Session::Driver::mysql;
 use File::Spec;
 
 # Directory in which to store session files
@@ -101,14 +102,23 @@ sub new
     $self->{defaultLifetime} =
         $self->{config}->getParam("Session", "DefaultLifetime");
 
-    # Driver to use for CGI::Session objects
-    $self->{driver} = undef; # Use default
-
-    # Arguments to driver (reference to hash)
-    # We set the directory to use to store sessions
-    my $runtimePath = $_directory || 
-        $self->{config}->getParam("Session", "Directory");
-    $self->{driverArguments} = {Directory=>$runtimePath};
+    # Set driver and arguments to driver (reference to hash)
+    if (lc($self->{config}->getParam("Session","Storage")) eq 'mysql') {
+        # Save sessions to MySQL
+        $self->{driver} = "driver:mysql";
+        $self->{driverArguments} = {
+            DataSource=>$self->{config}->getParam("Session","Database"),
+            TableName =>$self->{config}->getParam("Session","Tablename"),
+            User      =>$self->{config}->getParam("Session","Username"),
+            Password  =>$self->{config}->getParam("Session","Password"),
+        };
+    } else { 
+        # Save sessions to file
+        $self->{driver} = undef; # undef means default to file-based storage
+        my $runtimePath = $_directory || 
+            $self->{config}->getParam("Session", "Directory");
+        $self->{driverArguments} = {Directory=>$runtimePath};
+    }
 
     bless($self, $class);
     return $self;
