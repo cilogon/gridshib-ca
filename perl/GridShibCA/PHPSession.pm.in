@@ -68,10 +68,7 @@ sub new
     my $cgi = new CGI::Lite;
     my $cookies = $cgi->parse_cookies;
     my $sessionhash = $cookies->{$sessionname};
-    my $sessionfile = "$savepath/sess_$sessionhash";
-    if (-r $sessionfile) {
-        $self->{php} = GridShibCA::PHPSessionMySQL->new($sessionhash,{save_path => $savepath});
-    }
+    $self->{php} = GridShibCA::PHPSessionMySQL->new($sessionhash,{save_path => $savepath});
 
     bless($self,$class);
     return $self;

@@ -19,11 +19,9 @@ package GridShibCA::PHPSessionMySQL;
 # Inherit PHP::Session
 use base qw(PHP::Session);
 
-# Use the following for reading PHP session from file
+use Config::Simple;
 use FileHandle;
 use File::Spec;
-
-# Use the following for reading PHP session from database/dbService servlet
 use LWP::UserAgent;
 use URI::Escape;
 use MIME::Base64::URLSafe qw(urlsafe_b64decode);
@@ -35,7 +33,10 @@ use MIME::Base64::URLSafe qw(urlsafe_b64decode);
 =item _slurp_content
 
 Returns the PHP session data from a MySQL database or from a file.
-Set the local variable $usemysql=1 for MySQL, 0 for file.
+Reads the config file /var/www/config/cilogon.ini for the value of 
+storage.phpsessions. If this is 'mysql', then read PHP session from the
+database. Otherwise use the default _slurp_content method to read PHP
+session from file.
 
 B<Arguments:> None
 
@@ -47,9 +48,9 @@ sub _slurp_content {
     my $self = shift;
 
     my $retval = undef;
-    my $usemysql = 0;
-
-    if ($usemysql) {  # Read PHP session data from MySQL
+    my $config = new Config::Simple('/var/www/config/cilogon.ini');
+    if ($config->param('Storage.storage.phpsessions') eq 'mysql') {
+        # Read PHP session data from MySQL
         my $id = $self->id;
         my $browser = LWP::UserAgent->new();
         $browser->timeout(30);
@@ -69,7 +70,8 @@ sub _slurp_content {
                 }
             }
         }
-    } else {  # Read PHP session data from file
+    } else {
+        # Read PHP session data from file
         my $handle = FileHandle->new($self->_file_path) or return;
         binmode $handle;
         flock $handle, LOCK_SH;
