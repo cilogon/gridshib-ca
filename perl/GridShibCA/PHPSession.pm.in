@@ -15,9 +15,7 @@ This class assists in the reading of values set in the default PHP session
 "session_name()").  The PHP session save_path and session cookie name are
 read from the system-wide php.ini configuration file ('/etc/php.ini').  The
 actual session file name is then computed and utilized to create the
-internal {php} object (an instance of GridShibCA::PHPSessionMySQL, which is
-simply subclassed from PHP::Session in order to override the _slurp_content
-method to read the PHP session data from MySQL instead of from file).
+internal {php} object (an instance of PHP::Session).
 
 The developer has access to several "getters" (such as getUID()) that
 fetch specific PHP session values.  Also, there is an "internal" method
@@ -27,7 +25,10 @@ getVar() which allows the developer to fetch any PHP session value.
 
 package GridShibCA::PHPSession;
 
-use GridShibCA::PHPSessionMySQL;
+use GridShibCA::Exception;
+use DBI;
+use PHP::Session;
+use PHP::Session::DBI;
 use CGI::Lite;
 use Config::Simple;
 
@@ -38,11 +39,14 @@ use Config::Simple;
 =item new()
 
 Returns a new PHPSession object containing an internal {php} object pointing
-to the actual GridShibCA::PHPSessionMySQL (PHP::Session) instance.  If the
-PHP session file could not be read, this {php} object is undefined, and all
-"getter" methods will return undef.
+to the actual (PHP::Session) instance.  If the PHP session could not be
+read, this {php} object is undefined, and all "getter" methods will return
+undef.
 
-B<Arguments:> None
+B<Arguments:> The GridShibCA::Config object loaded for the current session.
+This is used to read the database username/password when reading PHP session
+data from MySQL. This must be passed in since the PHPSession class is not a
+subclass of WebCommand.
 
 B<Returns:> GridShibCA::PHPSession instance.
 
@@ -51,24 +55,51 @@ B<Returns:> GridShibCA::PHPSession instance.
 sub new
 {
     my $class = shift;
+    my $gsconfig = shift ||
+        throw GridShibCA::Exception("Missing config argument");
     my $self = {};
 
     $self->{php} = undef;
 
-    my $config = new Config::Simple('/etc/php.ini');
-    my $savepath = $config->param('Session.session.save_path');
-    if (length($savepath) == 0) {
-        $savepath = '/var/lib/php/session';
-    }
-    my $sessionname = $config->param('Session.session.name');
+    my $phpconfig = new Config::Simple('/etc/php.ini');
+    my $ciconfig  = new Config::Simple('/var/www/config/cilogon.ini');
+
+    my $sessionname = $phpconfig->param('Session.session.name');
     if (length($sessionname) == 0) {
         $sessionname = 'PHPSESSID';
     }
 
     my $cgi = new CGI::Lite;
     my $cookies = $cgi->parse_cookies;
-    my $sessionhash = $cookies->{$sessionname};
-    $self->{php} = GridShibCA::PHPSessionMySQL->new($sessionhash,{save_path => $savepath});
+    my $sid = $cookies->{$sessionname};
+
+    if ($ciconfig->param('Storage.storage.phpsessions') eq 'mysql') {
+        my $dbh = DBI->connect('DBI:mysql:'.
+            $gsconfig->getParam("Session","Database").';host=localhost',
+            $gsconfig->getParam("Session","Username"),
+            $gsconfig->getParam("Session","Password"));
+        if ($dbh) {
+            $self->{php} = PHP::Session::DBI->new($sid,
+                {db_handle => $dbh,
+                 db_table  => 'phpsessions',
+                 db_schema => {id    => 'id',
+                               data  => 'data',
+                               date  => 'expires',
+                              },
+                });
+            $dbh->disconnect();
+        }
+    } else {
+        my $savepath = $phpconfig->param('Session.session.save_path');
+        if (length($savepath) == 0) {
+            $savepath = '/var/lib/php/session';
+        }
+        if (-r "$savepath/sess_$sid") {
+            $self->{php} = PHP::Session->new($sid,
+                {save_path => $savepath,
+                });
+        }
+    }
 
     bless($self,$class);
     return $self;
