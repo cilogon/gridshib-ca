@@ -45,7 +45,7 @@ sub new
     my $class = ref($invocant) || $invocant;
     my $self = $class->SUPER::new(@_);
 
-    $self->{phpsession} = GridShibCA::PHPSession->new();
+    $self->{phpsession} = GridShibCA::PHPSession->new($self->{config});
 
     bless($self,$class);
     return $self;
