@@ -21,9 +21,9 @@
           description="Create one combined jar Netbeans jar and libraries.">
     <jar destfile="${gsca.combinedJar}">
       <manifest>
-        <attribute name="Application-Name" value="CILogon Client" />
         <attribute name="Permissions" value="all-permissions" />
-        <attribute name="Codebase" value="https://*.cilogon.org" />
+        <attribute name="Application-Name" value="${manifest.appname}" />
+        <attribute name="Codebase" value="${manifest.codebase}" />
       </manifest>
       <fileset dir="." >
         <include name="resources/*" />

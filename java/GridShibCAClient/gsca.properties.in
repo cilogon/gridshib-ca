@@ -2,6 +2,9 @@ gsca.jar=dist/@JAR_NAME@
 gsca.combinedJar=dist/GridShibCA-combined.jar
 gsca.unsignedJar=dist/GridShibCA-unsigned.jar
 
+manifest.appname=@MANIFEST_APPLICATION_NAME@
+manifest.codebase=@MANIFEST_CODEBASE@
+
 jarsigner.exec=@JARSIGNER@
 jarsigner.keystore=@JARSIGNER_KEYSTORE@
 jarsigner.storetype=@JARSIGNER_STORETYPE@

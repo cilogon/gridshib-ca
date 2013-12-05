@@ -809,6 +809,15 @@ if test ${MODE} = "build" ; then
 	[JARSIGNER_KEYSTORE=${HOME}/.keystore])
   AC_MSG_RESULT(${JARSIGNER_KEYSTORE})	
   AC_SUBST(JARSIGNER_KEYSTORE)
+
+   dnl ----------------------------------------
+   dnl Jar MANIFEST.MF options
+
+   MANIFEST_APPLICATION_NAME="GridShib-CA Logon Client"
+   AC_SUBST(MANIFEST_APPLICATION_NAME)
+
+   MANIFEST_CODEBASE="*"
+   AC_SUBST(MANIFEST_CODEBASE)
 fi
 dnl End development mode.
 
