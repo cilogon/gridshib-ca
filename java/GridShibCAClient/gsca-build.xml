@@ -6,9 +6,9 @@
   <property file="nbproject/project.properties" />
 
   <target name="gsca-jar" depends="gsca.unsignedJar"
-	  description="Create signed jar.">
+          description="Create signed jar.">
     <exec executable="${jarsigner.exec}" failonerror="true"
-	  input="${jarsigner.passwordFile}" >
+          input="${jarsigner.passwordFile}" >
       <arg line="-storetype ${jarsigner.storetype}" />
       <arg line="-keystore ${jarsigner.keystore}" />
       <arg line="-signedjar ${gsca.jar}" />
@@ -18,30 +18,35 @@
   </target>
 
   <target name="gsca.combinedJar" depends="jar"
-	  description="Create one combined jar Netbeans jar and libraries.">
+          description="Create one combined jar Netbeans jar and libraries.">
     <jar destfile="${gsca.combinedJar}">
+      <manifest>
+        <attribute name="Application-Name" value="CILogon Client" />
+        <attribute name="Permissions" value="all-permissions" />
+        <attribute name="Codebase" value="https://*.cilogon.org" />
+      </manifest>
       <fileset dir="." >
-	<include name="resources/*" />
-	<exclude name="resources/*.in" />
+        <include name="resources/*" />
+        <exclude name="resources/*.in" />
       </fileset>
       <zipgroupfileset dir="lib/" >
-	<include name="*.jar" />
-	<exclude name="jnlp.jar" />
-	<exclude name="proguard.jar" />
-	<exclude name="junit*.jar" />
-	<exclude name="org-netbeans*.jar" />
+        <include name="*.jar" />
+        <exclude name="jnlp.jar" />
+        <exclude name="proguard.jar" />
+        <exclude name="junit*.jar" />
+        <exclude name="org-netbeans*.jar" />
       </zipgroupfileset>
       <zipfileset src="${dist.jar}" />
     </jar>
   </target>
 
   <target name="gsca.unsignedJar" depends="gsca.combinedJar"
-	  description="Create combined jar without signature information">
+          description="Create combined jar without signature information">
     <zip destfile="${gsca.unsignedJar}">
       <zipfileset src="${gsca.combinedJar}">
-	<exclude name="META-INF/*.DSA" />
-	<exclude name="META-INF/*.RSA" />
-	<exclude name="META-INF/*.SF" />
+        <exclude name="META-INF/*.DSA" />
+        <exclude name="META-INF/*.RSA" />
+        <exclude name="META-INF/*.SF" />
       </zipfileset>
     </zip>
   </target>
