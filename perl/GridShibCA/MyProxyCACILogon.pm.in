@@ -89,12 +89,57 @@ sub _getPort
             $retval = 7516;
         }
     }
-    # Special hack for OSG - use SHA-1 version of MyProxy servers
-    if ((exists($attributes->{'cilogon_skin'})) && 
-        ((uc $attributes->{'cilogon_skin'}) eq 'OSG')) {
-        $retval--;
-    }
     return $retval;
+}
+
+=item _logIssuance()
+
+Overrides a method in CA to log the issuance of the certificate. This method 
+additionally logs session variables loaded from the PHP session cookie.
+
+B<Arguments:>
+
+C<$signon> CGISession instance.
+
+C<$certificate:> Certificate as use Crypt::OpenSSL::X509 object.
+
+B<Returns:> Nothing
+
+=cut
+
+sub _logIssuance
+{
+    my $self = shift;
+    my $session = shift;
+    my $certificate = shift;
+
+    my $DN = $certificate->subject();
+    my $serial = $certificate->serial();
+    my $hash = $certificate->hash();
+    # Unfortunately notAfter() returns a human-readable string instead of
+    # seconds since 1970.
+    my $expires = $certificate->notAfter();
+
+    # Log session variables from PHP session cookie
+    my $attributes = $session->userIdentity()->attributes();
+    my $sessvarstring = "";
+    my @sessionvars = ('dn','loa','myproxyinfo','cilogon_skin');
+    for my $sessionvar (@sessionvars) {
+        if (exists($attributes->{$sessionvar})) {
+            $sessvarstring .= $sessionvar . '="' . 
+                              $attributes->{$sessionvar} . '" ';
+        }
+    }
+
+    $self->{logger}->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" expires=\"%s\" %s",
+                          $session->param("UserId"),
+                          $session->param("IdP"),
+                          $session->param("ClientHost"),
+                          $serial, $hash,
+                          $DN, $expires,$sessvarstring);
+    
+    my $certRegistry = $self->{config}->getCertRegistry();
+    $certRegistry->registerCert($session, $certificate);
 }
 
 =back
