@@ -107,10 +107,12 @@ sub new
         # Save sessions to MySQL
         $self->{driver} = "driver:mysql";
         $self->{driverArguments} = {
-            DataSource=>$self->{config}->getParam("Session","Database"),
-            TableName =>$self->{config}->getParam("Session","Tablename"),
-            User      =>$self->{config}->getParam("Session","Username"),
-            Password  =>$self->{config}->getParam("Session","Password"),
+            DataSource =>  $self->{config}->getParam("Session","Database") . 
+                ";host=" . $self->{config}->getParam("Session","Host") .
+                ";port=" . $self->{config}->getParam("Session","Port"),
+            TableName =>   $self->{config}->getParam("Session","Tablename"),
+            User      =>   $self->{config}->getParam("Session","Username"),
+            Password  =>   $self->{config}->getParam("Session","Password"),
         };
     } else { 
         # Save sessions to file

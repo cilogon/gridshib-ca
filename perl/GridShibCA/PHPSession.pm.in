@@ -74,8 +74,10 @@ sub new
     my $sid = $cookies->{$sessionname};
 
     if ($ciconfig->param('Storage.storage.phpsessions') eq 'mysql') {
-        my $dbh = DBI->connect('DBI:mysql:'.
-            $gsconfig->getParam("Session","Database").';host=localhost',
+        my $dbh = DBI->connect('DBI:mysql:' .
+            'database=' . $gsconfig->getParam("Session","Database") . 
+            ';host='    . $gsconfig->getParam("Session","Host") .
+            ';port='    . $gsconfig->getParam("Session","Port"),
             $gsconfig->getParam("Session","Username"),
             $gsconfig->getParam("Session","Password"));
         if ($dbh) {

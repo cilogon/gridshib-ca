@@ -273,6 +273,12 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Database name for MySQL connection
   Database = oauth
 
+  # Host name for MySQL connection
+  Host = localhost
+
+  # Port number for MySQL connection
+  Port = 3306
+
   # Table name in the Database for storing sessions
   Tablename = gscasessions
 
