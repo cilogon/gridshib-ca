@@ -63,7 +63,8 @@ sub new
     my $class = shift;
     my $arg_hash = (ref($_[0]) eq 'HASH') ? $_[0] : {@_};
     $arg_hash->{SSL_use_cert} = 1;
-    $arg_hash->{SSL_version} = "SSLv3";
+    $arg_hash->{SSL_version} = "TLSv1_2";
+    $arg_hash->{SSL_verify_mode} = SSL_VERIFY_NONE;
     $arg_hash->{Proto} = "tcp";
     if (!defined($arg_hash->{SSL_key_file}))
     {

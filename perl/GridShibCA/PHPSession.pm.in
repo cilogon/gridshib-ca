@@ -73,11 +73,15 @@ sub new
     my $cookies = $cgi->parse_cookies;
     my $sid = $cookies->{$sessionname};
 
-    if ($ciconfig->param('Storage.storage.phpsessions') eq 'mysql') {
+    if ($ciconfig->param('Storage.storage.phpsessions') =~ /^mysql/) {
         my $dbh = DBI->connect('DBI:mysql:' .
             'database=' . $gsconfig->getParam("Session","Database") . 
             ';host='    . $gsconfig->getParam("Session","Host") .
-            ';port='    . $gsconfig->getParam("Session","Port"),
+            ';port='    . $gsconfig->getParam("Session","Port") .
+            ((int($self->{config}->getParam("Session","SSL"))) == 1 ?
+                ";mysql_ssl=1;mysql_ssl_ca_file=" . 
+                $self->{config}->getParam("Session","CAFile") :
+                ""),
             $gsconfig->getParam("Session","Username"),
             $gsconfig->getParam("Session","Password"));
         if ($dbh) {
@@ -93,7 +97,7 @@ sub new
         }
     } else {
         my $savepath = $phpconfig->param('Session.session.save_path');
-        if (length($savepath) == 0) {
+        if ((!defined $savepath) || (length($savepath) == 0)) {
             $savepath = '/var/lib/php/session';
         }
         if (-r "$savepath/sess_$sid") {

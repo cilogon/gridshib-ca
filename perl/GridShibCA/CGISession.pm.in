@@ -109,7 +109,11 @@ sub new
         $self->{driverArguments} = {
             DataSource =>  $self->{config}->getParam("Session","Database") . 
                 ";host=" . $self->{config}->getParam("Session","Host") .
-                ";port=" . $self->{config}->getParam("Session","Port"),
+                ";port=" . $self->{config}->getParam("Session","Port") .
+                ((int($self->{config}->getParam("Session","SSL"))) == 1 ?
+                    ";mysql_ssl=1;mysql_ssl_ca_file=" . 
+                    $self->{config}->getParam("Session","CAFile") :
+                    ""),
             TableName =>   $self->{config}->getParam("Session","Tablename"),
             User      =>   $self->{config}->getParam("Session","Username"),
             Password  =>   $self->{config}->getParam("Session","Password"),

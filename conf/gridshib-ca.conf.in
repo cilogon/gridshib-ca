@@ -280,6 +280,12 @@ ShibProtectedURL = @SHIB_PROTECTED_URL@
   # Port number for MySQL connection
   Port = 3306
 
+  # Use SSL for MySQL connection. Either 0 or 1.
+  SSL = 1
+
+  # CA file to use when SSL is used for MySQL connection.
+  CAFile = /var/www/config/cilogon-host.0
+
   # Table name in the Database for storing sessions
   Tablename = gscasessions
 
