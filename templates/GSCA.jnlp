@@ -2,7 +2,7 @@
 
 <jnlp spec="1.0+" codebase="{ $CodeBase }" > 
   <information> 
-    <title>GridShib CA Credential Retriever ({$Version})</title>
+    <title>CILogon Certificate Retriever ({$Version})</title>
     <vendor>GridShib Project</vendor>
     <homepage href="http://gridshib.globus.org"/>
     <description>Download and install my Grid credentials.</description>

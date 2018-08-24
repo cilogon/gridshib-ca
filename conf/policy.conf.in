@@ -7,22 +7,15 @@
 #  $UserId    The client's identity.
 #  $IdPId     The identity provider of the identity.
 
-RelativeDN @RELATIVE_DN@
+RelativeDN O=Shibboleth User,DC=cilogon,DC=org
 	   	   
 #
 # Configuration for Shibboleth IdPs
 <AuthMethod Shibboleth>
   ShibbolethRelativeDN "o=Shibboleth, ${RelativeDN}"
-  <IdPNameSpace urn:mace:incommon:*>
+  <IdPNameSpace *>
     Comment InCommon IdPs
     DN "cn=${UserId}, ou=${IdPId}, ${ShibbolethRelativeDN}"
-  </IdPNameSpace>
-
-  # Depending on whether or not you get metadata through InCommon or
-  # directly from ProtectNetwork, they have two different entity ids.
-  <IdPNameSpace https://idp.protectnetwork.org/protectnetwork-idp>
-    Comment ProtectNetwork
-    DN "cn=${UserId}, ou=${IdPId}, ${ShibbolethRelativeDN}"    
   </IdPNameSpace>
 </Shibboleth>
 
