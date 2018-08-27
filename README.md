@@ -54,5 +54,5 @@ sudo rm -rf /var/www/html/gridshib-ca
 ## License
 
 The University of Illinois/NCSA Open Source License (NCSA). Please see
-[License File](https://github.com/cilogon/service-lib/blob/master/LICENSE)
+[License File](https://github.com/cilogon/gridshib-ca/blob/master/LICENSE)
 for more information.
