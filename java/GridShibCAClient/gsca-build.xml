@@ -12,6 +12,7 @@
       <arg line="-storetype ${jarsigner.storetype}" />
       <arg line="-keystore ${jarsigner.keystore}" />
       <arg line="-signedjar ${gsca.jar}" />
+      <arg line="-tsa http://timestamp.comodoca.com" />
       <arg value="${gsca.unsignedJar}" />
       <arg value="${jarsigner.alias}" />
     </exec>
