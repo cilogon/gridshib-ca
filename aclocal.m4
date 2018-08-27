@@ -34,7 +34,7 @@ dnl Changed to use AC_RUN_IFELSE instead of AC_EGREP_CPP so that it honors
 dnl CFLAGS.
 
 AC_DEFUN([AC_CHECK_OPENSSL_VERSION], [
-AC_RUN_IFELSE([
+AC_RUN_IFELSE([AC_LANG_SOURCE([
 #include <openssl/opensslv.h>
 int
 main()
@@ -45,7 +45,7 @@ status = 0;
 #endif
 return(status);
 }
-], [$2], [$3]
+])], [$2], [$3]
 )])
 dnl set GLOBUS_LOCATION to the proper value for $GLOBUS_LOCATION
 dnl Checks (in order):
