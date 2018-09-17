@@ -131,12 +131,20 @@ sub _logIssuance
         }
     }
 
+    # CIL-507 Special log message for XSEDE
+    my $emailaddr = "unknown";
+    if ((exists($attributes->{dn})) && 
+        ($attributes->{dn} =~ /email=(.*)/)) {
+        $emailaddr = $1;
+    }
+    $self->{logger}->info("USAGE email=\"%s\" client=\"JWS\"", $emailaddr);
+
     $self->{logger}->info("ISSUE: user=%s idp=%s remoteAddr=%s serial=\"%s\" hash=%s DN=\"%s\" expires=\"%s\" %s",
                           $session->param("UserId"),
                           $session->param("IdP"),
                           $session->param("ClientHost"),
                           $serial, $hash,
-                          $DN, $expires,$sessvarstring);
+                          $DN, $expires, $sessvarstring);
     
     my $certRegistry = $self->{config}->getCertRegistry();
     $certRegistry->registerCert($session, $certificate);
