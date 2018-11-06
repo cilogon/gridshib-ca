@@ -49,7 +49,7 @@ public class Credential
 
     // Algorithm to use when signing request
     // XXX Should be SHA?
-    private static String pkcs10SigAlgName = "MD5withRSA";
+    private static String pkcs10SigAlgName = "SHA256withRSA";
 
     // A bogus DN to put in the certificate request. It will
     // be overwritten by the GridShib-CA with the real user DN
