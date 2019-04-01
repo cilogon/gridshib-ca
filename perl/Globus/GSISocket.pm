@@ -53,7 +53,7 @@ SSL_use_cert        Forced to 1
 SSL_key_file        Globus::Config::getKeyPath()
 SSL_cert_file       Globus::Config::getCertPath()
 SSL_ca_path         Globus::Config::getCAPath()
-SSL_version         Forced to "SSLv3"
+SSL_version         Forced to "TLSv1_2"
 Proto               Forced to "tcp"
 
 =cut
